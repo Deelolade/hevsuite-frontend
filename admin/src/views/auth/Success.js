@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
-import { BsCheckCircleFill } from "react-icons/bs";
+import { BsCheck2Circle } from "react-icons/bs";
 
 const Success = () => {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const Success = () => {
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto text-center">
-          <BsCheckCircleFill className="text-[#0A5438] text-5xl mx-auto mb-4" />
+          <BsCheck2Circle className="text-[#0A5438] text-8xl mx-auto mb-4" />
           <h1 className="text-[32px] font-['Playfair_Display'] mb-3">
             Successfully Enabled
           </h1>

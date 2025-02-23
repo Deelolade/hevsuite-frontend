@@ -7,6 +7,8 @@ import CodeVerification from "./views/auth/CodeVerification";
 import PhoneVerification from "./views/auth/PhoneVerification";
 import EmailVerification from "./views/auth/EmailVerification";
 import TwoFactorAuth from "./views/auth/TwoFactorAuth";
+import Pending from "./views/pending/Pending";
+import ViewPending from "./views/pending/ViewPending";
 
 const router = createBrowserRouter([
   {
@@ -66,7 +68,9 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Dashboard /> },
-      //   { path: "profile", element: <Profile /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "pending", element: <Pending /> },
+      { path: "view-pending", element: <ViewPending /> },
       //   { path: "users", element: <Users /> },
       //   { path: "managers", element: <Manager /> },
       //   { path: "printers", element: <Printers /> },
