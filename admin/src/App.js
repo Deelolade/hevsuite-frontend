@@ -9,6 +9,7 @@ import EmailVerification from "./views/auth/EmailVerification";
 import TwoFactorAuth from "./views/auth/TwoFactorAuth";
 import Pending from "./views/pending/Pending";
 import ViewPending from "./views/pending/ViewPending";
+import UserManagement from "./views/user-management/UserManagement";
 
 const router = createBrowserRouter([
   {
@@ -71,7 +72,7 @@ const router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "pending", element: <Pending /> },
       { path: "view-pending", element: <ViewPending /> },
-      //   { path: "users", element: <Users /> },
+      { path: "users", element: <UserManagement /> },
       //   { path: "managers", element: <Manager /> },
       //   { path: "printers", element: <Printers /> },
       //   { path: "riders", element: <Riders /> },
