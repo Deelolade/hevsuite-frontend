@@ -35,10 +35,10 @@ const MainLayout = () => {
         <Sidebar />
       </aside>
       <div className="flex-1 pl-[240px]">
-        <header className="fixed top-0 right-0 left-[240px] bg-white z-50">
+        {/* <header className="fixed top-0 right-0 left-[240px] bg-white z-50">
           <Navigation />
-        </header>
-        <main className="pt-[72px] p-8">
+        </header> */}
+        <main className="pt-[12px] p-8">
           <Outlet />
         </main>
       </div>

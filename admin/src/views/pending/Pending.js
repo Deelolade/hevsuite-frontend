@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { BiSearch } from "react-icons/bi";
 import {
   BsThreeDotsVertical,
   BsXCircleFill,
   BsCheckCircleFill,
 } from "react-icons/bs";
+import Profile from "../../components/Profile";
 
 const Pending = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -93,7 +95,20 @@ const Pending = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 max-w-2xl mx-auto px-4">
+          <div className="relative">
+            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+            />
+          </div>
+        </div>
+        <Profile />
+      </div>
       <div className="flex justify-end gap-4 mb-6">
         {/* Filter Button */}
         <div className="relative">

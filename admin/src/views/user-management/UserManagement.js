@@ -4,6 +4,7 @@ import { BiSearch } from "react-icons/bi";
 import { BsPencil } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
 import { HiOutlineMail } from "react-icons/hi";
+import Profile from "../../components/Profile";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -38,6 +39,9 @@ const UserManagement = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header section - updated styles */}
+      <div className="flex items-center justify-end">
+        <Profile />
+      </div>
       <button
         onClick={() => setIsInviteModalOpen(true)}
         className="bg-[#540A26] text-white px-6 py-2.5 rounded-lg flex items-center gap-2"

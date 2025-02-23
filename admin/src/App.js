@@ -10,6 +10,7 @@ import TwoFactorAuth from "./views/auth/TwoFactorAuth";
 import Pending from "./views/pending/Pending";
 import ViewPending from "./views/pending/ViewPending";
 import UserManagement from "./views/user-management/UserManagement";
+import ClubCards from "./views/cards/ClubCards";
 
 const router = createBrowserRouter([
   {
@@ -73,23 +74,7 @@ const router = createBrowserRouter([
       { path: "pending", element: <Pending /> },
       { path: "view-pending", element: <ViewPending /> },
       { path: "users", element: <UserManagement /> },
-      //   { path: "managers", element: <Manager /> },
-      //   { path: "printers", element: <Printers /> },
-      //   { path: "riders", element: <Riders /> },
-      //   { path: "products", element: <Products /> },
-      //   { path: "product-types", element: <ProductTypes /> },
-      //   { path: "product-categories", element: <ProductCategories /> },
-      //   { path: "countries", element: <Country /> },
-      //   { path: "regions", element: <Region /> },
-      //   { path: "subregions", element: <SubRegion /> },
-      //   { path: "locations", element: <Location /> },
-      //   { path: "colors", element: <Colors /> },
-      //   { path: "images", element: <Images /> },
-      //   { path: "image-types", element: <ImageTypes /> },
-      //   { path: "image-categories", element: <ImageCategories /> },
-      //   { path: "map", element: <MapComponent /> },
-      //   { path: "coupons", element: <Coupon /> },
-      //   { path: "sizes", element: <Size /> },
+      { path: "cards", element: <ClubCards /> },
     ],
   },
   // errorElement: <ErrorPage />,

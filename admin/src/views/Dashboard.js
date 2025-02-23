@@ -91,10 +91,27 @@ import { BsPeople, BsClock, BsThreeDotsVertical } from "react-icons/bs";
 import { FaUserTimes } from "react-icons/fa";
 import { IoSparkles } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
+import Profile from "../components/Profile";
+import { BiSearch } from "react-icons/bi";
 
 const Dashboard = () => {
   return (
     <div className="space-y-4">
+      {/* <div className="p-6 space-y-6"> */}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1 max-w-2xl mx-auto px-4">
+          <div className="relative">
+            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+            />
+          </div>
+        </div>
+        <Profile />
+      </div>
       {/* Header with Create Event button */}
       <button className="bg-[#900C3F] text-white px-4 py-2.5 rounded-md flex items-center gap-2 text-sm">
         <span>Create Event</span>
