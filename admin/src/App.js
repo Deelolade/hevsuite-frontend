@@ -2,6 +2,11 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./views/auth/Login";
 import MainLayout from "./views/MainLayout";
 import Dashboard from "./views/Dashboard";
+import Success from "./views/auth/Success";
+import CodeVerification from "./views/auth/CodeVerification";
+import PhoneVerification from "./views/auth/PhoneVerification";
+import EmailVerification from "./views/auth/EmailVerification";
+import TwoFactorAuth from "./views/auth/TwoFactorAuth";
 
 const router = createBrowserRouter([
   {
@@ -9,6 +14,46 @@ const router = createBrowserRouter([
     element: (
       //   <OpenRoutes>
       <Login />
+      //   </OpenRoutes>
+    ),
+  },
+  {
+    path: "/two-factor-auth",
+    element: (
+      //   <OpenRoutes>
+      <TwoFactorAuth />
+      //   </OpenRoutes>
+    ),
+  },
+  {
+    path: "/email-verification",
+    element: (
+      //   <OpenRoutes>
+      <EmailVerification />
+      //   </OpenRoutes>
+    ),
+  },
+  {
+    path: "/phone-verification",
+    element: (
+      //   <OpenRoutes>
+      <PhoneVerification />
+      //   </OpenRoutes>
+    ),
+  },
+  {
+    path: "/code-verification",
+    element: (
+      //   <OpenRoutes>
+      <CodeVerification />
+      //   </OpenRoutes>
+    ),
+  },
+  {
+    path: "/success",
+    element: (
+      //   <OpenRoutes>
+      <Success />
       //   </OpenRoutes>
     ),
   },
