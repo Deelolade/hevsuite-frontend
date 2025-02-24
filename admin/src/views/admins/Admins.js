@@ -1,7 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
+import { BiSearch } from "react-icons/bi";
+import AdminUsers from "./AdminUsers";
+import Permissions from "./Permissions";
+import Activities from "./Activities";
+import Profile from "../../components/Profile";
 
 const Admins = () => {
-  return <div>Admins</div>;
+  const [activeTab, setActiveTab] = useState("users");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "users":
+        return <AdminUsers />;
+      case "permissions":
+        return <Permissions />;
+      case "activities":
+        return <Activities />;
+      default:
+        return <AdminUsers />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="relative flex-1 max-w-xl">
+          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full pl-10 pr-4 py-2 border rounded-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-4">
+          <Profile />
+        </div>
+      </div>
+      <div className="border-b">
+        <div className="flex gap-8">
+          <button
+            className={`py-4 px-1 flex items-center gap-2 ${
+              activeTab === "users"
+                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("users")}
+          >
+            <span className="text-xl">👥</span> Admin Users
+          </button>
+          <button
+            className={`py-4 px-1 flex items-center gap-2 ${
+              activeTab === "permissions"
+                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("permissions")}
+          >
+            <span className="text-xl">🔑</span> Permissions
+          </button>
+          <button
+            className={`py-4 px-1 flex items-center gap-2 ${
+              activeTab === "activities"
+                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("activities")}
+          >
+            <span className="text-xl">ℹ️</span> Activities
+          </button>
+        </div>
+      </div>
+      {renderTabContent()}
+    </div>
+  );
 };
 
 export default Admins;
