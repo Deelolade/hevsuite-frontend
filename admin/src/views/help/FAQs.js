@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import Modal from "react-modal";
 
 const FAQs = () => {
   const [currentPage, setCurrentPage] = useState(2);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedFAQ, setSelectedFAQ] = useState(null);
   const faqs = [
     { id: 1, question: "How do I join the HH Club?", visible: true },
     { id: 2, question: "How do I change my account details?", visible: true },
@@ -49,19 +52,27 @@ const FAQs = () => {
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
                 </label>
-                <button className="text-[#540A26]">
+                <button
+                  className="text-[#540A26]"
+                  onClick={() => {
+                    setSelectedFAQ(faq);
+                    setIsEditModalOpen(true);
+                  }}
+                >
                   <FiEdit size={20} />
                 </button>
                 <button className="text-[#540A26]">
                   <FiTrash2 size={20} />
                 </button>
-                <button 
+                <button
                   className="p-2 border rounded-lg"
-                  onClick={() => setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)}
+                  onClick={() =>
+                    setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
+                  }
                 >
                   <svg
                     className={`w-4 h-4 transform transition-transform ${
-                      expandedFAQ === faq.id ? 'rotate-180' : ''
+                      expandedFAQ === faq.id ? "rotate-180" : ""
                     }`}
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -92,27 +103,118 @@ const FAQs = () => {
         </div>
         <div className="flex items-center gap-2">
           <button className="p-1 text-gray-400">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           {[1, 2, 3, 4, "...", 20].map((page, index) => (
             <button
               key={index}
               className={`w-8 h-8 flex items-center justify-center rounded-lg ${
-                currentPage === page ? "bg-green-800 text-white" : "text-gray-600"
+                currentPage === page
+                  ? "bg-green-800 text-white"
+                  : "text-gray-600"
               }`}
             >
               {page}
             </button>
           ))}
           <button className="p-1 text-gray-400">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
       </div>
+      <Modal
+        isOpen={isEditModalOpen}
+        onRequestClose={() => setIsEditModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Edit FAQs</h2>
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Question</label>
+              <input
+                type="text"
+                value={selectedFAQ?.question || ""}
+                placeholder="What is Hazor Hevsuite (HH) Club?"
+                className="w-full px-4 py-2 border rounded-lg"
+                onChange={(e) =>
+                  setSelectedFAQ({
+                    ...selectedFAQ,
+                    question: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2">Answer</label>
+              <textarea
+                value={selectedFAQ?.answer || ""}
+                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
+                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
+                onChange={(e) =>
+                  setSelectedFAQ({
+                    ...selectedFAQ,
+                    answer: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                onClick={() => {
+                  // Handle FAQ update here
+                  setIsEditModalOpen(false);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
