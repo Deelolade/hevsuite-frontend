@@ -1,7 +1,29 @@
 import React, { useState } from "react";
+import { BsCalendar } from "react-icons/bs";
+import { FiSettings } from "react-icons/fi";
+import Modal from "react-modal";
+import AllAskDetails from "../../components/modals/ask/AllAskDetails";
+import AllAskRemove from "../../components/modals/ask/AllAskRemove";
 
 const AllAsks = () => {
   const [currentPage, setCurrentPage] = useState(2);
+  const [openSettingsId, setOpenSettingsId] = useState(null);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [selectedAsk, setSelectedAsk] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+
+  const handleEdit = (ask) => {
+    setSelectedAsk(ask);
+    setOpenDetails(true);
+    setOpenSettingsId(null);
+  };
+
+  const handleRemove = (ask) => {
+    setSelectedAsk(ask);
+    setIsRemoveModalOpen(true);
+    setOpenSettingsId(null);
+  };
 
   const asks = [
     {
@@ -20,6 +42,7 @@ const AllAsks = () => {
       <div className="flex justify-end">
         <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[200px]">
           <option>Current Ask</option>
+          <option>Claimed Ask</option>
         </select>
       </div>
 
@@ -54,15 +77,32 @@ const AllAsks = () => {
                   </div>
                 </td>
                 <td className="py-4 px-6">
-                  <button className="p-1 hover:bg-gray-100 rounded">
-                    <svg
-                      className="w-6 h-6"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
+                  <button
+                    className="p-1 hover:bg-gray-100 rounded"
+                    onClick={() => {
+                      setOpenSettingsId(
+                        openSettingsId === ask.id ? null : ask.id
+                      );
+                    }}
+                  >
+                    <FiSettings size={20} />
                   </button>
+                  {openSettingsId === ask.id && (
+                    <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        onClick={() => handleEdit(ask)}
+                      >
+                        Detail
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-500"
+                        onClick={() => handleRemove(ask)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -123,6 +163,25 @@ const AllAsks = () => {
           </button>
         </div>
       </div>
+      <Modal
+        isOpen={openDetails}
+        onRequestClose={() => setOpenDetails(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <AllAskDetails
+          setOpenDetails={setOpenDetails}
+          selectedAsk={selectedAsk}
+        />
+      </Modal>
+      <Modal
+        isOpen={isRemoveModalOpen}
+        onRequestClose={() => setIsRemoveModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <AllAskRemove setIsRemoveModalOpen={setIsRemoveModalOpen} />
+      </Modal>
     </div>
   );
 };

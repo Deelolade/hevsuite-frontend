@@ -5,6 +5,7 @@ import { BsPencil } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
 import { HiOutlineMail } from "react-icons/hi";
 import Profile from "../../components/Profile";
+import InviteUsers from "../../components/modals/users/InviteUsers";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -49,40 +50,6 @@ const UserManagement = () => {
         <span className="text-sm font-medium">Invite</span>
         <IoMdAdd size={20} />
       </button>
-      {/* Invite Modal */}
-      <Modal
-        isOpen={isInviteModalOpen}
-        onRequestClose={() => setIsInviteModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-lg w-[500px]"
-        overlayClassName="fixed inset-0 bg-black/50"
-        contentLabel="Invite New Users"
-      >
-        <div className="p-8 flex flex-col items-center">
-          <h2 className="text-2xl font-semibold text-center mb-8">
-            Invite New Users
-          </h2>
-          <div className="relative">
-            <HiOutlineMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
-            <input
-              type="email"
-              placeholder="Enter Email Address"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#540A26] text-sm"
-            />
-          </div>
-          <button
-            onClick={() => {
-              // Handle invite logic here
-              setIsInviteModalOpen(false);
-              setInviteEmail("");
-            }}
-            className="w-full bg-[#540A26] text-white py-3 rounded-2xl mt-6 text-sm font-medium hover:bg-[#540A26]/90 transition-colors"
-          >
-            Invite
-          </button>
-        </div>
-      </Modal>
       <div className="flex justify-between gap-4">
         <div className="flex-1 relative w-[300px]">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
@@ -180,9 +147,17 @@ const UserManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     {expandedUser === user.id ? (
-                      <button className="px-5 py-1.5 bg-[#540A26] text-white rounded-lg text-sm font-medium">
-                        Save
-                      </button>
+                      <>
+                        <button className="px-5 py-1.5 bg-[#540A26] text-white rounded-lg text-sm font-medium mr-2">
+                          Save
+                        </button>
+                        <button
+                          className="px-5 py-1.5 bg-[#A40A26] text-white rounded-lg text-sm font-medium"
+                          onClick={() => {}}
+                        >
+                          Cancel
+                        </button>
+                      </>
                     ) : (
                       <button
                         onClick={() => handleEditClick(user.id)}
@@ -476,6 +451,19 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isInviteModalOpen}
+        onRequestClose={() => setIsInviteModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-lg w-[500px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+        contentLabel="Invite New Users"
+      >
+        <InviteUsers
+          setIsInviteModalOpen={setIsInviteModalOpen}
+          setInviteEmail={setInviteEmail}
+          inviteEmail={inviteEmail}
+        />
+      </Modal>
     </div>
   );
 };

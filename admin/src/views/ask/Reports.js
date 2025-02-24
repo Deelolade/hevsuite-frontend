@@ -3,6 +3,9 @@ import userAvatar from "../../assets/event-image.png";
 import { FiSettings } from "react-icons/fi";
 import Modal from "react-modal";
 import { BsCalendar } from "react-icons/bs";
+import BanAsk from "../../components/modals/ask/BanAsk";
+import ReportDetails from "../../components/modals/ask/ReportDetails";
+import ReportRemove from "../../components/modals/ask/ReportRemove";
 
 const Reports = () => {
   const [currentPage, setCurrentPage] = useState(2);
@@ -91,7 +94,7 @@ const Reports = () => {
                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                         onClick={() => handleEdit(report)}
                       >
-                        Edit
+                        Detail
                       </button>
                       <button
                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-500"
@@ -167,119 +170,32 @@ const Reports = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Ask Details</h2>
-            <button
-              onClick={() => setOpenDetails(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          {selectedReport && (
-            <div className="space-y-6">
-              {/* User Info */}
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedReport.user.avatar}
-                  alt={selectedReport.user.name}
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <h3 className="font-medium">{selectedReport.user.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    andrewbojangles@gmail.com
-                  </p>
-                </div>
-              </div>
-
-              {/* Ask Details */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm mb-1">Ask Title</label>
-                  <div className="px-4 py-2 border rounded-lg bg-gray-50">
-                    {selectedReport.title}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-1">Descriptions</label>
-                  <div className="px-4 py-2 border rounded-lg bg-gray-50 min-h-[80px]">
-                    Looking for volunteers to assist at the annual || charity
-                    event this weekend.
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-1">Deadline</label>
-                  <div className="px-4 py-2 border rounded-lg bg-gray-50 flex justify-between items-center">
-                    <span>23 January, 2025!</span>
-                    <BsCalendar className="text-gray-400" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <div className="flex justify-end pt-4">
-                <button
-                  className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
-                  onClick={() => setIsBanModalOpen(true)}
-                >
-                  Ban Ask
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <ReportDetails
+          setOpenDetails={setOpenDetails}
+          setIsBanModalOpen={setIsBanModalOpen}
+          selectedReport={selectedReport}
+        />
       </Modal>
+
       <Modal
         isOpen={isBanModalOpen}
         onRequestClose={() => setIsBanModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-red-500 text-xl">⚠</span>
-              <h2 className="text-xl font-semibold">Ban Ask</h2>
-            </div>
-            <button
-              onClick={() => setIsBanModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
+        <BanAsk
+          setIsBanModalOpen={setIsBanModalOpen}
+          setOpenDetails={setOpenDetails}
+        />
+      </Modal>
 
-          <div className="space-y-6">
-            <p className="text-gray-600">
-              Are you sure you want to ban this Ask? Removing this content will
-              permanently erase it from the website when saved.
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsBanModalOpen(false)}
-                className="px-6 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Handle ban confirmation
-                  setIsBanModalOpen(false);
-                  setOpenDetails(false);
-                }}
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
+      <Modal
+        isOpen={isRemoveModalOpen}
+        onRequestClose={() => setIsRemoveModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <ReportRemove setIsRemoveModalOpen={setIsRemoveModalOpen} />
       </Modal>
     </div>
   );

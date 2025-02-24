@@ -5,7 +5,7 @@ import FAQs from "./FAQs";
 import { BiSearch } from "react-icons/bi";
 
 const Help = () => {
-  const [activeTab, setActiveTab] = useState("new");
+  const [activeTab, setActiveTab] = useState("topic");
 
   return (
     <div className="space-y-6">

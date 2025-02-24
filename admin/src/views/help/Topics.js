@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BiPencil, BiSearch } from "react-icons/bi";
+import Modal from "react-modal";
 
 const Topics = () => {
   const [expandedQuestion, setExpandedQuestion] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [isEditQAModalOpen, setIsEditQAModalOpen] = useState(false);
+  const [selectedQA, setSelectedQA] = useState(null);
+
+  const [isCreateQAModalOpen, setIsCreateQAModalOpen] = useState(false);
+
   const topics = [
     { id: 1, title: "Topic 1", visible: true },
     { id: 2, title: "Topic 1", visible: true },
@@ -25,7 +33,13 @@ const Topics = () => {
           <div key={topic.id} className="border rounded-lg">
             <div className="bg-[#540A26] p-4 rounded-t-lg flex justify-between items-center">
               <h3 className="text-white">Topic 1</h3>
-              <button className="text-white">
+              <button
+                className="text-white"
+                onClick={() => {
+                  setSelectedTopic(topic);
+                  setIsEditModalOpen(true);
+                }}
+              >
                 <BiPencil size={20} />
               </button>
             </div>
@@ -58,7 +72,10 @@ const Topics = () => {
           <h3 className="text-lg">
             Topic 1 Questions: About Hazor Hevsuite (HH) Club
           </h3>
-          <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
+          <button
+            className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2"
+            onClick={() => setIsCreateQAModalOpen(true)}
+          >
             Create QA
             <span className="text-xl">+</span>
           </button>
@@ -82,7 +99,13 @@ const Topics = () => {
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
                   </label>
-                  <button className="text-[#540A26]">
+                  <button
+                    className="text-[#540A26]"
+                    onClick={() => {
+                      setSelectedQA(qa);
+                      setIsEditQAModalOpen(true);
+                    }}
+                  >
                     <FiEdit size={20} />
                   </button>
                   <button className="text-[#540A26]">
@@ -124,6 +147,221 @@ const Topics = () => {
           ))}
         </div>
       </div>
+      <Modal
+        isOpen={isEditModalOpen}
+        onRequestClose={() => setIsEditModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Edit Topic</h2>
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Select Topic to Edit</label>
+              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
+                <option>Select Topic</option>
+                {topics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-2">Topic Title</label>
+              <input
+                type="text"
+                placeholder="Group Title"
+                className="w-full px-4 py-2 border rounded-lg"
+                value={selectedTopic?.title || ""}
+                onChange={(e) =>
+                  setSelectedTopic({
+                    ...selectedTopic,
+                    title: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                onClick={() => {
+                  // Handle topic update here
+                  setIsEditModalOpen(false);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isEditQAModalOpen}
+        onRequestClose={() => setIsEditQAModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Edit Topic QA</h2>
+            <button
+              onClick={() => setIsEditQAModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">QA Topic</label>
+              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
+                <option>Topic 1: About Hazor Hevsuite (HH) Club</option>
+                {topics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-2">Question</label>
+              <input
+                type="text"
+                value={selectedQA?.question || ""}
+                placeholder="What is Hazor Hevsuite (HH) Club?"
+                className="w-full px-4 py-2 border rounded-lg"
+                onChange={(e) =>
+                  setSelectedQA({
+                    ...selectedQA,
+                    question: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2">Answer</label>
+              <textarea
+                value={selectedQA?.answer || ""}
+                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
+                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
+                onChange={(e) =>
+                  setSelectedQA({
+                    ...selectedQA,
+                    answer: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsEditQAModalOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                onClick={() => {
+                  // Handle QA update here
+                  setIsEditQAModalOpen(false);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCreateQAModalOpen}
+        onRequestClose={() => setIsCreateQAModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Create Topic QA</h2>
+            <button
+              onClick={() => setIsCreateQAModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Select QA Topic</label>
+              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
+                <option>Topic 1: About Hazor Hevsuite (HH) Club</option>
+                {topics.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-2">Question</label>
+              <input
+                type="text"
+                placeholder="What is Hazor Hevsuite (HH) Club?"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2">Answer</label>
+              <textarea
+                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
+                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsCreateQAModalOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                onClick={() => {
+                  // Handle create QA here
+                  setIsCreateQAModalOpen(false);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -1,60 +1,5 @@
-// import React from "react";
-// import { Link } from "react-router-dom";
-// import logo from "../../assets/logo_white.png";
-
-// const Sidebar = () => {
-//   const menuItems = [
-//     { icon: "⬛", label: "Dashboard", active: true },
-//     { icon: "👥", label: "Pending Registration" },
-//     { icon: "👤", label: "User Management" },
-//     { icon: "💳", label: "Club Cards" },
-//     { icon: "📝", label: "CMS" },
-//     { icon: "📅", label: "Event Management" },
-//     { icon: "📰", label: "News Room" },
-//     { icon: "❓", label: "Asks" },
-//     { icon: "❔", label: "Help Center" },
-//     { icon: "🎧", label: "Support Request" },
-//     { icon: "🏛️", label: "Finance Management" },
-//     { icon: "👥", label: "Admin Users" },
-//     { icon: "⚙️", label: "Site Settings" },
-//   ];
-
-//   return (
-//     <div className="flex flex-col h-full bg-gradient-to-b from-[#540A26] to-[#0A5438] text-white">
-//       <div className="p-4 border-b border-white/10">
-//         <div className="flex items-center gap-3">
-//           <img src={logo} alt="logo" className="w-10 h-10" />
-//           <h1 className="text-xl font-semibold">Hevsuite Club</h1>
-//         </div>
-//       </div>
-//       <nav className="flex-1 overflow-y-auto">
-//         {menuItems.map((item, index) => (
-//           <Link
-//             key={index}
-//             to="#"
-//             className={`flex items-center gap-3 px-4 py-3 hover:bg-white/10 ${
-//               item.active ? "bg-white/10" : ""
-//             }`}
-//           >
-//             <span>{item.icon}</span>
-//             <span>{item.label}</span>
-//           </Link>
-//         ))}
-//       </nav>
-//       <div className="p-4 border-t border-white/10">
-//         <button className="flex items-center gap-2 text-red-500">
-//           <span>🚪</span>
-//           <span>Log-out</span>
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Sidebar;
-
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo_red.png";
 import {
   BsGrid1X2Fill,
@@ -73,7 +18,14 @@ import { CgWebsite } from "react-icons/cg";
 import { IoLogOutOutline } from "react-icons/io5";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+    window.location.reload();
+  };
 
   const menuItems = [
     {
@@ -150,7 +102,9 @@ const Sidebar = () => {
       <div className="p-4 mt-auto">
         <button className="flex items-center gap-3 text-[#FF0000] hover:text-red-400 transition-colors">
           <IoLogOutOutline size={18} />
-          <span className="text-[14px]">Log-out</span>
+          <span className="text-[14px]" onClick={handleLogout}>
+            Log-out
+          </span>
         </button>
       </div>
     </div>

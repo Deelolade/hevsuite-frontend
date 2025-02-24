@@ -16,6 +16,10 @@ import Event from "./views/events/Event";
 import News from "./views/news/News";
 import Ask from "./views/ask/Ask";
 import Help from "./views/help/Help";
+import Support from "./views/support/Support";
+import Finance from "./views/finance/Finance";
+import Admins from "./views/admins/Admins";
+import Settings from "./views/settings/Settings";
 
 const router = createBrowserRouter([
   {
@@ -85,6 +89,10 @@ const router = createBrowserRouter([
       { path: "news", element: <News /> },
       { path: "asks", element: <Ask /> },
       { path: "help", element: <Help /> },
+      { path: "support", element: <Support /> },
+      { path: "finance", element: <Finance /> },
+      { path: "admins", element: <Admins /> },
+      { path: "settings", element: <Settings /> },
     ],
   },
   // errorElement: <ErrorPage />,
