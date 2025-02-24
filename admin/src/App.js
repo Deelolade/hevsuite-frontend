@@ -11,6 +11,10 @@ import Pending from "./views/pending/Pending";
 import ViewPending from "./views/pending/ViewPending";
 import UserManagement from "./views/user-management/UserManagement";
 import ClubCards from "./views/cards/ClubCards";
+import CMS from "./views/cms/CMS";
+import Event from "./views/events/Event";
+import News from "./views/news/News";
+import Ask from "./views/ask/Ask";
 
 const router = createBrowserRouter([
   {
@@ -75,6 +79,10 @@ const router = createBrowserRouter([
       { path: "view-pending", element: <ViewPending /> },
       { path: "users", element: <UserManagement /> },
       { path: "cards", element: <ClubCards /> },
+      { path: "cms", element: <CMS /> },
+      { path: "events", element: <Event /> },
+      { path: "news", element: <News /> },
+      { path: "asks", element: <Ask /> },
     ],
   },
   // errorElement: <ErrorPage />,
