@@ -56,11 +56,11 @@ const editUser = async (data) => {
   return response.data;
 };
 
-const authService = {
+const userService = {
   pendingUsers,
   inviteUser,
   memberUsers,
   editUser,
 };
 
-export default authService;
+export default userService;

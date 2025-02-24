@@ -15,6 +15,7 @@ import CMS from "./views/cms/CMS";
 import Event from "./views/events/Event";
 import News from "./views/news/News";
 import Ask from "./views/ask/Ask";
+import Help from "./views/help/Help";
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
       { path: "events", element: <Event /> },
       { path: "news", element: <News /> },
       { path: "asks", element: <Ask /> },
+      { path: "help", element: <Help /> },
     ],
   },
   // errorElement: <ErrorPage />,
