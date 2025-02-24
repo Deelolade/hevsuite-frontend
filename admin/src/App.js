@@ -20,6 +20,7 @@ import Support from "./views/support/Support";
 import Finance from "./views/finance/Finance";
 import Admins from "./views/admins/Admins";
 import Settings from "./views/settings/Settings";
+import AdminProfile from "./views/profile/AdminProfile";
 
 const router = createBrowserRouter([
   {
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
       { path: "finance", element: <Finance /> },
       { path: "admins", element: <Admins /> },
       { path: "settings", element: <Settings /> },
+      { path: "profile", element: <AdminProfile /> },
     ],
   },
   // errorElement: <ErrorPage />,
