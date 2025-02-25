@@ -21,6 +21,11 @@ import RegisterStep7 from "./views/auth/register/RegisterStep7";
 import RegisterStep8 from "./views/auth/register/RegisterStep8";
 import Homepage from "./views/homepage/Homepage";
 import Events from "./views/homepage/Events";
+import Ask from "./views/ask/Ask";
+import Topics from "./views/help/Topics";
+import TopicDetails from "./views/help/TopicDetails";
+import Terms from "./views/terms/Terms";
+import HowItWorks from "./views/how-it-works/HowItWorks";
 
 const isAuthenticated = () => {
   return localStorage.getItem("user") === null;
@@ -110,6 +115,26 @@ const router = createBrowserRouter([
       {
         path: "events",
         element: <Events />,
+      },
+      {
+        path: "asks",
+        element: <Ask />,
+      },
+      {
+        path: "topics",
+        element: <Topics />,
+      },
+      {
+        path: "topic-details/:id",
+        element: <TopicDetails />,
+      },
+      {
+        path: "terms",
+        element: <Terms />,
+      },
+      {
+        path: "how-it-works",
+        element: <HowItWorks />,
       },
       // {
       //   path: "events",

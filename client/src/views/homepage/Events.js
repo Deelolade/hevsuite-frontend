@@ -6,6 +6,7 @@ import { BsBell, BsChevronLeft, BsChevronRight } from "react-icons/bs";
 const EventDetailsModal = ({ event, onClose }) => {
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const attendees = [
     {
@@ -83,9 +84,17 @@ const EventDetailsModal = ({ event, onClose }) => {
                 <p className="text-white/70 mt-2">
                   Note: You can only buy one ticket
                 </p>
-                <button className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg mt-4">
+                <button
+                  className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg mt-4"
+                  onClick={() => setShowPaymentModal(true)}
+                >
                   Attend
                 </button>
+                {showPaymentModal && (
+                  <PaymentMethodModal
+                    onClose={() => setShowPaymentModal(false)}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -215,6 +224,52 @@ const EventDetailsModal = ({ event, onClose }) => {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const PaymentMethodModal = ({ onClose }) => {
+  const paymentMethods = [
+    { id: "apple-pay", logo: "/images/apple-pay.png", name: "Apple Pay" },
+    { id: "amazon-pay", logo: "/images/amazon-pay.png", name: "Amazon Pay" },
+    { id: "samsung-pay", logo: "/images/samsung-pay.png", name: "Samsung Pay" },
+    { id: "google-pay", logo: "/images/google-pay.png", name: "Google Pay" },
+    { id: "mastercard", logo: "/images/mastercard.png", name: "Mastercard" },
+    { id: "paypal", logo: "/images/paypal.png", name: "PayPal" },
+    { id: "visa", logo: "/images/visa.png", name: "Visa" },
+    { id: "maestro", logo: "/images/maestro.png", name: "Maestro" },
+    { id: "cirrus", logo: "/images/cirrus.png", name: "Cirrus" },
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl w-full max-w-lg p-6">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-semibold">Select your Payment Method</h2>
+          <button onClick={onClose} className="text-[#540A26] font-medium">
+            Back
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {paymentMethods.map((method) => (
+            <div
+              key={method.id}
+              className="bg-white rounded-lg p-4 shadow-sm border hover:border-[#540A26] cursor-pointer transition-colors"
+            >
+              <img
+                src={method.logo}
+                alt={method.name}
+                className="w-full h-12 object-contain"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+          Next
+        </button>
       </div>
     </div>
   );

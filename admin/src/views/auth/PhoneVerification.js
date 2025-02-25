@@ -23,7 +23,7 @@ const PhoneVerification = () => {
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Playfair_Display'] mb-3 text-center">
+          <h1 className="text-[32px] font-['Lato'] mb-3 text-center">
             Two-Factor Authentication
           </h1>
           <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
@@ -39,12 +39,13 @@ const PhoneVerification = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full py-2.5 pl-20 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato']"
+                required
               />
             </div>
 
             <button
               onClick={handleVerify}
-              className="w-full py-2.5 rounded-[4px] text-white text-sm font-['Lato']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-['Playfair_Display']"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

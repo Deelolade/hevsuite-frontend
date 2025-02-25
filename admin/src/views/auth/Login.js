@@ -1,148 +1,99 @@
-// import React from "react";
-// import logo_white from "../../assets/logo_white.png";
-// import { MdEmail } from "react-icons/md";
-// import { RiLockPasswordLine } from "react-icons/ri";
-
-// const Login = () => {
-//   return (
-//     <div className="flex h-screen">
-//       {/* Left Section */}
-//       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
-//         <div className="text-center">
-//           {/* <div className="w-32 h-32 bg-[#540A26] rounded-full mx-auto mb-6"> */}
-//           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-//           {/* </div> */}
-//           <h1 className="text-white text-[40px] font-['Playfair_Display']">
-//             Hevsuite Club
-//           </h1>
-//         </div>
-//       </div>
-
-//       {/* Right Section */}
-//       <div className="flex-1 flex flex-col justify-center px-[52px]">
-//         <h1 className="text-[32px] font-['Playfair_Display'] mb-14 text-center">
-//           Welcome Admin!
-//         </h1>
-
-//         <div className="space-y-4 w-full max-w-[380px] mx-auto">
-//           <div className="relative">
-//             <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-//             <input
-//               type="email"
-//               placeholder="Email Address"
-//               className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato'] placeholder:text-gray-400"
-//             />
-//           </div>
-
-//           <div className="relative">
-//             <RiLockPasswordLine className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-//             <input
-//               type="password"
-//               placeholder="Password"
-//               className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato'] placeholder:text-gray-400"
-//             />
-//           </div>
-
-//           <button
-//             className="w-full py-2.5 rounded-[4px] text-white cursor-pointer font-['Lato'] text-sm"
-//             style={{
-//               background: "linear-gradient(to right, #540A26, #0A5438)",
-//             }}
-//           >
-//             Login
-//           </button>
-
-//           <div className="text-center mt-2">
-//             <a
-//               href="#"
-//               className="text-gray-500 hover:underline text-xs font-['Lato']"
-//             >
-//               Forgot Password
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Login;
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
+// import {toast} from "react-hot-toast"
+// import { useDispatch } from "react-redux";
 
 const Login = () => {
+  // const dispatch = useDispatch()
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = () => {
-    navigate("/two-factor-auth");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // console.log(formData)
+
+    // dispatch(login(formData))
+    // .then((response) => {
+    //   if (response.payload.success) {
+              navigate("/two-factor-auth");
+    // } else {
+    //    toast.error(response.payload.message || "Invalid username or password")
+    // }
+    // .catch((error) => {
+    //   toast.error("An error occurred while logging in.");
+    // });
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       {/* Left Section */}
-      <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
+      <div className="w-1/2 bg-[#1A1A1A] flex items-center justify-center p-8">
         <div className="text-center">
-          {/* <div className="w-32 h-32 bg-[#540A26] rounded-full mx-auto mb-6"> */}
-          <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          {/* </div> */}
-          <h1 className="text-white text-[40px] font-['Playfair_Display']">
+          <img 
+            src={logo_white} 
+            alt="Hevsuite Club" 
+            className="w-32 h-32 mx-auto mb-4" 
+          />
+          <h1 className="text-white text-4xl font-['Playfair_Display']">
             Hevsuite Club
           </h1>
         </div>
       </div>
 
       {/* Right Section */}
-      <div className="flex-1 flex flex-col justify-center px-[52px]">
-        <h1 className="text-[32px] font-['Playfair_Display'] mb-14 text-center">
-          Welcome Admin!
-        </h1>
+      <div className="w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <h1 className="text-[32px] font-['Playfair_Display'] text-center mb-12">
+            Welcome Admin!
+          </h1>
+          <div className="flex items-center justify-center  ">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative">
+              <MdEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-center" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-3xl text-sm focus:outline-none"
+                required
+              />
+            </div>
 
-        <div className="space-y-4 w-full max-w-[380px] mx-auto">
-          <div className="relative">
-            <MdEmail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-            <input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato'] placeholder:text-gray-400"
-            />
-          </div>
+            <div className="relative">
+              <RiLockPasswordLine className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-3xl text-sm focus:outline-none"
+                required
+              />
+            </div>
 
-          <div className="relative">
-            <RiLockPasswordLine className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato'] placeholder:text-gray-400"
-            />
-          </div>
-
-          <button
-            onClick={handleLogin}
-            className="w-full py-2.5 rounded-[4px] text-white cursor-pointer font-['Lato'] text-sm"
-            style={{
-              background: "linear-gradient(to right, #540A26, #0A5438)",
-            }}
-          >
-            Login
-          </button>
-
-          <div className="text-center mt-2">
-            <a
-              href="#"
-              className="text-gray-500 hover:underline text-xs font-['Lato']"
+            <button
+              type="submit"
+              className="w-full py-3 rounded-3xl text-white text-sm font-medium bg-gradient-to-r from-[#540A26] to-[#1F4F46] hover:opacity-90 transition-opacity"
             >
-              Forgot Password
-            </a>
+              Login
+            </button>
+
+            <div className="text-center">
+              <a
+                href="#"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Forgot Password
+              </a>
+            </div>
+          </form>
           </div>
         </div>
       </div>

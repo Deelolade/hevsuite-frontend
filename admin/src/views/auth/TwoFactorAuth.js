@@ -15,7 +15,7 @@ const TwoFactorAuth = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen ">
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
@@ -26,16 +26,16 @@ const TwoFactorAuth = () => {
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Playfair_Display'] mb-4 text-center">
+          <h1 className="text-[32px] font-['lato'] mb-4 text-center">
             Two-Factor Authentication
           </h1>
-          <p className="text-gray-600 text-sm font-['Lato'] text-center mb-8">
+          <p className="text-gray-600 text-sm font-['Lato']  mb-8">
             Protect Your Password. How would you like to receive one-time
             password(OTP)?
           </p>
 
           <div className="space-y-4">
-            <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-[4px] cursor-pointer">
+            <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
               <input
                 type="radio"
                 name="auth-method"
@@ -68,7 +68,7 @@ const TwoFactorAuth = () => {
 
             <button
               onClick={handleMethodSelection}
-              className="w-full py-2.5 rounded-[4px] text-white text-sm font-['Lato']"
+              className="w-full py-3.5 rounded-[4px] text-white text-sm font-['Playfair_Display'] border rounded-3xl "
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

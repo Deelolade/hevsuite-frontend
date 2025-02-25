@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
 import { MdEmail } from "react-icons/md";
+// import { useDispatch } from "react-redux";
 
 const EmailVerification = () => {
+  // const dispatch = useDispatch()
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
   const handleVerify = () => {
+    const data = {
+      email: email
+    }
+    // console.log(data)
+    // dispatch(emailVerify(data))
     navigate("/code-verification", { state: { type: 'email' } });
   };
 
@@ -39,12 +46,13 @@ const EmailVerification = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato']"
+                required
               />
             </div>
 
             <button
               onClick={handleVerify}
-              className="w-full py-2.5 rounded-[4px] text-white text-sm font-['Lato']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-['Playfair_Display']"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

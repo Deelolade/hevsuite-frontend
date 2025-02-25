@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
+// import {useDispatch} from "react-redux"
 
 const CodeVerification = () => {
+  // const dispatch = useDispatch()
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,6 +15,24 @@ const CodeVerification = () => {
     : "Enter the verification code we sent to your phone number";
 
   const handleVerify = () => {
+    const codeString = code?.join('')
+    const codeNumber = parseInt(codeString, 10)
+    console.log(codeNumber)
+    // console.log(formData)
+
+    // dispatch(codeVerify(formData))
+    // .then((response) => {
+    //   if (response.payload.success) {
+    // navigate("/success", {
+      
+    // })
+    // } else {
+    //    toast.error(response.payload.message || "Invalid username or password")
+    // }
+    // .catch((error) => {
+    //   toast.error("An error occurred while logging in.");
+    // });
+
     const value = location.state?.type === 'email' 
       ? 'goodluck@gmail.com'
       : '+251-9-99999999';
@@ -47,7 +67,7 @@ const CodeVerification = () => {
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Playfair_Display'] mb-3 text-center">
+          <h1 className="text-[32px] font-['Lato'] mb-3 text-center">
             Two-Factor Authentication
           </h1>
           <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
@@ -70,7 +90,7 @@ const CodeVerification = () => {
 
             <button
               onClick={handleVerify}
-              className="w-full py-2.5 rounded-[4px] text-white text-sm font-['Lato']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-['playfair_display']"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

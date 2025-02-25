@@ -1,36 +1,18 @@
 import React from "react";
 import { BsArrowLeft } from "react-icons/bs";
-import { useNavigate } from "react-router-dom";
-import Profile from "../../components/Profile";
-import { BiSearch } from "react-icons/bi";
 
-const ViewPending = () => {
-  const navigate = useNavigate();
-
+const ViewPending = ({ setShowViewPending, viewUser}) => {
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1 max-w-2xl mx-auto px-4">
-          <div className="relative">
-            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
-            />
-          </div>
-        </div>
-        <Profile />
-      </div>
+      
 
       <div className="flex items-center gap-4 mb-4">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => setShowViewPending(false)}
           className="flex items-center gap-2 text-gray-600"
         >
           <BsArrowLeft />
-          <span>ID#23455666</span>
+          <span>{viewUser?.registrationId}</span>
         </button>
       </div>
 
@@ -38,13 +20,14 @@ const ViewPending = () => {
       <div className="flex justify-between">
         <div className="flex items-center gap-4 mb-8">
           <img
-            src="https://via.placeholder.com/60"
+            src={viewUser?.avatar}
             alt="Andrew Bojangles"
-            className="w-15 h-15 rounded-full"
+            className="w-14 h-14 rounded-full"
+            onClick={()=>console.log(viewUser)}
           />
           <div>
-            <h2 className="text-xl font-semibold">Andrew Bojangles</h2>
-            <p className="text-gray-500">andrewbojangles@gmail.com</p>
+            <h2 className="text-xl font-semibold">{viewUser?.name}</h2>
+            <p className="text-gray-500">{viewUser?.email}</p>
           </div>
         </div>
 
@@ -104,6 +87,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Mrs"
+              // value={viewUser?.title}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -115,6 +99,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.forename}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -124,6 +109,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.surname}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -133,6 +119,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Female"
+              // value={viewUser?.gender}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -144,6 +131,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="23 Jan, 2025"
+              // value={viewUser?.dob}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -155,6 +143,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Married"
+              // value={viewUser?.relationship_status}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -166,6 +155,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Ethiopian"
+              // value={viewUser?.nationality}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -177,6 +167,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="British"
+              // value={viewUser?.additional_nationality}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -212,6 +203,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.address_line1}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -223,6 +215,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.town_city}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -232,6 +225,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.country}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -243,6 +237,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.postcode_zipcode}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -254,6 +249,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.primary_email}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -265,6 +261,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.secondary_email}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -276,6 +273,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.primary_phone}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -287,6 +285,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.secondary_phone}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -296,6 +295,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.state}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -331,6 +331,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Employed"
+              // value={viewUser?.employment_status}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -342,6 +343,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="No"
+              // value={viewUser?.member_of_a_club}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -353,6 +355,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="LinkedIn"
+              // value={viewUser?.preferred_social_media}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -364,6 +367,7 @@ const ViewPending = () => {
             <input
               type="text"
               value="Andrew"
+              // value={viewUser?.secondary_phone}
               disabled
               className="w-full p-2.5 border rounded-lg bg-gray-50"
             />
@@ -417,33 +421,33 @@ const ViewPending = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="https://via.placeholder.com/40"
+                src={viewUser?.avatar}
                 alt=""
                 className="w-10 h-10 rounded-full"
               />
-              <span>Andrew Bojangles</span>
+              <span>{viewUser?.name}</span>
             </div>
             <span className="text-green-500">Approved</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="https://via.placeholder.com/40"
+                src={viewUser?.avatar}
                 alt=""
                 className="w-10 h-10 rounded-full"
               />
-              <span>Andrew Bojangles</span>
+              <span>{viewUser?.name}</span>
             </div>
             <span className="text-gray-500">Pending</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="https://via.placeholder.com/40"
+                src={viewUser?.avatar}
                 alt=""
                 className="w-10 h-10 rounded-full"
               />
-              <span>Andrew Bojangles</span>
+              <span>{viewUser?.name}</span>
             </div>
             <span className="text-gray-500">Pending</span>
           </div>

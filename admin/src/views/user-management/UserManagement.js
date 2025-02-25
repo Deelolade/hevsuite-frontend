@@ -3,9 +3,10 @@ import Modal from "react-modal";
 import { BiSearch } from "react-icons/bi";
 import { BsPencil } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
-import { HiOutlineMail } from "react-icons/hi";
 import Profile from "../../components/Profile";
 import InviteUsers from "../../components/modals/users/InviteUsers";
+import avatar from "../../assets/user.avif";
+import idcards from "../../assets/Id.jpg"
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -18,6 +19,10 @@ const UserManagement = () => {
   const handleEditClick = (userId) => {
     setExpandedUser(expandedUser === userId ? null : userId);
   };
+
+  const handleCancelClick = () => {
+    setExpandedUser(null);
+  };
   const users = [
     {
       id: 1,
@@ -25,7 +30,9 @@ const UserManagement = () => {
       registrationId: "ID#23455666",
       email: "andrewbojangles@gmail.com",
       loyaltyLevel: "Member",
-      avatar: "https://via.placeholder.com/40",
+      avatar: avatar,
+      idCard: idcards,
+      photo: avatar
     },
     {
       id: 2,
@@ -33,9 +40,44 @@ const UserManagement = () => {
       registrationId: "ID#23455666",
       email: "andrewbojangles@gmail.com",
       loyaltyLevel: "Member",
-      avatar: "https://via.placeholder.com/40",
+      avatar: avatar,
+      idCard: idcards,
+      photo: avatar
+
     },
-    // Duplicate this object 7 more times with different IDs
+    {
+      id: 3,
+      name: "Andrew Bojangles",
+      registrationId: "ID#23455666",
+      email: "andrewbojangles@gmail.com",
+      loyaltyLevel: "Member",
+      avatar: avatar,
+      idCard: idcards,
+      photo: avatar
+
+    },
+    {
+      id: 4,
+      name: "Andrew Bojangles",
+      registrationId: "ID#23455666",
+      email: "andrewbojangles@gmail.com",
+      loyaltyLevel: "Member",
+      avatar: avatar,
+      idCard: idcards,
+      photo: avatar
+
+    },
+    {
+      id: 5,
+      name: "Andrew Bojangles",
+      registrationId: "ID#23455666",
+      email: "andrewbojangles@gmail.com",
+      loyaltyLevel: "Member",
+      avatar: avatar,
+      idCard: idcards,
+      photo: avatar
+    },
+
   ];
   return (
     <div className="p-6 space-y-6">
@@ -153,7 +195,7 @@ const UserManagement = () => {
                         </button>
                         <button
                           className="px-5 py-1.5 bg-[#A40A26] text-white rounded-lg text-sm font-medium"
-                          onClick={() => {}}
+                          onClick={() => handleCancelClick()}
                         >
                           Cancel
                         </button>
@@ -362,11 +404,11 @@ const UserManagement = () => {
                               <div>
                                 <div className="relative">
                                   <img
-                                    src="https://via.placeholder.com/300x150"
+                                    src={user?.idCard}
                                     alt="ID Card"
-                                    className="w-full h-[100px] object-cover rounded-lg"
+                                    className="w-full h-[100px] object-cover rounded-lg opacity-60"
                                   />
-                                  <button className="absolute top-3 right-3 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
+                                  <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
                                     Preview
                                   </button>
                                 </div>
@@ -377,11 +419,11 @@ const UserManagement = () => {
                               <div>
                                 <div className="relative">
                                   <img
-                                    src="https://via.placeholder.com/300x150"
+                                    src={user?.photo}
                                     alt="Photo"
-                                    className="w-full h-[100px] object-cover rounded-lg"
+                                    className="w-full h-[100px] object-cover rounded-lg opacity-50"
                                   />
-                                  <button className="absolute top-3 right-3 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
+                                  <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
                                     Preview
                                   </button>
                                 </div>
@@ -390,6 +432,7 @@ const UserManagement = () => {
                                 </p>
                               </div>
                             </div>
+
                           </div>
                         </div>
                       </div>
