@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Dashboard from "./views/Dashboard";
 import Landing from "./views/landing/Landing";
 import Login from "./views/auth/login/Login";
 import ForgotPassword from "./views/auth/login/ForgotPassword";
@@ -12,6 +11,16 @@ import CodeVerification from "./views/auth/2FA/CodeVerification";
 import EmailVerification from "./views/auth/2FA/EmailVerification";
 import PhoneVerification from "./views/auth/2FA/PhoneVerification";
 import Success from "./views/auth/2FA/Success";
+import Register from "./views/auth/register/Register";
+import RegisterStep2 from "./views/auth/register/RegisterStep2";
+import RegisterStep3 from "./views/auth/register/RegisterStep3";
+import RegisterStep4 from "./views/auth/register/RegisterStep4";
+import RegisterStep5 from "./views/auth/register/RegisterStep5";
+import RegisterStep6 from "./views/auth/register/RegisterStep6";
+import RegisterStep7 from "./views/auth/register/RegisterStep7";
+import RegisterStep8 from "./views/auth/register/RegisterStep8";
+import Homepage from "./views/homepage/Homepage";
+import Events from "./views/homepage/Events";
 
 const isAuthenticated = () => {
   return localStorage.getItem("user") === null;
@@ -53,6 +62,38 @@ const router = createBrowserRouter([
     path: "/success",
     element: <Success />,
   },
+  {
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/register-2",
+    element: <RegisterStep2 />,
+  },
+  {
+    path: "/register-3",
+    element: <RegisterStep3 />,
+  },
+  {
+    path: "/register-4",
+    element: <RegisterStep4 />,
+  },
+  {
+    path: "/register-5",
+    element: <RegisterStep5 />,
+  },
+  {
+    path: "/register-6",
+    element: <RegisterStep6 />,
+  },
+  {
+    path: "/register-7",
+    element: <RegisterStep7 />,
+  },
+  {
+    path: "/register-8",
+    element: <RegisterStep8 />,
+  },
 
   {
     path: "/",
@@ -63,8 +104,12 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "dashboard",
-        element: <Dashboard />, // Default route for authenticated users
+        path: "homepage",
+        element: <Homepage />,
+      },
+      {
+        path: "events",
+        element: <Events />,
       },
       // {
       //   path: "events",
