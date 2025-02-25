@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { BsBell, BsChevronDown } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
@@ -29,10 +31,17 @@ const Profile = () => {
 
         {showDropdown && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
-            <a href="#" className="block px-4 py-2 text-lg text-gray-700 hover:bg-gray-50">
+            <a
+              href="#"
+              className="block px-4 py-2 text-lg text-gray-700 hover:bg-gray-50"
+              // onClick={() => navigate("/admin/profile")}
+            >
               Your Profile
             </a>
-            <a href="#" className="block px-4 py-2 text-lg text-red-600 hover:bg-gray-50">
+            <a
+              href="#"
+              className="block px-4 py-2 text-lg text-red-600 hover:bg-gray-50"
+            >
               Logout
             </a>
           </div>

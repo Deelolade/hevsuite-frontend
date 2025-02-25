@@ -1,45 +1,79 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AdminLogin from "./views/auth/AdminLogin";
-import MainLayout from "./views/MainLayout";
+
 import Dashboard from "./views/Dashboard";
+import Landing from "./views/landing/Landing";
+import Login from "./views/auth/login/Login";
+import ForgotPassword from "./views/auth/login/ForgotPassword";
+import ResetPassword from "./views/auth/login/ResetPassword";
+import ResetSuccess from "./views/auth/login/ResetSuccess";
+import AuthLayout from "./views/AuthLayout";
+import TwoFactorAuth from "./views/auth/2FA/TwoFactorAuth";
+import CodeVerification from "./views/auth/2FA/CodeVerification";
+import EmailVerification from "./views/auth/2FA/EmailVerification";
+import PhoneVerification from "./views/auth/2FA/PhoneVerification";
+import Success from "./views/auth/2FA/Success";
+
+const isAuthenticated = () => {
+  return localStorage.getItem("user") === null;
+  // return localStorage.getItem("user") !== null;
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  if (!isAuthenticated()) {
+    window.location.href = "/login"; // Redirect to login if not authenticated
+    return null;
+  }
+  return children;
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <OpenRoutes>
-        <AdminLogin />
-      </OpenRoutes>
-    ),
+    element: <Landing />,
+  },
+  { path: "login", element: <Login /> },
+  { path: "forgot-password", element: <ForgotPassword /> },
+  { path: "reset-password", element: <ResetPassword /> },
+  { path: "reset-success", element: <ResetSuccess /> },
+  { path: "two-factor-auth", element: <TwoFactorAuth /> },
+  {
+    path: "/email-verification",
+    element: <EmailVerification />,
   },
   {
-    path: "/admin",
+    path: "/phone-verification",
+    element: <PhoneVerification />,
+  },
+  {
+    path: "/code-verification",
+    element: <CodeVerification />,
+  },
+  {
+    path: "/success",
+    element: <Success />,
+  },
+
+  {
+    path: "/",
     element: (
-      <PrivateRoutes>
-        <MainLayout />
-      </PrivateRoutes>
+      <ProtectedRoute>
+        <AuthLayout />
+      </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Dashboard /> },
-      //   { path: "profile", element: <Profile /> },
-      //   { path: "users", element: <Users /> },
-      //   { path: "managers", element: <Manager /> },
-      //   { path: "printers", element: <Printers /> },
-      //   { path: "riders", element: <Riders /> },
-      //   { path: "products", element: <Products /> },
-      //   { path: "product-types", element: <ProductTypes /> },
-      //   { path: "product-categories", element: <ProductCategories /> },
-      //   { path: "countries", element: <Country /> },
-      //   { path: "regions", element: <Region /> },
-      //   { path: "subregions", element: <SubRegion /> },
-      //   { path: "locations", element: <Location /> },
-      //   { path: "colors", element: <Colors /> },
-      //   { path: "images", element: <Images /> },
-      //   { path: "image-types", element: <ImageTypes /> },
-      //   { path: "image-categories", element: <ImageCategories /> },
-      //   { path: "map", element: <MapComponent /> },
-      //   { path: "coupons", element: <Coupon /> },
-      //   { path: "sizes", element: <Size /> },
+      {
+        path: "dashboard",
+        element: <Dashboard />, // Default route for authenticated users
+      },
+      // {
+      //   path: "events",
+      //   element: <Events />,
+      // },
+      // {
+      //   path: "users",
+      //   element: <Users />,
+      // },
     ],
   },
   // errorElement: <ErrorPage />,
