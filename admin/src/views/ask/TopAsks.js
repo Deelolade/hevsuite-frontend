@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import userAvatar from "../../assets/event-image.png";
+import userAvatar from "../../assets/user.avif";
 import { FiSettings } from "react-icons/fi";
 import Modal from "react-modal";
 import PromoteAsk from "../../components/modals/ask/PromoteAsk";
@@ -27,7 +27,66 @@ const TopAsks = () => {
       asksClaimed: 120,
       asksDelivered: 100,
     },
-    // Add more items with incrementing ranks
+    {
+      id: 2,
+      rank: "2",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
+    {
+      id: 3,
+      rank: "3",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
+    {
+      id: 4,
+      rank: "4",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
+    {
+      id: 5,
+      rank: "5",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
+    {
+      id: 6,
+      rank: "6",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
+    {
+      id: 7,
+      rank: "7",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+      asksClaimed: 120,
+      asksDelivered: 100,
+    },
   ];
 
   return (
@@ -36,11 +95,11 @@ const TopAsks = () => {
       <div className="bg-white rounded-lg">
         <table className="w-full">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b text-[#7D7D7D]">
               <th className="w-12 py-4 px-6 text-left">
                 <input type="checkbox" className="rounded" />
               </th>
-              <th className="text-left py-4 px-6">User</th>
+              <th className="text-center py-4 px-6">User</th>
               <th className="text-left py-4 px-6">Ask Claimed</th>
               <th className="text-left py-4 px-6">Ask Delivered</th>
               <th className="text-left py-4 px-6">Actions</th>
@@ -51,13 +110,13 @@ const TopAsks = () => {
               <tr key={asker.id} className="border-b">
                 <td className="py-4 px-6">{asker.rank}</td>
                 <td className="py-4 px-6">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 ">
                     <img
                       src={asker.user.avatar}
                       alt={asker.user.name}
                       className="w-8 h-8 rounded-full"
                     />
-                    <span>{asker.user.name}</span>
+                    <span className="font-primary">{asker.user.name}</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-gray-600">{asker.asksClaimed}</td>

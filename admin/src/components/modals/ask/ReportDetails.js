@@ -65,7 +65,7 @@ const ReportDetails = ({
             {/* Action Button */}
             <div className="flex justify-end pt-4">
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+                className="px-6 py-2 bg-primary text-white rounded-lg"
                 onClick={() => setIsBanModalOpen(true)}
               >
                 Ban Ask

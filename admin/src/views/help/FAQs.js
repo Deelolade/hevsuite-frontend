@@ -9,26 +9,34 @@ const FAQs = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
-  const faqs = [
+  const [faqs, setFAQs] = useState([
     { id: 1, question: "How do I join the HH Club?", visible: true },
     { id: 2, question: "How do I change my account details?", visible: true },
     { id: 3, question: "How do I change my account details?", visible: true },
     { id: 4, question: "How do I change my account details?", visible: true },
-  ];
+  ]);
+
+  const handleVisibility = (id) => {
+    setFAQs(
+      faqs.map((faq) =>
+        faq.id === id ? { ...faq, visible: !faq.visible } : faq
+      )
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Search and Create FAQ */}
       <div className="flex justify-between items-center">
-        <div className="relative flex-1">
-          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="relative flex-1 gap-8 mr-12">
+          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 " />
           <input
             type="text"
             placeholder="Search"
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
           />
         </div>
-        <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
+        <button className="px-6 py-2 bg-primary font-secondary text-white rounded-lg flex items-center gap-2">
           Create FAQ
           <span className="text-xl">+</span>
         </button>
@@ -49,6 +57,7 @@ const FAQs = () => {
                     type="checkbox"
                     checked={faq.visible}
                     className="sr-only peer"
+                    onChange={() => handleVisibility(faq.id)}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import userAvatar from "../../assets/event-image.png";
+import userAvatar from "../../assets/user.avif";
 import { FiSettings } from "react-icons/fi";
 import Modal from "react-modal";
 import { BsCalendar } from "react-icons/bs";
@@ -27,7 +27,60 @@ const Reports = () => {
         avatar: userAvatar,
       },
     },
-    // Add more items as needed
+    {
+      id: 2,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
+    {
+      id: 3,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
+    {
+      id: 4,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
+    {
+      id: 5,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
+    {
+      id: 6,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
+    {
+      id: 7,
+      title: "Request for Event Volunteers",
+      type: "Harassment",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: userAvatar,
+      },
+    },
   ];
 
   const handleEdit = (report) => {

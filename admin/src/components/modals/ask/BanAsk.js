@@ -37,7 +37,7 @@ const BanAsk = ({ setIsBanModalOpen, setOpenDetails }) => {
                 setIsBanModalOpen(false);
                 setOpenDetails(false);
               }}
-              className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+              className="px-6 py-2 bg-primary text-white rounded-lg"
             >
               Confirm
             </button>

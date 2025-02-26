@@ -6,6 +6,7 @@ import {
   BsXCircleFill,
 } from "react-icons/bs";
 import Modal from "react-modal";
+import avatar from "../../assets/user.avif";
 
 const Evidence = () => {
   const [statusFilter, setStatusFilter] = useState("Pending");
@@ -24,7 +25,7 @@ const Evidence = () => {
       id: 1,
       user: {
         name: "Andrew Bojangles",
-        avatar: "/path/to/avatar.jpg",
+        avatar: avatar,
       },
       type: "Evidence Review",
       submissionDate: "Jan 16, 2025",
@@ -34,7 +35,7 @@ const Evidence = () => {
       id: 2,
       user: {
         name: "Andrew Bojangles",
-        avatar: "/path/to/avatar.jpg",
+        avatar: avatar,
       },
       type: "Evidence Review",
       submissionDate: "Jan 16, 2025",
@@ -57,18 +58,18 @@ const Evidence = () => {
     <div>
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl">User Requests</h2>
+          <h2 className="text-xl font-primary text-[1A1A1A]">User Requests</h2>
           <div className="flex items-center gap-4">
             <div className="relative">
               <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search"
-                className="pl-10 pr-4 py-2 border rounded-lg"
+                className="pl-10 pr-4 py-2 border w-96 rounded-lg"
               />
             </div>
             <select
-              className="px-4 py-2 border rounded-lg appearance-none bg-white"
+              className="px-4 py-2 border w-44 rounded-lg font-primary text-[#343434] bg-white"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -85,9 +86,9 @@ const Evidence = () => {
         {/* Requests Table */}
         <table className="w-full">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b text-quatr font-semibold">
               <th className="text-left py-4">No</th>
-              <th className="text-left py-4">User</th>
+              <th className="text-center py-4">User</th>
               <th className="text-left py-4">Type</th>
               <th className="text-left py-4">Submission Date</th>
               <th className="text-left py-4">Status</th>
@@ -96,7 +97,7 @@ const Evidence = () => {
           </thead>
           <tbody>
             {requests.map((request) => (
-              <tr key={request.id} className="border-b">
+              <tr key={request.id} className="border-b text-quatr">
                 <td className="py-4">{request.id}</td>
                 <td className="py-4">
                   <div className="flex items-center gap-3">
@@ -105,14 +106,16 @@ const Evidence = () => {
                       alt={request.user.name}
                       className="w-8 h-8 rounded-full"
                     />
-                    <span>{request.user.name}</span>
+                    <span className="font-primary text-[#323C47]">
+                      {request.user.name}
+                    </span>
                   </div>
                 </td>
-                <td className="py-4">{request.type}</td>
+                <td className="py-4 ">{request.type}</td>
                 <td className="py-4">{request.submissionDate}</td>
                 <td className="py-4">
                   <span
-                    className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
+                    className={`px-3 py-1  rounded-full text-sm ${
                       request?.status === "Declined" ? "text-red-500" : ""
                     }`}
                   >

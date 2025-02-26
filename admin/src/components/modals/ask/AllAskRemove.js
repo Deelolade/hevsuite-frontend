@@ -32,7 +32,7 @@ const AllAskRemove = ({ setIsRemoveModalOpen }) => {
                 // Handle remove logic here
                 setIsRemoveModalOpen(false);
               }}
-              className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+              className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
             >
               Remove
             </button>

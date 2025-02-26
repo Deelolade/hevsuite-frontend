@@ -4,6 +4,7 @@ import { FiSettings } from "react-icons/fi";
 import Modal from "react-modal";
 import AllAskDetails from "../../components/modals/ask/AllAskDetails";
 import AllAskRemove from "../../components/modals/ask/AllAskRemove";
+import avatar from "../../assets/user.avif";
 
 const AllAsks = () => {
   const [currentPage, setCurrentPage] = useState(2);
@@ -31,11 +32,67 @@ const AllAsks = () => {
       title: "Request for Event Volunteers",
       user: {
         name: "Andrew Bojangles",
-        avatar: "/avatars/user1.jpg",
+        avatar: avatar,
       },
     },
-    // ... repeat similar objects for other rows
+    {
+      id: 2,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 3,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 4,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 5,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 6,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 7,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
+    {
+      id: 8,
+      title: "Request for Event Volunteers",
+      user: {
+        name: "Andrew Bojangles",
+        avatar: avatar,
+      },
+    },
   ];
+
   return (
     <div className="space-y-6">
       {/* Filter Dropdown */}
@@ -90,7 +147,7 @@ const AllAsks = () => {
                   {openSettingsId === ask.id && (
                     <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
                       <button
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        className="w-full px-4 py-2 text-left font-primary font-medium text-sm hover:bg-gray-50"
                         onClick={() => handleEdit(ask)}
                       >
                         Detail

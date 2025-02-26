@@ -9,18 +9,6 @@ const Ask = () => {
   const [currentPage, setCurrentPage] = useState(2);
   const [selectedTab, setSelectedTab] = useState("all");
 
-  const asks = [
-    {
-      id: 1,
-      title: "Request for Event Volunteers",
-      user: {
-        name: "Andrew Bojangles",
-        avatar: "/avatars/user1.jpg",
-      },
-    },
-    // ... repeat similar objects for other rows
-  ];
-
   const renderTabContent = () => {
     switch (selectedTab) {
       case "all":
@@ -54,11 +42,11 @@ const Ask = () => {
 
       {/* Tabs */}
       <div className="border-b">
-        <div className="flex gap-8">
+        <div className="flex font-primary font-semibold gap-8">
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "all"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-black"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("all")}
@@ -68,7 +56,7 @@ const Ask = () => {
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "reports"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-black"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("reports")}
@@ -78,7 +66,7 @@ const Ask = () => {
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "top"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-black"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("top")}

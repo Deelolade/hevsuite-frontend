@@ -22,12 +22,12 @@ const Help = () => {
           <Profile />
         </div>
       </div>
-      <div className="flex gap-4 mb-6 justify-between p-6">
+      <div className="flex gap-4 mb-6 font-secondary font-semibold justify-between p-6">
         <button
           className={`px-6 flex-1 rounded-lg ${
             activeTab === "topic"
               ? "px-6 py-3 bg-primary text-white rounded-lg"
-              : "border border-gray-200 text-gray-600"
+              : "border-2 border-gray-300 text-gray-600"
           }`}
           onClick={() => setActiveTab("topic")}
         >
@@ -37,7 +37,7 @@ const Help = () => {
           className={`px-6 flex-1 rounded-lg ${
             activeTab === "faq"
               ? "px-6 py-3 bg-primary text-white rounded-lg"
-              : "border border-gray-200 text-gray-600"
+              : "border-2 border-gray-300 text-gray-600"
           }`}
           onClick={() => setActiveTab("faq")}
         >

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BiPencil, BiSearch } from "react-icons/bi";
+import edit_icon from "../../assets/icons/edit3.png";
 import Modal from "react-modal";
 
 const Topics = () => {
@@ -12,27 +13,64 @@ const Topics = () => {
 
   const [isCreateQAModalOpen, setIsCreateQAModalOpen] = useState(false);
 
-  const topics = [
+  const [topics, setTopics] = useState([
     { id: 1, title: "Topic 1", visible: true },
     { id: 2, title: "Topic 1", visible: true },
     { id: 3, title: "Topic 1", visible: true },
     { id: 4, title: "Topic 1", visible: true },
-  ];
+  ]);
 
-  const questions = [
+  const [questions, setQuestions] = useState([
     { id: 1, question: "What is Hazor Hevsuite (HH) Club?", visible: true },
     { id: 2, question: "What is Hazor Hevsuite (HH) Club?", visible: true },
     { id: 3, question: "What is Hazor Hevsuite (HH) Club?", visible: true },
-  ];
+  ]);
+
+  const handleTopicVisibility = (id) => {
+    setTopics(
+      topics.map((topic) =>
+        topic.id === id ? { ...topic, visible: !topic.visible } : topic
+      )
+    );
+  };
+  const handleQuestionVisibility = (id) => {
+    setQuestions(
+      questions.map((question) =>
+        question.id === id
+          ? { ...question, visible: !question.visible }
+          : question
+      )
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Topics Grid */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="flex justify-between items-center  gap-8">
+        <div className="relative flex-1">
+          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full pl-10 pr-4 py-2 border rounded-xl"
+          />
+        </div>
+        <select className="px-4 py-2 border bg-gray-200 rounded-lg  min-w-[200px]">
+          <option>All Topics</option>
+          <option>Deleted</option>
+        </select>
+        <button className="px-6 py-2 bg-primary text-white font-secondary rounded-lg flex items-center gap-2">
+          Create Topics
+          <span className="text-xl">+</span>
+        </button>
+      </div>
+      <div className="grid grid-cols-4 gap-1">
         {topics.map((topic) => (
-          <div key={topic.id} className="border rounded-lg">
-            <div className="bg-primary p-4 rounded-t-lg flex justify-between items-center">
-              <h3 className="text-white">Topic 1</h3>
+          <div key={topic.id} className="border rounded-lg w-56">
+            <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
+              <h3 className="text-white text-center font-secondary w-64">
+                Topic 1
+              </h3>
               <button
                 className="text-white"
                 onClick={() => {
@@ -40,10 +78,10 @@ const Topics = () => {
                   setIsEditModalOpen(true);
                 }}
               >
-                <BiPencil size={20} />
+                <img src={edit_icon} alt="edit icon" />
               </button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-5 space-y-3 w-56">
               <div className="flex items-center justify-between">
                 <span>Visibility</span>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -51,14 +89,15 @@ const Topics = () => {
                     type="checkbox"
                     checked={topic.visible}
                     className="sr-only peer"
+                    onChange={() => handleTopicVisibility(topic.id)}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
-              <button className="w-full py-2 bg-gray-200 rounded-lg">
+              <button className="w-44 py-2 bg-gray-200 rounded-lg ">
                 Archive
               </button>
-              <button className="w-full py-2 bg-primary text-white rounded-lg">
+              <button className="w-44 py-2 bg-primary text-white rounded-lg">
                 Delete
               </button>
             </div>
@@ -96,6 +135,7 @@ const Topics = () => {
                       type="checkbox"
                       checked={qa.visible}
                       className="sr-only peer"
+                      onChange={() => handleQuestionVisibility(qa.id)}
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>

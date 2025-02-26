@@ -15,7 +15,7 @@ const InviteUsers = ({ setIsInviteModalOpen, setInviteEmail, inviteEmail }) => {
             placeholder="Enter Email Address"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            className="w-72 pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#540A26] text-sm"
+            className="w-72 pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-primary text-sm"
           />
         </div>
         <button
@@ -24,7 +24,7 @@ const InviteUsers = ({ setIsInviteModalOpen, setInviteEmail, inviteEmail }) => {
             setIsInviteModalOpen(false);
             setInviteEmail("");
           }}
-          className="w-72 bg-primary font-secondary text-white py-3 rounded-2xl mt-6 text-sm font-medium hover:bg-[#540A26]/90 transition-colors"
+          className="w-72 bg-primary font-secondary text-white py-3 rounded-2xl mt-6 text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           Invite
         </button>
