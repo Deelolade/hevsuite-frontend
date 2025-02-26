@@ -1,56 +1,51 @@
 import React, { useState } from "react";
 
 import {
-    BsThreeDotsVertical,
-    BsXCircleFill,
-    BsCheckCircleFill,
-  } from "react-icons/bs";
+  BsThreeDotsVertical,
+  BsXCircleFill,
+  BsCheckCircleFill,
+} from "react-icons/bs";
 
-  
-
-const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
-
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
+const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedUsers(pendingUsers.map((user) => user.id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
 
+  const handleSelectUser = (userId) => {
+    if (selectedUsers.includes(userId)) {
+      setSelectedUsers(selectedUsers.filter((id) => id !== userId));
+    } else {
+      setSelectedUsers([...selectedUsers, userId]);
+    }
+  };
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-          setSelectedUsers(pendingUsers.map((user) => user.id));
-        } else {
-          setSelectedUsers([]);
-        }
-      };
-    
-      const handleSelectUser = (userId) => {
-        if (selectedUsers.includes(userId)) {
-          setSelectedUsers(selectedUsers.filter((id) => id !== userId));
-        } else {
-          setSelectedUsers([...selectedUsers, userId]);
-        }
-      };
+  const handleRowClick = (user) => {
+    // console.log(user)
+    setViewUser(user);
+    setShowViewPending(true);
+  };
 
-      const handleRowClick = (user) => {
-        // console.log(user)
-        setViewUser(user)
-        setShowViewPending(true)
-      };
-
-    return(
-        <>
-        <div className="flex justify-end gap-4 mb-6">
+  return (
+    <>
+      <div className="flex justify-end gap-8 mb-6">
         {/* Filter Button */}
         <div className="relative">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-[140px]"
+            className="px-6 py-2.5 border rounded-lg text-gray-600  bg-white flex items-center gap-2 min-w-[200px]"
             onClick={() => {
               setShowFilterDropdown(!showFilterDropdown);
               setShowSortDropdown(false);
             }}
           >
-            <span className="text-gray-800">Filter</span>
+            <span className="text-gray-500 font-montserrat">Filter</span>
             <svg
               className="w-5 h-5 ml-auto text-gray-400"
               fill="none"
@@ -68,10 +63,10 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
           {showFilterDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <div className="py-2">
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50">
+                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
                   Fee completed
                 </button>
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50">
+                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
                   Complete supporter status
                 </button>
               </div>
@@ -82,13 +77,13 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
         {/* Sort By Button */}
         <div className="relative">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-[140px]"
+            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-[200px]"
             onClick={() => {
               setShowSortDropdown(!showSortDropdown);
               setShowFilterDropdown(false);
             }}
           >
-            <span className="text-gray-800">Sort by</span>
+            <span className="text-gray-500 font-montserrat">Sort by</span>
             <svg
               className="w-5 h-5 ml-auto text-gray-400"
               fill="none"
@@ -106,10 +101,10 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
           {showSortDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <div className="py-2">
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50">
+                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
                   Date
                 </button>
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50">
+                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
                   Alphabet
                 </button>
               </div>
@@ -164,24 +159,26 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
                     className="rounded border-gray-300"
                   />
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 w-60">
                   <div className="flex items-center gap-3">
                     <img
                       src={user.avatar}
                       alt=""
                       className="w-10 h-10 rounded-full"
                     />
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium text-sm">{user.name}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-gray-500">
+                <td className="px-6 py-4 text-gray-500 text-sm">
                   {user.registrationId}
                 </td>
-                <td className="px-6 py-4 text-gray-500">{user.email}</td>
-                <td className="px-6 py-4 text-gray-500">
+                <td className="px-6 py-4 text-gray-500 text-sm">
+                  {user.email}
+                </td>
+                <td className="px-6 py-4 text-gray-500 text-center text-sm">
                   {user.supportersStatus}
                 </td>
-                <td className="px-6 py-4 text-gray-500">
+                <td className="px-6 py-4 text-gray-500 text-sm">
                   {user.joinFeeStatus}
                 </td>
                 <td className="px-6 py-4">
@@ -252,8 +249,8 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
           </div>
         </div>
       </div>
-        </>
-    )
-}
+    </>
+  );
+};
 
-export default DefaultPending
+export default DefaultPending;

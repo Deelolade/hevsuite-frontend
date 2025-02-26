@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
 import { MdEmail } from "react-icons/md";
+import authImage from "../../assets/image.jpg";
+
 // import { useDispatch } from "react-redux";
 
 const EmailVerification = () => {
@@ -20,7 +22,14 @@ const EmailVerification = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
+      <div
+        className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
+        style={{
+          backgroundImage: `url(${authImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
           <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>

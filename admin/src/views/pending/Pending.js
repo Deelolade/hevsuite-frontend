@@ -5,9 +5,10 @@ import Profile from "../../components/Profile";
 import ViewPending from "./ViewPending";
 import DefaultPending from "./DefaultPending";
 import user from "../../assets/user.avif";
+import avatar from "../../assets/user.avif";
+import idcards from "../../assets/Id.jpg";
 
-
-const Pending = () => { 
+const Pending = () => {
   const [showViewPending, setShowViewPending] = useState(false);
   const [viewUser, setViewUser] = useState(null);
 
@@ -20,6 +21,8 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 2,
@@ -28,7 +31,9 @@ const Pending = () => {
       email: "andrewbojangles@gmail.com",
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
-      avatar: user, 
+      avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 3,
@@ -38,6 +43,8 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 4,
@@ -47,6 +54,8 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 5,
@@ -56,6 +65,8 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 6,
@@ -65,6 +76,8 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
     {
       id: 7,
@@ -74,10 +87,10 @@ const Pending = () => {
       supportersStatus: "2/3",
       joinFeeStatus: "Pending",
       avatar: user,
+      idCard: idcards,
+      photo: avatar,
     },
   ];
-
-  
 
   return (
     <div className="space-y-6 p-6">
@@ -95,11 +108,17 @@ const Pending = () => {
         <Profile />
       </div>
       {showViewPending ? (
-        <ViewPending setShowViewPending={setShowViewPending} viewUser={viewUser}/>
+        <ViewPending
+          setShowViewPending={setShowViewPending}
+          viewUser={viewUser}
+        />
       ) : (
-        <DefaultPending pendingUsers={pendingUsers} setShowViewPending={setShowViewPending} setViewUser={setViewUser}/>
+        <DefaultPending
+          pendingUsers={pendingUsers}
+          setShowViewPending={setShowViewPending}
+          setViewUser={setViewUser}
+        />
       )}
-
     </div>
   );
 };

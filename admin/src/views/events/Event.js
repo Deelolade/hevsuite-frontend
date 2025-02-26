@@ -5,6 +5,7 @@ import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 import Modal from "react-modal";
 import { BsCalendar } from "react-icons/bs";
+import { MdAccessTime } from "react-icons/md";
 
 const Event = () => {
   const [currentPage, setCurrentPage] = useState(2);
@@ -70,24 +71,48 @@ const Event = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      {/* <div className="flex justify-between items-center">
         <div className="relative flex-1 max-w-xl">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
             placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300"
           />
         </div>
         <div className="flex items-center gap-4">
+          <div className="relative">
+            
+            <button className="p-2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.02 2.90991C8.70997 2.90991 6.01997 5.59991 6.01997 8.90991V11.7999C6.01997 12.4099 5.75997 13.3399 5.44997 13.8599L4.29997 15.7699C3.58997 16.9499 4.07997 18.2599 5.37997 18.6999C9.68997 20.1399 14.34 20.1399 18.65 18.6999C19.86 18.2999 20.39 16.8699 19.73 15.7699L18.58 13.8599C18.28 13.3399 18.02 12.4099 18.02 11.7999V8.90991C18.02 5.60991 15.32 2.90991 12.02 2.90991Z" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round"/>
+                <path d="M13.87 3.19994C13.56 3.10994 13.24 3.03994 12.91 2.99994C11.95 2.87994 11.03 2.94994 10.17 3.19994C10.46 2.45994 11.18 1.93994 12.02 1.93994C12.86 1.93994 13.58 2.45994 13.87 3.19994Z" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M15.02 19.0601C15.02 20.7101 13.67 22.0601 12.02 22.0601C11.2 22.0601 10.44 21.7201 9.90002 21.1801C9.36002 20.6401 9.02002 19.8801 9.02002 19.0601" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10"/>
+              </svg>
+            </button>
+          </div>
           <Profile />
         </div>
+      </div> */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1 max-w-2xl mx-auto px-4">
+          <div className="relative">
+            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+            />
+          </div>
+        </div>
+        <Profile />
       </div>
+
       <div className="flex justify-between items-center">
         <button
-          className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2"
+          className="px-6 py-2.5 bg-[#540A26] text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
           onClick={() => setIsAddEventOpen(true)}
         >
           Create Event
@@ -95,7 +120,7 @@ const Event = () => {
         </button>
         <div className="flex gap-4">
           <div className="relative">
-            <button className="px-6 py-2 border rounded-lg text-gray-600 min-w-[200px] text-left flex items-center justify-between">
+            <button className="px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] text-left flex items-center justify-between hover:border-gray-300 transition-colors">
               Filter
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                 <path
@@ -107,7 +132,7 @@ const Event = () => {
             </button>
           </div>
           <div className="relative">
-            <button className="px-6 py-2 border rounded-lg text-gray-600 min-w-[200px] text-left flex items-center justify-between">
+            <button className="px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] text-left flex items-center justify-between hover:border-gray-300 transition-colors">
               Sort by
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                 <path
@@ -125,11 +150,11 @@ const Event = () => {
       <div className="grid grid-cols-4 gap-6">
         {events.map((event) => (
           <div key={event.id} className="relative group">
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100">
+            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100 transition-colors">
                 <FiEdit size={18} />
               </button>
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100">
+              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100 transition-colors">
                 <FiTrash2 size={18} />
               </button>
             </div>
@@ -140,10 +165,16 @@ const Event = () => {
                 className="w-full h-48 object-cover opacity-50"
               />
               <div className="p-4 text-white">
-                <h3 className="text-lg font-semibold">{event.title}</h3>
-                <div className="flex items-center gap-2 text-sm mt-2">
-                  <span>📅 {event.date}</span>
-                  <span>⏰ {event.time}</span>
+                <h3 className="text-lg font-bold">{event.title}</h3>
+                <div className="flex items-center gap-4 text-sm mt-2 text-gray-200">
+                  <div className="flex items-center gap-1.5">
+                    <BsCalendar className="text-lg" />
+                    <span className="text-sm">{event.date}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MdAccessTime className="text-lg" />
+                    <span className="text-sm">{event.time}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -153,14 +184,16 @@ const Event = () => {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-2 text-[#323C47]">
           Show result:
-          <select className="ml-2 px-2 py-1 border rounded">
+          <select className="px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300">
             <option>6</option>
+            <option>12</option>
+            <option>24</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-1 text-gray-400">
+          <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -178,16 +211,16 @@ const Event = () => {
           {[1, 2, 3, 4, "...", 20].map((page, index) => (
             <button
               key={index}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
                 currentPage === page
-                  ? "bg-green-800 text-white"
-                  : "text-gray-600"
+                  ? "bg-[#540A26] text-white"
+                  : "text-[#323C47] hover:bg-gray-100"
               }`}
             >
               {page}
             </button>
           ))}
-          <button className="p-1 text-gray-400">
+          <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
             <svg
               className="w-5 h-5"
               fill="none"
