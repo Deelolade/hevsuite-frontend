@@ -8,7 +8,7 @@ const PhoneVerification = () => {
   const navigate = useNavigate();
 
   const handleVerify = () => {
-    navigate("/code-verification", { state: { type: 'phone' } });
+    navigate("/code-verification", { state: { type: "phone" } });
   };
 
   return (
@@ -16,24 +16,25 @@ const PhoneVerification = () => {
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-['Playfair_Display']">
-            Hevsuite Club
-          </h1>
+          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Lato'] mb-3 text-center">
+          <h1 className="text-[32px] font-primary mb-3 text-center">
             Two-Factor Authentication
           </h1>
           <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
-            We'll text a verification code to this phone number whenever you sign-in to your account
+            We'll text a verification code to this phone number whenever you
+            sign-in to your account
           </p>
 
           <div className="space-y-4">
             <div className="relative flex items-center">
               <BsTelephone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-              <span className="absolute left-10 text-sm font-['Lato'] text-gray-600">+251</span>
+              <span className="absolute left-10 text-sm font-['Lato'] text-gray-600">
+                +251
+              </span>
               <input
                 type="tel"
                 value={phone}
@@ -45,7 +46,7 @@ const PhoneVerification = () => {
 
             <button
               onClick={handleVerify}
-              className="w-full py-3.5 rounded-3xl text-white text-sm font-['Playfair_Display']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-secondary"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

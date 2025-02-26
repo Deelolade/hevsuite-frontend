@@ -19,17 +19,15 @@ const TwoFactorAuth = () => {
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-['Playfair_Display']">
-            Hevsuite Club
-          </h1>
+          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['lato'] mb-4 text-center">
+          <h1 className="text-[32px] font-primary font-bold mb-4 text-center">
             Two-Factor Authentication
           </h1>
-          <p className="text-gray-600 text-sm font-['Lato']  mb-8">
+          <p className="text-gray-600 text-sm font-primary  mb-8">
             Protect Your Password. How would you like to receive one-time
             password(OTP)?
           </p>
@@ -43,8 +41,8 @@ const TwoFactorAuth = () => {
                 onChange={() => setInput("phone")}
               />
               <div>
-                <p className="text-sm font-['Lato']">Phone Number</p>
-                <p className="text-xs text-gray-500 font-['Lato']">
+                <p className="text-sm font-primary">Phone Number</p>
+                <p className="text-xs text-gray-500 font-primary">
                   Use phone number to receive verification codes
                 </p>
               </div>
@@ -59,8 +57,8 @@ const TwoFactorAuth = () => {
                 onChange={() => setInput("email")}
               />
               <div>
-                <p className="text-sm font-['Lato']">Email</p>
-                <p className="text-xs text-gray-500 font-['Lato']">
+                <p className="text-sm font-primary">Email</p>
+                <p className="text-xs text-gray-500 font-primary">
                   Receive verification code via email
                 </p>
               </div>
@@ -68,7 +66,7 @@ const TwoFactorAuth = () => {
 
             <button
               onClick={handleMethodSelection}
-              className="w-full py-3.5 rounded-[4px] text-white text-sm font-['Playfair_Display'] border rounded-3xl "
+              className="w-full py-3.5  text-white text-sm font-secondary border rounded-3xl "
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

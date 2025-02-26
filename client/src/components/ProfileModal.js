@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import { BsCalendar } from "react-icons/bs";
-import { FiEdit2 } from "react-icons/fi";
 import AccountProfile from "../views/account/profile/AccountProfile";
 import YourEvents from "../views/account/events/YourEvents";
-// import Referrals from "../views/account/referral/Referrals";
 import SupportRequest from "../views/account/support/SupportRequest";
 import YourAsks from "../views/account/asks/YourAsks";
 import Activities from "../views/account/activity/Activities";

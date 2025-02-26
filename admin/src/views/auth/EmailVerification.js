@@ -11,11 +11,11 @@ const EmailVerification = () => {
 
   const handleVerify = () => {
     const data = {
-      email: email
-    }
+      email: email,
+    };
     // console.log(data)
     // dispatch(emailVerify(data))
-    navigate("/code-verification", { state: { type: 'email' } });
+    navigate("/code-verification", { state: { type: "email" } });
   };
 
   return (
@@ -23,18 +23,17 @@ const EmailVerification = () => {
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-['Playfair_Display']">
-            Hevsuite Club
-          </h1>
+          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Playfair_Display'] mb-3 text-center">
+          <h1 className="text-[32px] font-primary mb-3 text-center">
             Two-Factor Authentication
           </h1>
           <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
-            We'll text a verification code to this email whenever you sign-in to your account
+            We'll text a verification code to this email whenever you sign-in to
+            your account
           </p>
 
           <div className="space-y-4">
@@ -52,7 +51,7 @@ const EmailVerification = () => {
 
             <button
               onClick={handleVerify}
-              className="w-full py-3.5 rounded-3xl text-white text-sm font-['Playfair_Display']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-secondary"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}

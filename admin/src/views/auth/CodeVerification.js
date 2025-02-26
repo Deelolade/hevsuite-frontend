@@ -8,23 +8,24 @@ const CodeVerification = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const navigate = useNavigate();
   const location = useLocation();
-  const verificationType = location.state?.type || 'email';
+  const verificationType = location.state?.type || "email";
 
-  const verificationMessage = verificationType === 'email' 
-    ? "Enter the verification code we sent to your email"
-    : "Enter the verification code we sent to your phone number";
+  const verificationMessage =
+    verificationType === "email"
+      ? "Enter the verification code we sent to your email"
+      : "Enter the verification code we sent to your phone number";
 
   const handleVerify = () => {
-    const codeString = code?.join('')
-    const codeNumber = parseInt(codeString, 10)
-    console.log(codeNumber)
+    const codeString = code?.join("");
+    const codeNumber = parseInt(codeString, 10);
+    console.log(codeNumber);
     // console.log(formData)
 
     // dispatch(codeVerify(formData))
     // .then((response) => {
     //   if (response.payload.success) {
     // navigate("/success", {
-      
+
     // })
     // } else {
     //    toast.error(response.payload.message || "Invalid username or password")
@@ -33,15 +34,16 @@ const CodeVerification = () => {
     //   toast.error("An error occurred while logging in.");
     // });
 
-    const value = location.state?.type === 'email' 
-      ? 'goodluck@gmail.com'
-      : '+251-9-99999999';
-      
-    navigate("/success", { 
-      state: { 
+    const value =
+      location.state?.type === "email"
+        ? "goodluck@gmail.com"
+        : "+251-9-99999999";
+
+    navigate("/success", {
+      state: {
         type: verificationType,
-        value: value
-      } 
+        value: value,
+      },
     });
   };
   const handleChange = (element, index) => {
@@ -60,17 +62,15 @@ const CodeVerification = () => {
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center">
         <div className="text-center">
           <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-['Playfair_Display']">
-            Hevsuite Club
-          </h1>
+          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-['Lato'] mb-3 text-center">
+          <h1 className="text-[32px] font-primary mb-3 text-center">
             Two-Factor Authentication
           </h1>
-          <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
+          <p className="text-gray-500 text-sm font-primary text-center mb-8">
             {verificationMessage}
           </p>
 
@@ -90,7 +90,7 @@ const CodeVerification = () => {
 
             <button
               onClick={handleVerify}
-              className="w-full py-3.5 rounded-3xl text-white text-sm font-['playfair_display']"
+              className="w-full py-3.5 rounded-3xl text-white text-sm font-secondary"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}
