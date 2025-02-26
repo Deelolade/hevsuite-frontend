@@ -26,7 +26,7 @@ const Help = () => {
         <button
           className={`px-6 flex-1 rounded-lg ${
             activeTab === "topic"
-              ? "px-6 py-3 bg-[#540A26] text-white rounded-lg"
+              ? "px-6 py-3 bg-primary text-white rounded-lg"
               : "border border-gray-200 text-gray-600"
           }`}
           onClick={() => setActiveTab("topic")}
@@ -36,7 +36,7 @@ const Help = () => {
         <button
           className={`px-6 flex-1 rounded-lg ${
             activeTab === "faq"
-              ? "px-6 py-3 bg-[#540A26] text-white rounded-lg"
+              ? "px-6 py-3 bg-primary text-white rounded-lg"
               : "border border-gray-200 text-gray-600"
           }`}
           onClick={() => setActiveTab("faq")}

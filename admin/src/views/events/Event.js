@@ -112,7 +112,7 @@ const Event = () => {
 
       <div className="flex justify-between items-center">
         <button
-          className="px-6 py-2.5 bg-[#540A26] text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
+          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
           onClick={() => setIsAddEventOpen(true)}
         >
           Create Event
@@ -151,14 +151,14 @@ const Event = () => {
         {events.map((event) => (
           <div key={event.id} className="relative group">
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100 transition-colors">
+              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100 transition-colors">
                 <FiEdit size={18} />
               </button>
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100 transition-colors">
+              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100 transition-colors">
                 <FiTrash2 size={18} />
               </button>
             </div>
-            <div className="bg-[#540A26] rounded-lg overflow-hidden">
+            <div className="bg-primary rounded-lg overflow-hidden">
               <img
                 src={event.image}
                 alt={event.title}
@@ -213,7 +213,7 @@ const Event = () => {
               key={index}
               className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
                 currentPage === page
-                  ? "bg-[#540A26] text-white"
+                  ? "bg-primary text-white"
                   : "text-[#323C47] hover:bg-gray-100"
               }`}
             >
@@ -343,7 +343,7 @@ const Event = () => {
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
                   />
                 </div>
-                <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg">
+                <button className="px-6 py-2 bg-primary text-white rounded-lg">
                   Invite Users
                 </button>
               </div>
@@ -380,7 +380,7 @@ const Event = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg">
                 Create Event
               </button>
             </div>

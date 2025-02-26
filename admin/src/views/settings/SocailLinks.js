@@ -48,7 +48,7 @@ const SocialLinks = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl">Social Links</h2>
         <button
-          className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+          className="px-6 py-2 bg-primary text-white rounded-lg"
           onClick={() => setIsAddModalOpen(true)}
         >
           + Add Socials
@@ -85,7 +85,7 @@ const SocialLinks = () => {
                     );
                   }}
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
               <button
                 className="p-1 hover:bg-gray-100 rounded"
@@ -155,7 +155,7 @@ const SocialLinks = () => {
                   <div className="text-8xl font-bold">X</div>
                 )}
               </div>
-              <button className="text-[#540A26]">Click to Add icon</button>
+              <button className="text-primary">Click to Add icon</button>
             </div>
 
             <div>
@@ -192,7 +192,7 @@ const SocialLinks = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Add your logic to save the new social link
                   setIsAddModalOpen(false);
@@ -236,7 +236,7 @@ const SocialLinks = () => {
                   <div className="text-8xl font-bold">X</div>
                 )}
               </div>
-              <button className="text-[#540A26]">Click to Add icon</button>
+              <button className="text-primary">Click to Add icon</button>
             </div>
 
             <div>
@@ -272,7 +272,7 @@ const SocialLinks = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Save
               </button>
             </div>

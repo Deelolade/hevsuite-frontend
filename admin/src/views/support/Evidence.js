@@ -76,7 +76,7 @@ const Evidence = () => {
               <option>Approved</option>
               <option>Declined</option>
             </select>
-            <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
+            <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
               + Export ↑
             </button>
           </div>
@@ -198,7 +198,7 @@ const Evidence = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Handle admin assignment here
                   setIsAssignModalOpen(false);

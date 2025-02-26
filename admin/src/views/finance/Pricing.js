@@ -36,7 +36,7 @@ const Pricing = () => {
                 <td className="py-4 px-6">
                   <button
                     onClick={() => handleEdit(feature)}
-                    className="px-4 py-1 bg-[#540A26] text-white rounded-lg text-sm"
+                    className="px-4 py-1 bg-primary text-white rounded-lg text-sm"
                   >
                     Edit
                   </button>
@@ -48,7 +48,7 @@ const Pricing = () => {
                       className="sr-only peer"
                       defaultChecked={feature.isEnabled}
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </td>
               </tr>
@@ -108,7 +108,7 @@ const Pricing = () => {
                     className="sr-only peer"
                     defaultChecked={selectedFeature?.isEnabled}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </label>
             </div>
@@ -120,7 +120,7 @@ const Pricing = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Update
               </button>
             </div>

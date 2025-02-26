@@ -12,6 +12,13 @@ import idcards from "../../assets/Id.jpg";
 Modal.setAppElement("#root");
 
 const UserManagement = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showRequestVerificationModal, setShowRequestVerificationModal] =
+    useState(false);
+
   const [expandedUser, setExpandedUser] = useState(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -186,20 +193,20 @@ const UserManagement = () => {
                   <td className="px-6 py-4">
                     {expandedUser === user.id ? (
                       <>
-                        <button className="px-5 py-1.5 bg-[#540A26] text-white rounded-lg text-sm font-medium mr-2">
-                          Save
-                        </button>
                         <button
-                          className="px-5 py-1.5 bg-[#A40A26] text-white rounded-lg text-sm font-medium"
+                          className="px-5 py-1.5 bg-[#A40A26] text-white rounded-lg text-sm font-medium mr-2"
                           onClick={() => handleCancelClick()}
                         >
                           Cancel
+                        </button>
+                        <button className="px-5 py-1.5 bg-gradient-to-r from-primary to-[#0A5440] text-white rounded-lg text-sm font-medium ">
+                          Save
                         </button>
                       </>
                     ) : (
                       <button
                         onClick={() => handleEditClick(user.id)}
-                        className="text-[#540A26] hover:text-[#540A26]/80"
+                        className="text-primary hover:text-primary/80"
                       >
                         <BsPencil size={18} />
                       </button>
@@ -216,7 +223,7 @@ const UserManagement = () => {
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"
-                              className="w-5 h-5 rounded border-gray-300 text-[#540A26]"
+                              className="w-5 h-5 rounded border-gray-300 text-primary"
                             />
                             <span className="text-sm text-gray-500">
                               Restrict User
@@ -225,16 +232,17 @@ const UserManagement = () => {
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"
-                              className="w-5 h-5 rounded border-gray-300 text-[#540A26]"
+                              className="w-5 h-5 rounded border-gray-300 text-primary"
                             />
                             <span className="text-sm text-gray-500">
                               Ban User
                             </span>
                           </label>
-                          <label className="flex items-center gap-3 cursor-pointer">
+
+                          {/* <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"
-                              className="w-5 h-5 rounded border-gray-300 text-[#540A26]"
+                              className="w-5 h-5 rounded border-gray-300 text-primary"
                             />
                             <span className="text-sm text-gray-500">
                               Reset Password
@@ -243,12 +251,165 @@ const UserManagement = () => {
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"
-                              className="w-5 h-5 rounded border-gray-300 text-[#540A26]"
+                              className="w-5 h-5 rounded border-gray-300 text-primary"
                             />
                             <span className="text-sm text-gray-500">
                               Request New Verification
                             </span>
-                          </label>
+                          </label> */}
+
+                          <button
+                            onClick={() => setShowResetPasswordModal(true)}
+                            className="flex items-center gap-3 py-2 px-4 rounded-lg bg-white hover:bg-gray-100 text-sm text-gray-500 border border-gray-200"
+                          >
+                            <svg
+                              className="w-5 h-5 text-primary"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                              />
+                            </svg>
+                            Reset Password
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              setShowRequestVerificationModal(true)
+                            }
+                            className="flex items-center gap-3 py-2 px-4 rounded-lg bg-white hover:bg-gray-100 text-sm text-gray-500 border border-gray-200"
+                          >
+                            <svg
+                              className="w-5 h-5 text-primary"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                              />
+                            </svg>
+                            Request New Verification
+                          </button>
+
+                          <Modal
+                            isOpen={showResetPasswordModal}
+                            onRequestClose={() =>
+                              setShowResetPasswordModal(false)
+                            }
+                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+                            overlayClassName="fixed inset-0 bg-black/50"
+                          >
+                            <div className="p-6">
+                              <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-2">
+                                  <h2 className="text-xl font-semibold">
+                                    Request Reset Password
+                                  </h2>
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    setShowResetPasswordModal(false)
+                                  }
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              <div className="space-y-6">
+                                <p className="text-gray-600">
+                                  Are you sure you want to request reset
+                                  password?
+                                </p>
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                  <button
+                                    onClick={() =>
+                                      setShowResetPasswordModal(false)
+                                    }
+                                    className="px-6 py-2 bg-primary text-white border rounded-lg text-sm"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setShowResetPasswordModal(false);
+                                    }}
+                                    className="px-6 py-2 bg-green-800 text-white rounded-lg text-sm"
+                                  >
+                                    Approve
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </Modal>
+
+                          <Modal
+                            isOpen={showRequestVerificationModal}
+                            onRequestClose={() =>
+                              setShowRequestVerificationModal(false)
+                            }
+                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+                            overlayClassName="fixed inset-0 bg-black/50"
+                          >
+                            <div className="p-6">
+                              <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-2">
+                                  <h2 className="text-xl font-semibold">
+                                    Request new verification
+                                  </h2>
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    setShowRequestVerificationModal(false)
+                                  }
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              <div className="space-y-6">
+                                <p className="text-gray-600">
+                                  Are you sure you want to request vew
+                                  verification?
+                                </p>
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                  <button
+                                    onClick={() =>
+                                      setShowResetPasswordModal(false)
+                                    }
+                                    className="px-6 py-2 bg-primary text-white border rounded-lg text-sm"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      // Handle remove
+                                      setShowResetPasswordModal(false);
+                                    }}
+                                    className="px-6 py-2 bg-green-800 text-white rounded-lg text-sm"
+                                  >
+                                    Approve
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </Modal>
                         </div>
 
                         {/* Three Column Layout */}
@@ -283,7 +444,7 @@ const UserManagement = () => {
                                       The Bout Lions
                                     </td>
                                     <td className="py-3">
-                                      <button className="text-[#540A26] text-sm hover:text-[#540A26]/80">
+                                      <button className="text-primary text-sm hover:text-primary/80">
                                         View more
                                       </button>
                                     </td>
@@ -404,7 +565,13 @@ const UserManagement = () => {
                                     alt="ID Card"
                                     className="w-full h-[100px] object-cover rounded-lg opacity-60"
                                   />
-                                  <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
+                                  <button
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60"
+                                    onClick={() => {
+                                      setShowModal(true);
+                                      setSelectedImage(user?.idCard);
+                                    }}
+                                  >
                                     Preview
                                   </button>
                                 </div>
@@ -419,7 +586,13 @@ const UserManagement = () => {
                                     alt="Photo"
                                     className="w-full h-[100px] object-cover rounded-lg opacity-50"
                                   />
-                                  <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60">
+                                  <button
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60"
+                                    onClick={() => {
+                                      setShowModal(true);
+                                      setSelectedImage(user?.photo);
+                                    }}
+                                  >
                                     Preview
                                   </button>
                                 </div>
@@ -429,6 +602,19 @@ const UserManagement = () => {
                               </div>
                             </div>
                           </div>
+                          {showModal && (
+                            <div
+                              className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center"
+                              onClick={() => setShowModal(false)}
+                            >
+                              <img
+                                src={selectedImage}
+                                alt="Preview"
+                                className="max-w-[80%] max-h-[80%] object-contain"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>

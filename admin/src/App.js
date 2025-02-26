@@ -21,63 +21,44 @@ import Finance from "./views/finance/Finance";
 import Admins from "./views/admins/Admins";
 import Settings from "./views/settings/Settings";
 import AdminProfile from "./views/profile/AdminProfile";
+import ForgotPassword from "./views/auth/ForgotPassword/ForgotPassword";
+import ResetSuccess from "./views/auth/ForgotPassword/ResetSuccess";
+import ResetPassword from "./views/auth/ForgotPassword/ResetPassword";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      //   <OpenRoutes>
-      <Login />
-      //   </OpenRoutes>
-    ),
+    element: <Login />,
   },
   {
     path: "/two-factor-auth",
-    element: (
-      //   <OpenRoutes>
-      <TwoFactorAuth />
-      //   </OpenRoutes>
-    ),
+    element: <TwoFactorAuth />,
   },
   {
     path: "/email-verification",
-    element: (
-      //   <OpenRoutes>
-      <EmailVerification />
-      //   </OpenRoutes>
-    ),
+    element: <EmailVerification />,
   },
   {
     path: "/phone-verification",
-    element: (
-      //   <OpenRoutes>
-      <PhoneVerification />
-      //   </OpenRoutes>
-    ),
+    element: <PhoneVerification />,
   },
   {
     path: "/code-verification",
-    element: (
-      //   <OpenRoutes>
-      <CodeVerification />
-      //   </OpenRoutes>
-    ),
+    element: <CodeVerification />,
   },
   {
     path: "/success",
-    element: (
-      //   <OpenRoutes>
-      <Success />
-      //   </OpenRoutes>
-    ),
+    element: <Success />,
   },
   {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  { path: "reset-password", element: <ResetPassword /> },
+  { path: "reset-success", element: <ResetSuccess /> },
+  {
     path: "/admin",
-    element: (
-      //   <PrivateRoutes>
-      <MainLayout />
-      //   </PrivateRoutes>
-    ),
+    element: <MainLayout />,
     children: [
       { index: true, element: <Dashboard /> },
       { path: "dashboard", element: <Dashboard /> },

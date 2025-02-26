@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { FiSettings } from "react-icons/fi";
-import party from "../../assets/party.jpg"
-import party2 from "../../assets/party2.jpg"
-import party3 from "../../assets/party3.jpg"
+import { FiEye, FiSettings } from "react-icons/fi";
+import party from "../../assets/party.jpg";
+import party2 from "../../assets/party2.jpg";
+import party3 from "../../assets/party3.jpg";
 
-import EditCms from "../../components/modals/cms/landing/EditCms"
-import RemoveCms from "../../components/modals/cms/landing/RemoveCms"
+import EditCms from "../../components/modals/cms/landing/EditCms";
+import RemoveCms from "../../components/modals/cms/landing/RemoveCms";
 
 const Landing = () => {
   const [activeFilter, setActiveFilter] = useState("overlays");
@@ -16,7 +16,28 @@ const Landing = () => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const items = [
+  // const items = [
+  //   {
+  //     id: 1,
+  //     preview: party,
+  //     lastModified: "July 22, 2024 - 10:45pm",
+  //     isVisible: true,
+  //   },
+  //   {
+  //     id: 2,
+  //     preview: party2,
+  //     lastModified: "July 22, 2024 - 10:45pm",
+  //     isVisible: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     preview: party3,
+  //     lastModified: "July 22, 2024 - 10:45pm",
+  //     isVisible: true,
+  //   },
+  // ];
+
+  const [items, setItems] = useState([
     {
       id: 1,
       preview: party,
@@ -35,7 +56,15 @@ const Landing = () => {
       lastModified: "July 22, 2024 - 10:45pm",
       isVisible: true,
     },
-  ];
+  ]);
+
+  const handleVisibility = (id) => {
+    setItems(
+      items.map((item) =>
+        item.id === id ? { ...item, isVisible: !item.isVisible } : item
+      )
+    );
+  };
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -49,6 +78,11 @@ const Landing = () => {
     setIsRemoveModalOpen(true);
     setOpenSettingsId(null); // Close the dropdown when remove is clicked
   };
+
+  const handlePreview = (item) => {
+    console.log(item);
+  };
+
   return (
     <div>
       {/* Filters and Add Button */}
@@ -57,7 +91,7 @@ const Landing = () => {
           <select
             value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg text-gray-600 min-w-[200px]"
+            className="px-4 py-2 border mb-6 rounded-lg text-gray-600 min-w-[200px]"
           >
             <option value="overlays">Image Overlays</option>
             <option value="other">Other options</option>
@@ -65,7 +99,7 @@ const Landing = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg text-gray-600 min-w-[200px]"
+            className="px-4 py-2 mb-6 border rounded-lg text-gray-600 min-w-[200px]"
           >
             <option value="active">Active</option>
             <option value="deleted">Deleted</option>
@@ -81,6 +115,7 @@ const Landing = () => {
         <table className="w-full">
           <thead>
             <tr className="border-b">
+              <th className="text-left py-4 px-6 text-sm font-medium"></th>
               <th className="text-left py-4 px-6 text-sm font-medium">Item</th>
               <th className="text-left py-4 px-6 text-sm font-medium">
                 Preview
@@ -110,17 +145,34 @@ const Landing = () => {
                   </div>
                 </td>
                 <td className="py-4 px-6 text-sm text-gray-600">
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    onClick={() => handlePreview(item)}
+                  >
+                    <FiEye size={20} />
+                  </button>
+                </td>
+                <td className="py-4 px-6 text-sm text-gray-600">
                   {item.lastModified}
                 </td>
                 <td className="py-4 px-6">
+                  {/* <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={menuVisibility}
+                      onChange={(e) => setMenuVisibility(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label> */}
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={item.isVisible}
                       className="sr-only peer"
-                      onChange={() => {}}
+                      onChange={() => handleVisibility(item.id)}
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </td>
                 <td className="py-4 px-6 relative">
@@ -139,7 +191,7 @@ const Landing = () => {
                   {openSettingsId === item.id && (
                     <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
                       <button
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        className="w-full px-4 py-2 text-left text-sm text-[#1A1A1A] hover:bg-gray-50"
                         onClick={() => handleEdit(item)}
                       >
                         Edit
@@ -166,7 +218,10 @@ const Landing = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <EditCms setIsEditModalOpen={setIsEditModalOpen} selectedItem={selectedItem}/>
+        <EditCms
+          setIsEditModalOpen={setIsEditModalOpen}
+          selectedItem={selectedItem}
+        />
       </Modal>
 
       {/* Remove Modal */}
@@ -176,8 +231,10 @@ const Landing = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <RemoveCms setIsRemoveModalOpen={setIsRemoveModalOpen} selectedItem={selectedItem}/>
-        
+        <RemoveCms
+          setIsRemoveModalOpen={setIsRemoveModalOpen}
+          selectedItem={selectedItem}
+        />
       </Modal>
     </div>
   );

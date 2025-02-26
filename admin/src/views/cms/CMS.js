@@ -49,7 +49,7 @@ const CMS = () => {
           className={`pb-4 px-2 ${
             activeTab === "landing"
               ? "border-b-4 border-primary text-black "
-              : "text-gray-500"
+              : "text-[#737374]"
           }`}
           onClick={() => setActiveTab("landing")}
         >
@@ -59,7 +59,7 @@ const CMS = () => {
           className={`pb-4 px-2 ${
             activeTab === "menus"
               ? "border-b-4 border-primary text-black"
-              : "text-gray-500"
+              : "text-[#737374]"
           }`}
           onClick={() => setActiveTab("menus")}
         >
@@ -69,7 +69,7 @@ const CMS = () => {
           className={`pb-4 px-2 ${
             activeTab === "footer"
               ? "border-b-4 border-primary text-black "
-              : "text-gray-500"
+              : "text-[#737374]"
           }`}
           onClick={() => setActiveTab("footer")}
         >
@@ -78,8 +78,8 @@ const CMS = () => {
         <button
           className={`pb-4 px-2 ${
             activeTab === "logos"
-              ? "border-b-4 border-[#540A26] "
-              : "text-gray-500"
+              ? "border-b-4 border-primary "
+              : "text-[#737374]"
           }`}
           onClick={() => setActiveTab("logos")}
         >

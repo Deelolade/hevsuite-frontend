@@ -57,12 +57,12 @@ const AdminUsers = () => {
             />
           </div>
           <button
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+            className="px-6 py-2 bg-primary text-white rounded-lg"
             onClick={() => setIsAddModalOpen(true)}
           >
             Add Admin User
           </button>
-          <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
+          <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
             Export ↑
           </button>
         </div>
@@ -71,7 +71,7 @@ const AdminUsers = () => {
       {/* Admin Grid */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="border rounded-lg p-6 flex items-center justify-center">
-          <button className="text-[#540A26]">+ Add admin</button>
+          <button className="text-primary">+ Add admin</button>
         </div>
         <div className="border rounded-lg p-4">
           <div className="flex justify-between mb-4">
@@ -142,13 +142,13 @@ const AdminUsers = () => {
               <td className="py-4">
                 <div className="flex items-center gap-2">
                   <button
-                    className="text-[#540A26]"
+                    className="text-primary"
                     onClick={() => handleEditClick(admin)}
                   >
                     <BsPencil size={18} />
                   </button>
                   <button
-                    className="text-[#540A26]"
+                    className="text-primary"
                     onClick={() => handleDeleteClick(admin)}
                   >
                     <BsTrash size={18} />
@@ -270,7 +270,7 @@ const AdminUsers = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Add Admin
               </button>
             </div>
@@ -354,7 +354,7 @@ const AdminUsers = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Update Changes
               </button>
             </div>
@@ -394,7 +394,7 @@ const AdminUsers = () => {
             >
               Cancel
             </button>
-            <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+            <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
               Delete
             </button>
           </div>

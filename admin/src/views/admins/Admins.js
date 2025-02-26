@@ -44,7 +44,7 @@ const Admins = () => {
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "users"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("users")}
@@ -54,7 +54,7 @@ const Admins = () => {
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "permissions"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("permissions")}
@@ -64,7 +64,7 @@ const Admins = () => {
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "activities"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("activities")}

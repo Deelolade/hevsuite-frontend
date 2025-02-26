@@ -55,12 +55,9 @@ const Success = () => {
 
           <button
             onClick={() => navigate("/admin/dashboard")}
-            className="w-64 py-3.5 rounded-3xl text-white text-sm font-secondary"
-            style={{
-              background: "linear-gradient(to right, #540A26, #0A5438)",
-            }}
+            className="w-64 py-3.5 rounded-3xl bg-gradient-to-r from-primary to-[#0A5440] text-white text-sm font-secondary"
           >
-            Back to Login
+            Go To dashboard
           </button>
         </div>
       </div>

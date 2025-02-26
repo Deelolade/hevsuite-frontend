@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { BsArrowLeft } from "react-icons/bs";
 
 const ViewPending = ({ setShowViewPending, viewUser }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center gap-4 mb-4">
@@ -43,7 +45,13 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
                 alt="ID Card"
                 className="w-full h-[100px] object-cover rounded-lg brightness-50 contrast-50"
               />
-              <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60">
+              <button
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60"
+                onClick={() => {
+                  setShowModal(true);
+                  setSelectedImage(viewUser?.idCard);
+                }}
+              >
                 Preview
               </button>
               <p className="mt-2 text-sm text-gray-500  font-primary">
@@ -56,7 +64,13 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
                 alt="Photo"
                 className="w-full h-[100px] object-cover rounded-lg brightness-50 contrast-50"
               />
-              <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60">
+              <button
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60"
+                onClick={() => {
+                  setShowModal(true);
+                  setSelectedImage(viewUser?.photo);
+                }}
+              >
                 Preview
               </button>
               <p className="mt-2 text-sm text-gray-500  font-primary">Photo</p>
@@ -64,6 +78,19 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
           </div>
         </div>
       </div>
+      {showModal && (
+        <div
+          className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center"
+          onClick={() => setShowModal(false)}
+        >
+          <img
+            src={selectedImage}
+            alt="Preview"
+            className="max-w-[80%] max-h-[80%] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* Personal Information */}
       <div className="bg-white rounded-lg p-6 mb-6 font-primary">

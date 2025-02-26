@@ -87,7 +87,7 @@ const News = () => {
       </div>
       <div className="flex justify-between items-center">
         <button
-          className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2"
+          className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
           onClick={() => setIsAddNewsOpen(true)}
         >
           Create News
@@ -126,14 +126,14 @@ const News = () => {
         {events.map((event) => (
           <div key={event.id} className="relative group">
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100">
+              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100">
                 <FiEdit size={18} />
               </button>
-              <button className="p-2 bg-white rounded-lg text-[#540A26] hover:bg-gray-100">
+              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100">
                 <FiTrash2 size={18} />
               </button>
             </div>
-            <div className="bg-[#540A26] rounded-lg overflow-hidden">
+            <div className="bg-primary rounded-lg overflow-hidden">
               <img
                 src={event.image}
                 alt={event.title}
@@ -310,7 +310,7 @@ const News = () => {
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
                   />
                 </div>
-                <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg">
+                <button className="px-6 py-2 bg-primary text-white rounded-lg">
                   Invite Users
                 </button>
               </div>
@@ -347,7 +347,7 @@ const News = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg">
                 Create Event
               </button>
             </div>

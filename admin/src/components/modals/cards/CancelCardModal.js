@@ -5,12 +5,6 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
   const [reason, setReason] = useState("");
 
   return (
-    // <Modal
-    //   isOpen={isOpen}
-    //   onRequestClose={onClose}
-    //   className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-    //   overlayClassName="fixed inset-0 bg-black/50"
-    // >
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Cancel Card</h2>
@@ -32,7 +26,7 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What the reason?"
-            className="w-full px-3 py-2.5 border rounded-lg text-sm"
+            className="w-full px-3 py-2.5 border font-secondary italic rounded-lg text-sm"
           />
         </div>
 
@@ -48,7 +42,7 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
               onConfirm(reason);
               setReason("");
             }}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
+            className="px-6 py-2 bg-secondary text-white rounded-lg text-sm"
           >
             Confirm
           </button>

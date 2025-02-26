@@ -28,7 +28,7 @@ const FAQs = () => {
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
           />
         </div>
-        <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
+        <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
           Create FAQ
           <span className="text-xl">+</span>
         </button>
@@ -50,10 +50,10 @@ const FAQs = () => {
                     checked={faq.visible}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
                 <button
-                  className="text-[#540A26]"
+                  className="text-primary"
                   onClick={() => {
                     setSelectedFAQ(faq);
                     setIsEditModalOpen(true);
@@ -61,7 +61,7 @@ const FAQs = () => {
                 >
                   <FiEdit size={20} />
                 </button>
-                <button className="text-[#540A26]">
+                <button className="text-primary">
                   <FiTrash2 size={20} />
                 </button>
                 <button
@@ -203,7 +203,7 @@ const FAQs = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Handle FAQ update here
                   setIsEditModalOpen(false);

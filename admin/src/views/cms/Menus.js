@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-import { BsArrowRight } from "react-icons/bs";
+import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import Modal from "react-modal";
 import EditMenu from "./EditMenu";
 import AddPage from "./AddPage";
@@ -22,19 +22,27 @@ const Menus = () => {
     { id: 3, name: "Menu 3" },
     { id: 4, name: "Menu 4" },
   ];
-  const menuItems = [
+  const [menuItems, setMenuItems] = useState([
     { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 2, title: "Terms and Condition", visibility: false, owner: "System" },
     { id: 3, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 4, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 5, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 6, title: "Terms and Condition", visibility: false, owner: "System" },
-  ];
+  ]);
+
+  const handleVisibility = (id) => {
+    setMenuItems(
+      menuItems.map((item) =>
+        item.id === id ? { ...item, visibility: !item.visibility } : item
+      )
+    );
+  };
   return (
     <div className="space-y-6">
       {/* Controls */}
       {showAddPage ? (
-        <AddPage />
+        <AddPage onBack={() => setShowAddPage(false)} />
       ) : (
         <>
           <div className="flex justify-end items-center gap-2">
@@ -50,11 +58,12 @@ const Menus = () => {
                 Edit Menu
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+                className="px-6 py-2 bg-primary text-white rounded-lg"
                 onClick={() => setIsAddMenuOpen(true)}
               >
                 Add Menu
               </button>
+
               <Modal
                 isOpen={isAddMenuOpen}
                 onRequestClose={() => setIsAddMenuOpen(false)}
@@ -112,7 +121,7 @@ const Menus = () => {
                             }
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                          <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                       </div>
                       <div>
@@ -149,7 +158,7 @@ const Menus = () => {
                           // Handle save changes
                           setIsAddMenuOpen(false);
                         }}
-                        className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+                        className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
                       >
                         Save Changes
                       </button>
@@ -182,15 +191,18 @@ const Menus = () => {
               {menus.map((menu) => (
                 <button
                   key={menu.id}
-                  className={`px-6 py-2 rounded-lg flex items-center gap-2 ${
+                  className={`px-6 py-2 rounded-lg flex w-40 h-16 justify-between items-center gap-2 ${
                     selectedMenu === menu.id
-                      ? "bg-[#540A26] text-white"
+                      ? "bg-primary text-white"
                       : "border text-gray-600"
                   }`}
                   onClick={() => setSelectedMenu(menu.id)}
                 >
                   {menu.name}
-                  <BsArrowRight />
+                  <div className="flex flex-col gap-1 ">
+                    <BsArrowLeft size={20} />
+                    <BsArrowRight size={20} />
+                  </div>
                 </button>
               ))}
             </div>
@@ -214,7 +226,7 @@ const Menus = () => {
 
           <div className="flex justify-end">
             <button
-              className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+              className="px-6 py-2 bg-primary text-white rounded-lg"
               onClick={() => setShowAddPage(true)}
             >
               Add New Page
@@ -251,9 +263,9 @@ const Menus = () => {
                           type="checkbox"
                           checked={item.visibility}
                           className="sr-only peer"
-                          onChange={() => {}}
+                          onChange={() => handleVisibility(item.id)}
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                        <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                       </label>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-600">
@@ -261,11 +273,11 @@ const Menus = () => {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex gap-4">
-                        <button className="text-[#540A26]">
+                        <button className="text-primary">
                           <FiEdit size={18} />
                         </button>
                         <button
-                          className="text-[#540A26]"
+                          className="text-primary"
                           onClick={() => setIsRemoveModalOpen(true)}
                         >
                           <FiTrash2 size={18} />
@@ -337,7 +349,11 @@ const Menus = () => {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
             overlayClassName="fixed inset-0 bg-black/50"
           >
-            <EditMenu setIsEditMenuOpen={setIsEditMenuOpen} />
+            <EditMenu
+              setIsEditMenuOpen={setIsEditMenuOpen}
+              setMenuVisibility={setMenuVisibility}
+              menuVisibility={menuVisibility}
+            />
           </Modal>
 
           <Modal
@@ -379,7 +395,7 @@ const Menus = () => {
                       // Handle remove
                       setIsRemoveModalOpen(false);
                     }}
-                    className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+                    className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
                   >
                     Remove
                   </button>

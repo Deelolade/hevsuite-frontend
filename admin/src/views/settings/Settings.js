@@ -44,7 +44,7 @@ const Settings = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "general"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("general")}
@@ -54,7 +54,7 @@ const Settings = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "social"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("social")}

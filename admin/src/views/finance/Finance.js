@@ -46,7 +46,7 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "processors"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("processors")}
@@ -56,7 +56,7 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "history"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("history")}
@@ -66,7 +66,7 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "pricing"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("pricing")}

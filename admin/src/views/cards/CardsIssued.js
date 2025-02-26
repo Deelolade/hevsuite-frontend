@@ -90,25 +90,23 @@ const CardsIssued = () => {
     <div className="p-6 space-y-6">
       {/* Stats and Controls */}
       <div className="flex ">
-
-      <div className="flex items-center gap-4 justify-between w-full">
+        <div className="flex items-center gap-4 justify-between w-full">
           <div className="flex items-center gap-4">
-            
-          <h2 className="text-3xl font-semibold">10,000</h2>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-            <option>All</option>
-            <option>Members</option>
-            <option>VIP Members</option>
-          </select>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-            <option>All</option>
-            <option>Active</option>
-            <option>Not Activated</option>
-            <option>Cancelled</option>
-          </select>
-        </div>
+            <h2 className="text-3xl font-semibold">10,000</h2>
+            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+              <option>All</option>
+              <option>Members</option>
+              <option>VIP Members</option>
+            </select>
+            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+              <option>All</option>
+              <option>Active</option>
+              <option>Not Activated</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
           <button className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-           + Export 1
+            + Export 1
           </button>
         </div>
       </div>
@@ -136,9 +134,12 @@ const CardsIssued = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-3 gap-6 mt-6 auto-rows-auto items-start">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white rounded-xl p-4 shadow-sm">
+          <div
+            key={card.id}
+            className="bg-white rounded-xl p-4 shadow-sm self-start"
+          >
             <div className="flex items-start gap-4">
               {/* QR Code on left */}
               <div className="bg-gray-100 p-2 rounded-lg shrink-0">
@@ -199,46 +200,46 @@ const CardsIssued = () => {
                   {expandedAddresses.includes(card.id) && (
                     <div className="space-y-2 pt-2">
                       <div>
-                        <label className="text-sm text-gray-600 block mb-1">
+                        <label className="text-sm text-gray-600 font-primary block mb-1">
                           Address Line1<span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={card.address.line1}
-                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                          className="w-full px-3 py-1.5 text-sm text-gray font-primary border  rounded-lg"
                           readOnly
                         />
                       </div>
                       <div>
-                        <label className="text-sm text-gray-600 block mb-1">
+                        <label className="text-sm  text-gray-600 font-primary block mb-1">
                           Town/City<span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={card.address.town}
-                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                           readOnly
                         />
                       </div>
                       <div>
-                        <label className="text-sm text-gray-600 block mb-1">
+                        <label className="text-sm text-gray-600 font-primary block mb-1">
                           Country<span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={card.address.country}
-                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                           readOnly
                         />
                       </div>
                       <div>
-                        <label className="text-sm text-gray-600 block mb-1">
+                        <label className="text-sm text-gray-600 font-primary block mb-1">
                           Postcode/Zipcode
                         </label>
                         <input
                           type="text"
                           value={card.address.postcode}
-                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                           readOnly
                         />
                       </div>
@@ -249,7 +250,7 @@ const CardsIssued = () => {
                     <span
                       className={`text-xs px-5 py-0.5 rounded-lg ${
                         card.status === "Cancelled"
-                          ? "bg-red-500 text-white"
+                          ? "bg-tertiary text-white"
                           : card.status === "Active"
                           ? "bg-green-500 text-white"
                           : card.status === "Not Activated"

@@ -55,13 +55,13 @@ const Permissions = () => {
             />
           </div>
           <button
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+            className="px-6 py-2 bg-primary text-white rounded-lg"
             onClick={() => setIsCreateRoleOpen(true)}
           >
             Create New Role
           </button>
           <button
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+            className="px-6 py-2 bg-primary text-white rounded-lg"
             onClick={() => setIsDeleteRoleOpen(true)}
           >
             Delete Role
@@ -98,7 +98,7 @@ const Permissions = () => {
                         onChange={() => togglePermission(role, permission.id)}
                         className="hidden peer"
                       />
-                      <div className="w-5 h-5 border border-gray-300 rounded flex items-center justify-center peer-checked:bg-[#540A26] peer-checked:border-[#540A26]">
+                      <div className="w-5 h-5 border border-gray-300 rounded flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary">
                         {permissionsMap[role]?.includes(permission.id) && (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +223,7 @@ const Permissions = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Create Role
               </button>
             </div>
@@ -334,7 +334,7 @@ const Permissions = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90">
+              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                 Remove Role
               </button>
             </div>

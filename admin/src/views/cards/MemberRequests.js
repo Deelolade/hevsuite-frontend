@@ -51,7 +51,30 @@ const MemberRequests = () => {
         postcode: "Andrew",
       },
     },
-    // Add 8 more similar objects for the grid
+    {
+      id: 3,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Pending",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Cancelled",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
   ];
   return (
     <div className="p-6 space-y-6">
@@ -59,19 +82,18 @@ const MemberRequests = () => {
       <div className="flex ">
         <div className="flex items-center gap-4 justify-between w-full">
           <div className="flex items-center gap-4">
-            
-          <h2 className="text-3xl font-semibold">10,000</h2>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
-            <option>All</option>
-            <option>Members</option>
-            <option>VIP Members</option>
-          </select>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
-            <option>All</option>
-            <option>Pending</option>
-            <option>Cancelled</option>
-          </select>
-          <button className="text-gray-600">Select All</button>
+            <h2 className="text-3xl font-semibold">10,000</h2>
+            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
+              <option>All</option>
+              <option>Members</option>
+              <option>VIP Members</option>
+            </select>
+            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
+              <option>All</option>
+              <option>Pending</option>
+              <option>Cancelled</option>
+            </select>
+            <button className="text-gray-600">Select All</button>
           </div>
           <button className="px-4 py-2 bg-primary text-white rounded-lg  items-center gap-2 ">
             + Export 1
@@ -108,7 +130,7 @@ const MemberRequests = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-3 gap-6 mt-6 items-start">
         {cards.map((card) => (
           <div key={card.id} className="bg-white rounded-xl p-4 shadow-sm">
             <div className="flex items-start gap-4">
@@ -249,7 +271,7 @@ const MemberRequests = () => {
           </div>
         ))}
       </div>
-      
+
       <Modal
         isOpen={isPostModalOpen}
         onRequestClose={() => setIsPostModalOpen(false)}

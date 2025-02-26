@@ -3,7 +3,7 @@ import { BsCamera } from "react-icons/bs";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 import Modal from "react-modal";
-import avatar from "../../assets/user.avif"
+import avatar from "../../assets/user.avif";
 
 const AdminProfile = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -19,7 +19,7 @@ const AdminProfile = () => {
     role: "Super Admin",
     password: "••••••••••••••••••••••••",
     twoFactorPreference: "Email",
-    avatar: avatar
+    avatar: avatar,
   });
 
   const supportStats = [
@@ -88,7 +88,7 @@ const AdminProfile = () => {
           </div>
         </div>
         <button
-          className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+          className="px-6 py-2 bg-primary text-white rounded-lg"
           onClick={handleEditSave}
         >
           {isEditMode ? "Save" : "Edit"}
@@ -211,7 +211,7 @@ const AdminProfile = () => {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             <div className="flex items-center gap-2 text-gray-600">
-              <span className="w-8 h-8 rounded-full bg-[#540A26] bg-opacity-10 flex items-center justify-center">
+              <span className="w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
                 🎧
               </span>
               <span>Support Request</span>
@@ -240,7 +240,7 @@ const AdminProfile = () => {
                 {supportStats.map((stat, index) => (
                   <div key={index} className="bg-white p-4 rounded-lg border">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="w-8 h-8 rounded-full bg-[#540A26] bg-opacity-10 flex items-center justify-center">
+                      <span className="w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center">
                         👤
                       </span>
                       <span className="text-gray-600 text-sm">
@@ -257,7 +257,7 @@ const AdminProfile = () => {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="mb-2">My email Address</h3>
           <div className="flex items-start gap-4">
-            <div className="w-8 h-8 rounded-full bg-[#540A26] bg-opacity-10 flex items-center justify-center mt-1">
+            <div className="w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center mt-1">
               ✉️
             </div>
             <div>
@@ -331,7 +331,7 @@ const AdminProfile = () => {
               </button>
               <button
                 onClick={handleConfirmSave}
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
               >
                 Update
               </button>

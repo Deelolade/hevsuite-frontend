@@ -58,7 +58,7 @@ const Ask = () => {
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "all"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("all")}
@@ -68,7 +68,7 @@ const Ask = () => {
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "reports"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("reports")}
@@ -78,7 +78,7 @@ const Ask = () => {
           <button
             className={`py-2 px-1 -mb-px ${
               selectedTab === "top"
-                ? "border-b-2 border-[#540A26] text-[#540A26]"
+                ? "border-b-2 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setSelectedTab("top")}

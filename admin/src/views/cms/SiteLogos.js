@@ -19,7 +19,7 @@ const SiteLogos = () => {
           </div>
         </div>
         <button
-          className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm"
           onClick={() => setIsWebsiteLogoModalOpen(true)}
         >
           Upload New
@@ -34,7 +34,7 @@ const SiteLogos = () => {
             <img src={logo} alt="admin logo" />
           </div>
         </div>
-        <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
+        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
           Upload New
         </button>
       </div>
@@ -47,7 +47,7 @@ const SiteLogos = () => {
             <img src={logo} alt="fav logo" />
           </div>
         </div>
-        <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
+        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
           Upload New
         </button>
       </div>
@@ -60,7 +60,7 @@ const SiteLogos = () => {
             <img src={logo} alt="footer logo" />
           </div>
         </div>
-        <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
+        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
           Upload New
         </button>
       </div>
@@ -90,7 +90,7 @@ const SiteLogos = () => {
 
             {/* Upload Button */}
             <div className="flex flex-col items-center gap-2">
-              <button className="text-[#540A26] flex items-center gap-2">
+              <button className="text-primary flex items-center gap-2">
                 <AiOutlineCloudUpload size={20} />
                 <span>Click to replace image</span>
               </button>
@@ -109,7 +109,7 @@ const SiteLogos = () => {
                   // Handle save
                   setIsWebsiteLogoModalOpen(false);
                 }}
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+                className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
               >
                 Save
               </button>

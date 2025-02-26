@@ -45,7 +45,7 @@ const TwoFactorAuth = () => {
               <input
                 type="radio"
                 name="auth-method"
-                className="text-[#540A26]"
+                className="text-primary"
                 onChange={() => setInput("phone")}
               />
               <div>
@@ -60,7 +60,7 @@ const TwoFactorAuth = () => {
               <input
                 type="radio"
                 name="auth-method"
-                className="text-[#540A26]"
+                className="text-primary"
                 defaultChecked
                 onChange={() => setInput("email")}
               />

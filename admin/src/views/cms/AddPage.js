@@ -19,26 +19,28 @@ const AddPage = ({ onBack }) => {
 
       {/* Page Title */}
       <div className="bg-white rounded-lg p-4">
-        <div>
-          <label className="block text-sm mb-2">Page Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+        <div className="flex justify-between">
+          <div>
+            <label className="block text-sm mb-2">Page Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
+              className="w-96 px-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+          <button className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm ">
+            Add Slide
+          </button>
         </div>
-        <button className="mt-4 px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
-          Add Slide
-        </button>
       </div>
 
       {/* Hero Section */}
       <div className="bg-white rounded-lg p-4 space-y-4">
         <h3 className="font-medium">Hero Section</h3>
         <div className="bg-gray-50 rounded-lg p-8 flex flex-col items-center justify-center min-h-[200px]">
-          <button className="text-[#540A26] flex flex-col items-center gap-2">
+          <button className="text-primary flex flex-col items-center gap-2">
             <AiOutlineCloudUpload size={24} />
             <span className="text-sm">Click to Add image/Video</span>
           </button>
@@ -52,7 +54,7 @@ const AddPage = ({ onBack }) => {
               value={buttonText}
               onChange={(e) => setButtonText(e.target.value)}
               placeholder="Add text"
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-48 px-3 py-2 border rounded-lg text-sm text-center bg-gray-100"
             />
           </div>
           <div>
@@ -62,12 +64,12 @@ const AddPage = ({ onBack }) => {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="link"
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-72 px-3 py-2 border rounded-lg text-sm bg-gray-100"
             />
           </div>
         </div>
         <div className="flex justify-end">
-          <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
+          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
             Remove Slide
           </button>
         </div>
@@ -109,7 +111,7 @@ const AddPage = ({ onBack }) => {
           <button className="text-gray-400 text-3xl">+</button>
         </div>
         <div className="flex justify-end mt-4">
-          <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm">
+          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
             Save
           </button>
         </div>
@@ -117,11 +119,13 @@ const AddPage = ({ onBack }) => {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3">
-        <button className="px-6 py-2 border rounded-lg text-sm">Preview</button>
-        <button className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm">
+        <button className="px-6 py-2 w-28  border rounded-lg text-sm font-semibold">
+          Preview
+        </button>
+        <button className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm">
           Remove
         </button>
-        <button className="px-6 py-2 bg-green-800 text-white rounded-lg text-sm">
+        <button className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm">
           Confirm
         </button>
       </div>

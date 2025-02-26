@@ -90,7 +90,7 @@ const Sidebar = () => {
                   to={item.path}
                   className={`flex items-center gap-3 px-4 pl-12 py-2.5 rounded-lg font-montserrat transition-colors ${
                     isActive
-                      ? "bg-gradient-to-r from-[#540A26] to-[#1F4F46] text-white"
+                      ? "bg-gradient-to-r from-primary to-[#1F4F46] text-white"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >

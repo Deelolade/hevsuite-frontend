@@ -31,7 +31,7 @@ const Topics = () => {
       <div className="grid grid-cols-4 gap-6">
         {topics.map((topic) => (
           <div key={topic.id} className="border rounded-lg">
-            <div className="bg-[#540A26] p-4 rounded-t-lg flex justify-between items-center">
+            <div className="bg-primary p-4 rounded-t-lg flex justify-between items-center">
               <h3 className="text-white">Topic 1</h3>
               <button
                 className="text-white"
@@ -52,13 +52,13 @@ const Topics = () => {
                     checked={topic.visible}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
               <button className="w-full py-2 bg-gray-200 rounded-lg">
                 Archive
               </button>
-              <button className="w-full py-2 bg-[#540A26] text-white rounded-lg">
+              <button className="w-full py-2 bg-primary text-white rounded-lg">
                 Delete
               </button>
             </div>
@@ -73,7 +73,7 @@ const Topics = () => {
             Topic 1 Questions: About Hazor Hevsuite (HH) Club
           </h3>
           <button
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2"
+            className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
             onClick={() => setIsCreateQAModalOpen(true)}
           >
             Create QA
@@ -97,10 +97,10 @@ const Topics = () => {
                       checked={qa.visible}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                   <button
-                    className="text-[#540A26]"
+                    className="text-primary"
                     onClick={() => {
                       setSelectedQA(qa);
                       setIsEditQAModalOpen(true);
@@ -108,7 +108,7 @@ const Topics = () => {
                   >
                     <FiEdit size={20} />
                   </button>
-                  <button className="text-[#540A26]">
+                  <button className="text-primary">
                     <FiTrash2 size={20} />
                   </button>
                   <button
@@ -201,7 +201,7 @@ const Topics = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Handle topic update here
                   setIsEditModalOpen(false);
@@ -282,7 +282,7 @@ const Topics = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Handle QA update here
                   setIsEditQAModalOpen(false);
@@ -350,7 +350,7 @@ const Topics = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#540A26]/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => {
                   // Handle create QA here
                   setIsCreateQAModalOpen(false);

@@ -66,7 +66,7 @@ const TopAsks = () => {
                 </td>
                 <td className="py-4 px-6">
                   <button
-                    className="px-4 py-2 bg-[#540A26] text-white rounded-lg"
+                    className="px-4 py-2 bg-primary text-white rounded-lg"
                     onClick={() => handlePromote(asker)}
                   >
                     Promote

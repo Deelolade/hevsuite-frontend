@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const EditMenu = ({ setIsEditMenuOpen }) => {
+const EditMenu = ({ setIsEditMenuOpen, setMenuVisibility, menuVisibility }) => {
   const [selectedPages, setSelectedPages] = useState(["Page 1"]);
   return (
     <div className="p-6">
@@ -42,11 +42,11 @@ const EditMenu = ({ setIsEditMenuOpen }) => {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={true}
+                checked={menuVisibility}
                 className="sr-only peer"
-                onChange={() => {}}
+                onChange={(e) => setMenuVisibility(e.target.checked)}
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+              <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
           <div>
@@ -86,7 +86,7 @@ const EditMenu = ({ setIsEditMenuOpen }) => {
           >
             Cancel
           </button>
-          <button className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm">
+          <button className="px-6 py-2 bg-primary text-white rounded-lg text-sm">
             Delete Menu
           </button>
           <button
@@ -94,7 +94,7 @@ const EditMenu = ({ setIsEditMenuOpen }) => {
               // Handle save changes
               setIsEditMenuOpen(false);
             }}
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+            className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
           >
             Save Changes
           </button>

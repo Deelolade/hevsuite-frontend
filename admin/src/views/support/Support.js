@@ -47,7 +47,7 @@ const Support = () => {
         <button
           className={`px-6 py-3 rounded-lg flex-1 ${
             activeTab === "evidence"
-              ? "bg-[#540A26] text-white"
+              ? "bg-primary text-white"
               : "bg-white border text-gray-700"
           }`}
           onClick={() => setActiveTab("evidence")}
@@ -57,7 +57,7 @@ const Support = () => {
         <button
           className={`px-6 py-3 rounded-lg flex-1 ${
             activeTab === "other"
-              ? "bg-[#540A26] text-white"
+              ? "bg-primary text-white"
               : "bg-white border text-gray-700"
           }`}
           onClick={() => setActiveTab("other")}
@@ -67,7 +67,7 @@ const Support = () => {
         <button
           className={`px-6 py-3 rounded-lg flex-1 ${
             activeTab === "assigned"
-              ? "bg-[#540A26] text-white"
+              ? "bg-primary text-white"
               : "bg-white border text-gray-700"
           }`}
           onClick={() => setActiveTab("assigned")}

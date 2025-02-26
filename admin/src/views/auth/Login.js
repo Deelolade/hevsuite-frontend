@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo_white from "../../assets/logo_white.png";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
@@ -91,18 +91,18 @@ const Login = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-3xl text-white text-[20px] font-secondary text-sm font-medium bg-gradient-to-r from-[#540A26] to-[#1F4F46] hover:opacity-90 transition-opacity leading-[30px]"
+                className="w-full py-3 rounded-3xl text-white text-[20px] font-secondary text-sm font-medium bg-gradient-to-r from-primary to-[#1F4F46] hover:opacity-90 transition-opacity leading-[30px]"
               >
                 Login
               </button>
 
               <div className="text-center">
-                <a
-                  href="#"
+                <Link
+                  to="/forgot-password"
                   className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  Forgot Password
-                </a>
+                  Forgot password
+                </Link>
               </div>
             </form>
           </div>
