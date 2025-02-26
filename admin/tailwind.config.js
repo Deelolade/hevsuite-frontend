@@ -10,6 +10,7 @@ module.exports = {
       fontFamily: {
         primary: ["Lato", "sans-serif"],
         secondary: ["Playfair Display", "serif"],
+        montserrat: ["Montserrat", "sans-serif"],
       },
     },
   },

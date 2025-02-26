@@ -1,92 +1,3 @@
-// import React from "react";
-// import { BsPeople, BsClock, BsCalendarEvent } from "react-icons/bs";
-// import { FaUserTimes } from "react-icons/fa";
-
-// const Dashboard = () => {
-//   return (
-//     <div className="space-y-6">
-//       {/* Stats */}
-//       <div className="grid grid-cols-4 gap-6">
-//         <StatCard
-//           icon={<BsPeople />}
-//           label="Total Members"
-//           value="1349"
-//           iconBg="bg-blue-100"
-//           iconColor="text-blue-600"
-//         />
-//         <StatCard
-//           icon={<BsClock />}
-//           label="Pending Registrations"
-//           value="345"
-//           iconBg="bg-yellow-100"
-//           iconColor="text-yellow-600"
-//         />
-//         <StatCard
-//           icon={<FaUserTimes />}
-//           label="Non-Engaged Users"
-//           value="200"
-//           iconBg="bg-red-100"
-//           iconColor="text-red-600"
-//         />
-//         <StatCard
-//           icon={<BsCalendarEvent />}
-//           label="Total Events"
-//           value="3,500"
-//           iconBg="bg-green-100"
-//           iconColor="text-green-600"
-//         />
-//       </div>
-//       {/* Analytics Section */}
-//       <div className="grid grid-cols-3 gap-6">
-//         <div className="col-span-2 bg-white p-6 rounded-lg border">
-//           <div className="flex justify-between items-center mb-4">
-//             <div>
-//               <h2 className="text-xl font-semibold">Analytics</h2>
-//               <p className="text-gray-500 text-sm">Lorem ipsum dolor sit amet</p>
-//             </div>
-//             <div className="flex gap-2">
-//               <select className="border rounded px-3 py-1">
-//                 <option>Users</option>
-//               </select>
-//               <select className="border rounded px-3 py-1">
-//                 <option>2025</option>
-//               </select>
-//             </div>
-//           </div>
-//           <div className="h-64 bg-gray-100 rounded">
-//             {/* Placeholder for chart */}
-//             <div className="w-full h-full flex items-center justify-center text-gray-400">
-//               Chart Placeholder
-//             </div>
-//           </div>
-//         </div>
-//         <div className="bg-white p-6 rounded-lg border">
-//           <h2 className="text-xl font-semibold mb-4">Event Type</h2>
-//           <div className="h-64 bg-gray-100 rounded">
-//             {/* Placeholder for pie chart */}
-//             <div className="w-full h-full flex items-center justify-center text-gray-400">
-//               Pie Chart Placeholder
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-// const StatCard = ({ icon, label, value, iconBg, iconColor }) => (
-//   <div className="bg-white p-6 rounded-lg border">
-//     <div className="flex items-start justify-between">
-//       <div>
-//         <p className="text-gray-600 text-sm">{label}</p>
-//         <h3 className="text-2xl font-semibold mt-1">{value}</h3>
-//       </div>
-//       <div className={`p-3 rounded-lg ${iconBg}`}>
-//         <span className={`text-xl ${iconColor}`}>{icon}</span>
-//       </div>
-//     </div>
-//   </div>
-// );
-// import React from "react";
 import { BsPeople, BsClock, BsThreeDotsVertical } from "react-icons/bs";
 import { FaUserTimes } from "react-icons/fa";
 import { IoSparkles } from "react-icons/io5";
@@ -113,7 +24,7 @@ const Dashboard = () => {
         <Profile />
       </div>
       {/* Header with Create Event button */}
-      <button className="bg-[#900C3F] text-white px-4 py-2.5 rounded-md flex items-center gap-2 text-sm">
+      <button className="bg-primary font-secondary text-white px-4 py-2.5 rounded-md flex items-center gap-2 text-sm">
         <span>Create Event</span>
         <IoMdAdd className="text-xl" />
       </button>

@@ -24,7 +24,7 @@ const TwoFactorAuth = () => {
       </div>
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-primary font-bold mb-4 text-center">
+          <h1 className="text-[32px] font-primary mb-4 text-center">
             Two-Factor Authentication
           </h1>
           <p className="text-gray-600 text-sm font-primary  mb-8">

@@ -31,10 +31,10 @@ import { Outlet } from "react-router-dom";
 const MainLayout = () => {
   return (
     <div className="flex min-h-screen bg-[#F8F8F8]">
-      <aside className="fixed left-0 top-0 h-screen w-[240px]">
+      <aside className="fixed left-0 top-0 h-screen w-72">
         <Sidebar />
       </aside>
-      <div className="flex-1 pl-[240px]">
+      <div className="flex-1 ml-72">
         {/* <header className="fixed top-0 right-0 left-[240px] bg-white z-50">
           <Navigation />
         </header> */}
