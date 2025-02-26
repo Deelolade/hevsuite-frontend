@@ -1,17 +1,19 @@
 import React, { useState } from "react";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
-import eventImage from "../../assets/event-image.png";
+import { FiEdit, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
+import eventImage from "../../assets/event.png";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 import Modal from "react-modal";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
+import edit_icon from "../../assets/icons/edit.png";
+import avat from "../../assets/user.avif";
 
 const Event = () => {
   const [currentPage, setCurrentPage] = useState(2);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
 
-  const events = [
+  const [events, setEvents] = useState([
     {
       id: 1,
       title: "The Bout for Lions",
@@ -31,7 +33,7 @@ const Event = () => {
       title: "The Bout for Lions",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: eventImage,
+      image: avat,
     },
     {
       id: 4,
@@ -45,7 +47,7 @@ const Event = () => {
       title: "The Bout for Lions",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: eventImage,
+      image: avat,
     },
     {
       id: 6,
@@ -66,36 +68,22 @@ const Event = () => {
       title: "The Bout for Lions",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: eventImage,
+      image: avat,
     },
-  ];
+  ]);
+
+  const handleVisibility = (id) => {
+    setEvents(
+      events.map((event) =>
+        event.id === id ? { ...event, isVisible: !event.isVisible } : event
+      )
+    );
+  };
 
   return (
     <div className="p-8 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      {/* <div className="flex justify-between items-center">
-        <div className="relative flex-1 max-w-xl">
-          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            
-            <button className="p-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12.02 2.90991C8.70997 2.90991 6.01997 5.59991 6.01997 8.90991V11.7999C6.01997 12.4099 5.75997 13.3399 5.44997 13.8599L4.29997 15.7699C3.58997 16.9499 4.07997 18.2599 5.37997 18.6999C9.68997 20.1399 14.34 20.1399 18.65 18.6999C19.86 18.2999 20.39 16.8699 19.73 15.7699L18.58 13.8599C18.28 13.3399 18.02 12.4099 18.02 11.7999V8.90991C18.02 5.60991 15.32 2.90991 12.02 2.90991Z" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round"/>
-                <path d="M13.87 3.19994C13.56 3.10994 13.24 3.03994 12.91 2.99994C11.95 2.87994 11.03 2.94994 10.17 3.19994C10.46 2.45994 11.18 1.93994 12.02 1.93994C12.86 1.93994 13.58 2.45994 13.87 3.19994Z" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M15.02 19.0601C15.02 20.7101 13.67 22.0601 12.02 22.0601C11.2 22.0601 10.44 21.7201 9.90002 21.1801C9.36002 20.6401 9.02002 19.8801 9.02002 19.0601" stroke="#323C47" strokeWidth="1.5" strokeMiterlimit="10"/>
-              </svg>
-            </button>
-          </div>
-          <Profile />
-        </div>
-      </div> */}
+
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
@@ -150,30 +138,48 @@ const Event = () => {
       <div className="grid grid-cols-4 gap-6">
         {events.map((event) => (
           <div key={event.id} className="relative group">
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100 transition-colors">
-                <FiEdit size={18} />
+            <div className="absolute top-4 flex justify-between w-full gap-2 z-10">
+              <button className="p-2 relative  text-white left-4 rounded-lg  transition-colors">
+                <img src={edit_icon} alt="edit icon" />
               </button>
-              <button className="p-2 bg-white rounded-lg text-primary hover:bg-gray-100 transition-colors">
-                <FiTrash2 size={18} />
+              <button className="p-2 relative right-4 text-white rounded-lg  transition-colors">
+                <FiTrash2 className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-primary rounded-lg overflow-hidden">
-              <img
-                src={event.image}
-                alt={event.title}
-                className="w-full h-48 object-cover opacity-50"
-              />
-              <div className="p-4 text-white">
-                <h3 className="text-lg font-bold">{event.title}</h3>
-                <div className="flex items-center gap-4 text-sm mt-2 text-gray-200">
-                  <div className="flex items-center gap-1.5">
-                    <BsCalendar className="text-lg" />
-                    <span className="text-sm">{event.date}</span>
+            <div
+              className="relative h-80 rounded-2xl overflow-hidden bg-center"
+              style={{ backgroundImage: `url(${event.image})` }}
+            >
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#540A26]/90 to-transparent" />
+
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {event.title}
+                </h3>
+                <div className="flex justify-between gap-4">
+                  <div className="flex  flex-col gap-4">
+                    <div className="flex items-center gap-2 text-white/80">
+                      <BsCalendar className="w-4 h-4" />
+                      <span className="text-[12px]">{event.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/80">
+                      <MdAccessTime className="w-4 h-4" />
+                      <span className="text-[12px]">{event.time}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <MdAccessTime className="text-lg" />
-                    <span className="text-sm">{event.time}</span>
+                  <div className="flex items-center gap-2 text-white/80 cursor-pointer">
+                    {event.isVisible ? (
+                      <FiEye
+                        className="w-7 h-7 text-white"
+                        onClick={() => handleVisibility(event.id)}
+                      />
+                    ) : (
+                      <FiEyeOff
+                        className="w-7 h-7 text-white/80"
+                        onClick={() => handleVisibility(event.id)}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
