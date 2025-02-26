@@ -5,7 +5,7 @@ const InviteUsers = ({ setIsInviteModalOpen, setInviteEmail, inviteEmail }) => {
   return (
     <div>
       <div className="p-8 flex flex-col items-center">
-        <h2 className="text-2xl font-semibold text-center mb-8">
+        <h2 className="text-3xl font-medium font-secondary text-center mb-8">
           Invite New Users
         </h2>
         <div className="relative">
@@ -15,7 +15,7 @@ const InviteUsers = ({ setIsInviteModalOpen, setInviteEmail, inviteEmail }) => {
             placeholder="Enter Email Address"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#540A26] text-sm"
+            className="w-72 pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:border-[#540A26] text-sm"
           />
         </div>
         <button
@@ -24,7 +24,7 @@ const InviteUsers = ({ setIsInviteModalOpen, setInviteEmail, inviteEmail }) => {
             setIsInviteModalOpen(false);
             setInviteEmail("");
           }}
-          className="w-full bg-[#540A26] text-white py-3 rounded-2xl mt-6 text-sm font-medium hover:bg-[#540A26]/90 transition-colors"
+          className="w-72 bg-primary font-secondary text-white py-3 rounded-2xl mt-6 text-sm font-medium hover:bg-[#540A26]/90 transition-colors"
         >
           Invite
         </button>

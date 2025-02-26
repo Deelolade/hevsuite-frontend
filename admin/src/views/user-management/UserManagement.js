@@ -6,7 +6,7 @@ import { IoMdAdd } from "react-icons/io";
 import Profile from "../../components/Profile";
 import InviteUsers from "../../components/modals/users/InviteUsers";
 import avatar from "../../assets/user.avif";
-import idcards from "../../assets/Id.jpg"
+import idcards from "../../assets/Id.jpg";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -32,7 +32,7 @@ const UserManagement = () => {
       loyaltyLevel: "Member",
       avatar: avatar,
       idCard: idcards,
-      photo: avatar
+      photo: avatar,
     },
     {
       id: 2,
@@ -42,8 +42,7 @@ const UserManagement = () => {
       loyaltyLevel: "Member",
       avatar: avatar,
       idCard: idcards,
-      photo: avatar
-
+      photo: avatar,
     },
     {
       id: 3,
@@ -53,8 +52,7 @@ const UserManagement = () => {
       loyaltyLevel: "Member",
       avatar: avatar,
       idCard: idcards,
-      photo: avatar
-
+      photo: avatar,
     },
     {
       id: 4,
@@ -64,8 +62,7 @@ const UserManagement = () => {
       loyaltyLevel: "Member",
       avatar: avatar,
       idCard: idcards,
-      photo: avatar
-
+      photo: avatar,
     },
     {
       id: 5,
@@ -75,9 +72,8 @@ const UserManagement = () => {
       loyaltyLevel: "Member",
       avatar: avatar,
       idCard: idcards,
-      photo: avatar
+      photo: avatar,
     },
-
   ];
   return (
     <div className="p-6 space-y-6">
@@ -87,9 +83,9 @@ const UserManagement = () => {
       </div>
       <button
         onClick={() => setIsInviteModalOpen(true)}
-        className="bg-[#540A26] text-white px-6 py-2.5 rounded-lg flex items-center gap-2"
+        className="bg-primary text-white px-6 py-2.5 rounded-lg flex justify-center items-center gap-2 w-44"
       >
-        <span className="text-sm font-medium">Invite</span>
+        <span className="text-sm font-medium font-montserrat ">Invite</span>
         <IoMdAdd size={20} />
       </button>
       <div className="flex justify-between gap-4">
@@ -432,7 +428,6 @@ const UserManagement = () => {
                                 </p>
                               </div>
                             </div>
-
                           </div>
                         </div>
                       </div>

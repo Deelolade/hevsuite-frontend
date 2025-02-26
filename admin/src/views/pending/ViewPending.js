@@ -431,7 +431,9 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       {/* Referrals */}
       <div className="bg-white rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-[#323C47]">Referrals (2/3)</h3>
+          <h3 className="text-xl font-semibold text-[#323C47]">
+            Referrals (2/3)
+          </h3>
           <button>
             <svg
               className="w-6 h-6 text-gray-400"
@@ -487,7 +489,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4">
-        <button className="px-6 py-2.5 bg-[#00B707] text-white rounded-lg flex items-center gap-2">
+        <button className="px-6 py-2.5 bg-[#079D64] text-white rounded-lg flex items-center gap-2 font-primary">
           Accept
           <svg
             className="w-5 h-5"
@@ -503,7 +505,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
             />
           </svg>
         </button>
-        <button className="px-6 py-2.5 bg-red-500 text-white rounded-lg flex items-center gap-2">
+        <button className="px-6 py-2.5 bg-[#FF0707] text-white rounded-lg flex items-center gap-2 font-primary">
           Decline
           <svg
             className="w-5 h-5"
