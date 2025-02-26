@@ -1,32 +1,15 @@
-// import React from "react";
-
-// const MemberRequests = () => {
-//   return <div>MemberRequests</div>;
-// };
-
-// export default MemberRequests;
-
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { BiSearch } from "react-icons/bi";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import Profile from "../../components/Profile";
-import CancelCardModal from "../../components/modals/CancelCardModal";
-// Add to imports
-import IssueNewCardModal from "../../components/modals/IssueNewCardModal";
+import CancelCardModal from "../../components/modals/cards/CancelCardModal";
+import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
+import PostCard from "../../components/modals/cards/PostCard";
 
-// Set app element for accessibility
 Modal.setAppElement("#root");
 
 const MemberRequests = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [receiverEmail, setReceiverEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState("new");
-  const [selectedCardId, setSelectedCardId] = useState(null);
-  //   const [selectedCards, setSelectedCards] = useState([]);
   const [expandedAddresses, setExpandedAddresses] = useState([]);
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
 
@@ -73,28 +56,31 @@ const MemberRequests = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Stats and Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-semibold">10,000</h2>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+      <div className="flex ">
+        <div className="flex items-center gap-4 justify-between w-full">
+          <div className="flex items-center gap-4">
+            
+          <h2 className="text-3xl font-semibold">10,000</h2>
+          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
             <option>All</option>
             <option>Members</option>
             <option>VIP Members</option>
           </select>
-          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+          <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
             <option>All</option>
             <option>Pending</option>
             <option>Cancelled</option>
           </select>
           <button className="text-gray-600">Select All</button>
-          <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
-            Export 1
+          </div>
+          <button className="px-4 py-2 bg-primary text-white rounded-lg  items-center gap-2 ">
+            + Export 1
           </button>
         </div>
       </div>
 
       <div className="flex">
-        <div className="relative flex-1">
+        <div className="relative flex-1 mr-4">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
@@ -111,7 +97,7 @@ const MemberRequests = () => {
           </button>
           <button
             onClick={() => setIsIssueModalOpen(true)}
-            className="px-4 py-2 border border-[#540A26] text-[#540A26] rounded-lg"
+            className="px-4 py-2 border border-primary text-[#050002] rounded-lg"
           >
             Issue New Card
           </button>
@@ -252,7 +238,6 @@ const MemberRequests = () => {
                   <button
                     className="w-full py-2 bg-red-500 text-white text-sm rounded-lg mt-4 hover:bg-red-600 transition-colors"
                     onClick={() => {
-                      setSelectedCardId(card.id);
                       setIsCancelModalOpen(true);
                     }}
                   >
@@ -264,84 +249,14 @@ const MemberRequests = () => {
           </div>
         ))}
       </div>
-      {/* </div> */}
-      {/* Post Card Modal */}
+      
       <Modal
         isOpen={isPostModalOpen}
         onRequestClose={() => setIsPostModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Post Cards</h2>
-            <button
-              onClick={() => setIsPostModalOpen(false)}
-              className="text-gray-400"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm mb-2">Receivers Email</label>
-              <input
-                type="email"
-                value={receiverEmail}
-                onChange={(e) => setReceiverEmail(e.target.value)}
-                placeholder="Enter email"
-                className="w-full px-3 py-2.5 border rounded-lg text-sm"
-              />
-            </div>
-
-            <p className="text-sm text-gray-600">
-              Are you sure you want to post cards to be printed for selected
-              accounts? The request is irreversible.
-            </p>
-
-            <div>
-              <label className="block text-sm mb-2">Your Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2.5 border rounded-lg text-sm pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                >
-                  {showPassword ? (
-                    <AiOutlineEyeInvisible className="w-5 h-5" />
-                  ) : (
-                    <AiOutlineEye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsPostModalOpen(false)}
-                className="px-6 py-2 border rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Handle send logic here
-                  setIsPostModalOpen(false);
-                }}
-                className="px-6 py-2 bg-[#00B707] text-white rounded-lg text-sm"
-              >
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
+        <PostCard setIsPostModalOpen={setIsPostModalOpen} />
       </Modal>
       <Modal
         isOpen={isCancelModalOpen}

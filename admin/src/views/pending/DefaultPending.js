@@ -33,9 +33,7 @@ const DefaultPending = ({pendingUsers, setShowViewPending, setViewUser}) => {
       };
 
       const handleRowClick = (user) => {
-        // setViewUser(user);
-        // navigate(`/view-pending/${userId}`);
-        console.log(user)
+        // console.log(user)
         setViewUser(user)
         setShowViewPending(true)
       };

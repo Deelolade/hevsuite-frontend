@@ -3,6 +3,7 @@ import { BsCamera } from "react-icons/bs";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 import Modal from "react-modal";
+import avatar from "../../assets/user.avif"
 
 const AdminProfile = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,6 +19,7 @@ const AdminProfile = () => {
     role: "Super Admin",
     password: "••••••••••••••••••••••••",
     twoFactorPreference: "Email",
+    avatar: avatar
   });
 
   const supportStats = [
@@ -71,7 +73,7 @@ const AdminProfile = () => {
           <div className="relative">
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
               <img
-                src="/path/to/profile.jpg"
+                src={profileData.avatar}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />

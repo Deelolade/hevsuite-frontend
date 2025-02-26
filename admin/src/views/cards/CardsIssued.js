@@ -3,9 +3,9 @@ import Modal from "react-modal";
 import { BiSearch } from "react-icons/bi";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Profile from "../../components/Profile";
-import CancelCardModal from "../../components/modals/CancelCardModal";
+import CancelCardModal from "../../components/modals/cards/CancelCardModal";
 // Add to imports
-import IssueNewCardModal from "../../components/modals/IssueNewCardModal";
+import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
 
 // Set app element for accessibility
 Modal.setAppElement("#root");
@@ -52,6 +52,30 @@ const CardsIssued = () => {
       id: 2,
       name: "Anna Ivanovic",
       memberId: "12345678",
+      status: "Not Activated",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 3,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Active",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
       status: "Cancelled",
       address: {
         line1: "Andrew",
@@ -65,9 +89,12 @@ const CardsIssued = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Stats and Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-semibold">10,000</h2>
+      <div className="flex ">
+
+      <div className="flex items-center gap-4 justify-between w-full">
+          <div className="flex items-center gap-4">
+            
+          <h2 className="text-3xl font-semibold">10,000</h2>
           <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
             <option>All</option>
             <option>Members</option>
@@ -79,14 +106,15 @@ const CardsIssued = () => {
             <option>Not Activated</option>
             <option>Cancelled</option>
           </select>
-          <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2">
-            Export 1
+        </div>
+          <button className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
+           + Export 1
           </button>
         </div>
       </div>
 
       <div className="flex">
-        <div className="relative flex-1">
+        <div className="relative flex-1 mr-8">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
@@ -97,11 +125,11 @@ const CardsIssued = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsIssueModalOpen(true)}
-            className="px-4 py-2 border border-[#540A26] text-[#540A26] rounded-lg"
+            className="px-4 py-2 border border-primary text-[#050002] rounded-lg mr-2"
           >
             Issue New Card
           </button>
-          <button className="px-4 py-2 bg-red-500 text-white rounded-lg">
+          <button className="px-4 py-2 bg-[#FB0A0A] text-white rounded-lg">
             Bulk Cancel
           </button>
         </div>
@@ -219,7 +247,7 @@ const CardsIssued = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Status</span>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded ${
+                      className={`text-xs px-5 py-0.5 rounded-lg ${
                         card.status === "Cancelled"
                           ? "bg-red-500 text-white"
                           : card.status === "Active"

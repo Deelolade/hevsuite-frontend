@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BsBell, BsChevronDown } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import avatar from "../assets/user.avif"
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Profile = () => {
             <p className="text-sm text-gray-500">Admin</p>
           </div>
           <img
-            src="https://via.placeholder.com/40"
+            src={avatar}
             alt="profile"
             className="w-10 h-10 rounded-full"
           />

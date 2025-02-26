@@ -69,7 +69,7 @@ const IssueNewCardModal = ({ onClose, onConfirm }) => {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What the reason?"
-            className="w-full px-3 py-2.5 border rounded-lg text-sm"
+            className="w-full px-3 py-2.5 border rounded-lg text-sm italic"
           />
         </div>
 
@@ -90,7 +90,7 @@ const IssueNewCardModal = ({ onClose, onConfirm }) => {
           </button>
           <button
             onClick={() => onConfirm(reason)}
-            className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+            className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
           >
             Confirm
           </button>

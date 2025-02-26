@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { AiOutlineCloudUpload } from "react-icons/ai";
 import { FiSettings } from "react-icons/fi";
+import party from "../../assets/party.jpg"
+import party2 from "../../assets/party2.jpg"
+import party3 from "../../assets/party3.jpg"
+
+import EditCms from "../../components/modals/cms/landing/EditCms"
+import RemoveCms from "../../components/modals/cms/landing/RemoveCms"
+
 const Landing = () => {
   const [activeFilter, setActiveFilter] = useState("overlays");
   const [statusFilter, setStatusFilter] = useState("active");
@@ -9,25 +15,23 @@ const Landing = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [editLink, setEditLink] = useState("");
-  const [openInNewTab, setOpenInNewTab] = useState(false);
 
   const items = [
     {
       id: 1,
-      preview: "/path/to/image1.jpg",
+      preview: party,
       lastModified: "July 22, 2024 - 10:45pm",
       isVisible: true,
     },
     {
       id: 2,
-      preview: "/path/to/image2.jpg",
+      preview: party2,
       lastModified: "July 22, 2024 - 10:45pm",
       isVisible: true,
     },
     {
       id: 3,
-      preview: "/path/to/image3.jpg",
+      preview: party3,
       lastModified: "July 22, 2024 - 10:45pm",
       isVisible: true,
     },
@@ -35,7 +39,7 @@ const Landing = () => {
 
   const handleEdit = (item) => {
     setSelectedItem(item);
-    setEditLink("www.x.com/hermandai/profile!");
+    // setEditLink("www.x.com/hermandai/profile!");
     setIsEditModalOpen(true);
     setOpenSettingsId(null); // Close the dropdown when edit is clicked
   };
@@ -67,7 +71,7 @@ const Landing = () => {
             <option value="deleted">Deleted</option>
           </select>
         </div>
-        <button className="px-6 py-2 bg-[#540A26] text-white rounded-lg">
+        <button className="px-6 py-2 bg-primary text-white rounded-lg">
           Add
         </button>
       </div>
@@ -116,7 +120,7 @@ const Landing = () => {
                       className="sr-only peer"
                       onChange={() => {}}
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#540A26]"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </td>
                 <td className="py-4 px-6 relative">
@@ -162,92 +166,7 @@ const Landing = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Edit Image Overlay</h2>
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* Preview Image */}
-            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              {selectedItem && (
-                <img
-                  src={selectedItem.preview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
-
-            {/* Upload Icon */}
-            <div className="flex justify-center">
-              <button className="text-[#540A26]">
-                <AiOutlineCloudUpload size={24} />
-                <span className="text-sm">Click to Add icon</span>
-              </button>
-            </div>
-
-            {/* Link Input */}
-            <div>
-              <label className="block text-sm mb-2">
-                Available Link
-                <span className="text-red-500">*</span> Required
-              </label>
-              <input
-                type="text"
-                value={editLink}
-                onChange={(e) => setEditLink(e.target.value)}
-                placeholder="www.x.com/hermandai/profile!"
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
-            </div>
-
-            {/* Open in new tab checkbox */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="newTab"
-                checked={openInNewTab}
-                onChange={(e) => setOpenInNewTab(e.target.checked)}
-                className="rounded border-gray-300 text-[#540A26] focus:ring-[#540A26]"
-              />
-              <label htmlFor="newTab" className="text-sm">
-                Open in a new Tab
-              </label>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2 border rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => {
-                  // Handle save
-                  setIsEditModalOpen(false);
-                }}
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditCms setIsEditModalOpen={setIsEditModalOpen} selectedItem={selectedItem}/>
       </Modal>
 
       {/* Remove Modal */}
@@ -257,42 +176,8 @@ const Landing = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <span className="text-red-500">⚠</span>
-              Remove Content
-            </h2>
-            <button
-              onClick={() => setIsRemoveModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="space-y-6">
-            <p className="text-gray-600">
-              Are you sure you want to remove this content?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsRemoveModalOpen(false)}
-                className="px-6 py-2 border rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Handle remove logic here
-                  setIsRemoveModalOpen(false);
-                }}
-                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
+        <RemoveCms setIsRemoveModalOpen={setIsRemoveModalOpen} selectedItem={selectedItem}/>
+        
       </Modal>
     </div>
   );

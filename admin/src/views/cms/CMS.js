@@ -48,7 +48,7 @@ const CMS = () => {
         <button
           className={`pb-4 px-2 ${
             activeTab === "landing"
-              ? "border-b-2 border-[#540A26] text-[#540A26] font-medium"
+              ? "border-b-4 border-primary text-black font-medium"
               : "text-gray-500"
           }`}
           onClick={() => setActiveTab("landing")}
@@ -58,7 +58,7 @@ const CMS = () => {
         <button
           className={`pb-4 px-2 ${
             activeTab === "menus"
-              ? "border-b-2 border-[#540A26] text-[#540A26] font-medium"
+              ? "border-b-4 border-primary text-black font-medium"
               : "text-gray-500"
           }`}
           onClick={() => setActiveTab("menus")}
@@ -68,7 +68,7 @@ const CMS = () => {
         <button
           className={`pb-4 px-2 ${
             activeTab === "footer"
-              ? "border-b-2 border-[#540A26] text-[#540A26] font-medium"
+              ? "border-b-4 border-primary text-black font-medium"
               : "text-gray-500"
           }`}
           onClick={() => setActiveTab("footer")}
