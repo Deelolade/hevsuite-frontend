@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Modal from "react-modal";
 import { BsEyeSlash, BsEye } from "react-icons/bs";
+import logo from "../../assets/logo_white.png";
 
 const General = () => {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [joiningAge, setJoiningAge] = useState("24");
   const [referralCount, setReferralCount] = useState("3");
+  const [selectedFavicon, setSelectedFavicon] = useState(null);
 
   const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +16,21 @@ const General = () => {
     reason: "",
     password: "",
   });
+  const fileInputRef = useRef(null);
+
+  const handleFaviconSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedFavicon(imageUrl);
+    }
+  };
+
+  const handleFaviconClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click(); // Programmatically click the file input
+    }
+  };
 
   const handleMaintenanceToggle = () => {
     if (!maintenanceMode) {
@@ -36,17 +53,38 @@ const General = () => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg mb-4">Favicon</h3>
-            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center">
+            <div
+              className="w-20 h-20 rounded-full  flex items-center justify-center cursor-pointer"
+              onClick={handleFaviconClick} // Add click handler for the image container
+            >
               <img
-                src="/path/to/favicon.png"
+                src={selectedFavicon || logo}
                 alt="Favicon"
-                className="w-12 h-12"
+                className={`${
+                  selectedFavicon
+                    ? "w-full h-full rounded-full object-cover"
+                    : "w-4 h-4"
+                }`}
               />
             </div>
           </div>
-          <button className="px-6 py-2 bg-primary text-white rounded-lg">
-            Edit
-          </button>
+          <div>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              id="faviconInput"
+              accept="image/*"
+              onChange={handleFaviconSelect}
+              className="hidden"
+              ref={fileInputRef} // Attach the ref to the file input
+            />
+            <label
+              htmlFor="faviconInput"
+              className="px-6 py-2 bg-primary text-white rounded-lg cursor-pointer inline-block"
+            >
+              Edit
+            </label>
+          </div>
         </div>
 
         {/* Site Title */}

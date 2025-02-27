@@ -37,13 +37,13 @@ const Settings = () => {
         </div>
         <Profile />
       </div>
-      <div className="border-b">
+      <div className="border-b font-semibold font-primary">
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 ${
               activeTab === "general"
-                ? "border-b-2 border-primary text-primary"
-                : "text-gray-500"
+                ? "border-b-4 border-primary"
+                : "text-[#737374]"
             }`}
             onClick={() => setActiveTab("general")}
           >
@@ -52,7 +52,7 @@ const Settings = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "social"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("social")}
