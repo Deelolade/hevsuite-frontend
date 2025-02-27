@@ -297,6 +297,10 @@ const Event = () => {
         onRequestClose={() => setIsAddEventOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-1000"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -476,6 +480,10 @@ const Event = () => {
         onRequestClose={() => setIsViewEventOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -601,6 +609,10 @@ const Event = () => {
         onRequestClose={() => setIsEditEventOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -832,6 +844,10 @@ const Event = () => {
         onRequestClose={() => setIsDeleteModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">

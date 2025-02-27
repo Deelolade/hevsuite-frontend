@@ -322,6 +322,10 @@ const MemberRequests = () => {
         onRequestClose={() => setIsPostModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <PostCard setIsPostModalOpen={setIsPostModalOpen} />
       </Modal>
@@ -330,6 +334,10 @@ const MemberRequests = () => {
         onRequestClose={() => setIsCancelModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <CancelCardModal onClose={setIsCancelModalOpen} />
       </Modal>
@@ -338,6 +346,10 @@ const MemberRequests = () => {
         onRequestClose={() => setIsIssueModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <IssueNewCardModal
           onClose={setIsIssueModalOpen}
@@ -348,8 +360,12 @@ const MemberRequests = () => {
       <Modal
         isOpen={isBulkCancelModalOpen}
         onRequestClose={() => setIsBulkCancelModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px] z-100"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[450px] z-100"
+        overlayClassName="fixed inset-0 bg-black/50 z-100"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
       >
         <BulkCancelModal
           onClose={setIsBulkCancelModalOpen}
