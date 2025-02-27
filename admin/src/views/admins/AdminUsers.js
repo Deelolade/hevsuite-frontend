@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import { BsPencil, BsTrash, BsEyeSlash, BsEye } from "react-icons/bs";
 import Modal from "react-modal";
+import avatar from "../../assets/user.avif";
 
 const AdminUsers = () => {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -15,13 +16,21 @@ const AdminUsers = () => {
   const admins = [
     {
       id: 1,
-      name: "Andrew Bojangles",
-      email: "someone@gmail.com",
+      name: "John Johnsnon",
       role: "Super Admin",
       status: "Active",
-      avatar: "/path/to/avatar.jpg",
+      email: "someone@gmail.com",
+      avatar: avatar,
     },
-    // Duplicate for other rows
+    {
+      id: 2,
+      name: "Jane Cooper",
+      role: "Super Admin",
+      status: "Active",
+      email: "someone@gmail.com",
+      avatar: avatar,
+    },
+    // ... more admins
   ];
 
   const handleSelectRow = (id) => {
@@ -43,7 +52,7 @@ const AdminUsers = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center pb-8">
         <div className="flex items-center gap-2">
           <h2 className="text-xl">8 Admin Users</h2>
         </div>
@@ -69,30 +78,38 @@ const AdminUsers = () => {
       </div>
 
       {/* Admin Grid */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="border rounded-lg p-6 flex items-center justify-center">
+      <div className="grid grid-cols-5 gap-8 mb-8 h-56">
+        {/* <div className="border rounded-lg p-6 flex items-center justify-center">
           <button className="text-primary">+ Add admin</button>
-        </div>
-        <div className="border rounded-lg p-4">
+        </div> */}
+        <div className="border rounded-lg p-4 flex flex-col items-center relative">
           <div className="flex justify-between mb-4">
-            <img
-              src="/path/to/avatar.jpg"
-              alt="John"
-              className="w-12 h-12 rounded-full"
-            />
-            <button className="text-gray-400">✕</button>
+            <img src={avatar} alt="John" className="w-20 h-20 rounded-full" />
+            <button
+              className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+              onClick={() => {
+                // setSelectedAdmin(admin);
+                setIsDeleteModalOpen(true);
+              }}
+            >
+              ✕
+            </button>
           </div>
           <h3 className="font-medium">John Johnsnon</h3>
           <p className="text-gray-500">CEO</p>
         </div>
-        <div className="border rounded-lg p-4">
+        <div className="border rounded-lg p-4 flex flex-col items-center relative">
           <div className="flex justify-between mb-4">
-            <img
-              src="/path/to/avatar.jpg"
-              alt="Jane"
-              className="w-12 h-12 rounded-full"
-            />
-            <button className="text-gray-400">✕</button>
+            <img src={avatar} alt="Jane" className="w-20 h-20 rounded-full" />
+            <button
+              className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+              onClick={() => {
+                // setSelectedAdmin(admin);
+                setIsDeleteModalOpen(true);
+              }}
+            >
+              ✕
+            </button>
           </div>
           <h3 className="font-medium">Jane Cooper</h3>
           <p className="text-gray-500">Design Lead</p>

@@ -37,13 +37,13 @@ const Admins = () => {
         </div>
         <Profile />
       </div>
-      <div className="border-b">
+      <div className="border-b font-primary font-semibold">
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "users"
-                ? "border-b-2 border-primary text-primary"
-                : "text-gray-500"
+                ? "border-b-4 border-primary"
+                : "text-[#737374}"
             }`}
             onClick={() => setActiveTab("users")}
           >
@@ -52,7 +52,7 @@ const Admins = () => {
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "permissions"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("permissions")}
@@ -62,7 +62,7 @@ const Admins = () => {
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
               activeTab === "activities"
-                ? "border-b-2 border-primary text-primary"
+                ? "border-b-4 border-primary text-primary"
                 : "text-gray-500"
             }`}
             onClick={() => setActiveTab("activities")}
