@@ -52,7 +52,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { BsBell, BsChevronDown } from "react-icons/bs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import avatar from "../assets/user.avif";
 
 const Profile = () => {
@@ -101,6 +101,12 @@ const Profile = () => {
       isRead: true,
     },
   ];
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+    window.location.reload();
+  };
 
   return (
     <div className="flex items-center gap-6">
@@ -171,18 +177,18 @@ const Profile = () => {
 
         {showDropdown && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
-            <a
-              href="#"
+            <Link
+              to="/admin/profile"
               className="block px-4 py-2 text-lg text-gray-700 hover:bg-gray-50"
             >
               Your Profile
-            </a>
-            <a
-              href="#"
+            </Link>
+            <button
               className="block px-4 py-2 text-lg text-red-600 hover:bg-gray-50"
+              onClick={handleLogout}
             >
               Logout
-            </a>
+            </button>
           </div>
         )}
       </div>
