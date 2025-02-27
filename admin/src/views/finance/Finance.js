@@ -39,13 +39,13 @@ const Finance = () => {
         </div>
         <Profile />
       </div>
-      <div className="border-b">
+      <div className=" font-primary font-semibold border-b">
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 ${
               activeTab === "processors"
-                ? "border-b-2 border-primary text-primary"
-                : "text-gray-500"
+                ? "border-b-4 border-primary "
+                : "text-[#737374]"
             }`}
             onClick={() => setActiveTab("processors")}
           >
@@ -54,8 +54,8 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "history"
-                ? "border-b-2 border-primary text-primary"
-                : "text-gray-500"
+                ? "border-b-4 border-primary text-primary"
+                : "text-[#737374]"
             }`}
             onClick={() => setActiveTab("history")}
           >
@@ -64,8 +64,8 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "pricing"
-                ? "border-b-2 border-primary text-primary"
-                : "text-gray-500"
+                ? "border-b-4 border-primary text-primary"
+                : "text-[#737374]"
             }`}
             onClick={() => setActiveTab("pricing")}
           >

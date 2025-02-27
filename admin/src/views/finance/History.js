@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BiChevronDown } from "react-icons/bi";
+import avatar from "../../assets/user.avif";
 
 const History = () => {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -18,7 +19,7 @@ const History = () => {
       id: 1,
       user: {
         name: "Andrew Bojangles",
-        avatar: "/path/to/avatar.jpg",
+        avatar: avatar,
       },
       paymentType: "Membership Fee",
       amount: "£120.00",
@@ -49,6 +50,11 @@ const History = () => {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2 flex-end mr-12">
+          + Export 1
+        </button>
+      </div>
       <table className="w-full">
         <thead>
           <tr className="border-b text-gray-600">
