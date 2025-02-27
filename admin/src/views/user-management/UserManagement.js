@@ -24,6 +24,9 @@ const UserManagement = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
 
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
   const handleEditClick = (userId) => {
     setExpandedUser(expandedUser === userId ? null : userId);
   };
@@ -31,6 +34,82 @@ const UserManagement = () => {
   const handleCancelClick = () => {
     setExpandedUser(null);
   };
+
+  const mockEvents = [
+    {
+      id: 1,
+      name: "Board Members Meeting",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      location: "London",
+      price: "50£",
+      type: "Members Only",
+      image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      description:
+        "The Party of the Year! 🎵\n\nGet ready to let loose, dance, and create unforgettable memories, a night filled with excitement, laughter, and good vibes! Whether you're here to groove on the dance floor, enjoy delicious food and drinks, or just soak in the party atmosphere, we've got it all covered.",
+      whatToExpect: [
+        "Live DJ or Band spinning your favorite hits all night long!",
+        "Delicious Food & Drinks to keep you energized and in the party mood.",
+        "Fun Activities & Surprises that will make this night unforgettable.",
+        "Photo Booth to capture all your favorite moments.",
+      ],
+    },
+    {
+      id: 1,
+      name: "Board Members Meeting",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      location: "London",
+      price: "50£",
+      type: "Members Only",
+      image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      description:
+        "The Party of the Year! 🎵\n\nGet ready to let loose, dance, and create unforgettable memories, a night filled with excitement, laughter, and good vibes! Whether you're here to groove on the dance floor, enjoy delicious food and drinks, or just soak in the party atmosphere, we've got it all covered.",
+      whatToExpect: [
+        "Live DJ or Band spinning your favorite hits all night long!",
+        "Delicious Food & Drinks to keep you energized and in the party mood.",
+        "Fun Activities & Surprises that will make this night unforgettable.",
+        "Photo Booth to capture all your favorite moments.",
+      ],
+    },
+    {
+      id: 1,
+      name: "Board Members Meeting",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      location: "London",
+      price: "50£",
+      type: "Members Only",
+      image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      description:
+        "The Party of the Year! 🎵\n\nGet ready to let loose, dance, and create unforgettable memories, a night filled with excitement, laughter, and good vibes! Whether you're here to groove on the dance floor, enjoy delicious food and drinks, or just soak in the party atmosphere, we've got it all covered.",
+      whatToExpect: [
+        "Live DJ or Band spinning your favorite hits all night long!",
+        "Delicious Food & Drinks to keep you energized and in the party mood.",
+        "Fun Activities & Surprises that will make this night unforgettable.",
+        "Photo Booth to capture all your favorite moments.",
+      ],
+    },
+    {
+      id: 1,
+      name: "Board Members Meeting",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      location: "London",
+      price: "50£",
+      type: "Members Only",
+      image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+      description:
+        "The Party of the Year! 🎵\n\nGet ready to let loose, dance, and create unforgettable memories, a night filled with excitement, laughter, and good vibes! Whether you're here to groove on the dance floor, enjoy delicious food and drinks, or just soak in the party atmosphere, we've got it all covered.",
+      whatToExpect: [
+        "Live DJ or Band spinning your favorite hits all night long!",
+        "Delicious Food & Drinks to keep you energized and in the party mood.",
+        "Fun Activities & Surprises that will make this night unforgettable.",
+        "Photo Booth to capture all your favorite moments.",
+      ],
+    },
+  ];
+
   const users = [
     {
       id: 1,
@@ -416,7 +495,6 @@ const UserManagement = () => {
 
                         {/* Three Column Layout */}
                         <div className="grid grid-cols-3 gap-6">
-                          {/* Events Attended */}
                           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                             <h3 className="text-base font-medium mb-4">
                               Events Attended
@@ -436,17 +514,25 @@ const UserManagement = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {[1, 2, 3, 4].map((num) => (
+                                {mockEvents.map((event, index) => (
                                   <tr
-                                    key={num}
+                                    key={event.id}
                                     className="border-b border-gray-50 last:border-0"
                                   >
-                                    <td className="py-3 text-sm">{num}</td>
                                     <td className="py-3 text-sm">
-                                      The Bout Lions
+                                      {index + 1}
+                                    </td>
+                                    <td className="py-3 text-sm">
+                                      {event.name}
                                     </td>
                                     <td className="py-3">
-                                      <button className="text-primary text-sm hover:text-primary/80">
+                                      <button
+                                        className="text-primary text-sm hover:text-primary/80"
+                                        onClick={() => {
+                                          setSelectedEvent(event);
+                                          setShowEventModal(true);
+                                        }}
+                                      >
                                         View more
                                       </button>
                                     </td>
@@ -689,6 +775,114 @@ const UserManagement = () => {
           setInviteEmail={setInviteEmail}
           inviteEmail={inviteEmail}
         />
+      </Modal>
+
+      <Modal
+        isOpen={showEventModal}
+        onRequestClose={() => setShowEventModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[1000px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="flex h-[600px]">
+          {/* Left side - Image */}
+          <div className="w-1/2 relative">
+            {selectedEvent && (
+              <>
+                <img
+                  src={selectedEvent.image}
+                  alt={selectedEvent.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-[rgba(0,0,0,0.3)] backdrop-blur-sm rounded-full text-sm">
+                        {selectedEvent.type}
+                      </span>
+                      <span className="text-2xl font-bold">
+                        {selectedEvent.price}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {selectedEvent.date}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {selectedEvent.time}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Right side - Content */}
+          <div className="w-1/2 p-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">{selectedEvent?.name}</h2>
+              <button
+                onClick={() => setShowEventModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selectedEvent && (
+              <div className="space-y-6">
+                <div>
+                  <p className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
+                    {selectedEvent.description}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">
+                    🎵 What to Expect
+                  </h3>
+                  <ul className="space-y-2">
+                    {selectedEvent.whatToExpect.map((item, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 text-gray-600"
+                      >
+                        <span className="text-primary">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </Modal>
     </div>
   );

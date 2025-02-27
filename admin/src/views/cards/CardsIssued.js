@@ -4,8 +4,8 @@ import { BiSearch } from "react-icons/bi";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Profile from "../../components/Profile";
 import CancelCardModal from "../../components/modals/cards/CancelCardModal";
-// Add to imports
 import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
+import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
 
 // Set app element for accessibility
 Modal.setAppElement("#root");
@@ -21,6 +21,10 @@ const CardsIssued = () => {
   //   const [selectedCards, setSelectedCards] = useState([]);
   const [expandedAddresses, setExpandedAddresses] = useState([]);
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+
+  // Add this state near other state declarations
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [isBulkCancelModalOpen, setIsBulkCancelModalOpen] = useState(false);
 
   const toggleAddress = (cardId) => {
     setExpandedAddresses((prev) =>
@@ -127,7 +131,17 @@ const CardsIssued = () => {
           >
             Issue New Card
           </button>
-          <button className="px-4 py-2 bg-[#FB0A0A] text-white rounded-lg">
+          <button
+            onClick={() => {
+              if (selectedCards.length > 0) {
+                setIsBulkCancelModalOpen(true);
+              }
+            }}
+            className={`px-4 py-2 bg-[#FB0A0A] text-white rounded-lg ${
+              selectedCards.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={selectedCards.length === 0}
+          >
             Bulk Cancel
           </button>
         </div>
@@ -138,8 +152,22 @@ const CardsIssued = () => {
         {cards.map((card) => (
           <div
             key={card.id}
-            className="bg-white rounded-xl p-4 shadow-sm self-start"
+            className="bg-white rounded-xl p-4 shadow-sm self-start relative"
           >
+            <div className="absolute top-4 right-4 z-10">
+              <input
+                type="checkbox"
+                checked={selectedCards.includes(card.id)}
+                onChange={() => {
+                  setSelectedCards((prev) =>
+                    prev.includes(card.id)
+                      ? prev.filter((id) => id !== card.id)
+                      : [...prev, card.id]
+                  );
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+            </div>
             <div className="flex items-start gap-4">
               {/* QR Code on left */}
               <div className="bg-gray-100 p-2 rounded-lg shrink-0">
@@ -297,6 +325,17 @@ const CardsIssued = () => {
         <IssueNewCardModal
           onClose={setIsIssueModalOpen}
           onConfirm={handleIssueNewCard}
+        />
+      </Modal>
+      <Modal
+        isOpen={isBulkCancelModalOpen}
+        onRequestClose={() => setIsBulkCancelModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px] z-100"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <BulkCancelModal
+          onClose={setIsBulkCancelModalOpen}
+          selectedCount={selectedCards.length}
         />
       </Modal>
     </div>
