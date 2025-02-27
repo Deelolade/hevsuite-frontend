@@ -68,7 +68,7 @@ const MainLayout = () => {
       </aside>
 
       {/* Toggle Button */}
-      <button
+      {/* <button
         onClick={() => setCollapsed(!collapsed)}
         className={`absolute top-1/2 left-[72px] -translate-y-1/2 p-2 rounded-full bg-gray-200 shadow-md hover:bg-gray-300 transition-colors ${
           collapsed ? "ml-20" : "ml-72"
@@ -80,7 +80,7 @@ const MainLayout = () => {
         ) : (
           <span className="text-xl">&#8592;</span> // Left arrow when expanded
         )}
-      </button>
+      </button> */}
 
       {/* Main Content */}
       <div

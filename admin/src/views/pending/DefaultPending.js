@@ -5,11 +5,18 @@ import {
   BsXCircleFill,
   BsCheckCircleFill,
 } from "react-icons/bs";
+import Modal from "react-modal";
 
 const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState("Filter");
+  const [selectedSort, setSelectedSort] = useState("Sort by");
+
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [selectedActionUser, setSelectedActionUser] = useState(null);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -33,6 +40,13 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     setShowViewPending(true);
   };
 
+  const handleActionClick = (action, user, e) => {
+    e.stopPropagation(); // Prevent row click event
+    setSelectedAction(action);
+    setSelectedActionUser(user);
+    setIsActionModalOpen(true);
+  };
+
   return (
     <>
       <div className="flex justify-end gap-8 mb-6">
@@ -45,7 +59,9 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               setShowSortDropdown(false);
             }}
           >
-            <span className="text-gray-500 font-montserrat">Filter</span>
+            <span className="text-gray-500 font-montserrat">
+              {selectedFilter}
+            </span>
             <svg
               className="w-5 h-5 ml-auto text-gray-400"
               fill="none"
@@ -63,10 +79,22 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
           {showFilterDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <div className="py-2">
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedFilter("Fee completed");
+                    setShowFilterDropdown(false);
+                  }}
+                >
                   Fee completed
                 </button>
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedFilter("Complete supporter status");
+                    setShowFilterDropdown(false);
+                  }}
+                >
                   Complete supporter status
                 </button>
               </div>
@@ -83,7 +111,9 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               setShowFilterDropdown(false);
             }}
           >
-            <span className="text-gray-500 font-montserrat">Sort by</span>
+            <span className="text-gray-500 font-montserrat">
+              {selectedSort}
+            </span>
             <svg
               className="w-5 h-5 ml-auto text-gray-400"
               fill="none"
@@ -101,10 +131,22 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
           {showSortDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <div className="py-2">
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedSort("Date");
+                    setShowSortDropdown(false);
+                  }}
+                >
                   Date
                 </button>
-                <button className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary">
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedSort("Alphabet");
+                    setShowSortDropdown(false);
+                  }}
+                >
                   Alphabet
                 </button>
               </div>
@@ -183,10 +225,16 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <button className="p-1 text-green-600 hover:text-green-700">
+                    <button
+                      className="p-1 text-green-600 hover:text-green-700"
+                      onClick={(e) => handleActionClick("accept", user, e)}
+                    >
                       <BsCheckCircleFill size={24} />
                     </button>
-                    <button className="p-1 text-red-600 hover:text-red-700">
+                    <button
+                      className="p-1 text-red-600 hover:text-red-700"
+                      onClick={(e) => handleActionClick("reject", user, e)}
+                    >
                       <BsXCircleFill size={24} />
                     </button>
                     <button className="p-1 text-gray-400 hover:text-gray-500">
@@ -248,6 +296,71 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
             </button>
           </div>
         </div>
+        <Modal
+          isOpen={isActionModalOpen}
+          onRequestClose={() => setIsActionModalOpen(false)}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+          overlayClassName="fixed inset-0 bg-black/50"
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">
+                {selectedAction === "accept" ? "Accept User" : "Reject User"}
+              </h2>
+              <button
+                onClick={() => setIsActionModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {selectedActionUser && (
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={selectedActionUser.avatar}
+                    alt=""
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div>
+                    <h3 className="font-medium">{selectedActionUser.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {selectedActionUser.email}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-600">
+                  Are you sure you want to{" "}
+                  {selectedAction === "accept" ? "accept" : "reject"} this user?
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsActionModalOpen(false)}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Handle accept/reject action here
+                  console.log(`User ${selectedAction}ed:`, selectedActionUser);
+                  setIsActionModalOpen(false);
+                }}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  selectedAction === "accept"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {selectedAction === "accept" ? "Accept" : "Reject"}
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </>
   );

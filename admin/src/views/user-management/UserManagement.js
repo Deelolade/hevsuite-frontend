@@ -7,6 +7,7 @@ import Profile from "../../components/Profile";
 import InviteUsers from "../../components/modals/users/InviteUsers";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
+import edit_icon from "../../assets/icons/edit3.png";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -209,6 +210,7 @@ const UserManagement = () => {
                         className="text-primary hover:text-primary/80"
                       >
                         <BsPencil size={18} />
+                        {/* <img src={edit_icon} alt="edit icon" /> */}
                       </button>
                     )}
                   </td>
@@ -219,7 +221,7 @@ const UserManagement = () => {
                     <td colSpan="6" className="px-6 py-6 bg-white border-b">
                       <div className="space-y-8">
                         {/* Checkboxes */}
-                        <div className="flex gap-12">
+                        <div className="flex gap-12 ">
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"

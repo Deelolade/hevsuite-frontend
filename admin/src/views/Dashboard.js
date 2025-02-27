@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 
-import { BsPeople, BsClock, BsThreeDotsVertical } from "react-icons/bs";
+import {
+  BsPeople,
+  BsClock,
+  BsThreeDotsVertical,
+  BsChevronDown,
+} from "react-icons/bs";
 import { FaUserTimes } from "react-icons/fa";
 import { IoSparkles } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
@@ -93,11 +98,14 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <select className="border rounded-lg px-3 py-1 text-sm bg-white">
-                <option>Users</option>
-              </select>
+              <button className="border rounded-lg px-3 py-1 text-sm bg-white flex items-center gap-2">
+                Users
+                <BsChevronDown className="text-red-500 font-bold" />
+              </button>
               <select className="border rounded-lg px-3 py-1 text-sm bg-white">
                 <option>2025</option>
+                <option>2024</option>
+                <option>2023</option>
               </select>
               <button className="p-1">
                 <BsThreeDotsVertical className="text-gray-400" />
@@ -123,11 +131,6 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <EventTypeRow
-                color="#540A26"
-                label="PUBLIC"
-                percentage="81.94%"
-              />
               <EventTypeRow
                 color="#0A5438"
                 label="MEMBERS ONLY"
