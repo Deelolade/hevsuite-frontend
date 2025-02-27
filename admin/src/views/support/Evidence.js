@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import {
   BsCheckCircleFill,
+  BsThreeDots,
   BsThreeDotsVertical,
   BsXCircleFill,
 } from "react-icons/bs";
 import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
+import idcards from "../../assets/Id.jpg";
 
 const Evidence = () => {
   const [statusFilter, setStatusFilter] = useState("Pending");
@@ -14,6 +16,11 @@ const Evidence = () => {
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
 
   const [adminList] = useState([
     { id: 1, name: "Admin 1" },
@@ -124,12 +131,28 @@ const Evidence = () => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <button className="p-1 text-green-600 hover:text-green-700">
-                      <BsCheckCircleFill size={24} />
-                    </button>
-                    <button className="p-1 text-red-600 hover:text-red-700">
-                      <BsXCircleFill size={24} />
-                    </button>
+                    {request.status === "Pending" && (
+                      <>
+                        <button className="p-1 text-green-600 hover:text-green-700">
+                          <BsCheckCircleFill
+                            size={24}
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setIsApproveModalOpen(true);
+                            }}
+                          />
+                        </button>
+                        <button className="p-1 text-red-600 hover:text-red-700">
+                          <BsXCircleFill
+                            size={24}
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setIsDeclineModalOpen(true);
+                            }}
+                          />
+                        </button>
+                      </>
+                    )}
                     <button
                       className="p-1 text-gray-400 hover:text-gray-500"
                       onClick={() => {
@@ -138,8 +161,9 @@ const Evidence = () => {
                         );
                       }}
                     >
-                      <BsThreeDotsVertical size={20} />
+                      <BsThreeDots size={20} />
                     </button>
+
                     {openOptionsId === request.id && (
                       <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
                         <button
@@ -252,37 +276,62 @@ const Evidence = () => {
 
             {/* Request Type */}
             <div>
-              <select
-                className="w-full px-4 py-2 border rounded-lg text-gray-600"
-                disabled
-              >
+              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
                 <option>Evidence Review</option>
+                <option>Document Review</option>
+                <option>Identity Verification</option>
               </select>
             </div>
 
             {/* Preview Images */}
             <div className="flex gap-4">
               <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <button className="absolute inset-0 text-white hover:bg-black/20 rounded-lg">
+                <img
+                  src={idcards}
+                  alt="Evidence 1"
+                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                />
+                <button
+                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
+                  onClick={() => {
+                    setShowPreviewModal(true);
+                    setSelectedPreviewImage(idcards);
+                  }}
+                >
                   Preview
                 </button>
-                <img
-                  src="/path/to/evidence1.jpg"
-                  alt="Evidence 1"
-                  className="w-full h-full object-cover rounded-lg"
-                />
               </div>
               <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <button className="absolute inset-0 text-white hover:bg-black/20 rounded-lg">
+                <img
+                  src={avatar}
+                  alt="Evidence 2"
+                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                />
+                <button
+                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                  onClick={() => {
+                    setShowPreviewModal(true);
+                    setSelectedPreviewImage(avatar);
+                  }}
+                >
                   Preview
                 </button>
-                <img
-                  src="/path/to/evidence2.jpg"
-                  alt="Evidence 2"
-                  className="w-full h-full object-cover rounded-lg"
-                />
               </div>
             </div>
+
+            {showPreviewModal && (
+              <div
+                className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
+                onClick={() => setShowPreviewModal(false)}
+              >
+                <img
+                  src={selectedPreviewImage}
+                  alt="Preview"
+                  className="max-w-[80%] max-h-[80%] object-contain"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            )}
 
             {/* Request Message */}
             <div className="p-4 border rounded-lg">
@@ -292,6 +341,118 @@ const Evidence = () => {
                 of residence...
               </p>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isApproveModalOpen}
+        onRequestClose={() => setIsApproveModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Accept Request</h2>
+            <button
+              onClick={() => setIsApproveModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          {selectedRequest && (
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={selectedRequest.user.avatar}
+                  alt=""
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
+                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                </div>
+              </div>
+              <p className="text-gray-600">
+                Are you sure you want to accept this request?
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsApproveModalOpen(false)}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                // Handle accept action here
+                setIsApproveModalOpen(false);
+              }}
+              className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
+            >
+              Accept
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeclineModalOpen}
+        onRequestClose={() => setIsDeclineModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Reject Request</h2>
+            <button
+              onClick={() => setIsDeclineModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          {selectedRequest && (
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={selectedRequest.user.avatar}
+                  alt=""
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
+                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                </div>
+              </div>
+              <p className="text-gray-600">
+                Are you sure you want to reject this request?
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeclineModalOpen(false)}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                // Handle reject action here
+                setIsDeclineModalOpen(false);
+              }}
+              className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
+            >
+              Reject
+            </button>
           </div>
         </div>
       </Modal>
