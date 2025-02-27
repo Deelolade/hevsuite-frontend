@@ -9,6 +9,9 @@ const FAQs = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
+  const [isCreateFAQOpen, setIsCreateFAQOpen] = useState(false);
+  const [isDeleteFAQOpen, setIsDeleteFAQOpen] = useState(false);
+
   const [faqs, setFAQs] = useState([
     { id: 1, question: "How do I join the HH Club?", visible: true },
     { id: 2, question: "How do I change my account details?", visible: true },
@@ -36,7 +39,10 @@ const FAQs = () => {
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
           />
         </div>
-        <button className="px-6 py-2 bg-primary font-secondary text-white rounded-lg flex items-center gap-2">
+        <button
+          className="px-6 py-2 bg-primary font-secondary text-white rounded-lg flex items-center gap-2"
+          onClick={() => setIsCreateFAQOpen(true)}
+        >
           Create FAQ
           <span className="text-xl">+</span>
         </button>
@@ -70,7 +76,13 @@ const FAQs = () => {
                 >
                   <FiEdit size={20} />
                 </button>
-                <button className="text-primary">
+                <button
+                  className="text-primary"
+                  onClick={() => {
+                    setSelectedFAQ(faq);
+                    setIsDeleteFAQOpen(true);
+                  }}
+                >
                   <FiTrash2 size={20} />
                 </button>
                 <button
@@ -221,6 +233,105 @@ const FAQs = () => {
                 Confirm
               </button>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCreateFAQOpen}
+        onRequestClose={() => setIsCreateFAQOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Create FAQ</h2>
+            <button
+              onClick={() => setIsCreateFAQOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Question</label>
+              <input
+                type="text"
+                placeholder="What is Hazor Hevsuite (HH) Club?"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2">Answer</label>
+              <textarea
+                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
+                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsCreateFAQOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                onClick={() => {
+                  // Handle create FAQ here
+                  setIsCreateFAQOpen(false);
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteFAQOpen}
+        onRequestClose={() => setIsDeleteFAQOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Delete FAQ</h2>
+            <button
+              onClick={() => setIsDeleteFAQOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete this FAQ? This action cannot be
+            undone.
+          </p>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteFAQOpen(false)}
+              className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              className="px-6 py-2 bg-primary text-white rounded-lg"
+              onClick={() => {
+                setFAQs(faqs.filter((f) => f.id !== selectedFAQ.id));
+                setIsDeleteFAQOpen(false);
+                setSelectedFAQ(null);
+              }}
+            >
+              Delete
+            </button>
           </div>
         </div>
       </Modal>

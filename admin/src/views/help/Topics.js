@@ -12,6 +12,11 @@ const Topics = () => {
   const [selectedQA, setSelectedQA] = useState(null);
 
   const [isCreateQAModalOpen, setIsCreateQAModalOpen] = useState(false);
+  const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
+  const [isDeleteTopicOpen, setIsDeleteTopicOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isArchiveTopicOpen, setIsArchiveTopicOpen] = useState(false);
+  const [isDeleteQAModalOpen, setIsDeleteQAModalOpen] = useState(false);
 
   const [topics, setTopics] = useState([
     { id: 1, title: "Topic 1", visible: true },
@@ -59,7 +64,10 @@ const Topics = () => {
           <option>All Topics</option>
           <option>Deleted</option>
         </select>
-        <button className="px-6 py-2 bg-primary text-white font-secondary rounded-lg flex items-center gap-2">
+        <button
+          className="px-6 py-2 bg-primary text-white font-secondary rounded-lg flex items-center gap-2"
+          onClick={() => setIsCreateTopicOpen(true)}
+        >
           Create Topics
           <span className="text-xl">+</span>
         </button>
@@ -94,15 +102,69 @@ const Topics = () => {
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
-              <button className="w-44 py-2 bg-gray-200 rounded-lg ">
+              <button
+                className="w-44 py-2 bg-gray-200 rounded-lg "
+                onClick={() => {
+                  setSelectedTopic(topic);
+                  setIsArchiveTopicOpen(true);
+                }}
+              >
                 Archive
               </button>
-              <button className="w-44 py-2 bg-primary text-white rounded-lg">
+              <button
+                className="w-44 py-2 bg-primary text-white rounded-lg"
+                onClick={() => {
+                  setSelectedTopic(topic);
+                  setIsDeleteTopicOpen(true);
+                }}
+              >
                 Delete
               </button>
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button className="p-1 text-gray-400 hover:text-gray-600">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+        {[1, 2, 3].map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              currentPage === page ? "bg-primary w-4" : "bg-gray-300"
+            }`}
+          />
+        ))}
+        <button className="p-1 text-gray-400 hover:text-gray-600">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
       </div>
 
       {/* Questions Section */}
@@ -148,7 +210,13 @@ const Topics = () => {
                   >
                     <FiEdit size={20} />
                   </button>
-                  <button className="text-primary">
+                  <button
+                    className="text-primary"
+                    onClick={() => {
+                      setSelectedQA(qa);
+                      setIsDeleteQAModalOpen(true);
+                    }}
+                  >
                     <FiTrash2 size={20} />
                   </button>
                   <button
@@ -399,6 +467,191 @@ const Topics = () => {
                 Confirm
               </button>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCreateTopicOpen}
+        onRequestClose={() => setIsCreateTopicOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Create Topic</h2>
+            <button
+              onClick={() => setIsCreateTopicOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Topic Title</label>
+              <input
+                type="text"
+                placeholder="Enter topic title"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2">Description</label>
+              <textarea
+                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[100px]"
+                placeholder="Enter topic description..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsCreateTopicOpen(false)}
+                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                onClick={() => {
+                  // Handle create topic here
+                  setIsCreateTopicOpen(false);
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteTopicOpen}
+        onRequestClose={() => setIsDeleteTopicOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Delete Topic</h2>
+            <button
+              onClick={() => setIsDeleteTopicOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete this topic? This action cannot be
+            undone.
+          </p>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteTopicOpen(false)}
+              className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              onClick={() => {
+                setTopics(topics.filter((t) => t.id !== selectedTopic.id));
+                setIsDeleteTopicOpen(false);
+                setSelectedTopic(null);
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isArchiveTopicOpen}
+        onRequestClose={() => setIsArchiveTopicOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Archive Topic</h2>
+            <button
+              onClick={() => setIsArchiveTopicOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to archive this topic? You can restore it
+            later.
+          </p>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsArchiveTopicOpen(false)}
+              className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+              onClick={() => {
+                // Handle archive topic here
+                setIsArchiveTopicOpen(false);
+                setSelectedTopic(null);
+              }}
+            >
+              Archive
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteQAModalOpen}
+        onRequestClose={() => setIsDeleteQAModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl">Delete Question</h2>
+            <button
+              onClick={() => setIsDeleteQAModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete this question? This action cannot be
+            undone.
+          </p>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsDeleteQAModalOpen(false)}
+              className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-red-600"
+              onClick={() => {
+                setQuestions(questions.filter((q) => q.id !== selectedQA.id));
+                setIsDeleteQAModalOpen(false);
+                setSelectedQA(null);
+              }}
+            >
+              Delete
+            </button>
           </div>
         </div>
       </Modal>
