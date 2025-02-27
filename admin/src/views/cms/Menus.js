@@ -4,6 +4,7 @@ import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import Modal from "react-modal";
 import EditMenu from "./EditMenu";
 import AddPage from "./AddPage";
+import EditMenuItem from "../../components/modals/cms/menu/EditMenuItem";
 
 // Add new state
 const Menus = () => {
@@ -16,6 +17,9 @@ const Menus = () => {
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [showAddPage, setShowAddPage] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
   const menus = [
     { id: 1, name: "Menu 1" },
     { id: 2, name: "Menu 2" },
@@ -273,7 +277,13 @@ const Menus = () => {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex gap-4">
-                        <button className="text-primary">
+                        <button
+                          className="text-primary"
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setIsEditItemModalOpen(true);
+                          }}
+                        >
                           <FiEdit size={18} />
                         </button>
                         <button
@@ -402,6 +412,17 @@ const Menus = () => {
                 </div>
               </div>
             </div>
+          </Modal>
+          <Modal
+            isOpen={isEditItemModalOpen}
+            onRequestClose={() => setIsEditItemModalOpen(false)}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <EditMenuItem
+              setIsEditItemModalOpen={setIsEditItemModalOpen}
+              selectedItem={selectedItem}
+            />
           </Modal>
         </>
       )}

@@ -17,6 +17,7 @@ import Modal from "react-modal";
 
 const Dashboard = () => {
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [addEventImages, setAddEventImages] = useState([]);
 
   return (
     <div className="space-y-4">
@@ -192,8 +193,8 @@ const Dashboard = () => {
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-1000"
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -253,8 +254,15 @@ const Dashboard = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block mb-1">Audience Type</label>
-                <select className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white">
-                  <option>Enter who can attend?</option>
+                <select
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Enter who can attend?
+                  </option>
+                  <option value="VIP Members">VIP Members</option>
+                  <option value="Standard Members">Standard Members</option>
                 </select>
               </div>
               <div>
@@ -304,20 +312,42 @@ const Dashboard = () => {
             {/* Event Image */}
             <div>
               <label className="block mb-1">Event Image</label>
-              <div className="flex gap-4">
-                <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+              <div className="flex gap-4 flex-wrap">
+                <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                   <span className="text-2xl text-gray-400">+</span>
-                </div>
-                {[1, 2].map((_, index) => (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const imageUrl = URL.createObjectURL(file);
+                        setAddEventImages((prev) => [...prev, imageUrl]);
+                      }
+                    }}
+                  />
+                </label>
+                {addEventImages.map((image, index) => (
                   <div
                     key={index}
-                    className="w-24 h-24 rounded-lg overflow-hidden"
+                    className="w-24 h-24 rounded-lg overflow-hidden relative group"
                   >
                     <img
-                      src={eventImage}
+                      src={image}
                       alt=""
                       className="w-full h-full object-cover"
                     />
+                    <button
+                      onClick={() => {
+                        setAddEventImages((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>

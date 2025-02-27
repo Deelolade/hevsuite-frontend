@@ -3,6 +3,9 @@ import { FiEdit } from "react-icons/fi";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import Modal from "react-modal";
 import AddFooterPage from "./AddFooterPage";
+import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem";
+import EditFooter from "../../components/modals/cms/footer/EditFooter";
+import CreatedPages from "../../components/modals/cms/footer/CreatedPages";
 
 const Footer = () => {
   const [selectedSection, setSelectedSection] = useState("policies");
@@ -13,6 +16,11 @@ const Footer = () => {
   const [footerVisibility, setFooterVisibility] = useState(false);
   const [showAddPage, setShowAddPage] = useState(false);
   const [menuVisibility, setMenuVisibility] = useState(false);
+
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [isEditFooterModalOpen, setIsEditFooterModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isCreatedPagesOpen, setIsCreatedPagesOpen] = useState(false);
 
   const sections = [
     { id: "policies", name: "Policies" },
@@ -47,7 +55,10 @@ const Footer = () => {
               <option>Deleted</option>
             </select>
             <div className="flex gap-3">
-              <button className="px-6 py-2 border rounded-lg">
+              <button
+                className="px-6 py-2 border rounded-lg"
+                onClick={() => setIsEditFooterModalOpen(true)}
+              >
                 Edit Footer
               </button>
               <button
@@ -111,8 +122,11 @@ const Footer = () => {
                 />
               </svg>
             </button>
-            <div className="bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary">
-              Footer Created Pages
+            <div
+              onClick={() => setIsCreatedPagesOpen(true)}
+              className="bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              Created Pages
             </div>
           </div>
 
@@ -166,7 +180,13 @@ const Footer = () => {
                       {item.owner}
                     </td>
                     <td className="py-4 px-6">
-                      <button className="text-primary">
+                      <button
+                        className="text-primary"
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setIsEditItemModalOpen(true);
+                        }}
+                      >
                         <FiEdit size={18} />
                       </button>
                     </td>
@@ -305,6 +325,35 @@ const Footer = () => {
                 </div>
               </div>
             </div>
+          </Modal>
+
+          <Modal
+            isOpen={isEditItemModalOpen}
+            onRequestClose={() => setIsEditItemModalOpen(false)}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <EditFooterItem
+              setIsEditItemModalOpen={setIsEditItemModalOpen}
+              selectedItem={selectedItem}
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isEditFooterModalOpen}
+            onRequestClose={() => setIsEditFooterModalOpen(false)}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <EditFooter setIsEditFooterModalOpen={setIsEditFooterModalOpen} />
+          </Modal>
+          <Modal
+            isOpen={isCreatedPagesOpen}
+            onRequestClose={() => setIsCreatedPagesOpen(false)}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <CreatedPages setIsCreatedPagesOpen={setIsCreatedPagesOpen} />
           </Modal>
         </>
       )}

@@ -3,6 +3,7 @@ import { FiEdit, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import eventImage from "../../assets/event.png";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
+import { IoCloseOutline } from "react-icons/io5";
 import Modal from "react-modal";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
@@ -12,6 +13,12 @@ import avat from "../../assets/user.avif";
 const Event = () => {
   const [currentPage, setCurrentPage] = useState(2);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [isViewEventOpen, setIsViewEventOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isEditEventOpen, setIsEditEventOpen] = useState(false);
+  const [editEventImages, setEditEventImages] = useState([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [addEventImages, setAddEventImages] = useState([]);
 
   const [events, setEvents] = useState([
     {
@@ -108,8 +115,15 @@ const Event = () => {
         </button>
         <div className="flex gap-4">
           <div className="relative">
-            <button className="px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] text-left flex items-center justify-between hover:border-gray-300 transition-colors">
-              Filter
+            <select
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              defaultValue="all"
+            >
+              <option value="all">All</option>
+              <option value="vip">VIP Members</option>
+              <option value="standard">Standard Members</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
@@ -117,11 +131,18 @@ const Event = () => {
                   clipRule="evenodd"
                 />
               </svg>
-            </button>
+            </div>
           </div>
           <div className="relative">
-            <button className="px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] text-left flex items-center justify-between hover:border-gray-300 transition-colors">
-              Sort by
+            <select
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              defaultValue="all"
+            >
+              <option value="all">All</option>
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
@@ -129,7 +150,7 @@ const Event = () => {
                   clipRule="evenodd"
                 />
               </svg>
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -137,12 +158,33 @@ const Event = () => {
       {/* Event Grid */}
       <div className="grid grid-cols-4 gap-6">
         {events.map((event) => (
-          <div key={event.id} className="relative group">
+          <div
+            key={event.id}
+            className="relative group"
+            onClick={() => {
+              setSelectedEvent(event);
+              setIsViewEventOpen(true);
+            }}
+          >
             <div className="absolute top-4 flex justify-between w-full gap-2 z-10">
-              <button className="p-2 relative  text-white left-4 rounded-lg  transition-colors">
+              <button
+                className="p-2 relative  text-white left-4 rounded-lg  transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedEvent(event);
+                  setIsEditEventOpen(true);
+                }}
+              >
                 <img src={edit_icon} alt="edit icon" />
               </button>
-              <button className="p-2 relative right-4 text-white rounded-lg  transition-colors">
+              <button
+                className="p-2 relative right-4 text-white rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedEvent(event);
+                  setIsDeleteModalOpen(true);
+                }}
+              >
                 <FiTrash2 className="w-5 h-5" />
               </button>
             </div>
@@ -172,12 +214,18 @@ const Event = () => {
                     {event.isVisible ? (
                       <FiEye
                         className="w-7 h-7 text-white"
-                        onClick={() => handleVisibility(event.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVisibility(event.id);
+                        }}
                       />
                     ) : (
                       <FiEyeOff
                         className="w-7 h-7 text-white/80"
-                        onClick={() => handleVisibility(event.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVisibility(event.id);
+                        }}
                       />
                     )}
                   </div>
@@ -247,8 +295,8 @@ const Event = () => {
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-1000"
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -308,8 +356,15 @@ const Event = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block mb-1">Audience Type</label>
-                <select className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white">
-                  <option>Enter who can attend?</option>
+                <select
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Enter who can attend?
+                  </option>
+                  <option value="VIP Members">VIP Members</option>
+                  <option value="Standard Members">Standard Members</option>
                 </select>
               </div>
               <div>
@@ -359,20 +414,42 @@ const Event = () => {
             {/* Event Image */}
             <div>
               <label className="block mb-1">Event Image</label>
-              <div className="flex gap-4">
-                <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+              <div className="flex gap-4 flex-wrap">
+                <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                   <span className="text-2xl text-gray-400">+</span>
-                </div>
-                {[1, 2].map((_, index) => (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const imageUrl = URL.createObjectURL(file);
+                        setAddEventImages((prev) => [...prev, imageUrl]);
+                      }
+                    }}
+                  />
+                </label>
+                {addEventImages.map((image, index) => (
                   <div
                     key={index}
-                    className="w-24 h-24 rounded-lg overflow-hidden"
+                    className="w-24 h-24 rounded-lg overflow-hidden relative group"
                   >
                     <img
-                      src={eventImage}
+                      src={image}
                       alt=""
                       className="w-full h-full object-cover"
                     />
+                    <button
+                      onClick={() => {
+                        setAddEventImages((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
@@ -388,6 +465,409 @@ const Event = () => {
               </button>
               <button className="px-6 py-2 bg-primary text-white rounded-lg">
                 Create Event
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isViewEventOpen}
+        onRequestClose={() => setIsViewEventOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">View Event</h2>
+            <button
+              onClick={() => setIsViewEventOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          {selectedEvent && (
+            <div className="space-y-4">
+              {/* Event Image */}
+              <div>
+                <div className="w-full h-64 rounded-lg overflow-hidden bg-gray-100">
+                  <img
+                    src={selectedEvent.image}
+                    alt=""
+                    className="w-full h-full object-contain bg-gray-100"
+                  />
+                </div>
+              </div>
+
+              {/* Event Name */}
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">
+                  Event Name
+                </label>
+                <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                  {selectedEvent.title}
+                </div>
+              </div>
+
+              {/* Location and Time */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Location
+                  </label>
+                  <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                    New York, USA
+                  </div>
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Time
+                  </label>
+                  <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                    {selectedEvent.time}
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Description */}
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">
+                  Event Description
+                </label>
+                <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50 min-h-[150px]">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </div>
+              </div>
+
+              {/* Audience Type and Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Audience Type
+                  </label>
+                  <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                    Public
+                  </div>
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Price
+                  </label>
+                  <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                    $50
+                  </div>
+                </div>
+              </div>
+
+              {/* No of Tickets */}
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">
+                  No of Tickets
+                </label>
+                <div className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-gray-50">
+                  100
+                </div>
+              </div>
+
+              {/* Attending members */}
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">
+                  Attending members
+                </label>
+                <div className="mt-2 border rounded-lg h-[120px] bg-gray-50 p-4">
+                  {/* Add attending members list here */}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setIsViewEventOpen(false)}
+                  className="px-6 py-2 border rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isEditEventOpen}
+        onRequestClose={() => setIsEditEventOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Edit Event</h2>
+            <button
+              onClick={() => setIsEditEventOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <IoCloseOutline size={24} />
+            </button>
+          </div>
+
+          {selectedEvent && (
+            <div className="space-y-4">
+              {/* Event Name */}
+              <div>
+                <label className="block mb-1">Event Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter event name"
+                  defaultValue={selectedEvent.title}
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                />
+              </div>
+
+              {/* Location and Time */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">Location</label>
+                  <input
+                    type="text"
+                    placeholder="Enter event location"
+                    defaultValue="New York, USA"
+                    className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1">Time</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Enter event time"
+                      defaultValue={selectedEvent.time}
+                      className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                    />
+                    <BsCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Description */}
+              <div>
+                <label className="block mb-1">Event Description</label>
+                <textarea
+                  rows={6}
+                  placeholder="Enter event description"
+                  defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600 resize-none"
+                />
+              </div>
+
+              {/* Audience Type and Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">Audience Type</label>
+                  <select
+                    className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Enter who can attend?
+                    </option>
+                    <option value="VIP Members">VIP Members</option>
+                    <option value="Standard Members">Standard Members</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1">Price</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Enter the price"
+                      defaultValue="50"
+                      className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      ℹ
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* No of Tickets */}
+              <div>
+                <label className="block mb-1">No of Tickets</label>
+                <input
+                  type="text"
+                  placeholder="Enter the no of tickets"
+                  defaultValue="100"
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                />
+              </div>
+
+              {/* Attending members */}
+              <div>
+                <label className="block mb-1">Attending members</label>
+                <div className="flex gap-4">
+                  <div className="relative flex-1">
+                    <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search members"
+                      className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
+                    />
+                  </div>
+                  <button className="px-6 py-2 bg-primary text-white rounded-lg">
+                    Invite Users
+                  </button>
+                </div>
+                <div className="mt-2 border rounded-lg p-4">
+                  {/* Attending Members List */}
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full"
+                      >
+                        <img
+                          src={avat}
+                          alt="Andrew Bojangles"
+                          className="w-6 h-6 rounded-full"
+                        />
+                        <span className="text-sm">Andrew Bojangles</span>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <IoCloseOutline size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Image */}
+              <div>
+                <label className="block mb-1">Event Image</label>
+                <div className="flex gap-4 flex-wrap">
+                  <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+                    <span className="text-2xl text-gray-400">+</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const imageUrl = URL.createObjectURL(file);
+                          setEditEventImages((prev) => [...prev, imageUrl]);
+                        }
+                      }}
+                    />
+                  </label>
+                  {editEventImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="w-24 h-24 rounded-lg overflow-hidden relative group"
+                    >
+                      <img
+                        src={image}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => {
+                          setEditEventImages((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          );
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <div className="w-24 h-24 rounded-lg overflow-hidden">
+                    <img
+                      src={selectedEvent.image}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setIsEditEventOpen(false)}
+                  className="px-6 py-2 border rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-6 py-2 bg-primary text-white rounded-lg"
+                  onClick={() => {
+                    // Handle save changes here
+                    if (editEventImages.length > 0) {
+                      setEvents(
+                        events.map((event) =>
+                          event.id === selectedEvent.id
+                            ? { ...event, images: editEventImages }
+                            : event
+                        )
+                      );
+                    }
+                    setEditEventImages([]);
+                    setIsEditEventOpen(false);
+                  }}
+                >
+                  Update Event
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={() => setIsDeleteModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <span className="text-red-500">⚠</span>
+              Remove Event
+            </h2>
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-6">
+            <p className="text-gray-600">
+              Are you sure you want to remove this event?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-6 py-2 border rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Handle delete logic
+                  setEvents(
+                    events.filter((event) => event.id !== selectedEvent.id)
+                  );
+                  setIsDeleteModalOpen(false);
+                }}
+                className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
+              >
+                Remove
               </button>
             </div>
           </div>

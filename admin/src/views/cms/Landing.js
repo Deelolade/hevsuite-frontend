@@ -7,6 +7,8 @@ import party3 from "../../assets/party3.jpg";
 
 import EditCms from "../../components/modals/cms/landing/EditCms";
 import RemoveCms from "../../components/modals/cms/landing/RemoveCms";
+import PreviewCms from "../../components/modals/cms/landing/PreviewCms";
+import AddCms from "../../components/modals/cms/landing/AddCms";
 
 const Landing = () => {
   const [activeFilter, setActiveFilter] = useState("overlays");
@@ -14,28 +16,9 @@ const Landing = () => {
   const [openSettingsId, setOpenSettingsId] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-
-  // const items = [
-  //   {
-  //     id: 1,
-  //     preview: party,
-  //     lastModified: "July 22, 2024 - 10:45pm",
-  //     isVisible: true,
-  //   },
-  //   {
-  //     id: 2,
-  //     preview: party2,
-  //     lastModified: "July 22, 2024 - 10:45pm",
-  //     isVisible: true,
-  //   },
-  //   {
-  //     id: 3,
-  //     preview: party3,
-  //     lastModified: "July 22, 2024 - 10:45pm",
-  //     isVisible: true,
-  //   },
-  // ];
 
   const [items, setItems] = useState([
     {
@@ -80,7 +63,8 @@ const Landing = () => {
   };
 
   const handlePreview = (item) => {
-    console.log(item);
+    setSelectedItem(item);
+    setIsPreviewModalOpen(true);
   };
 
   return (
@@ -105,7 +89,10 @@ const Landing = () => {
             <option value="deleted">Deleted</option>
           </select>
         </div>
-        <button className="px-6 py-2 bg-primary text-white rounded-lg">
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="px-6 py-2 bg-primary text-white rounded-lg"
+        >
           Add
         </button>
       </div>
@@ -235,6 +222,26 @@ const Landing = () => {
           setIsRemoveModalOpen={setIsRemoveModalOpen}
           selectedItem={selectedItem}
         />
+      </Modal>
+      <Modal
+        isOpen={isPreviewModalOpen}
+        onRequestClose={() => setIsPreviewModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <PreviewCms
+          setIsPreviewModalOpen={setIsPreviewModalOpen}
+          selectedItem={selectedItem}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isAddModalOpen}
+        onRequestClose={() => setIsAddModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <AddCms setIsAddModalOpen={setIsAddModalOpen} />
       </Modal>
     </div>
   );
