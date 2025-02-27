@@ -26,18 +26,18 @@ const Ask = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="relative flex-1 max-w-xl">
-          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg"
-          />
+      <div className="flex items-center justify-between">
+        <div className="flex-1 max-w-2xl mx-auto px-4">
+          <div className="relative">
+            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Profile />
-        </div>
+        <Profile />
       </div>
 
       {/* Tabs */}

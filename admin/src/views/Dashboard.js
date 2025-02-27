@@ -1,11 +1,18 @@
+import React, { useState } from "react";
+
 import { BsPeople, BsClock, BsThreeDotsVertical } from "react-icons/bs";
 import { FaUserTimes } from "react-icons/fa";
 import { IoSparkles } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import Profile from "../components/Profile";
 import { BiSearch } from "react-icons/bi";
+import eventImage from "../assets/event.png";
+import { BsCalendar } from "react-icons/bs";
+import Modal from "react-modal";
 
 const Dashboard = () => {
+  const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       {/* <div className="p-6 space-y-6"> */}
@@ -24,7 +31,10 @@ const Dashboard = () => {
         <Profile />
       </div>
       {/* Header with Create Event button */}
-      <button className="bg-primary font-secondary text-white px-4 py-2.5 rounded-md flex items-center gap-2 text-sm">
+      <button
+        className="bg-primary font-secondary text-white px-4 py-2.5 rounded-md flex items-center gap-2 text-sm"
+        onClick={() => setIsAddEventOpen(true)}
+      >
         <span>Create Event</span>
         <IoMdAdd className="text-xl" />
       </button>
@@ -176,6 +186,155 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isAddEventOpen}
+        onRequestClose={() => setIsAddEventOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Add Event</h2>
+            <button
+              onClick={() => setIsAddEventOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* Event Name */}
+            <div>
+              <label className="block mb-1">Event Name</label>
+              <input
+                type="text"
+                placeholder="Enter event name"
+                className="w-full px-4 py-2 border rounded-lg text-gray-600"
+              />
+            </div>
+
+            {/* Location and Time */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Location</label>
+                <input
+                  type="text"
+                  placeholder="Enter event location"
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Time</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Enter event time"
+                    className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                  />
+                  <BsCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Event Description */}
+            <div>
+              <label className="block mb-1">Event Description</label>
+              <textarea
+                rows={6}
+                className="w-full px-4 py-2 border rounded-lg text-gray-600 resize-none"
+              />
+            </div>
+
+            {/* Audience Type and Price */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Audience Type</label>
+                <select className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white">
+                  <option>Enter who can attend?</option>
+                </select>
+              </div>
+              <div>
+                <label className="block mb-1">Price</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Enter the price"
+                    className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    ℹ
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* No of Tickets */}
+            <div>
+              <label className="block mb-1">No of Tickets</label>
+              <input
+                type="text"
+                placeholder="Enter the no of tickets"
+                className="w-full px-4 py-2 border rounded-lg text-gray-600"
+              />
+            </div>
+
+            {/* Attending members */}
+            <div>
+              <label className="block mb-1">Attending members</label>
+              <div className="flex gap-4">
+                <div className="relative flex-1">
+                  <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search members"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
+                  />
+                </div>
+                <button className="px-6 py-2 bg-primary text-white rounded-lg">
+                  Invite Users
+                </button>
+              </div>
+              <div className="mt-2 border rounded-lg h-[120px]"></div>
+            </div>
+
+            {/* Event Image */}
+            <div>
+              <label className="block mb-1">Event Image</label>
+              <div className="flex gap-4">
+                <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+                  <span className="text-2xl text-gray-400">+</span>
+                </div>
+                {[1, 2].map((_, index) => (
+                  <div
+                    key={index}
+                    className="w-24 h-24 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={eventImage}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setIsAddEventOpen(false)}
+                className="px-6 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+              <button className="px-6 py-2 bg-primary text-white rounded-lg">
+                Create Event
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

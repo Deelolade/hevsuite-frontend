@@ -221,7 +221,9 @@ const Evidence = () => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Request Details</h2>
+            <h2 className="text-xl font-primary font-semibold">
+              Request Details
+            </h2>
             <button
               onClick={() => setOpenDetails(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -239,7 +241,7 @@ const Evidence = () => {
                   alt={selectedRequest?.user?.name}
                   className="w-10 h-10 rounded-full"
                 />
-                <span className="font-medium">
+                <span className="font-medium text-[#323C47]">
                   {selectedRequest?.user?.name}
                 </span>
               </div>

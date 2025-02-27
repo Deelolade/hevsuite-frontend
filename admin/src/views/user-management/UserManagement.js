@@ -563,7 +563,7 @@ const UserManagement = () => {
                                   <img
                                     src={user?.idCard}
                                     alt="ID Card"
-                                    className="w-full h-[100px] object-cover rounded-lg opacity-60"
+                                    className="w-full h-[100px] object-cover rounded-lg brightness-50 contrast-50"
                                   />
                                   <button
                                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 text-white rounded-md text-sm hover:bg-black/60"
