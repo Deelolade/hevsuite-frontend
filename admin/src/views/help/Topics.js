@@ -10,6 +10,7 @@ const Topics = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [isEditQAModalOpen, setIsEditQAModalOpen] = useState(false);
   const [selectedQA, setSelectedQA] = useState(null);
+  const [activeTopic, setActiveTopic] = useState(null);
 
   const [isCreateQAModalOpen, setIsCreateQAModalOpen] = useState(false);
   const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
@@ -62,6 +63,7 @@ const Topics = () => {
         </div>
         <select className="px-4 py-2 border bg-gray-200 rounded-lg  min-w-[200px]">
           <option>All Topics</option>
+          <option>Archived</option>
           <option>Deleted</option>
         </select>
         <button
@@ -74,14 +76,23 @@ const Topics = () => {
       </div>
       <div className="grid grid-cols-4 gap-1">
         {topics.map((topic) => (
-          <div key={topic.id} className="border rounded-lg w-56">
+          <div
+            key={topic.id}
+            className={` w-56 cursor-pointer ${
+              activeTopic === topic.id
+                ? "border-4 border-primary rounded-t-3xl"
+                : ""
+            }`}
+            onClick={() => setActiveTopic(topic.id)}
+          >
             <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
               <h3 className="text-white text-center font-secondary w-64">
                 Topic 1
               </h3>
               <button
                 className="text-white"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent triggering the parent onClick
                   setSelectedTopic(topic);
                   setIsEditModalOpen(true);
                 }}
@@ -97,14 +108,18 @@ const Topics = () => {
                     type="checkbox"
                     checked={topic.visible}
                     className="sr-only peer"
-                    onChange={() => handleTopicVisibility(topic.id)}
+                    onChange={(e) => {
+                      e.stopPropagation(); // Prevent triggering the parent onClick
+                      handleTopicVisibility(topic.id);
+                    }}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
               <button
-                className="w-44 py-2 bg-gray-200 rounded-lg "
-                onClick={() => {
+                className="w-44 py-2 bg-gray-200 rounded-lg"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent triggering the parent onClick
                   setSelectedTopic(topic);
                   setIsArchiveTopicOpen(true);
                 }}
@@ -113,7 +128,8 @@ const Topics = () => {
               </button>
               <button
                 className="w-44 py-2 bg-primary text-white rounded-lg"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent triggering the parent onClick
                   setSelectedTopic(topic);
                   setIsDeleteTopicOpen(true);
                 }}
