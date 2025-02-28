@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
 import Footer from "../../../components/Footer";
 import avatar from "../../../assets/user.avif";
+import logo_white from "../../../assets/logo_white.png";
+import bg_image from "../../../assets/party3.jpg";
 
 const RegisterStep7 = () => {
   const navigate = useNavigate();
@@ -29,12 +31,21 @@ const RegisterStep7 = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header with Logo */}
-      <header className="bg-black py-4">
-        <div className="container mx-auto px-4">
-          <img src="/logo.png" alt="Hevsuite Club" className="h-16" />
+      <div className="relative text-white">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={bg_image}
+            alt="background"
+            className="w-full h-[120px] object-cover brightness-50 "
+          />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-      </header>
+        <header className="relative z-10 py-4">
+          <div className="container mx-auto px-4 flex justify-center">
+            <img src={logo_white} alt="Hevsuite Club" className="h-16" />
+          </div>
+        </header>
+      </div>
 
       {/* Progress Steps */}
       <div className="container mx-auto px-4 py-8">
