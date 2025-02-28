@@ -51,6 +51,16 @@ const AdminProfile = () => {
     }));
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setProfileData((prev) => ({
+        ...prev,
+        avatar: imageUrl,
+      }));
+    }
+  };
   return (
     <div className="max-w-4xl space-y-8">
       <div className="flex items-center justify-between">
@@ -76,9 +86,19 @@ const AdminProfile = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <button className="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center border">
+            <input
+              type="file"
+              id="avatarInput"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            <label
+              htmlFor="avatarInput"
+              className="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center border cursor-pointer"
+            >
               <BsCamera size={14} />
-            </button>
+            </label>
           </div>
           <div>
             <h2 className="text-xl font-medium">Raed Read</h2>
@@ -112,16 +132,63 @@ const AdminProfile = () => {
             <label className="block mb-2">Role</label>
             <div className="relative">
               <select
-                value={profileData.role}
-                onChange={(e) => handleInputChange("role", e.target.value)}
+                value="Super Admin"
+                className={`w-full px-4 py-2 border rounded-lg appearance-none ${
+                  !isEditMode ? "bg-[#f9f9f9]" : ""
+                }`}
+                disabled={true}
+              >
+                <option value="Super Admin">Super Admin</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-8">
+          <div className="flex-1">
+            <label className="block mb-2">Password</label>
+            <div className="relative">
+              <input
+                type="password"
+                value={profileData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                className={`w-full px-4 py-2 border rounded-lg ${
+                  !isEditMode ? "bg-gray-50" : "bg-white"
+                }`}
+                readOnly={!isEditMode}
+              />
+              <button className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg
+                  className="w-5 h-5 text-gray-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1">
+            <label className="block mb-2">Select 2FA Preference</label>
+            <div className="relative">
+              <select
+                value={profileData.twoFactorPreference}
+                onChange={(e) =>
+                  handleInputChange("twoFactorPreference", e.target.value)
+                }
                 className={`w-full px-4 py-2 border rounded-lg appearance-none ${
                   !isEditMode ? "bg-gray-50" : "bg-white"
                 }`}
                 disabled={!isEditMode}
               >
-                <option value="Super Admin">Super Admin</option>
-                <option value="Admin">Admin</option>
-                <option value="Editor">Editor</option>
+                <option value="Email">Email</option>
+                <option value="SMS">SMS</option>
+                <option value="Authenticator">Authenticator</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg
@@ -136,68 +203,6 @@ const AdminProfile = () => {
                   />
                 </svg>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className="block mb-2">Password</label>
-          <div className="relative">
-            <input
-              type="password"
-              value={profileData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg ${
-                !isEditMode ? "bg-gray-50" : "bg-white"
-              }`}
-              readOnly={!isEditMode}
-            />
-            <button className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path
-                  fillRule="evenodd"
-                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label className="block mb-2">Select 2FA Preference</label>
-          <div className="relative">
-            <select
-              value={profileData.twoFactorPreference}
-              onChange={(e) =>
-                handleInputChange("twoFactorPreference", e.target.value)
-              }
-              className={`w-full px-4 py-2 border rounded-lg appearance-none ${
-                !isEditMode ? "bg-gray-50" : "bg-white"
-              }`}
-              disabled={!isEditMode}
-            >
-              <option value="Email">Email</option>
-              <option value="SMS">SMS</option>
-              <option value="Authenticator">Authenticator</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg
-                className="w-4 h-4 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
             </div>
           </div>
         </div>
