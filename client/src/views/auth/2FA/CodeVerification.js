@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logo_white from "../../../assets/logo_white.png";
+import logo from "../../../assets/logo_white.png";
+import image from "../../../assets/image.jpg";
 
 const CodeVerification = () => {
   const navigate = useNavigate();
@@ -39,30 +40,33 @@ const CodeVerification = () => {
   return (
     <div className="min-h-screen grid grid-cols-2">
       {/* Left Side - Background Image */}
-      <div className="relative bg-[#540A26]">
+      <div className="relative">
         <div className="absolute inset-0">
           <img
-            src={logo_white}
+            src={image}
             alt="Background"
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover "
           />
         </div>
         <div className="relative z-10 p-16 flex flex-col h-full">
           <div className="flex flex-col items-center text-center">
-            <div className="w-32 h-32 bg-[#540A26] rounded-2xl mb-4">
+            <div className="w-32 h-32  rounded-2xl mb-4">
               <img
-                src={logo_white}
+                src={logo}
                 alt="Hevsuite Club"
                 className="w-full h-full p-4"
               />
             </div>
             <h1 className="text-5xl text-white font-medium">Hevsuite Club</h1>
           </div>
-          <div className="mt-auto text-center">
-            <p className="text-white text-xl mb-4">Don't have membership?</p>
-            <button className="px-8 py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-lg font-medium">
+          <div className="mt-auto text-center flex justify-center gap-8 p-8">
+            <p className="text-white text-xl pt-4">Don't have membership?</p>
+            <Link
+              to="/register"
+              className="p-4 px-8  bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
+            >
               Become a Member
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -104,14 +108,14 @@ const CodeVerification = () => {
               </p>
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-lg font-medium"
+                className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
               >
                 Verify
               </button>
             </div>
           </form>
 
-          <p className="text-center text-sm text-gray-600 mt-8">
+          <p className="text-center text-sm text-gray-600 font-bold mt-8">
             <Link to="/terms" className="hover:underline">
               Terms & Conditions
             </Link>

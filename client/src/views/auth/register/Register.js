@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
 import logo_white from "../../../assets/logo_white.png";
+import Footer from "../../../components/Footer";
 
 const Register = () => {
   const steps = [
@@ -95,7 +96,7 @@ const Register = () => {
                 the Club.
               </p>
             </div>
-
+            <hr />
             <div>
               <h2 className="font-medium text-black mb-2">2. Proof of ID</h2>
               <p>
@@ -103,6 +104,7 @@ const Register = () => {
                 over 18 years of age.
               </p>
             </div>
+            <hr />
 
             <div>
               <h2 className="font-medium text-black mb-2">3. Your Referrals</h2>
@@ -114,6 +116,7 @@ const Register = () => {
                 The only way to apply for membership is via our website.
               </p>
             </div>
+            <hr />
 
             <div>
               <h2 className="font-medium text-black mb-2">4. Payment</h2>
@@ -136,48 +139,14 @@ const Register = () => {
         <div className="text-center mt-12">
           <Link
             to="/register-2"
-            className="inline-flex items-center px-8 py-3 text-[#540A26] rounded-lg text-lg font-medium hover:opacity-90"
+            className="inline-flex border-2 border-gradient_r rounded-3xl items-center px-6 py-1 text-[#540A26] text-lg font-medium hover:opacity-90"
           >
             Continue <span className="ml-2">→</span>
           </Link>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-6 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600">Follow us</span>
-              <div className="flex gap-4">
-                <Link to="#" className="text-gray-600 hover:text-black">
-                  Facebook
-                </Link>
-                <Link to="#" className="text-gray-600 hover:text-black">
-                  Twitter
-                </Link>
-                <Link to="#" className="text-gray-600 hover:text-black">
-                  Instagram
-                </Link>
-                <Link to="#" className="text-gray-600 hover:text-black">
-                  LinkedIn
-                </Link>
-              </div>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/policies" className="text-gray-600 hover:text-black">
-                Policies
-              </Link>
-              <Link to="/about" className="text-gray-600 hover:text-black">
-                HH Club & Founder
-              </Link>
-            </div>
-            <div className="text-gray-600">
-              2024 Hazor Group (Trading as HH Club)
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -3,6 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { FiDownload } from "react-icons/fi";
 import Modal from "react-modal";
+import Footer from "../../../components/Footer";
+import mastercard from "../../../assets/Mastercard.png";
+import american from "../../../assets/AMEX.png";
+import discover from "../../../assets/Discover.png";
+import visa from "../../../assets/VISA.png";
 
 const RegisterStep8 = () => {
   const navigate = useNavigate();
@@ -70,7 +75,7 @@ const RegisterStep8 = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12 max-w-3xl">
-        <h1 className="text-3xl font-medium text-center mb-12">
+        <h1 className="text-3xl font-medium text-center mb-12 text-primary font-secondary">
           Proceed to Payment
         </h1>
 
@@ -86,6 +91,62 @@ const RegisterStep8 = () => {
           {/* Right Side - Payment Form */}
           <div className="space-y-6">
             <div>
+              <label className="block mb-2">Card</label>
+              <div className="flex gap-4">
+                <div className="relative border rounded-lg flex-1">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                    <svg
+                      className="w-5 h-5 text-blue-500"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M3 10H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Card"
+                    className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
+                    value={paymentDetails.cardType}
+                    onChange={(e) =>
+                      setPaymentDetails({
+                        ...paymentDetails,
+                        cardType: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <button className="w-12 h-12 border rounded-lg flex  justify-center">
+                  <svg
+                    className="w-6 h-6 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div>
               <label className="block mb-2">Card number</label>
               <input
                 type="text"
@@ -100,10 +161,10 @@ const RegisterStep8 = () => {
                 }
               />
               <div className="flex gap-2 mt-2">
-                <img src="/visa.png" alt="Visa" className="h-6" />
-                <img src="/mastercard.png" alt="Mastercard" className="h-6" />
-                <img src="/amex.png" alt="American Express" className="h-6" />
-                <img src="/discover.png" alt="Discover" className="h-6" />
+                <img src={visa} alt="Visa" className="h-6" />
+                <img src={mastercard} alt="Mastercard" className="h-6" />
+                <img src={american} alt="American Express" className="h-6" />
+                <img src={discover} alt="Discover" className="h-6" />
               </div>
             </div>
 
@@ -144,7 +205,7 @@ const RegisterStep8 = () => {
               <div>
                 <label className="block mb-2">Country</label>
                 <select
-                  className="w-full px-4 py-3 border rounded-lg appearance-none bg-white"
+                  className="w-full px-4 py-3 border rounded-lg bg-white"
                   value={paymentDetails.country}
                   onChange={(e) =>
                     setPaymentDetails({
@@ -154,7 +215,10 @@ const RegisterStep8 = () => {
                   }
                 >
                   <option value="United States">United States</option>
-                  {/* Add more countries */}
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
                 </select>
               </div>
               <div>
@@ -176,14 +240,14 @@ const RegisterStep8 = () => {
 
             <button
               onClick={handleSubmit}
-              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-lg font-medium"
+              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
             >
               Make Payment
             </button>
 
             <button
               type="button"
-              className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-lg text-lg font-medium"
+              className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-lg font-medium"
             >
               Cancel Application
             </button>
@@ -191,39 +255,8 @@ const RegisterStep8 = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-6 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span>Follow us</span>
-              <Link to="#" className="text-gray-600">
-                Facebook
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Twitter
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Instagram
-              </Link>
-              <Link to="#" className="text-gray-600">
-                LinkedIn
-              </Link>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/policies" className="text-gray-600">
-                Policies
-              </Link>
-              <Link to="/about" className="text-gray-600">
-                HH Club & Founder
-              </Link>
-            </div>
-            <div className="text-gray-600">
-              2024 Hazor Group (Trading as HH Club)
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
+
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
@@ -232,7 +265,7 @@ const RegisterStep8 = () => {
       >
         <div className="relative p-8">
           {/* Success Icon */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+          <div className=" flex justify-center">
             <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
               <BsCheckCircleFill className="w-8 h-8 text-[#540A26]" />
             </div>
@@ -281,7 +314,7 @@ const RegisterStep8 = () => {
 
             <button
               onClick={() => navigate("/homepage")}
-              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg hover:opacity-90 transition-opacity"
+              className="w-full py-1   text-[#540A26] border-2 border-gradient_r rounded-3xl"
             >
               Back to Home
             </button>

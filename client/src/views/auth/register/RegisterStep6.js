@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill, BsThreeDotsVertical } from "react-icons/bs";
+import Modal from "react-modal";
+import { IoClose } from "react-icons/io5";
+import Footer from "../../../components/Footer";
+import avatar from "../../../assets/user.avif";
 
 const RegisterStep6 = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
 
   const members = [
     {
@@ -13,10 +18,63 @@ const RegisterStep6 = () => {
       name: "Andrew Bojangles",
       email: "some@gmail.com",
       type: "Member",
-      avatar: "/images/avatar.jpg",
+      avatar: avatar,
     },
-    // Add more members as needed
+    {
+      id: 2,
+      name: "Andrew Bojangles",
+      email: "some@gmail.com",
+      type: "Member",
+      avatar: avatar,
+    },
+    {
+      id: 3,
+      name: "Andrew Bojangles",
+      email: "some@gmail.com",
+      type: "Member",
+      avatar: avatar,
+    },
+    {
+      id: 4,
+      name: "Andrew Bojangles",
+      email: "some@gmail.com",
+      type: "Member",
+      avatar: avatar,
+    },
+    {
+      id: 5,
+      name: "Andrew Bojangles",
+      email: "some@gmail.com",
+      type: "Member",
+      avatar: avatar,
+    },
+    {
+      id: 6,
+      name: "Andrew Bojangles",
+      email: "some@gmail.com",
+      type: "Member",
+      avatar: avatar,
+    },
   ];
+
+  const modalStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "400px",
+      width: "90%",
+      padding: "24px",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
+    },
+  };
 
   const handleMemberSelect = (memberId) => {
     if (selectedMembers.includes(memberId)) {
@@ -28,6 +86,12 @@ const RegisterStep6 = () => {
 
   const handleSubmit = () => {
     navigate("/register-7");
+  };
+
+  const handleSendReferral = () => {
+    if (selectedMembers.length > 0) {
+      setIsReferralModalOpen(true);
+    }
   };
 
   return (
@@ -85,7 +149,7 @@ const RegisterStep6 = () => {
           Select Your Referrals
         </h1>
 
-        <div className="bg-white rounded-lg p-6">
+        <div className="bg-[#E3F8F959] rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="relative flex-1 max-w-md">
               <input
@@ -109,7 +173,10 @@ const RegisterStep6 = () => {
                 />
               </svg>
             </div>
-            <button className="px-4 py-2 bg-[#540A26] text-white rounded-lg">
+            <button
+              className="px-4 py-2 bg-[#540A26] text-white rounded-lg"
+              onClick={handleSendReferral}
+            >
               Send Referral
             </button>
           </div>
@@ -158,46 +225,72 @@ const RegisterStep6 = () => {
           </Link>
           <button
             onClick={handleSubmit}
-            className="px-8 py-3  text-[#540A26] rounded-lg"
+            className="px-6 py-1  text-[#540A26] border-2 border-gradient_r rounded-3xl"
           >
             Continue →
           </button>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-6 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span>Follow us</span>
-              <Link to="#" className="text-gray-600">
-                Facebook
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Twitter
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Instagram
-              </Link>
-              <Link to="#" className="text-gray-600">
-                LinkedIn
-              </Link>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/policies" className="text-gray-600">
-                Policies
-              </Link>
-              <Link to="/about" className="text-gray-600">
-                HH Club & Founder
-              </Link>
-            </div>
-            <div className="text-gray-600">
-              2024 Hazor Group (Trading as HH Club)
-            </div>
+      <Footer />
+
+      <Modal
+        isOpen={isReferralModalOpen}
+        onRequestClose={() => setIsReferralModalOpen(false)}
+        style={modalStyles}
+        contentLabel="Referral Confirmation Modal"
+      >
+        <div className="relative">
+          <button
+            onClick={() => setIsReferralModalOpen(false)}
+            className="absolute right-0 top-0 text-gray-400 hover:text-gray-600"
+          >
+            <IoClose size={24} />
+          </button>
+
+          <h2 className="text-2xl font-semibold mb-6">Confirm Referral</h2>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to send referral requests to these members?
+          </p>
+
+          <div className="space-y-4 mb-8">
+            {members
+              .filter((member) => selectedMembers.includes(member.id))
+              .map((member) => (
+                <div key={member.id} className="flex items-center gap-4">
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div>
+                    <h3 className="font-medium">{member.name}</h3>
+                    <p className="text-gray-500 text-sm">{member.email}</p>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setIsReferralModalOpen(false)}
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                // Add your referral sending logic here
+                setIsReferralModalOpen(false);
+              }}
+              className="px-6 py-2 bg-[#540A26] text-white rounded-lg"
+            >
+              Confirm
+            </button>
           </div>
         </div>
-      </footer>
+      </Modal>
     </div>
   );
 };

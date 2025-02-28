@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import logo_white from "../../../assets/logo_white.png";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../../assets/logo_white.png";
+import image from "../../../assets/image.jpg";
 
 import { MdEmail } from "react-icons/md";
 
@@ -14,30 +15,33 @@ const EmailVerification = () => {
 
   return (
     <div className="min-h-screen grid grid-cols-2">
-      <div className="relative bg-[#540A26]">
+      <div className="relative">
         <div className="absolute inset-0">
           <img
-            src={logo_white}
+            src={image}
             alt="Background"
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover "
           />
         </div>
         <div className="relative z-10 p-16 flex flex-col h-full">
           <div className="flex flex-col items-center text-center">
-            <div className="w-32 h-32 bg-[#540A26] rounded-2xl mb-4">
+            <div className="w-32 h-32  rounded-2xl mb-4">
               <img
-                src={logo_white}
+                src={logo}
                 alt="Hevsuite Club"
                 className="w-full h-full p-4"
               />
             </div>
             <h1 className="text-5xl text-white font-medium">Hevsuite Club</h1>
           </div>
-          <div className="mt-auto text-center">
-            <p className="text-white text-xl mb-4">Don't have membership?</p>
-            <button className="px-8 py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-lg font-medium">
+          <div className="mt-auto text-center flex justify-center gap-8 p-8">
+            <p className="text-white text-xl pt-4">Don't have membership?</p>
+            <Link
+              to="/register"
+              className="p-4 px-8  bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
+            >
               Become a Member
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -46,7 +50,7 @@ const EmailVerification = () => {
           <h1 className="text-[32px] font-['Playfair_Display'] mb-3 text-center">
             Two-Factor Authentication
           </h1>
-          <p className="text-gray-500 text-sm font-['Lato'] text-center mb-8">
+          <p className="text-gray-500 text-sm font-primary text-center mb-8">
             We'll text a verification code to this email whenever you sign-in to
             your account
           </p>
@@ -59,13 +63,13 @@ const EmailVerification = () => {
                 placeholder="Enter email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-['Lato']"
+                className="w-full py-2.5 pl-10 pr-4 border border-gray-200 rounded-[4px] text-sm focus:outline-none focus:ring-0 font-primary"
               />
             </div>
 
             <button
               onClick={handleVerify}
-              className="w-full py-2.5 rounded-[4px] text-white text-sm font-['Lato']"
+              className="w-full py-2.5 rounded-3xl text-white text-sm font-primary"
               style={{
                 background: "linear-gradient(to right, #540A26, #0A5438)",
               }}
@@ -75,7 +79,7 @@ const EmailVerification = () => {
 
             <button
               onClick={() => navigate(-1)}
-              className="w-full text-center text-gray-500 text-sm font-['Lato']"
+              className="w-full text-center text-gray-500 text-sm font-primary"
             >
               Cancel
             </button>

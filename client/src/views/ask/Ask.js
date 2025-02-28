@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { BsBell, BsThreeDotsVertical } from "react-icons/bs";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
+import Header from "../../components/Header";
+import bg_image from "../../assets/party3.jpg";
+import Footer from "../../components/Footer";
+import { BiErrorCircle } from "react-icons/bi";
+import { AiOutlineSend } from "react-icons/ai";
+import avatar from "../../assets/user.avif";
 
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,154 +134,125 @@ const Ask = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="py-4 px-6 flex items-center justify-between bg-white text-black">
-        <Link to="/" className="text-3xl font-bold">
-          h
-        </Link>
-        <div className="flex items-center space-x-6">
-          <Link to="/how-it-works" className="text-black">
-            How it works
-          </Link>
-          <Link to="/help-centre" className="text-black">
-            Help centre
-          </Link>
-          <Link to="/ask" className="text-[#540A26]">
-            Ask
-          </Link>
-          <div className="relative">
-            <BsBell className="w-6 h-6 text-black" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-              2
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <img
-              src="/avatar.jpg"
-              alt="User"
-              className="w-8 h-8 rounded-full"
-            />
-            <span className="text-black">Goodluck</span>
+      <div className="relative text-white">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={bg_image}
+            alt="background"
+            className="w-full h-full object-cover brightness-50"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
+        <div className="relative z-10">
+          <Header />
+          {/* <Header /> */}
+
+          {/* Hero Section */}
+          <div className="relative z-10 text-center py-16">
+            <h1 className="text-4xl font-semibold mb-4 font-secondary">Ask</h1>
+            <p className="text-gray-200 font-primary">
+              View and respond to questions or requests posted by other members.
+            </p>
           </div>
         </div>
-      </header>
-
-      {/* Hero Section */}
-      <div className="text-center py-16 text-black">
-        <h1 className="text-4xl font-semibold mb-4">Ask</h1>
-        <p className="text-gray-600">
-          View and respond to questions or requests posted by other members.
-        </p>
       </div>
 
-      {/* Actions */}
-      <div
-        className="px-6 flex justify-start items-center mb-8"
-        onClick={() => setShowReportModal(true)}
-      >
-        <BsThreeDotsVertical className="text-2xl text-gray-400 cursor-pointer" />
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-6 py-2 bg-[#540A26] text-white rounded-lg flex items-center gap-2"
+      <div className="p-12 ">
+        <div
+          className="px-44 flex justify-start items-center mb-8"
+          // onClick={(e) => {
+          //   e.stopPropagation();
+          //   setShowReportModal(true);
+          // }}
         >
-          <span>Add Ask</span>
-        </button>
-      </div>
-
-      {/* Requests Grid */}
-      <div className="px-6 grid grid-cols-3 gap-6">
-        {requests.map((request, index) => (
-          <div
-            key={index}
-            className="bg-white border border-gray-200 rounded-xl p-6 relative group shadow-sm"
+          <BsThreeDotsVertical className="text-2xl text-gray-400 cursor-pointer" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsModalOpen(true);
+            }}
+            className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
           >
-            <button className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <BsThreeDotsVertical className="text-gray-400" />
-            </button>
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold mb-2 text-black">
-                {request.title}
-              </h3>
-              <p className="text-gray-600">{request.description}</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>Created By:</span>
-                <span>{request.createdBy}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>Date:</span>
-                <span>{request.date}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
-              <div className="flex gap-2">
-                {request.tags.map((tag, tagIndex) => (
-                  <span
-                    key={tagIndex}
-                    className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <button
-                className="ml-auto px-4 py-1 bg-[#540A26] text-white rounded-lg text-sm"
-                onClick={() => setIsChatModalOpen(true)}
-              >
-                Claim Ask
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            <span>Add Ask</span>
+          </button>
+        </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center items-center gap-2 mt-12 mb-8">
-        <button className="w-8 h-8 flex items-center justify-center text-gray-600">
-          ←
-        </button>
-        <button className="w-2 h-2 rounded-full bg-[#540A26]"></button>
-        <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-        <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-        <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-        <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-        <button className="w-8 h-8 flex items-center justify-center text-gray-600">
-          →
-        </button>
+        {/* Requests Grid */}
+        <div className="px-44 grid grid-cols-3 gap-6">
+          {requests.map((request, index) => (
+            <div
+              key={index}
+              className="bg-white border border-gray-200 rounded-xl p-6 relative group shadow-sm"
+            >
+              <button
+                className="absolute top-5 right-4 "
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowReportModal(true);
+                }}
+              >
+                <BiErrorCircle className="text-gray-400 w-6 h-6" />
+              </button>
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold mb-2 text-gradient_r font-secondary">
+                  {request.title}
+                </h3>
+                <p className="text-[#979797] font-primary">
+                  {request.description}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>Created By:</span>
+                  <span className="text-[#979797]"> {request.createdBy}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>Date:</span>
+                  <span className="text-[#979797]">{request.date}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mt-4">
+                <div className="flex gap-2">
+                  {request.tags.map((tag, tagIndex) => (
+                    <span
+                      key={tagIndex}
+                      className="px-2   rounded-full text-sm text-primary border-2 border-primary"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  className="ml-auto px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-sm"
+                  onClick={() => setIsChatModalOpen(true)}
+                >
+                  Claim Ask
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex justify-center items-center gap-2 mt-12 mb-8">
+          <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+            ←
+          </button>
+          <button className="w-2 h-2 rounded-full bg-[#540A26]"></button>
+          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+          <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+            →
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-6 px-6 bg-white">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4 text-gray-600">
-            <span>Follow us</span>
-            <Link to="#" className="hover:text-gray-900">
-              Facebook
-            </Link>
-            <Link to="#" className="hover:text-gray-900">
-              Twitter
-            </Link>
-            <Link to="#" className="hover:text-gray-900">
-              Instagram
-            </Link>
-            <Link to="#" className="hover:text-gray-900">
-              LinkedIn
-            </Link>
-          </div>
-          <div className="flex space-x-8">
-            <Link to="/policies" className="text-gray-600 hover:text-gray-900">
-              Policies
-            </Link>
-            <Link to="/about" className="text-gray-600 hover:text-gray-900">
-              HH Club & Founder
-            </Link>
-          </div>
-          <div className="text-gray-600">
-            2024 Hazor Group (Trading as HH Club)
-          </div>
-        </div>
-      </footer>
+
+      <Footer />
+
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
@@ -378,7 +354,7 @@ const Ask = () => {
         <div className="rounded-t-2xl bg-gradient-to-r from-[#540A26] to-[#0A5440] p-4">
           <div className="flex items-center gap-3">
             <img
-              src="/avatar.jpg"
+              src={avatar}
               alt="John Daniel"
               className="w-10 h-10 rounded-full"
             />
@@ -444,19 +420,13 @@ const Ask = () => {
                   if (newMessage.trim()) {
                     setMessages([
                       ...messages,
-                      { text: newMessage, time: "7:20", isUser: true },
+                      { text: newMessage, time: "7:20", isUser: false },
                     ]);
                     setNewMessage("");
                   }
                 }}
               >
-                <svg
-                  className="w-6 h-6 -rotate-90"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                </svg>
+                <AiOutlineSend size={24} />
               </button>
             </div>
           </div>
@@ -531,7 +501,7 @@ const Ask = () => {
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-100 rounded-lg appearance-none"
+              className="w-full px-4 py-3 bg-gray-100 rounded-lg"
             >
               <option value="">Sexual Content</option>
               <option value="harassment">Inappropriate Content</option>

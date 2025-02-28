@@ -26,6 +26,8 @@ import Topics from "./views/help/Topics";
 import TopicDetails from "./views/help/TopicDetails";
 import Terms from "./views/terms/Terms";
 import HowItWorks from "./views/how-it-works/HowItWorks";
+import News from "./views/news/News";
+import NewsDetail from "./views/news/NewsDetail";
 
 const isAuthenticated = () => {
   return localStorage.getItem("user") === null;
@@ -45,6 +47,14 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Landing />,
+  },
+  {
+    path: "/news",
+    element: <News />,
+  },
+  {
+    path: "/news-detail",
+    element: <NewsDetail />,
   },
   { path: "login", element: <Login /> },
   { path: "forgot-password", element: <ForgotPassword /> },
@@ -117,7 +127,7 @@ const router = createBrowserRouter([
         element: <Events />,
       },
       {
-        path: "asks",
+        path: "ask",
         element: <Ask />,
       },
       {

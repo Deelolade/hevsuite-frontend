@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill, BsEye, BsEyeSlash } from "react-icons/bs";
+import Footer from "../../../components/Footer";
 
 const RegisterStep5 = () => {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ const RegisterStep5 = () => {
           Supporting Documents
         </h1>
 
-        <div className="space-y-8">
+        <div className="space-y-8 bg-[#E3F8F959]">
           {/* Upload Proof of ID */}
           <div className="bg-white rounded-lg p-8 text-center">
             <h3 className="text-xl font-medium mb-2">Upload Proof of ID</h3>
@@ -85,25 +86,45 @@ const RegisterStep5 = () => {
               Please upload a clear photo of your proof of ID e.g. Driving
               license or passport
             </p>
-            <button
-              onClick={() => document.getElementById("proofOfId").click()}
-              className="px-6 py-3 bg-[#540A26] text-white rounded-lg flex items-center justify-center gap-2 mx-auto"
-            >
-              Upload Files
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {formData.proofOfId ? (
+              <div className="mb-4">
+                <div className="relative w-64 h-40 mx-auto">
+                  <img
+                    src={URL.createObjectURL(formData.proofOfId)}
+                    alt="Proof of ID"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() =>
+                      setFormData({ ...formData, proofOfId: null })
+                    }
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => document.getElementById("proofOfId").click()}
+                className="px-6 py-3 bg-[#540A26] text-white rounded-lg flex items-center justify-center gap-2 mx-auto"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-            </button>
+                Upload Files
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                  />
+                </svg>
+              </button>
+            )}
             <input
               type="file"
               id="proofOfId"
@@ -119,25 +140,43 @@ const RegisterStep5 = () => {
             <p className="text-gray-600 mb-6">
               Please upload a clear photo of a recent headshot of yourself.
             </p>
-            <button
-              onClick={() => document.getElementById("picture").click()}
-              className="px-6 py-3 bg-[#540A26] text-white rounded-lg flex items-center justify-center gap-2 mx-auto"
-            >
-              Upload Files
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {formData.picture ? (
+              <div className="mb-4">
+                <div className="relative w-40 h-40 mx-auto">
+                  <img
+                    src={URL.createObjectURL(formData.picture)}
+                    alt="Profile Picture"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                  <button
+                    onClick={() => setFormData({ ...formData, picture: null })}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => document.getElementById("picture").click()}
+                className="px-6 py-3 bg-[#540A26] text-white rounded-lg flex items-center justify-center gap-2 mx-auto"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-            </button>
+                Upload Files
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                  />
+                </svg>
+              </button>
+            )}
             <input
               type="file"
               id="picture"
@@ -216,46 +255,14 @@ const RegisterStep5 = () => {
           </Link>
           <button
             onClick={handleSubmit}
-            className="px-8 py-3  text-[#540A26] rounded-lg"
+            className="px-6 py-1  text-[#540A26] border-2 border-gradient_r rounded-3xl"
           >
             Continue →
           </button>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-6 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span>Follow us</span>
-              <Link to="#" className="text-gray-600">
-                Facebook
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Twitter
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Instagram
-              </Link>
-              <Link to="#" className="text-gray-600">
-                LinkedIn
-              </Link>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/policies" className="text-gray-600">
-                Policies
-              </Link>
-              <Link to="/about" className="text-gray-600">
-                HH Club & Founder
-              </Link>
-            </div>
-            <div className="text-gray-600">
-              2024 Hazor Group (Trading as HH Club)
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

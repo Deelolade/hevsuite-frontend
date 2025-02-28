@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
+import Footer from "../../../components/Footer";
 
 const RegisterStep3 = () => {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ const RegisterStep3 = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#F8FAFA] p-8 rounded-lg space-y-6"
+          className="bg-[#E3F8F959] p-8 rounded-lg space-y-6"
         >
           <div>
             <label className="block mb-2">
@@ -280,46 +281,14 @@ const RegisterStep3 = () => {
           </Link>
           <button
             onClick={handleSubmit}
-            className="px-8 py-3  text-[#540A26] rounded-lg"
+            className="px-6 py-1  text-[#540A26] border-2 border-gradient_r rounded-3xl"
           >
             Continue →
           </button>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-6 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <span>Follow us</span>
-              <Link to="#" className="text-gray-600">
-                Facebook
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Twitter
-              </Link>
-              <Link to="#" className="text-gray-600">
-                Instagram
-              </Link>
-              <Link to="#" className="text-gray-600">
-                LinkedIn
-              </Link>
-            </div>
-            <div className="flex gap-8">
-              <Link to="/policies" className="text-gray-600">
-                Policies
-              </Link>
-              <Link to="/about" className="text-gray-600">
-                HH Club & Founder
-              </Link>
-            </div>
-            <div className="text-gray-600">
-              2024 Hazor Group (Trading as HH Club)
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -135,6 +135,7 @@ const Payment = () => {
           Next
         </button>
       </div>
+
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}

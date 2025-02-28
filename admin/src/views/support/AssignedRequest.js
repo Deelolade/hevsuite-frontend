@@ -107,7 +107,7 @@ const AssignedRequest = () => {
               />
             </div>
             <select
-              className="px-4 py-2 border rounded-lg appearance-none bg-white"
+              className="px-4 py-2 border w-44 rounded-lg font-primary text-[#343434] bg-white"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
