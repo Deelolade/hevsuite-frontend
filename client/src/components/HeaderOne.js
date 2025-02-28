@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import dose from "../assets/dose.mp4";
+// import dose from "../assets/dose.mp4";
 import logo from "../assets/logo_white.png";
 
 const HeaderOne = () => {
