@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
 import logo_white from "../../../assets/logo_white.png";
 import authImage from "../../../assets/image.jpg";
@@ -16,13 +16,14 @@ const ResetPassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const data = {
+      password: formData.newPassword,
+    };
     navigate("/reset-success");
-    // Add your reset password logic here
   };
 
   return (
     <div className="flex h-screen">
-      {/* Left Side - Background Image */}
       <div
         className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
         style={{
@@ -37,7 +38,6 @@ const ResetPassword = () => {
         </div>
       </div>
 
-      {/* Right Side - Reset Password Form */}
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
           <div className="mb-12">

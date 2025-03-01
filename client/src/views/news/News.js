@@ -66,7 +66,7 @@ const News = () => {
           </div>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-end mb-20 text-white">
-          <h1 className="text-6xl font-bold mb-8">
+          <h1 className="text-6xl md:text-6xl text-3xl font-bold mb-8 text-center px-4">
             The Kings Halloween Event Celebration Party
           </h1>
           <Link
@@ -85,11 +85,11 @@ const News = () => {
 
       {/* News Content */}
       <section className="py-16">
-        <div className="container mx-auto px-12">
-          <h2 className="text-4xl font-bold  mb-12 font-secondary text-gradient_r">
+        <div className="container mx-auto px-4 md:px-12">
+          <h2 className="text-4xl font-bold mb-12 font-secondary text-gradient_r">
             More News
           </h2>
-          <div className="grid grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {newsItems.map((item) => (
               <div key={item.id} className="relative group ">
                 <div

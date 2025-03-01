@@ -14,6 +14,14 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
   const [showOccupation, setShowOccupation] = useState(true);
   const [showReferrals, setShowReferrals] = useState(true);
 
+  const handleAcceptUser = (user) => {
+    console.log(`User accepted:`, user);
+  };
+
+  const handleRejectUser = (user) => {
+    console.log(`User rejected:`, user);
+  };
+
   const handleAction = (type) => {
     setActionType(type);
     setIsActionModalOpen(true);
@@ -631,8 +639,11 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
             </button>
             <button
               onClick={() => {
-                // Handle accept/reject action here
-                console.log(`User ${actionType}ed:`, viewUser);
+                if (actionType === "accept") {
+                  handleAcceptUser(viewUser);
+                } else {
+                  handleRejectUser(viewUser);
+                }
                 setIsActionModalOpen(false);
               }}
               className={`px-4 py-2 rounded-lg text-white ${

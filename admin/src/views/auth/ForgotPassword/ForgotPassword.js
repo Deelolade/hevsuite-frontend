@@ -9,13 +9,14 @@ const ForgotPassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const data = {
+      email: email,
+    };
     navigate("/reset-password");
-    // Add your reset password logic here
   };
 
   return (
     <div className="flex h-screen">
-      {/* Left Side - Background Image */}
       <div
         className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
         style={{
@@ -30,7 +31,6 @@ const ForgotPassword = () => {
         </div>
       </div>
 
-      {/* Right Side - Reset Password Form */}
       <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
           <div className="mb-12">

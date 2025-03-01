@@ -47,6 +47,14 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     setIsActionModalOpen(true);
   };
 
+  const handleAcceptUser = (user) => {
+    console.log(`User accepted:`, user);
+  };
+
+  const handleRejectUser = (user) => {
+    console.log(`User rejected:`, user);
+  };
+
   return (
     <>
       <div className="flex justify-end gap-8 mb-6">
@@ -346,8 +354,11 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               </button>
               <button
                 onClick={() => {
-                  // Handle accept/reject action here
-                  console.log(`User ${selectedAction}ed:`, selectedActionUser);
+                  if (selectedAction === "accept") {
+                    handleAcceptUser(selectedActionUser);
+                  } else {
+                    handleRejectUser(selectedActionUser);
+                  }
                   setIsActionModalOpen(false);
                 }}
                 className={`px-4 py-2 rounded-lg text-white ${

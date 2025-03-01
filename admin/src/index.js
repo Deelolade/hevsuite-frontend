@@ -10,18 +10,18 @@ import { Toaster } from "react-hot-toast";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  // <Provider store={store}>
-  <App />
-  // <Toaster
-  //   toastOptions={{
-  //     position: "top-right",
-  //     style: {
-  //       background: "white",
-  //       color: "black",
-  //     },
-  //   }}
-  // />
-  // </Provider>
+  <Provider store={store}>
+    <App />
+    <Toaster
+      toastOptions={{
+        position: "top-right",
+        style: {
+          background: "white",
+          color: "black",
+        },
+      }}
+    />
+  </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function

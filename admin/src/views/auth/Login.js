@@ -4,7 +4,7 @@ import logo_white from "../../assets/logo_white.png";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import authImage from "../../assets/image.jpg";
-// import {toast} from "react-hot-toast"
+import { toast } from "react-hot-toast";
 // import { useDispatch } from "react-redux";
 
 const Login = () => {

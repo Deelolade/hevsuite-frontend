@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
-
 import event_card from "../../assets/event.png";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
@@ -40,7 +39,7 @@ const Landing = () => {
       image: event_card,
     },
     {
-      id: 4,
+      id: 5,
       title: "Battle for NBA Cup",
       date: "2nd January, 2025",
       time: "10:00pm",
@@ -56,26 +55,24 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative h-screen">
         <div className="absolute inset-0 bg-black/50">
-          <div className="absolute inset-0 bg-black/50">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            >
-              <source src="/videos/hero.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/videos/hero.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-end mb-20 text-white">
-          <h1 className="text-6xl font-primary font-bold mb-8">
+        <div className="absolute inset-0 flex flex-col items-center justify-end mb-20 text-white px-4">
+          <h1 className="text-2xl lg:text-6xl md:text-5xl sm:text-2xl font-primary font-bold mb-8 text-center">
             The Kings Halloween Event Celebration Party
           </h1>
           <Link
             to="/register"
-            className="px-8 py-3 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary text-xl"
+            className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary text-xl md:text-lg sm:text-base"
           >
             Become a Member
           </Link>
@@ -88,34 +85,46 @@ const Landing = () => {
       </section>
 
       {/* Newsroom Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-12">
-          <h2 className="text-4xl font-bold text-center mb-12 font-secondary text-gradient_r">
+      <section className="py-16 md:py-12 sm:py-8">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8">
+          <h2 className="text-xl lg:text-4xl md:text-3xl sm:text-2xl font-bold text-center mb-12 font-secondary text-gradient_r">
             Newsroom
           </h2>
-          <div className="grid grid-cols-5 gap-6">
+          <div
+            className="flex overflow-x-auto scrollbar-hidden space-x-6 p-2" // Add horizontal scrolling and hide scrollbar
+            style={{
+              scrollBehavior: "smooth", // Smooth scrolling behavior
+              WebkitOverflowScrolling: "touch", // For iOS devices
+            }}
+          >
             {newsItems.map((item) => (
-              <div key={item.id} className="relative group ">
+              <div
+                key={item.id}
+                className="relative group overflow-hidden rounded-2xl shadow-md min-w-[200px] flex-shrink-0" // Ensure cards don't shrink
+              >
                 <div
-                  className="relative h-80 rounded-2xl overflow-hidden bg-center"
+                  className="relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center"
                   style={{ backgroundImage: `url(${item.image})` }}
                 >
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/90 to-transparent" />
-
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <h3 className="text-xl md:text-lg sm:text-base font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                       {item.title}
                     </h3>
                     <div className="flex justify-between gap-4">
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 text-white/80">
-                          <BsCalendar className="w-4 h-4" />
-                          <span className="text-[12px]">{item.date}</span>
+                          <BsCalendar className="w-4 h-4 sm:w-3 sm:h-3" />
+                          <span className="text-[12px] sm:text-[10px]">
+                            {item.date}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-white/80">
-                          <MdAccessTime className="w-4 h-4" />
-                          <span className="text-[12px]">{item.time}</span>
+                          <MdAccessTime className="w-4 h-4 sm:w-3 sm:h-3" />
+                          <span className="text-[12px] sm:text-[10px]">
+                            {item.time}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -132,7 +141,7 @@ const Landing = () => {
           <div className="text-center mt-8">
             <Link
               to="news"
-              className="px-8 py-3 bg-primary text-white rounded-lg font-secondary"
+              className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-primary text-white rounded-lg font-secondary text-xl md:text-lg sm:text-base"
             >
               View all
             </Link>
@@ -146,4 +155,33 @@ const Landing = () => {
   );
 };
 
+// Hide scrollbar using custom CSS
+const styles = `
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+`;
+
 export default Landing;
+
+// export default function Landing() {
+//   return (
+//     <>
+//       <style>{styles}</style>
+//       <LandingContent />
+//     </>
+//   );
+// }
+
+// const LandingContent = () => {
+//   return (
+//     <div className="min-h-screen">
+//       {/* Rest of the component code */}
+//     </div>
+//   );
+// }
