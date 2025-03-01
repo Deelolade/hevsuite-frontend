@@ -4,9 +4,9 @@ import { BsFilter } from "react-icons/bs";
 
 const NotificationItem = ({ notification, onRemove }) => {
   return (
-    <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
+    <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-lg">
       <div>
-        <p className="font-medium">{notification.title}</p>
+        <p className="font-medium text-black">{notification.title}</p>
         <p className="text-sm text-gray-600">{notification.timestamp}</p>
       </div>
       <button
@@ -59,15 +59,17 @@ const Notification = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 ">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#540A26] text-xl font-medium">Mark all as read</h2>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+          <button className="flex justify-start w-full gap-2 px-8 py-2 bg-[#E1F5F6] rounded-lg text-[#444444]">
             <BsFilter size={20} />
             Filter
           </button>
-          <button className="text-gray-600 hover:text-gray-800">Clear all</button>
+          <button className="text-gray-600 hover:text-gray-800 w-full">
+            Clear all
+          </button>
         </div>
       </div>
 

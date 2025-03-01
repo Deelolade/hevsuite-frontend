@@ -4,9 +4,9 @@ import { BsFilter } from "react-icons/bs";
 
 const ActivityItem = ({ activity, onRemove }) => {
   return (
-    <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
+    <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-lg">
       <div>
-        <p className="font-medium">{activity.title}</p>
+        <p className="font-medium text-black">{activity.title}</p>
         <p className="text-sm text-gray-600">{activity.timestamp}</p>
       </div>
       <button
@@ -38,7 +38,8 @@ const Activities = () => {
     },
     {
       id: 4,
-      title: "Support join request for Jane Doe accepted (Device: MacBook Pro, Safari)",
+      title:
+        "Support join request for Jane Doe accepted (Device: MacBook Pro, Safari)",
       timestamp: "29thDecember, 2024 by 12:09pm",
     },
     {
@@ -63,11 +64,13 @@ const Activities = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#540A26] text-xl font-medium">Activity log</h2>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+          <button className="flex justify-start w-full gap-2 px-8 py-2 bg-[#E1F5F6] rounded-lg text-[#444444]">
             <BsFilter size={20} />
             Filter
           </button>
-          <button className="text-gray-600 hover:text-gray-800">Clear all</button>
+          <button className="text-gray-600 hover:text-gray-800 w-full">
+            Clear all
+          </button>
         </div>
       </div>
 

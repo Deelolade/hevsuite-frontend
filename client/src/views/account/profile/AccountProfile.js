@@ -1,14 +1,15 @@
 import React from "react";
 import { BsCalendar } from "react-icons/bs";
+import avatar from "../../../assets/user.avif";
 
 const AccountProfile = () => {
   return (
-    <div>
+    <div className="text-black">
       <>
         {/* Profile Header */}
-        <div className="flex items-start gap-4 mb-8">
+        <div className="flex items-start gap-4 mb-8 text-black">
           <img
-            src="/avatar.jpg"
+            src={avatar}
             alt="Profile"
             className="w-20 h-20 rounded-full object-cover"
           />
