@@ -6,6 +6,7 @@ import event_card from "../../assets/event.png";
 import { Link } from "react-router-dom";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
+import Header from "../../components/Header";
 
 const News = () => {
   const newsItems = [
@@ -49,7 +50,7 @@ const News = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <HeaderOne />
+      <Header />
 
       {/* Hero Section */}
       <section className="relative h-screen">
