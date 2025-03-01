@@ -2,13 +2,21 @@ import React, { useState } from "react";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import avatar from "../../../assets/user.avif";
+import SuccessfulReferrals from "./SuccessfulReferrals";
+import PendingReferrals from "./PendingReferrals";
+import CancelledReferrals from "./CancelledReferrals";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
 
 // Navigation Tabs Component
 const NavigationTabs = ({ activeTab, setActiveTab }) => {
-  const tabs = ["Successful Referrals", "Pending Referrals", "Cancelled Referrals"];
+  const tabs = [
+    "Successful Referrals",
+    "Pending Referrals",
+    "Cancelled Referrals",
+  ];
   return (
     <div className="flex gap-2 mb-6">
       {tabs.map((tab) => (
@@ -39,12 +47,14 @@ const ReferralItem = ({ referral, activeTab }) => {
           className="w-12 h-12 rounded-full object-cover"
         />
         <div>
-          <h3 className="font-medium">{referral.name}</h3>
-          <p className="text-sm text-gray-600">{referral.date}</p>
+          <h3 className="font-medium text-black font-primary">
+            {referral.name}
+          </h3>
+          <p className="text-sm text-gray-600  font-primary">{referral.date}</p>
         </div>
       </div>
       {activeTab === "Successful Referrals" ? (
-        <div className="bg-white shadow-sm rounded-lg px-6 py-2">
+        <div className="bg-white text-black shadow-lg font-primary rounded-lg px-12 py-2">
           {referral.relationship}
         </div>
       ) : activeTab === "Pending Referrals" ? (
@@ -92,6 +102,10 @@ const SendReferralModal = ({ isOpen, onClose }) => {
       onRequestClose={onClose}
       className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-[500px]"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      style={{
+        overlay: { zIndex: 1000 },
+        content: { zIndex: 1001 },
+      }}
     >
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Send Referrals</h2>
@@ -159,10 +173,24 @@ const Referrals = () => {
   const [activeTab, setActiveTab] = useState("Successful Referrals");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const referrals = Array(8).fill({
+  const successReferrals = Array(8).fill({
     name: "Matt Hardy",
     date: "2nd Dec., 2025",
-    image: "/profile-image.jpg",
+    image: avatar,
+    relationship: "Friend",
+  });
+
+  const pendingReferrals = Array(8).fill({
+    name: "Matt Hardy",
+    date: "2nd Dec., 2025",
+    image: avatar,
+    relationship: "Friend",
+  });
+
+  const cancelledReferrals = Array(8).fill({
+    name: "Matt Hardy",
+    date: "2nd Dec., 2025",
+    image: avatar,
     relationship: "Friend",
   });
 
@@ -179,13 +207,19 @@ const Referrals = () => {
       </div>
 
       <div className="space-y-2">
-        {referrals.map((referral, index) => (
-          <ReferralItem
-            key={index}
-            referral={referral}
-            activeTab={activeTab}
-          />
-        ))}
+        <div className="flex justify-between px-4 mb-2">
+          <span className="text-lg text-black font-primary">Name</span>
+          <span className="text-lg text-black font-primary">Relationship</span>
+        </div>
+        {activeTab === "Successful Referrals" && (
+          <SuccessfulReferrals referrals={successReferrals} />
+        )}
+        {activeTab === "Pending Referrals" && (
+          <PendingReferrals referrals={pendingReferrals} />
+        )}
+        {activeTab === "Cancelled Referrals" && (
+          <CancelledReferrals referrals={cancelledReferrals} />
+        )}
       </div>
 
       <Pagination />
