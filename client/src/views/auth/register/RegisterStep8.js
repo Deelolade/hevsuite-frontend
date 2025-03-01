@@ -14,6 +14,7 @@ import bg_image from "../../../assets/party3.jpg";
 const RegisterStep8 = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: "",
     expiry: "",
@@ -30,6 +31,25 @@ const RegisterStep8 = () => {
       bottom: "auto",
       transform: "translate(-50%, -50%)",
       maxWidth: "500px",
+      width: "90%",
+      padding: "0",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
+    },
+  };
+
+  const cancelModalStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "400px",
       width: "90%",
       padding: "0",
       border: "none",
@@ -66,19 +86,37 @@ const RegisterStep8 = () => {
       </div>
 
       {/* Progress Steps */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 py-6 mt-8">
+        <div className="flex flex-wrap justify-center gap-4 pb-6 md:pb-0">
           {[...Array(7)].map((_, index) => (
-            <div key={index} className="flex items-center">
+            <div key={index} className="flex items-center flex-shrink-0">
               <div className="relative">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#0A5440]">
-                  <BsCheckCircleFill className="text-white" />
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    index < 7
+                      ? "bg-[#0A5440]"
+                      : "bg-white border-2 border-gray-300"
+                  }`}
+                >
+                  {index < 6 ? (
+                    <BsCheckCircleFill className="text-white" />
+                  ) : index === 6 ? (
+                    <span className="text-white">7</span>
+                  ) : (
+                    <span className="text-gray-500">{`0${index + 1}`}</span>
+                  )}
                 </div>
-                <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm">
+                <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs md:text-sm">
                   Step {index + 1}
                 </p>
               </div>
-              {index < 6 && <div className="w-32 h-[2px] bg-[#0A5440]" />}
+              {index < 6 && (
+                <div
+                  className={`w-12 md:w-32 h-[2px] ${
+                    index < 6 ? "bg-[#0A5440]" : "bg-gray-300"
+                  }`}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -90,9 +128,9 @@ const RegisterStep8 = () => {
           Proceed to Payment
         </h1>
 
-        <div className="grid grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-12">
           {/* Left Side - Fee Display */}
-          <div>
+          <div className="md:order-1">
             <h2 className="text-[#0A5440] font-medium text-xl mb-2">
               Membership fee
             </h2>
@@ -100,7 +138,7 @@ const RegisterStep8 = () => {
           </div>
 
           {/* Right Side - Payment Form */}
-          <div className="space-y-6">
+          <div className="md:order-2 space-y-6">
             <div>
               <label className="block mb-2">Card</label>
               <div className="flex gap-4">
@@ -258,6 +296,7 @@ const RegisterStep8 = () => {
 
             <button
               type="button"
+              onClick={() => setIsCancelModalOpen(true)}
               className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-lg font-medium"
             >
               Cancel Application
@@ -329,6 +368,51 @@ const RegisterStep8 = () => {
             >
               Back to Home
             </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCancelModalOpen}
+        onRequestClose={() => setIsCancelModalOpen(false)}
+        style={cancelModalStyles}
+        contentLabel="Cancel Application Confirmation Modal"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <span className="text-red-500">⚠</span>
+              Cancel Application
+            </h2>
+            <button
+              onClick={() => setIsCancelModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-6">
+            <p className="text-gray-600">
+              Are you sure you want to cancel your application? This action
+              cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsCancelModalOpen(false)}
+                className="px-6 py-2 border rounded-lg text-sm"
+              >
+                No, Keep Application
+              </button>
+              <button
+                onClick={() => {
+                  setIsCancelModalOpen(false);
+                  navigate("/homepage");
+                }}
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+              >
+                Yes, Cancel
+              </button>
+            </div>
           </div>
         </div>
       </Modal>

@@ -1,3 +1,231 @@
+// import React, { useState } from "react";
+// import { Link, useNavigate } from "react-router-dom";
+// import { BsCheckCircleFill } from "react-icons/bs";
+// import Footer from "../../../components/Footer";
+// import logo_white from "../../../assets/logo_white.png";
+// import bg_image from "../../../assets/party3.jpg";
+
+// const RegisterStep4 = () => {
+//   const navigate = useNavigate();
+//   const [formData, setFormData] = useState({
+//     employmentStatus: "",
+//     interests: [],
+//     otherClubMembership: "",
+//     preferredSocialMedia: "",
+//     marketingConsent: false,
+//   });
+
+//   const interests = [
+//     ["Art & Design", "Cigars", "Country Pursuits"],
+//     ["Dance", "Family Entertainment", "Fashion"],
+//     ["Film", "Food", "Literature"],
+//     ["Music/Dj", "Politics", "Sport"],
+//     ["Technology", "Theatre", "Travel"],
+//     ["Wellness & Beauty", "Wine & Spirits", "Yoga"],
+//   ];
+
+//   const handleInterestToggle = (interest) => {
+//     const newInterests = formData.interests.includes(interest)
+//       ? formData.interests.filter((i) => i !== interest)
+//       : [...formData.interests, interest];
+//     setFormData({ ...formData, interests: newInterests });
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     navigate("/register-5");
+//   };
+
+//   return (
+//     <div className="min-h-screen">
+//       <div className="relative text-white">
+//         <div className="absolute inset-0 z-0">
+//           <img
+//             src={bg_image}
+//             alt="background"
+//             className="w-full h-[120px] object-cover brightness-50 "
+//           />
+//           <div className="absolute inset-0 bg-black/60" />
+//         </div>
+//         <header className="relative z-10 py-4">
+//           <div className="container mx-auto px-4 flex justify-center">
+//             <img src={logo_white} alt="Hevsuite Club" className="h-16" />
+//           </div>
+//         </header>
+//       </div>
+
+//       {/* Progress Steps */}
+//       <div className="container mx-auto px-4 py-8">
+//         <div className="flex items-center justify-between max-w-4xl mx-auto">
+//           {[...Array(7)].map((_, index) => (
+//             <div key={index} className="flex items-center">
+//               <div className="relative">
+//                 <div
+//                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
+//                     index < 4
+//                       ? "bg-[#0A5440]"
+//                       : "bg-white border-2 border-gray-300"
+//                   }`}
+//                 >
+//                   {index < 3 ? (
+//                     <BsCheckCircleFill className="text-white" />
+//                   ) : index === 3 ? (
+//                     <span className="text-white">4</span>
+//                   ) : (
+//                     <span className="text-gray-500">{`0${index + 1}`}</span>
+//                   )}
+//                 </div>
+//                 <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm">
+//                   Step {index + 1}
+//                 </p>
+//               </div>
+//               {index < 6 && (
+//                 <div
+//                   className={`w-32 h-[2px] ${
+//                     index < 3 ? "bg-[#0A5440]" : "bg-gray-300"
+//                   }`}
+//                 />
+//               )}
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* Main Content */}
+//       <div className="container mx-auto px-4 py-12 max-w-3xl">
+//         <h1 className="text-3xl font-medium text-center mb-12 flex items-center justify-center gap-3">
+//           <span className="w-8 h-8 bg-[#540A26] rounded-full flex items-center justify-center text-white">
+//             👤
+//           </span>
+//           Occupation & Interest
+//         </h1>
+
+//         <form
+//           onSubmit={handleSubmit}
+//           className="bg-[#E3F8F959] p-8 rounded-lg space-y-8"
+//         >
+//           <div>
+//             <label className="block mb-2">
+//               Employment Status<span className="text-red-500">*</span>
+//             </label>
+//             <select
+//               className="w-full px-4 py-3 border rounded-lg appearance-none bg-white"
+//               value={formData.employmentStatus}
+//               onChange={(e) =>
+//                 setFormData({ ...formData, employmentStatus: e.target.value })
+//               }
+//               required
+//             >
+//               <option value="">Select Option</option>
+//               <option value="employed">Employed</option>
+//               <option value="self-employed">Self-employed</option>
+//               <option value="retired">Retired</option>
+//               <option value="student">Student</option>
+//             </select>
+//           </div>
+
+//           <div>
+//             <h3 className="text-xl font-medium text-center mb-4">
+//               Your Interest
+//             </h3>
+//             <p className="text-center text-gray-600 mb-6">
+//               Please select all/any interests from the following:
+//             </p>
+//             <div className="grid grid-cols-3 gap-4">
+//               {interests.flat().map((interest, index) => (
+//                 <label key={index} className="flex items-center gap-2">
+//                   <input
+//                     type="checkbox"
+//                     checked={formData.interests.includes(interest)}
+//                     onChange={() => handleInterestToggle(interest)}
+//                     className="w-4 h-4 rounded border-gray-300"
+//                   />
+//                   <span>{interest}</span>
+//                 </label>
+//               ))}
+//             </div>
+//           </div>
+
+//           <div>
+//             <label className="block mb-2">
+//               Are you a member of any other club?
+//             </label>
+//             <input
+//               type="text"
+//               placeholder="Enter club name"
+//               className="w-full px-4 py-3 border rounded-lg"
+//               value={formData.otherClubMembership}
+//               onChange={(e) =>
+//                 setFormData({
+//                   ...formData,
+//                   otherClubMembership: e.target.value,
+//                 })
+//               }
+//             />
+//           </div>
+
+//           <div>
+//             <label className="block mb-2">
+//               Preferred Social Media Platform
+//               <span className="text-red-500">*</span>
+//             </label>
+//             <select
+//               className="w-full px-4 py-3 border rounded-lg appearance-none bg-white"
+//               value={formData.preferredSocialMedia}
+//               onChange={(e) =>
+//                 setFormData({
+//                   ...formData,
+//                   preferredSocialMedia: e.target.value,
+//                 })
+//               }
+//               required
+//             >
+//               <option value="">Select an Option</option>
+//               <option value="facebook">Facebook</option>
+//               <option value="instagram">Instagram</option>
+//               <option value="twitter">Twitter</option>
+//               <option value="linkedin">LinkedIn</option>
+//             </select>
+//           </div>
+
+//           <label className="flex items-start gap-2">
+//             <input
+//               type="checkbox"
+//               checked={formData.marketingConsent}
+//               onChange={(e) =>
+//                 setFormData({ ...formData, marketingConsent: e.target.checked })
+//               }
+//               className="mt-1 w-4 h-4 rounded border-gray-300"
+//             />
+//             <span className="text-sm text-gray-600">
+//               By ticking this box, you are confirming that you are happy to
+//               receive marketing communications from us. You can choose to
+//               unsubscribe at any time by clicking unsubscribe in the footer of
+//               the email.
+//             </span>
+//           </label>
+//         </form>
+
+//         <div className="flex justify-between mt-8">
+//           <Link to="/register-3" className="text-gray-600 font-medium">
+//             BACK
+//           </Link>
+//           <button
+//             onClick={handleSubmit}
+//             className="px-6 py-1  text-[#540A26] border-2 border-gradient_r rounded-3xl"
+//           >
+//             Continue →
+//           </button>
+//         </div>
+//       </div>
+
+//       <Footer />
+//     </div>
+//   );
+// };
+
+// export default RegisterStep4;
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
@@ -37,28 +265,35 @@ const RegisterStep4 = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <div className="relative text-white">
         <div className="absolute inset-0 z-0">
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-[120px] object-cover brightness-50 "
+            className="w-full h-[120px] object-cover brightness-50"
           />
           <div className="absolute inset-0 bg-black/60" />
         </div>
         <header className="relative z-10 py-4">
-          <div className="container mx-auto px-4 flex justify-center">
-            <img src={logo_white} alt="Hevsuite Club" className="h-16" />
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <img
+              src={logo_white}
+              alt="Hevsuite Club"
+              className="h-12 md:h-16"
+            />
+            <button className="md:hidden text-white text-2xl">
+              <span>☰</span>
+            </button>
           </div>
         </header>
       </div>
 
       {/* Progress Steps */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 py-6 mt-8">
+        <div className="flex flex-wrap justify-center gap-4 pb-6 md:pb-0">
           {[...Array(7)].map((_, index) => (
-            <div key={index} className="flex items-center">
+            <div key={index} className="flex items-center flex-shrink-0">
               <div className="relative">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -75,13 +310,13 @@ const RegisterStep4 = () => {
                     <span className="text-gray-500">{`0${index + 1}`}</span>
                   )}
                 </div>
-                <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm">
+                <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs md:text-sm">
                   Step {index + 1}
                 </p>
               </div>
               {index < 6 && (
                 <div
-                  className={`w-32 h-[2px] ${
+                  className={`w-12 md:w-32 h-[2px] ${
                     index < 3 ? "bg-[#0A5440]" : "bg-gray-300"
                   }`}
                 />
@@ -92,9 +327,9 @@ const RegisterStep4 = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12 max-w-3xl">
-        <h1 className="text-3xl font-medium text-center mb-12 flex items-center justify-center gap-3">
-          <span className="w-8 h-8 bg-[#540A26] rounded-full flex items-center justify-center text-white">
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow">
+        <h1 className="text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]">
+          <span className="w-6 h-6 md:w-8 md:h-8 bg-[#540A26] rounded-full flex items-center justify-center text-white text-sm md:text-base">
             👤
           </span>
           Occupation & Interest
@@ -102,14 +337,14 @@ const RegisterStep4 = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#E3F8F959] p-8 rounded-lg space-y-8"
+          className="bg-[#E3F8F959] p-4 md:p-8 rounded-lg space-y-4 md:space-y-8"
         >
           <div>
-            <label className="block mb-2">
+            <label className="block mb-1 md:mb-2 text-sm md:text-base">
               Employment Status<span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg appearance-none bg-white"
+              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base"
               value={formData.employmentStatus}
               onChange={(e) =>
                 setFormData({ ...formData, employmentStatus: e.target.value })
@@ -125,15 +360,18 @@ const RegisterStep4 = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-medium text-center mb-4">
+            <h3 className="text-lg md:text-xl font-medium text-center mb-2 md:mb-4">
               Your Interest
             </h3>
-            <p className="text-center text-gray-600 mb-6">
+            <p className="text-center text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
               Please select all/any interests from the following:
             </p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
               {interests.flat().map((interest, index) => (
-                <label key={index} className="flex items-center gap-2">
+                <label
+                  key={index}
+                  className="flex items-center gap-2 text-sm md:text-base"
+                >
                   <input
                     type="checkbox"
                     checked={formData.interests.includes(interest)}
@@ -147,13 +385,13 @@ const RegisterStep4 = () => {
           </div>
 
           <div>
-            <label className="block mb-2">
+            <label className="block mb-1 md:mb-2 text-sm md:text-base">
               Are you a member of any other club?
             </label>
             <input
               type="text"
               placeholder="Enter club name"
-              className="w-full px-4 py-3 border rounded-lg"
+              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base"
               value={formData.otherClubMembership}
               onChange={(e) =>
                 setFormData({
@@ -165,12 +403,12 @@ const RegisterStep4 = () => {
           </div>
 
           <div>
-            <label className="block mb-2">
+            <label className="block mb-1 md:mb-2 text-sm md:text-base">
               Preferred Social Media Platform
               <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full px-4 py-3 border rounded-lg appearance-none bg-white"
+              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base"
               value={formData.preferredSocialMedia}
               onChange={(e) =>
                 setFormData({
@@ -197,7 +435,7 @@ const RegisterStep4 = () => {
               }
               className="mt-1 w-4 h-4 rounded border-gray-300"
             />
-            <span className="text-sm text-gray-600">
+            <span className="text-xs md:text-sm text-gray-600">
               By ticking this box, you are confirming that you are happy to
               receive marketing communications from us. You can choose to
               unsubscribe at any time by clicking unsubscribe in the footer of
@@ -206,13 +444,16 @@ const RegisterStep4 = () => {
           </label>
         </form>
 
-        <div className="flex justify-between mt-8">
-          <Link to="/register-3" className="text-gray-600 font-medium">
+        <div className="flex justify-between mt-6 md:mt-8">
+          <Link
+            to="/register-3"
+            className="text-gray-600 font-medium text-sm md:text-base"
+          >
             BACK
           </Link>
           <button
             onClick={handleSubmit}
-            className="px-6 py-1  text-[#540A26] border-2 border-gradient_r rounded-3xl"
+            className="px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl text-sm md:text-base hover:bg-[#540A26] hover:text-white transition-colors"
           >
             Continue →
           </button>

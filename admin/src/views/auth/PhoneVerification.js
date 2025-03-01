@@ -9,6 +9,9 @@ const PhoneVerification = () => {
   const navigate = useNavigate();
 
   const handleVerify = () => {
+    const data = {
+      phone: phone,
+    };
     navigate("/code-verification", { state: { type: "phone" } });
   };
 
