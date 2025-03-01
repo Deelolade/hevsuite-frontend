@@ -7,36 +7,47 @@ import linkedIn from "../assets/icons/linkedn.png";
 
 const Footer = () => {
   return (
-    <footer className="py-8 border-t">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center gap-4 px-12">
-          <span>Follow us</span>
-          <div className="flex gap-4">
-            <Link to="#" className="text-gray-600 hover:text-black">
-              <img src={facebook} alt="facebook" />
-            </Link>
-            <Link to="#" className="text-gray-600 hover:text-black">
-              <img src={twitter} alt="twitter" />
-            </Link>
-            <Link to="#" className="text-gray-600 hover:text-black">
-              <img src={instagram} alt="instagram" />
-            </Link>
-            <Link to="#" className="text-gray-600 hover:text-black">
-              <img src={linkedIn} alt="linkedin" />
-            </Link>
-          </div>
-          <div className="flex gap-8 pl-12 justify-between">
-            <Link to="/terms" className="text-gray-600 hover:text-black">
-              Policies
-            </Link>
-            <Link to="/about" className="text-gray-600 hover:text-black">
-              HH Club & Founder
-            </Link>
-          </div>
-        </div>
+    <footer className="py-8 border-t bg-gray-50 text-gray-600">
+      {/* Container */}
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        {/* Flex Layout for Content */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-8 sm:gap-0">
+          {/* Left Section: Follow Us & Links */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
+            {/* Follow Us */}
+            <div className="flex items-center gap-4">
+              <span className="font-medium">Follow us</span>
+              <div className="flex gap-4">
+                <Link to="#" className="hover:text-black transition-colors">
+                  <img src={facebook} alt="facebook" className="w-6 h-6" />
+                </Link>
+                <Link to="#" className="hover:text-black transition-colors">
+                  <img src={twitter} alt="twitter" className="w-6 h-6" />
+                </Link>
+                <Link to="#" className="hover:text-black transition-colors">
+                  <img src={instagram} alt="instagram" className="w-6 h-6" />
+                </Link>
+                <Link to="#" className="hover:text-black transition-colors">
+                  <img src={linkedIn} alt="linkedin" className="w-6 h-6" />
+                </Link>
+              </div>
+            </div>
 
-        <div className="text-gray-600 pr-24">
-          2024 Hazor Group (Trading as HH Club)
+            {/* Links */}
+            <div className="flex gap-8 sm:gap-4">
+              <Link to="/terms" className="hover:text-black transition-colors">
+                Policies
+              </Link>
+              <Link to="/about" className="hover:text-black transition-colors">
+                HH Club & Founder
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Section: Copyright Text */}
+          <div className="text-sm sm:text-base text-right">
+            © 2024 Hazor Group (Trading as HH Club)
+          </div>
         </div>
       </div>
     </footer>
