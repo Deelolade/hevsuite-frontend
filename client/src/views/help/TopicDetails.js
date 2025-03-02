@@ -1,3 +1,152 @@
+// import React, { useState } from "react";
+// import { Link } from "react-router-dom";
+// import { IoSearchOutline } from "react-icons/io5";
+// import Header from "../../components/Header";
+// import bg_image from "../../assets/header-bg.jpg";
+// import logo from "../../assets/logo_white.png";
+// import { BsChevronCompactDown, BsChevronCompactUp } from "react-icons/bs";
+// import Footer from "../../components/Footer";
+
+// const TopicDetails = () => {
+//   const [expandedQuestion, setExpandedQuestion] = useState(1);
+//   const [searchQuery, setSearchQuery] = useState("");
+
+//   const questions = [
+//     {
+//       id: 1,
+//       question: "What is Hazor Hevsuite (HH) Club?",
+//       answer: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus magna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus mag`,
+//     },
+//     {
+//       id: 2,
+//       question: "What is Hazor Hevsuite (HH) Club?",
+//       answer: "Answer text here...",
+//     },
+//     {
+//       id: 3,
+//       question: "What is Hazor Hevsuite (HH) Club?",
+//       answer: "Answer text here...",
+//     },
+//     {
+//       id: 4,
+//       question: "What is Hazor Hevsuite (HH) Club?",
+//       answer: "Answer text here...",
+//     },
+//     {
+//       id: 5,
+//       question: "What is Hazor Hevsuite (HH) Club?",
+//       answer: "Answer text here...",
+//     },
+//   ];
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       <div className="relative text-white">
+//         <div className="absolute inset-0 z-0">
+//           <img
+//             src={bg_image}
+//             alt="background"
+//             className="w-full h-full object-cover brightness-50"
+//           />
+//           <div className="absolute inset-0 bg-black/50" />
+//         </div>
+//         <div className="relative z-10">
+//           <Header />
+//           <div className=" text-white text-center py-16 px-4">
+//             <p className="text-sm mb-2 font-secondary">FAQs</p>
+//             <h1 className="text-4xl font-semibold mb-4 font-secondary">
+//               Ask us anything
+//             </h1>
+//             <p className="mb-8 font-primary">
+//               Have any questions? We're here to assist you.
+//             </p>
+//             <div className="max-w-2xl mx-auto relative">
+//               <input
+//                 type="text"
+//                 placeholder="Search here"
+//                 className="w-full px-4 py-3 rounded-lg text-black"
+//                 value={searchQuery}
+//                 onChange={(e) => setSearchQuery(e.target.value)}
+//               />
+//               <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737474]">
+//                 <IoSearchOutline size={24} />
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Content */}
+//       <div className="max-w-4xl mx-auto px-4 py-8">
+//         <div className=" text-white px-6 py-4">
+//           <div className="flex items-center gap-4 text-sm">
+//             <Link to="/topics" className="text-primary text-xl font-semibold">
+//               Popular Topics
+//             </Link>
+//             <span className="text-black text-[44px]">›</span>
+//             <span className="text-[#222222] text-lg mt-2">
+//               About Hazor Hevsuite (HH) Club
+//             </span>
+//           </div>
+//         </div>
+//         <div className="flex items-center gap-4 mb-8">
+//           <div className="w-12 h-12 rounded-lg text-white flex items-center justify-center text-2xl">
+//             <img src={logo} alt="logo" />
+//           </div>
+//           <h1 className="text-3xl font-bold font-secondary ">
+//             About Hazor Hevsuite (HH) Club
+//           </h1>
+//         </div>
+
+//         {/* Questions */}
+//         <div className="space-y-4">
+//           {questions.map((item) => (
+//             <div key={item.id} className="border rounded-lg overflow-hidden">
+//               <button
+//                 className="w-full flex items-center justify-between p-6 text-left"
+//                 onClick={() =>
+//                   setExpandedQuestion(
+//                     expandedQuestion === item.id ? null : item.id
+//                   )
+//                 }
+//               >
+//                 <div className="flex items-center gap-4">
+//                   <span className="w-8 h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm">
+//                     {item.id}
+//                   </span>
+//                   <span className="font-semibold font-primary">
+//                     {item.question}
+//                   </span>
+//                 </div>
+//                 <span className="text-2xl">
+//                   {expandedQuestion === item.id ? (
+//                     <BsChevronCompactUp />
+//                   ) : (
+//                     <BsChevronCompactDown />
+//                   )}
+//                 </span>
+//               </button>
+//               {expandedQuestion === item.id && (
+//                 <div className="px-6 pb-6">
+//                   <div className="ml-12 max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
+//                     <p className="text-gray-600 font-primary leading-relaxed">
+//                       {item.answer}
+//                     </p>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       <Footer />
+//     </div>
+//   );
+// };
+
+// export default TopicDetails;
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoSearchOutline } from "react-icons/io5";
@@ -15,85 +164,89 @@ const TopicDetails = () => {
     {
       id: 1,
       question: "What is Hazor Hevsuite (HH) Club?",
-      answer: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus magna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus mag`,
+      answer: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus magna.`,
     },
     {
       id: 2,
-      question: "What is Hazor Hevsuite (HH) Club?",
+      question: "How do I join the HH Club?",
       answer: "Answer text here...",
     },
     {
       id: 3,
-      question: "What is Hazor Hevsuite (HH) Club?",
+      question: "What are the membership benefits?",
       answer: "Answer text here...",
     },
     {
       id: 4,
-      question: "What is Hazor Hevsuite (HH) Club?",
+      question: "Can I cancel my membership?",
       answer: "Answer text here...",
     },
     {
       id: 5,
-      question: "What is Hazor Hevsuite (HH) Club?",
+      question: "How do I update my profile?",
       answer: "Answer text here...",
     },
   ];
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Background Image */}
       <div className="relative text-white">
         <div className="absolute inset-0 z-0">
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-full object-cover brightness-50"
+            className="w-full h-[300px] sm:h-[400px] object-cover brightness-50"
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
-        <div className="relative z-10">
-          <Header />
-          <div className=" text-white text-center py-16 px-4">
-            <p className="text-sm mb-2 font-secondary">FAQs</p>
-            <h1 className="text-4xl font-semibold mb-4 font-secondary">
-              Ask us anything
-            </h1>
-            <p className="mb-8 font-primary">
-              Have any questions? We're here to assist you.
-            </p>
-            <div className="max-w-2xl mx-auto relative">
-              <input
-                type="text"
-                placeholder="Search here"
-                className="w-full px-4 py-3 rounded-lg text-black"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737474]">
-                <IoSearchOutline size={24} />
-              </button>
-            </div>
+      </div>
+      {/* Header */}
+      <div className="relative z-10">
+        <Header />
+        <div className="text-center py-16 px-4 sm:py-24 sm:px-8">
+          <p className="text-sm sm:text-lg mb-2 font-secondary">FAQs</p>
+          <h1 className="text-3xl sm:text-4xl font-semibold mb-4 font-secondary">
+            Ask us anything
+          </h1>
+          <p className="mb-8 text-base sm:text-lg font-primary">
+            Have any questions? We're here to assist you.
+          </p>
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto relative">
+            <input
+              type="text"
+              placeholder="Search here"
+              className="w-full px-4 py-3 rounded-lg text-black text-sm sm:text-base"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737474] text-xl sm:text-2xl">
+              <IoSearchOutline />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className=" text-white px-6 py-4">
-          <div className="flex items-center gap-4 text-sm">
-            <Link to="/topics" className="text-primary text-xl font-semibold">
-              Popular Topics
-            </Link>
-            <span className="text-black text-[44px]">›</span>
-            <span className="text-[#222222] text-lg mt-2">
-              About Hazor Hevsuite (HH) Club
-            </span>
-          </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-4 text-sm sm:text-base mb-8">
+          <Link to="/topics" className="text-primary font-semibold">
+            Popular Topics
+          </Link>
+          <span className="text-black text-2xl sm:text-3xl">›</span>
+          <span className="text-[#222222] font-medium">
+            About Hazor Hevsuite (HH) Club
+          </span>
         </div>
+
+        {/* Title */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 rounded-lg text-white flex items-center justify-center text-2xl">
-            <img src={logo} alt="logo" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center bg-gray-50">
+            <img src={logo} alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-3xl font-bold font-secondary ">
+          <h1 className="text-2xl sm:text-3xl font-bold font-secondary">
             About Hazor Hevsuite (HH) Club
           </h1>
         </div>
@@ -102,8 +255,9 @@ const TopicDetails = () => {
         <div className="space-y-4">
           {questions.map((item) => (
             <div key={item.id} className="border rounded-lg overflow-hidden">
+              {/* Question Toggle Button */}
               <button
-                className="w-full flex items-center justify-between p-6 text-left"
+                className="w-full flex items-center justify-between p-4 sm:p-6 text-left"
                 onClick={() =>
                   setExpandedQuestion(
                     expandedQuestion === item.id ? null : item.id
@@ -111,14 +265,16 @@ const TopicDetails = () => {
                 }
               >
                 <div className="flex items-center gap-4">
-                  <span className="w-8 h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm">
+                  <span
+                    className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white text-xs sm:text-sm`}
+                  >
                     {item.id}
                   </span>
-                  <span className="font-semibold font-primary">
+                  <span className="font-semibold font-primary text-base sm:text-lg">
                     {item.question}
                   </span>
                 </div>
-                <span className="text-2xl">
+                <span className="text-xl sm:text-2xl">
                   {expandedQuestion === item.id ? (
                     <BsChevronCompactUp />
                   ) : (
@@ -126,10 +282,12 @@ const TopicDetails = () => {
                   )}
                 </span>
               </button>
+
+              {/* Answer Section */}
               {expandedQuestion === item.id && (
                 <div className="px-6 pb-6">
                   <div className="ml-12 max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
-                    <p className="text-gray-600 font-primary leading-relaxed">
+                    <p className="text-gray-600 font-primary leading-relaxed text-sm sm:text-base">
                       {item.answer}
                     </p>
                   </div>
@@ -140,9 +298,29 @@ const TopicDetails = () => {
         </div>
       </div>
 
+      {/* Footer */}
       <Footer />
     </div>
   );
 };
 
-export default TopicDetails;
+// Custom CSS for scrollbar hiding
+const styles = `
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+`;
+
+export default function EnhancedTopicDetails() {
+  return (
+    <>
+      <style>{styles}</style>
+      <TopicDetails />
+    </>
+  );
+}

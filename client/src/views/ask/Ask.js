@@ -1,3 +1,350 @@
+// import React, { useState } from "react";
+// import { BsThreeDotsVertical } from "react-icons/bs";
+// import Modal from "react-modal";
+// import { IoClose } from "react-icons/io5";
+// import Header from "../../components/Header";
+// import bg_image from "../../assets/party3.jpg";
+// import Footer from "../../components/Footer";
+// import { BiErrorCircle } from "react-icons/bi";
+// import { AiOutlineSend } from "react-icons/ai";
+// import avatar from "../../assets/user.avif";
+
+// const Ask = () => {
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+//   const [showAbandonModal, setShowAbandonModal] = useState(false);
+//   const [showReportModal, setShowReportModal] = useState(false);
+//   const [reportType, setReportType] = useState("");
+
+//   const [messages, setMessages] = useState([
+//     {
+//       text: "Hello, I'm interested in volunteering...",
+//       time: "7:20",
+//       isUser: true,
+//     },
+//     {
+//       text: "Great! Please confirm the date and Provide me with you full name and Contact details",
+//       time: "7:20",
+//       isUser: false,
+//     },
+//     {
+//       text: "Yeah Sure i am Available.........",
+//       time: "7:20",
+//       isUser: true,
+//     },
+//   ]);
+//   const [newMessage, setNewMessage] = useState("");
+
+//   const [formData, setFormData] = useState({
+//     title: "",
+//     description: "",
+//     deadline: "",
+//     agreeToGuidelines: false,
+//   });
+
+//   const modalStyles = {
+//     content: {
+//       top: "50%",
+//       left: "50%",
+//       right: "auto",
+//       bottom: "auto",
+//       transform: "translate(-50%, -50%)",
+//       maxWidth: "600px",
+//       width: "90%",
+//       padding: "32px",
+//       border: "none",
+//       borderRadius: "24px",
+//       backgroundColor: "white",
+//     },
+//     overlay: {
+//       backgroundColor: "rgba(0, 0, 0, 0.75)",
+//     },
+//   };
+
+//   const chatModalStyles = {
+//     content: {
+//       top: "auto",
+//       left: "auto",
+//       right: "32px",
+//       bottom: "32px",
+//       width: "400px",
+//       padding: "0",
+//       border: "none",
+//       borderRadius: "24px",
+//       backgroundColor: "white",
+//       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+//     },
+//     overlay: {
+//       backgroundColor: "transparent",
+//     },
+//   };
+
+//   const abandonModalStyles = {
+//     content: {
+//       top: "50%",
+//       left: "50%",
+//       right: "auto",
+//       bottom: "auto",
+//       transform: "translate(-50%, -50%)",
+//       maxWidth: "400px",
+//       width: "90%",
+//       padding: "24px",
+//       border: "none",
+//       borderRadius: "24px",
+//       backgroundColor: "white",
+//     },
+//     overlay: {
+//       backgroundColor: "rgba(0, 0, 0, 0.75)",
+//     },
+//   };
+
+//   const reportModalStyles = {
+//     content: {
+//       top: "50%",
+//       left: "50%",
+//       right: "auto",
+//       bottom: "auto",
+//       transform: "translate(-50%, -50%)",
+//       maxWidth: "400px",
+//       width: "90%",
+//       padding: "24px",
+//       border: "none",
+//       borderRadius: "24px",
+//       backgroundColor: "white",
+//     },
+//     overlay: {
+//       backgroundColor: "rgba(0, 0, 0, 0.75)",
+//     },
+//   };
+
+//   const requests = Array(9).fill({
+//     title: "Request for Event Volunteers",
+//     description:
+//       "Looking for volunteers to assist at the annual || charity event this weekend.",
+//     createdBy: "John Daniel",
+//     date: "21 January, 2025",
+//     tags: ["#Urgent", "#Open"],
+//   });
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     // Add submission logic here
+//     setIsModalOpen(false);
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-white">
+//       <div className="relative text-white">
+//         <div className="absolute inset-0 z-0">
+//           <img
+//             src={bg_image}
+//             alt="background"
+//             className="w-full h-full object-cover brightness-50"
+//           />
+//           <div className="absolute inset-0 bg-black/50" />
+//         </div>
+//         <div className="relative z-10">
+//           <Header />
+//           {/* <Header /> */}
+
+//           {/* Hero Section */}
+//           <div className="relative z-10 text-center py-16">
+//             <h1 className="text-4xl font-semibold mb-4 font-secondary">Ask</h1>
+//             <p className="text-gray-200 font-primary">
+//               View and respond to questions or requests posted by other members.
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="p-12 ">
+//         <div
+//           className="px-44 flex justify-start items-center mb-8"
+//           // onClick={(e) => {
+//           //   e.stopPropagation();
+//           //   setShowReportModal(true);
+//           // }}
+//         >
+//           <BsThreeDotsVertical className="text-2xl text-gray-400 cursor-pointer" />
+//           <button
+//             onClick={(e) => {
+//               e.stopPropagation();
+//               setIsModalOpen(true);
+//             }}
+//             className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+//           >
+//             <span>Add Ask</span>
+//           </button>
+//         </div>
+
+//         {/* Requests Grid */}
+//         <div className="px-44 grid grid-cols-3 gap-6">
+//           {requests.map((request, index) => (
+//             <div
+//               key={index}
+//               className="bg-white border border-gray-200 rounded-xl p-6 relative group shadow-sm"
+//             >
+//               <button
+//                 className="absolute top-5 right-4 "
+//                 onClick={(e) => {
+//                   e.stopPropagation();
+//                   setShowReportModal(true);
+//                 }}
+//               >
+//                 <BiErrorCircle className="text-gray-400 w-6 h-6" />
+//               </button>
+//               <div className="mb-4">
+//                 <h3 className="text-xl font-semibold mb-2 text-gradient_r font-secondary">
+//                   {request.title}
+//                 </h3>
+//                 <p className="text-[#979797] font-primary">
+//                   {request.description}
+//                 </p>
+//               </div>
+//               <div className="space-y-2">
+//                 <div className="flex items-center gap-2 text-sm text-gray-600">
+//                   <span>Created By:</span>
+//                   <span className="text-[#979797]"> {request.createdBy}</span>
+//                 </div>
+//                 <div className="flex items-center gap-2 text-sm text-gray-600">
+//                   <span>Date:</span>
+//                   <span className="text-[#979797]">{request.date}</span>
+//                 </div>
+//               </div>
+//               <div className="flex items-center gap-4 mt-4">
+//                 <div className="flex gap-2">
+//                   {request.tags.map((tag, tagIndex) => (
+//                     <span
+//                       key={tagIndex}
+//                       className="px-2   rounded-full text-sm text-primary border-2 border-primary"
+//                     >
+//                       {tag}
+//                     </span>
+//                   ))}
+//                 </div>
+//                 <button
+//                   className="ml-auto px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-sm"
+//                   onClick={() => setIsChatModalOpen(true)}
+//                 >
+//                   Claim Ask
+//                 </button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* Pagination */}
+//         <div className="flex justify-center items-center gap-2 mt-12 mb-8">
+//           <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+//             ←
+//           </button>
+//           <button className="w-2 h-2 rounded-full bg-[#540A26]"></button>
+//           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+//           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+//           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+//           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
+//           <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+//             →
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* Footer */}
+
+//       <Footer />
+
+//       <Modal
+//         isOpen={isModalOpen}
+//         onRequestClose={() => setIsModalOpen(false)}
+//         style={modalStyles}
+//         contentLabel="Add Ask Modal"
+//       >
+//         <div className="relative">
+//           <button
+//             onClick={() => setIsModalOpen(false)}
+//             className="absolute right-0 top-0 text-gray-400 hover:text-gray-600"
+//           >
+//             <IoClose size={24} />
+//           </button>
+
+//           <h2 className="text-2xl font-semibold mb-8">Add Ask</h2>
+
+//           <form onSubmit={handleSubmit} className="space-y-6">
+//             <div>
+//               <label className="block mb-2">
+//                 Add Title <span className="text-red-500">*</span>
+//               </label>
+//               <input
+//                 type="text"
+//                 placeholder="What do you need help with?"
+//                 className="w-full px-4 py-3 bg-gray-100 rounded-lg"
+//                 value={formData.title}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, title: e.target.value })
+//                 }
+//                 required
+//               />
+//             </div>
+
+//             <div>
+//               <label className="block mb-2">
+//                 Description <span className="text-red-500">*</span>
+//               </label>
+//               <textarea
+//                 placeholder="Provide more details about your Ask..."
+//                 className="w-full px-4 py-3 bg-gray-100 rounded-lg min-h-[120px]"
+//                 value={formData.description}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, description: e.target.value })
+//                 }
+//                 required
+//               />
+//             </div>
+
+//             <div>
+//               <label className="block mb-2">
+//                 Deadline <span className="text-red-500">*</span>
+//               </label>
+//               <input
+//                 type="text"
+//                 placeholder="Select Date"
+//                 className="w-full px-4 py-3 bg-gray-100 rounded-lg"
+//                 value={formData.deadline}
+//                 onChange={(e) =>
+//                   setFormData({ ...formData, deadline: e.target.value })
+//                 }
+//                 required
+//               />
+//             </div>
+
+//             <label className="flex items-start gap-2">
+//               <input
+//                 type="checkbox"
+//                 className="mt-1"
+//                 checked={formData.agreeToGuidelines}
+//                 onChange={(e) =>
+//                   setFormData({
+//                     ...formData,
+//                     agreeToGuidelines: e.target.checked,
+//                   })
+//                 }
+//                 required
+//               />
+//               <span className="text-sm text-gray-600">
+//                 I ensure my Ask follows HH club community guidelines.
+//               </span>
+//             </label>
+
+//             <button
+//               type="submit"
+//               className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg font-medium"
+//             >
+//               Add Ask
+//             </button>
+//           </form>
+//         </div>
+//       </Modal>
+
 import React, { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Modal from "react-modal";
@@ -65,9 +412,10 @@ const Ask = () => {
     content: {
       top: "auto",
       left: "auto",
-      right: "32px",
-      bottom: "32px",
-      width: "400px",
+      right: "16px",
+      bottom: "16px",
+      width: "90%",
+      maxWidth: "400px",
       padding: "0",
       border: "none",
       borderRadius: "24px",
@@ -139,91 +487,86 @@ const Ask = () => {
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-full object-cover brightness-50"
+            className="w-full h-[200px] md:h-full object-cover brightness-50"
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
         <div className="relative z-10">
           <Header />
-          {/* <Header /> */}
 
           {/* Hero Section */}
-          <div className="relative z-10 text-center py-16">
-            <h1 className="text-4xl font-semibold mb-4 font-secondary">Ask</h1>
-            <p className="text-gray-200 font-primary">
+          <div className="relative z-10 text-center py-8 md:py-16">
+            <h1 className="text-2xl md:text-4xl font-semibold mb-2 md:mb-4 font-secondary">
+              Ask
+            </h1>
+            <p className="text-gray-200 font-primary text-sm md:text-base px-4 md:px-0">
               View and respond to questions or requests posted by other members.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-12 ">
-        <div
-          className="px-44 flex justify-start items-center mb-8"
-          // onClick={(e) => {
-          //   e.stopPropagation();
-          //   setShowReportModal(true);
-          // }}
-        >
-          <BsThreeDotsVertical className="text-2xl text-gray-400 cursor-pointer" />
+      <div className="p-4 md:p-12 mt-16">
+        <div className="px-0 md:px-44 flex justify-between md:justify-start items-center mb-6 md:mb-8">
+          <BsThreeDotsVertical className="text-xl md:text-2xl text-gray-400 cursor-pointer" />
           <button
             onClick={(e) => {
               e.stopPropagation();
               setIsModalOpen(true);
             }}
-            className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+            className="px-4 md:px-6 py-1 md:py-2 bg-primary text-white rounded-lg flex items-center gap-2 text-sm md:text-base ml-4 md:ml-0"
           >
             <span>Add Ask</span>
           </button>
         </div>
 
         {/* Requests Grid */}
-        <div className="px-44 grid grid-cols-3 gap-6">
+        <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {requests.map((request, index) => (
             <div
               key={index}
-              className="bg-white border border-gray-200 rounded-xl p-6 relative group shadow-sm"
+              className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-sm"
             >
               <button
-                className="absolute top-5 right-4 "
+                className="absolute top-4 md:top-5 right-3 md:right-4"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowReportModal(true);
                 }}
               >
-                <BiErrorCircle className="text-gray-400 w-6 h-6" />
+                <BiErrorCircle className="text-gray-400 w-5 h-5 md:w-6 md:h-6" />
               </button>
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold mb-2 text-gradient_r font-secondary">
+              <div className="mb-3 md:mb-4">
+                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
                   {request.title}
                 </h3>
-                <p className="text-[#979797] font-primary">
+                <p className="text-[#979797] font-primary text-sm md:text-base">
                   {request.description}
                 </p>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="space-y-1 md:space-y-2">
+                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
                   <span>Created By:</span>
                   <span className="text-[#979797]"> {request.createdBy}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
                   <span>Date:</span>
                   <span className="text-[#979797]">{request.date}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 md:mt-4">
+                <div className="flex flex-wrap gap-1 md:gap-2">
                   {request.tags.map((tag, tagIndex) => (
                     <span
                       key={tagIndex}
-                      className="px-2   rounded-full text-sm text-primary border-2 border-primary"
+                      className="px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
                 <button
-                  className="ml-auto px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-sm"
+                  className="ml-auto px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm"
                   onClick={() => setIsChatModalOpen(true)}
                 >
                   Claim Ask
@@ -234,8 +577,8 @@ const Ask = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center items-center gap-2 mt-12 mb-8">
-          <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+        <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
+          <button className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600">
             ←
           </button>
           <button className="w-2 h-2 rounded-full bg-[#540A26]"></button>
@@ -243,14 +586,13 @@ const Ask = () => {
           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
           <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-          <button className="w-8 h-8 flex items-center justify-center text-gray-600">
+          <button className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600">
             →
           </button>
         </div>
       </div>
 
       {/* Footer */}
-
       <Footer />
 
       <Modal
@@ -267,17 +609,19 @@ const Ask = () => {
             <IoClose size={24} />
           </button>
 
-          <h2 className="text-2xl font-semibold mb-8">Add Ask</h2>
+          <h2 className="text-xl md:text-2xl font-semibold mb-6 md:mb-8">
+            Add Ask
+          </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             <div>
-              <label className="block mb-2">
+              <label className="block mb-1 md:mb-2 text-sm md:text-base">
                 Add Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="What do you need help with?"
-                className="w-full px-4 py-3 bg-gray-100 rounded-lg"
+                className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-100 rounded-lg text-sm md:text-base"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -287,12 +631,12 @@ const Ask = () => {
             </div>
 
             <div>
-              <label className="block mb-2">
+              <label className="block mb-1 md:mb-2 text-sm md:text-base">
                 Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 placeholder="Provide more details about your Ask..."
-                className="w-full px-4 py-3 bg-gray-100 rounded-lg min-h-[120px]"
+                className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-100 rounded-lg min-h-[100px] md:min-h-[120px] text-sm md:text-base"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -302,13 +646,13 @@ const Ask = () => {
             </div>
 
             <div>
-              <label className="block mb-2">
+              <label className="block mb-1 md:mb-2 text-sm md:text-base">
                 Deadline <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Select Date"
-                className="w-full px-4 py-3 bg-gray-100 rounded-lg"
+                className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-100 rounded-lg text-sm md:text-base"
                 value={formData.deadline}
                 onChange={(e) =>
                   setFormData({ ...formData, deadline: e.target.value })
@@ -330,14 +674,14 @@ const Ask = () => {
                 }
                 required
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-xs md:text-sm text-gray-600">
                 I ensure my Ask follows HH club community guidelines.
               </span>
             </label>
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg font-medium"
+              className="w-full py-2 md:py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg font-medium text-sm md:text-base"
             >
               Add Ask
             </button>
