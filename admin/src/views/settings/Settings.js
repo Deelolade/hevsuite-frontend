@@ -57,7 +57,7 @@ const Settings = () => {
             }`}
             onClick={() => setActiveTab("social")}
           >
-            Socila Links
+            Social Links
           </button>
         </div>
       </div>

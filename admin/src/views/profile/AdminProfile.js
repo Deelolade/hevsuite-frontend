@@ -11,13 +11,14 @@ const AdminProfile = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [profileData, setProfileData] = useState({
     fullName: "Your Full Name",
     email: "raed@gmail.com",
     role: "Super Admin",
-    password: "••••••••••••••••••••••••",
+    password: "password",
     twoFactorPreference: "Email",
     avatar: avatar,
   });
@@ -148,7 +149,7 @@ const AdminProfile = () => {
             <label className="block mb-2">Password</label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={profileData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 className={`w-full px-4 py-2 border rounded-lg ${
@@ -156,7 +157,16 @@ const AdminProfile = () => {
                 }`}
                 readOnly={!isEditMode}
               />
-              <button className="absolute inset-y-0 right-0 flex items-center pr-3">
+              <button
+                type="button"
+                onClick={() => isEditMode && setShowPassword(!showPassword)}
+                className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
+                  !isEditMode
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                disabled={!isEditMode}
+              >
                 <svg
                   className="w-5 h-5 text-gray-400"
                   viewBox="0 0 20 20"

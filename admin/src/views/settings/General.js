@@ -16,6 +16,8 @@ const General = () => {
     reason: "",
     password: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [siteTitle, setSiteTitle] = useState("Hevsuite Club");
   const fileInputRef = useRef(null);
 
   const handleFaviconSelect = (e) => {
@@ -45,6 +47,10 @@ const General = () => {
     setIsMaintenanceModalOpen(false);
   };
 
+  const toggleEditMode = () => {
+    setIsEditing(!isEditing);
+  };
+
   return (
     <div>
       {/* General Settings Content */}
@@ -70,6 +76,14 @@ const General = () => {
           </div>
           <div>
             {/* Hidden file input */}
+            {/* <input
+              type="file"
+              id="faviconInput"
+              accept="image/*"
+              onChange={handleFaviconSelect}
+              className="hidden"
+              ref={fileInputRef}
+            /> */}
             <input
               type="file"
               id="faviconInput"
@@ -78,12 +92,12 @@ const General = () => {
               className="hidden"
               ref={fileInputRef} // Attach the ref to the file input
             />
-            <label
-              htmlFor="faviconInput"
-              className="px-6 py-2 bg-primary text-white rounded-lg cursor-pointer inline-block"
+            <button
+              onClick={toggleEditMode}
+              className="px-6 py-2 bg-primary text-white rounded-lg"
             >
-              Edit
-            </label>
+              {isEditing ? "Save" : "Edit"}
+            </button>
           </div>
         </div>
 
@@ -92,9 +106,12 @@ const General = () => {
           <h3 className="text-lg mb-4">Site Title</h3>
           <input
             type="text"
-            value="Hevsuite Club"
-            className="w-full max-w-md px-4 py-2 border rounded-lg bg-gray-50"
-            readOnly
+            value={siteTitle}
+            onChange={(e) => setSiteTitle(e.target.value)}
+            className={`w-full max-w-md px-4 py-2 border rounded-lg ${
+              isEditing ? "bg-white" : "bg-gray-50"
+            }`}
+            readOnly={!isEditing}
           />
         </div>
 
@@ -102,12 +119,17 @@ const General = () => {
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-lg">Maintenance Mode</h3>
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label
+              className={`relative inline-flex items-center ${
+                !isEditing && "pointer-events-none opacity-70"
+              }`}
+            >
               <input
                 type="checkbox"
                 className="sr-only peer"
                 checked={maintenanceMode}
                 onChange={handleMaintenanceToggle}
+                disabled={!isEditing}
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
@@ -122,7 +144,10 @@ const General = () => {
               type="text"
               value={joiningAge}
               onChange={(e) => setJoiningAge(e.target.value)}
-              className="w-24 px-4 py-2 border rounded-lg pr-12"
+              className={`w-24 px-4 py-2 border rounded-lg pr-12 ${
+                !isEditing && "bg-gray-50"
+              }`}
+              readOnly={!isEditing}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
               yrs
@@ -137,7 +162,10 @@ const General = () => {
             type="text"
             value={referralCount}
             onChange={(e) => setReferralCount(e.target.value)}
-            className="w-24 px-4 py-2 border rounded-lg"
+            className={`w-24 px-4 py-2 border rounded-lg ${
+              !isEditing && "bg-gray-50"
+            }`}
+            readOnly={!isEditing}
           />
         </div>
       </div>

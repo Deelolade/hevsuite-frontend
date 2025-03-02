@@ -1,6 +1,20 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
 import Modal from "react-modal";
 import EditMenu from "./EditMenu";
 import AddPage from "./AddPage";
@@ -20,12 +34,32 @@ const Menus = () => {
   const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const menus = [
+  // const sensors = useSensors(
+  //   useSensor(MouseSensor),
+  //   useSensor(TouchSensor),
+  //   useSensor(KeyboardSensor)
+  // );
+
+  // const handleDragEnd = (event) => {
+  //   const { active, over } = event;
+
+  //   if (active.id !== over.id) {
+  //     // Reorder menus
+  //     const newMenus = [...menus];
+  //     const activeIndex = newMenus.findIndex((menu) => menu.id === active.id);
+  //     const overIndex = newMenus.findIndex((menu) => menu.id === over.id);
+
+  //     newMenus.splice(overIndex, 0, newMenus.splice(activeIndex, 1)[0]);
+  //     setMenus(newMenus);
+  //   }
+  // };
+
+  const [menus, setMenus] = useState([
     { id: 1, name: "Menu 1" },
     { id: 2, name: "Menu 2" },
     { id: 3, name: "Menu 3" },
     { id: 4, name: "Menu 4" },
-  ];
+  ]);
   const [menuItems, setMenuItems] = useState([
     { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 2, title: "Terms and Condition", visibility: false, owner: "System" },
@@ -41,6 +75,50 @@ const Menus = () => {
         item.id === id ? { ...item, visibility: !item.visibility } : item
       )
     );
+  };
+
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+
+  const handleDragStart = (event, index) => {
+    setDragging(index);
+  };
+
+  const handleDragOver = (event, index) => {
+    setDragOver(index);
+  };
+
+  const handleDragEnd = (event) => {
+    if (dragging !== null && dragOver !== null) {
+      const newMenus = [...menus];
+      const [reorderedItem] = newMenus.splice(dragging, 1);
+      newMenus.splice(dragOver, 0, reorderedItem);
+      setMenus(newMenus);
+    }
+    setDragging(null);
+    setDragOver(null);
+  };
+
+  const [draggingItems, setDraggingItems] = useState(null);
+  const [dragOverItems, setDragOverItems] = useState(null);
+
+  const handleDragItemsStart = (event, index) => {
+    setDraggingItems(index);
+  };
+
+  const handleDragItemsOver = (event, index) => {
+    setDragOverItems(index);
+  };
+
+  const handleDragItemsEnd = (event) => {
+    if (draggingItems !== null && dragOverItems !== null) {
+      const newMenuItems = [...menuItems];
+      const [reorderedItem] = newMenuItems.splice(draggingItems, 1);
+      newMenuItems.splice(dragOverItems, 0, reorderedItem);
+      setMenuItems(newMenuItems);
+    }
+    setDraggingItems(null);
+    setDragOverItems(null);
   };
   return (
     <div className="space-y-6">
@@ -192,9 +270,13 @@ const Menus = () => {
             </button>
 
             <div className="flex gap-4">
-              {menus.map((menu) => (
+              {menus.map((menu, index) => (
                 <button
                   key={menu.id}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
                   className={`px-6 py-2 rounded-lg flex w-40 h-16 justify-between items-center gap-2 ${
                     selectedMenu === menu.id
                       ? "bg-primary text-white"
@@ -236,7 +318,7 @@ const Menus = () => {
               Add New Page
             </button>
           </div>
-          <div className="bg-white rounded-lg">
+          {/* <div className="bg-white rounded-lg">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -298,6 +380,61 @@ const Menus = () => {
                 ))}
               </tbody>
             </table>
+          </div> */}
+
+          <div className="bg-white rounded-lg">
+            <div className="flex flex-col">
+              <div className="flex justify-between items-center py-4 px-6">
+                <span className="text-sm font-medium">Page Title</span>
+                <span className="text-sm font-medium">Visibility</span>
+                <span className="text-sm font-medium">Owner</span>
+                <span className="text-sm font-medium">Action</span>
+              </div>
+              {menuItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  draggable={true}
+                  onDragStart={(e) => handleDragItemsStart(e, index)}
+                  onDragOver={(e) => handleDragItemsOver(e, index)}
+                  onDragEnd={handleDragItemsEnd}
+                  className="flex items-center justify-between py-4 px-6 border-b cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 border rounded">⋮⋮</span>
+                    {item.title}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={item.visibility}
+                        className="sr-only peer"
+                        onChange={() => handleVisibility(item.id)}
+                      />
+                      <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                    <span className="text-sm text-gray-600">{item.owner}</span>
+                    <div className="flex gap-4">
+                      <button
+                        className="text-primary"
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setIsEditItemModalOpen(true);
+                        }}
+                      >
+                        <FiEdit size={18} />
+                      </button>
+                      <button
+                        className="text-primary"
+                        onClick={() => setIsRemoveModalOpen(true)}
+                      >
+                        <FiTrash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Pagination */}

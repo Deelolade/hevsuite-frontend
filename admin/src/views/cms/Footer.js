@@ -22,10 +22,32 @@ const Footer = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreatedPagesOpen, setIsCreatedPagesOpen] = useState(false);
 
-  const sections = [
+  const [sections, setSections] = useState([
     { id: "policies", name: "Policies" },
     { id: "hhclub", name: "HH Club & Founder" },
-  ];
+  ]);
+
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+
+  const Items = (event, index) => {
+    setDragging(index);
+  };
+
+  const handleDragOver = (event, index) => {
+    setDragOver(index);
+  };
+
+  const handleDragEnd = (event) => {
+    if (dragging !== null && dragOver !== null) {
+      const newFooters = [...sections];
+      const [reorderedItem] = newFooters.splice(dragging, 1);
+      newFooters.splice(dragOver, 0, reorderedItem);
+      setSections(newFooters);
+    }
+    setDragging(null);
+    setDragOver(null);
+  };
 
   const [footerItems, setFooterItems] = useState([
     { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
@@ -40,6 +62,28 @@ const Footer = () => {
         item.id === id ? { ...item, visibility: !item.visibility } : item
       )
     );
+  };
+
+  const [draggingItems, setDraggingItems] = useState(null);
+  const [dragItemsOver, setDragItemsOver] = useState(null);
+
+  const handleDragItemsStart = (event, index) => {
+    setDraggingItems(index);
+  };
+
+  const handleDragItemsOver = (event, index) => {
+    setDragItemsOver(index);
+  };
+
+  const handleDragItemsEnd = (event) => {
+    if (draggingItems !== null && dragItemsOver !== null) {
+      const newFooters = [...footerItems];
+      const [reorderedItem] = newFooters.splice(draggingItems, 1);
+      newFooters.splice(dragItemsOver, 0, reorderedItem);
+      setFooterItems(newFooters);
+    }
+    setDraggingItems(null);
+    setDragItemsOver(null);
   };
 
   return (
@@ -88,9 +132,13 @@ const Footer = () => {
             </button>
 
             <div className="flex gap-4">
-              {sections.map((section) => (
+              {sections.map((section, index) => (
                 <button
                   key={section.id}
+                  draggable={true}
+                  onDragStart={(e) => Items(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
                   className={`px-6 py-2 rounded-lg  w-56 h-16 flex justify-between items-center gap-2 ${
                     selectedSection === section.id
                       ? "bg-primary text-white"
@@ -159,8 +207,15 @@ const Footer = () => {
                 </tr>
               </thead>
               <tbody>
-                {footerItems.map((item) => (
-                  <tr key={item.id} className="border-b">
+                {footerItems.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    draggable={true}
+                    onDragStart={(e) => handleDragItemsStart(e, index)}
+                    onDragOver={(e) => handleDragItemsOver(e, index)}
+                    onDragEnd={handleDragItemsEnd}
+                    className="border-b"
+                  >
                     <td className="py-4 px-6 flex items-center gap-2">
                       <span className="p-1 border rounded">⋮⋮</span>
                       {item.title}

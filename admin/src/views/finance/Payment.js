@@ -15,6 +15,28 @@ const Payment = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [newProcessorImage, setNewProcessorImage] = useState(null);
 
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+
+  const Items = (event, index) => {
+    setDragging(index);
+  };
+
+  const handleDragOver = (event, index) => {
+    setDragOver(index);
+  };
+
+  const handleDragEnd = (event) => {
+    if (dragging !== null && dragOver !== null) {
+      const newProccessors = [...processors];
+      const [reorderedItem] = newProccessors.splice(dragging, 1);
+      newProccessors.splice(dragOver, 0, reorderedItem);
+      setProccessors(newProccessors);
+    }
+    setDragging(null);
+    setDragOver(null);
+  };
+
   // Add handler for settings click
   const handleSettingsClick = (processor) => {
     setSelectedProcessor(processor);
@@ -37,7 +59,7 @@ const Payment = () => {
     }
   };
 
-  const processors = [
+  const [processors, setProccessors] = useState([
     { id: 1, name: "stripe", logo: stripe, isTopPriority: true },
     { id: 2, name: "amazon", logo: amazon_pay, isTopPriority: false },
     {
@@ -46,7 +68,7 @@ const Payment = () => {
       logo: mastercard,
     },
     { id: 4, name: "paypal", logo: paypal, isTopPriority: false },
-  ];
+  ]);
 
   const handleRemove = (processor) => {
     setSelectedProcessor(processor);
@@ -68,14 +90,22 @@ const Payment = () => {
 
       {/* Processors List */}
       <div className="space-y-4">
-        {processors.map((processor) => (
+        {processors.map((processor, index) => (
           <div
             key={processor.id}
-            className="flex items-center justify-between p-4 bg-white rounded-lg border"
+            draggable={true}
+            onDragStart={(e) => Items(e, index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className="flex items-center cursor-pointer justify-between p-4 bg-white rounded-lg border"
           >
             <div className="flex items-center gap-8">
               <span className="text-gray-500">{processor.id}</span>
-              <img src={processor.logo} alt={processor.name} className="h-16" />
+              <img
+                src={processor.logo}
+                alt={processor.name}
+                className="h-16 w-32"
+              />
             </div>
             <div className="flex items-center gap-6">
               <div className="flex gap-2">

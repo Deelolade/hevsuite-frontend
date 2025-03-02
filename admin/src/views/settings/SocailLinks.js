@@ -23,6 +23,27 @@ const SocialLinks = () => {
   const [openSettingsId, setOpenSettingsId] = useState(null);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+
+  const Items = (event, index) => {
+    setDragging(index);
+  };
+
+  const handleDragOver = (event, index) => {
+    setDragOver(index);
+  };
+
+  const handleDragEnd = (event) => {
+    if (dragging !== null && dragOver !== null) {
+      const newSocialLinks = [...socialLinks];
+      const [reorderedItem] = newSocialLinks.splice(dragging, 1);
+      newSocialLinks.splice(dragOver, 0, reorderedItem);
+      setSocialLinks(newSocialLinks);
+    }
+    setDragging(null);
+    setDragOver(null);
+  };
 
   const [socialLinks, setSocialLinks] = useState([
     { id: 1, platform: "linkedin", icon: linkedn, isActive: true },
@@ -76,10 +97,14 @@ const SocialLinks = () => {
       </div>
 
       <div className="space-y-4">
-        {socialLinks.map((social) => (
+        {socialLinks.map((social, index) => (
           <div
             key={social.id}
-            className="flex items-center justify-between p-4 bg-white rounded-lg border"
+            draggable={true}
+            onDragStart={(e) => Items(e, index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className="flex items-center cursor-pointer justify-between p-4 bg-white rounded-lg border"
           >
             <div className="flex items-center gap-8">
               <span className="text-gray-500">{social.id}</span>
