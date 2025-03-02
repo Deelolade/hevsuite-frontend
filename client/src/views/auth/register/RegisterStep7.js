@@ -320,26 +320,34 @@ const RegisterStep7 = () => {
             ))}
           </div>
 
-          <button
-            className="mt-6 md:mt-8 px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-[#540A26] hover:text-white transition-colors"
-            onClick={() => navigate("/register-6")}
-          >
-            <svg
-              className="w-4 h-4 md:w-5 md:h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="mt-6 md:mt-8 flex justify-between items-center">
+            <button
+              className="px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base  transition-colors"
+              onClick={() => navigate("/register-6")}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add other referral
-          </button>
-          <Link to="/register-8">go to payment</Link>
+              <svg
+                className="w-4 h-4 md:w-5 md:h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add other referral
+            </button>
+            <Link
+              to="/register-8"
+              className="px-4 md:px-6 py-1 md:py-2 text-white bg-[#540A26] rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
+            >
+              Go to payment
+              <span className="ml-1">→</span>
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -502,7 +502,7 @@ const RegisterStep3 = () => {
 
           <div>
             <label className="block mb-1 md:mb-2 text-sm md:text-base">
-              Secondary Email<span className="text-red-500">*</span>
+              Secondary Email
             </label>
             <input
               type="email"
@@ -512,7 +512,6 @@ const RegisterStep3 = () => {
               onChange={(e) =>
                 setFormData({ ...formData, secondaryEmail: e.target.value })
               }
-              required
             />
           </div>
 
@@ -564,7 +563,7 @@ const RegisterStep3 = () => {
 
           <div>
             <label className="block mb-1 md:mb-2 text-sm md:text-base">
-              Secondary Phone<span className="text-red-500">*</span>
+              Secondary Phone
             </label>
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               <select
@@ -589,7 +588,6 @@ const RegisterStep3 = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, secondaryPhone: e.target.value })
                 }
-                required
               />
             </div>
           </div>

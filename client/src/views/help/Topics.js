@@ -177,6 +177,7 @@ const Topics = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activePage, setActivePage] = useState(1);
+  const [expandedFAQ, setExpandedFAQ] = useState(null);
 
   const popularTopics = [
     {
@@ -228,25 +229,25 @@ const Topics = () => {
       id: 1,
       question: "How do I join the HH Club?",
       answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
+        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
     },
     {
       id: 2,
       question: "How do I join the HH Club?",
       answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
+        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
     },
     {
       id: 3,
       question: "How do I join the HH Club?",
       answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
+        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
     },
     {
       id: 4,
       question: "How do I join the HH Club?",
       answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
+        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
     },
   ];
 
@@ -258,7 +259,7 @@ const Topics = () => {
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-[300px] md:h-[400px] object-cover brightness-50"
+            className="w-full h-[200px] md:h-[315px] object-cover brightness-50"
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
@@ -280,8 +281,8 @@ const Topics = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737474]">
-                <IoSearchOutline size={20} />
+              <button className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-[#737474]">
+                <IoSearchOutline size={20} className="md:w-6 md:h-6" />
               </button>
             </div>
           </div>
@@ -296,12 +297,12 @@ const Topics = () => {
 
         <div className="relative">
           {/* Topic Cards - Responsive Grid */}
-          <div className="overflow-x-auto pb-4 md:pb-0">
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 px-0 md:px-4">
-              {popularTopics.slice(0, 1).map((topic) => (
+          <div className="overflow-x-scroll scrollbar-hide pb-4 md:pb-0">
+            <div className="flex flex-nowrap gap-4 md:grid md:grid-cols-3 md:gap-8 px-0 md:px-4">
+              {popularTopics.map((topic) => (
                 <div
                   key={topic.id}
-                  className="min-w-[280px] md:min-w-0 bg-white rounded-lg p-4 md:p-6 shadow-md cursor-pointer"
+                  className="w-full md:w-auto min-w-[280px] md:min-w-0 bg-white rounded-lg p-4 md:p-6 shadow-md cursor-pointer mb-4 md:mb-0"
                   onClick={() => navigate(`/topic-details/${topic.id}`)}
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-[#540A26] rounded-lg text-white flex items-center justify-center text-xl md:text-2xl mb-3 md:mb-4">
@@ -347,11 +348,25 @@ const Topics = () => {
                     <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
                       {faq.question}
                     </h3>
-                    <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3">
+                    <p
+                      className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
                       {faq.answer}
                     </p>
-                    <button className="text-[#540A26] text-sm md:text-base font-medium hover:text-red-600 transition-colors">
-                      Read more
+                    <button
+                      onClick={() =>
+                        setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
+                      } // Toggle expand/collapse
+                      className="text-[#540A26] text-sm md:text-base font-medium hover:text-red-600 transition-colors"
+                    >
+                      {expandedFAQ === faq.id ? "Read less" : "Read more"}{" "}
+                      {/* Change button text based on state */}
                     </button>
                   </div>
                 </div>

@@ -461,7 +461,6 @@ const RegisterStep2 = () => {
                 <option value="">Select Gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
-                <option value="other">Other</option>
               </select>
             </div>
             <div>
@@ -499,7 +498,7 @@ const RegisterStep2 = () => {
             </div>
             <div>
               <label className="block mb-1 md:mb-2 text-sm md:text-base">
-                Additional Nationality<span className="text-red-500">*</span>
+                Additional Nationality
               </label>
               <select
                 className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base"
@@ -510,7 +509,6 @@ const RegisterStep2 = () => {
                     additionalNationality: e.target.value,
                   })
                 }
-                required
               >
                 <option value="">Select Additional Nationality</option>
                 {/* Add nationality options */}

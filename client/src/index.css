@@ -19,7 +19,9 @@
   background-color: #d1d5db;
   border-radius: 20px;
 }
-
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 @layer utilities {
   html::-webkit-scrollbar {
     display: none;

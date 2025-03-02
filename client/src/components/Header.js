@@ -478,7 +478,7 @@ const Header = () => {
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-40 backdrop-blur-sm">
+    <header className="absolute top-0 left-0 right-0 z-40 ">
       {/* Navbar */}
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
         {/* Logo */}
@@ -498,9 +498,12 @@ const Header = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center bg-black/60 gap-8 p-2 px-12 rounded-l-3xl rounded-r-3xl pr-3 font-primary text-white">
-          <Link to="/register">Become a member</Link>
+          {!isLoggedIn && <Link to="/register">Become a member</Link>}
+
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
+          {isLoggedIn && <Link to="/ask">Ask</Link>}
+
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
@@ -628,7 +631,7 @@ const Header = () => {
                     />
                     <span className="text-black">Goodluck</span>
                   </div>
-                  <button className="text-xl bg-primary" onClick={handleLogout}>
+                  <button className="text-xl" onClick={handleLogout}>
                     <FaSignOutAlt />
                   </button>
                 </div>
