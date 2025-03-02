@@ -247,8 +247,10 @@ import Header from "../../components/Header";
 import bg_image from "../../assets/header-bg.jpg";
 import email_camp from "../../assets/email_camp.png";
 import Footer from "../../components/Footer";
+import { useNavigate } from "react-router-dom";
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
   const steps = [
     {
       number: 1,
@@ -296,23 +298,27 @@ const HowItWorks = () => {
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-[200px] sm:h-[250px] object-cover brightness-50"
+            className="w-full h-[200px] md:h-[325px] object-cover brightness-50"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          {/* <div className="absolute inset-0 bg-black/50" /> */}
         </div>
         {/* Header */}
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col justify-center items-center h-full">
           <Header />
-          <div className="relative z-10 text-center py-8 px-4 sm:py-12 sm:px-8">
-            <p className="text-gray-200 font-secondary text-2xl sm:text-4xl">
+          <div className="text-white text-center py-24 md:py-32 px-4 mt-auto">
+            {/* <p className="text-sm mb-1 md:mb-2 font-secondary"></p> */}
+            <h1 className="text-2xl md:text-4xl font-semibold mb-2 md:mb-4 font-secondary">
               How Hevsuite Club Works?
+            </h1>
+            <p className="mb-4 md:mb-8 text-sm md:text-base font-primary">
+              {/* Have any questions? We're here to assist you. */}
             </p>
           </div>
         </div>
       </div>
 
       {/* Steps Section - Added margin-top to create space */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16 mt-16 sm:mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-2 mt-4 sm:mt-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {steps.map((step) => (
             <div
@@ -361,7 +367,10 @@ const HowItWorks = () => {
             </div>
           </div>
           {/* Right Button */}
-          <button className="px-4 py-2 sm:px-6 sm:py-3 bg-white text-[#540A26] rounded-3xl mt-4 sm:mt-0">
+          <button
+            className="px-4 py-2 sm:px-6 sm:py-3 bg-white text-[#540A26] rounded-3xl mt-4 sm:mt-0"
+            onClick={() => navigate("/topics")}
+          >
             Check our FAQs
           </button>
         </div>
