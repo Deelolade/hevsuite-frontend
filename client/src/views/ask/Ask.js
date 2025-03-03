@@ -17,23 +17,7 @@ const Ask = () => {
   const [reportType, setReportType] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const [messages, setMessages] = useState([
-    {
-      text: "Hello, I'm interested in volunteering...",
-      time: "7:20",
-      isUser: true,
-    },
-    {
-      text: "Great! Please confirm the date and Provide me with you full name and Contact details",
-      time: "7:20",
-      isUser: false,
-    },
-    {
-      text: "Yeah Sure i am Available.........",
-      time: "7:20",
-      isUser: true,
-    },
-  ]);
+  const [messages, setMessages] = useState({});
   const [newMessage, setNewMessage] = useState("");
 
   const [formData, setFormData] = useState({
@@ -120,7 +104,8 @@ const Ask = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5;
+  const requestsPerPage = 6;
+  const totalPages = Math.ceil(18 / requestsPerPage);
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -128,20 +113,28 @@ const Ask = () => {
     }
   };
 
-  const requests = Array(18).fill({
-    title: "Request for Event Volunteers",
-    description:
-      "Looking for volunteers to assist at the annual || charity event this weekend.",
-    createdBy: "John Daniel",
-    date: "21 January, 2025",
-    tags: ["#Urgent", "#Open"],
-  });
+  const requests = Array(18)
+    .fill()
+    .map((_, index) => ({
+      id: index + 1,
+      title: "Request for Event Volunteers",
+      description:
+        "Looking for volunteers to assist at the annual charity event this weekend.",
+      createdBy: "John Daniel",
+      date: "21 January, 2025",
+      tags: ["#Urgent", "#Open"],
+    }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add submission logic here
     setIsModalOpen(false);
   };
+
+  const paginatedRequests = requests.slice(
+    (currentPage - 1) * requestsPerPage,
+    currentPage * requestsPerPage
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -152,7 +145,6 @@ const Ask = () => {
             alt="background"
             className="w-full h-[200px] md:h-full object-cover brightness-50"
           />
-          {/* <div className="absolute inset-0 bg-black/50" /> */}
         </div>
         <div className="relative z-10">
           <Header />
@@ -184,9 +176,9 @@ const Ask = () => {
 
         {/* Requests Grid */}
         <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {requests.map((request, index) => (
+          {paginatedRequests.map((request) => (
             <div
-              key={index}
+              key={request.id}
               className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-sm"
             >
               <button
@@ -194,13 +186,14 @@ const Ask = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowReportModal(true);
+                  setSelectedRequest(request);
                 }}
               >
                 <BiErrorCircle className="text-gray-400 w-5 h-5 md:w-6 md:h-6" />
               </button>
               <div className="mb-3 md:mb-4">
                 <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
-                  {request.title} {index + 1}
+                  {request.title} {request.id}
                 </h3>
                 <p className="text-[#979797] font-primary text-sm md:text-base">
                   {request.description}
@@ -230,11 +223,7 @@ const Ask = () => {
                 <button
                   className="ml-auto px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm"
                   onClick={() => {
-                    setSelectedRequest({
-                      ...request,
-                      id: index,
-                      title: `${request.title} ${index + 1}`,
-                    });
+                    setSelectedRequest(request);
                     setIsChatModalOpen(true);
                   }}
                 >
@@ -246,19 +235,6 @@ const Ask = () => {
         </div>
 
         {/* Pagination */}
-        {/* <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
-          <button className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600">
-            ←
-          </button>
-          <button className="w-2 h-2 rounded-full bg-[#540A26]"></button>
-          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-          <button className="w-2 h-2 rounded-full bg-gray-300"></button>
-          <button className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600">
-            →
-          </button>
-        </div> */}
         <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
           <button
             className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
@@ -296,7 +272,6 @@ const Ask = () => {
           </button>
         </div>
       </div>
-      {/* Footer */}
       <Footer />
       <Modal
         isOpen={isModalOpen}
@@ -432,7 +407,7 @@ const Ask = () => {
             </div>
           )}
 
-          {messages.map((message, index) => (
+          {(messages[selectedRequest?.id] || []).map((message, index) => (
             <div
               key={index}
               className={`flex ${
@@ -475,10 +450,14 @@ const Ask = () => {
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]"
                 onClick={() => {
                   if (newMessage.trim()) {
-                    setMessages([
+                    const updatedMessages = {
                       ...messages,
-                      { text: newMessage, time: "7:20", isUser: false },
-                    ]);
+                      [selectedRequest.id]: [
+                        ...(messages[selectedRequest.id] || []),
+                        { text: newMessage, time: "7:20", isUser: true },
+                      ],
+                    };
+                    setMessages(updatedMessages);
                     setNewMessage("");
                   }
                 }}
@@ -489,7 +468,6 @@ const Ask = () => {
           </div>
         </div>
       </Modal>
-      // Report Modal
       <Modal
         isOpen={showReportModal}
         onRequestClose={() => setShowReportModal(false)}
@@ -549,7 +527,7 @@ const Ask = () => {
           </button>
         </div>
       </Modal>
-      // Abandon Modal
+
       <Modal
         isOpen={showAbandonModal}
         onRequestClose={() => setShowAbandonModal(false)}
@@ -587,6 +565,11 @@ const Ask = () => {
           <button
             onClick={() => {
               // Handle abandon logic here
+              setMessages((prevMessages) => {
+                const updatedMessages = { ...prevMessages };
+                delete updatedMessages[selectedRequest.id];
+                return updatedMessages;
+              });
               setShowAbandonModal(false);
               setIsChatModalOpen(false);
             }}
