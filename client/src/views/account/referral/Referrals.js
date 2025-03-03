@@ -37,23 +37,36 @@ const NavigationTabs = ({ activeTab, setActiveTab }) => {
 };
 
 // Pagination Component
-const Pagination = () => {
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   return (
-    <div className="flex justify-center items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
-      <button className="text-gray-400 hover:text-gray-600 p-1 sm:p-2">
+    <div className="flex justify-center items-center gap-2 sm:gap-4 mt-4 sm:mt-8">
+      <button 
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        className={`text-gray-400 hover:text-gray-600 p-1 sm:p-2 ${
+          currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={currentPage === 1}
+      >
         <BsChevronLeft size={16} className="sm:w-5 sm:h-5" />
       </button>
       <div className="flex gap-1.5 sm:gap-2">
-        {[1, 2, 3, 4, 5].map((dot, index) => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
-            key={dot}
-            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-              index === 0 ? "bg-[#540A26]" : "bg-gray-300"
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
+              page === currentPage ? "bg-[#540A26]" : "bg-gray-300 hover:bg-gray-400"
             }`}
           />
         ))}
       </div>
-      <button className="text-gray-400 hover:text-gray-600 p-1 sm:p-2">
+      <button 
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        className={`text-gray-400 hover:text-gray-600 p-1 sm:p-2 ${
+          currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={currentPage === totalPages}
+      >
         <BsChevronRight size={16} className="sm:w-5 sm:h-5" />
       </button>
     </div>
@@ -144,32 +157,89 @@ const SendReferralModal = ({ isOpen, onClose }) => {
 const Referrals = () => {
   const [activeTab, setActiveTab] = useState("Successful Referrals");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  const successReferrals = Array(8).fill({
+  const successReferrals = Array(15).fill({
     name: "Matt Hardy",
     date: "2nd Dec., 2025",
     image: avatar,
     relationship: "Friend",
   });
 
-  const pendingReferrals = Array(8).fill({
+  const pendingReferrals = Array(12).fill({
     name: "Matt Hardy",
     date: "2nd Dec., 2025",
     image: avatar,
     relationship: "Friend",
   });
 
-  const cancelledReferrals = Array(8).fill({
+  const cancelledReferrals = Array(9).fill({
     name: "Matt Hardy",
     date: "2nd Dec., 2025",
     image: avatar,
     relationship: "Friend",
   });
+
+  const getCurrentReferrals = () => {
+    let referrals;
+    switch (activeTab) {
+      case "Successful Referrals":
+        referrals = successReferrals;
+        break;
+      case "Pending Referrals":
+        referrals = pendingReferrals;
+        break;
+      case "Cancelled Referrals":
+        referrals = cancelledReferrals;
+        break;
+      default:
+        referrals = [];
+    }
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return referrals.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    let totalItems;
+    switch (activeTab) {
+      case "Successful Referrals":
+        totalItems = successReferrals.length;
+        break;
+      case "Pending Referrals":
+        totalItems = pendingReferrals.length;
+        break;
+      case "Cancelled Referrals":
+        totalItems = cancelledReferrals.length;
+        break;
+      default:
+        totalItems = 0;
+    }
+    return Math.ceil(totalItems / itemsPerPage);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Scroll to top of the referrals section
+    const referralsSection = document.querySelector('.referrals-section');
+    if (referralsSection) {
+      window.scrollTo({
+        top: referralsSection.offsetTop - 80,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when changing tabs
+  };
 
   return (
-    <div className="p-2 sm:p-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-        <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="p-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <NavigationTabs activeTab={activeTab} setActiveTab={handleTabChange} />
         <button
           onClick={() => setIsModalOpen(true)}
           className="px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-[#540A26] text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
@@ -178,7 +248,7 @@ const Referrals = () => {
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 referrals-section">
         <div className="flex justify-between px-2 sm:px-4 mb-2">
           <span className="text-base sm:text-lg text-black font-primary">
             Name
@@ -189,23 +259,26 @@ const Referrals = () => {
         </div>
         <div className="bg-white rounded-lg shadow-sm p-2 sm:p-4">
           {activeTab === "Successful Referrals" && (
-            <SuccessfulReferrals referrals={successReferrals} />
+            <SuccessfulReferrals referrals={getCurrentReferrals()} />
           )}
           {activeTab === "Pending Referrals" && (
-            <PendingReferrals referrals={pendingReferrals} />
+            <PendingReferrals referrals={getCurrentReferrals()} />
           )}
           {activeTab === "Cancelled Referrals" && (
-            <CancelledReferrals referrals={cancelledReferrals} />
+            <CancelledReferrals referrals={getCurrentReferrals()} />
           )}
         </div>
       </div>
 
-      <Pagination />
+      {getTotalPages() > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={getTotalPages()}
+          onPageChange={handlePageChange}
+        />
+      )}
 
-      <SendReferralModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <SendReferralModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
