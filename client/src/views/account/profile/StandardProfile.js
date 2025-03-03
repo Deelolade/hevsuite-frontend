@@ -18,11 +18,6 @@ const StandardProfile = () => {
     occupation: true,
     referrals: true,
   });
-  // const [requestCard, setRequestCard] = useState({
-  //   fullname: "",
-  //   cardType: "Standard",
-  //   disableCard: "No"
-  // })
 
   const [isEditing, setIsEditing] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -30,7 +25,6 @@ const StandardProfile = () => {
   const [isEditingFullName, setIsEditingFullName] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Personal information state
   const [personalInfo, setPersonalInfo] = useState({
     title: "Mrs",
     forename: "Andrew",
@@ -42,7 +36,6 @@ const StandardProfile = () => {
     additionalNationality: "British",
   });
 
-  // Contact details state
   const [contactDetails, setContactDetails] = useState({
     addressLine1: "Andrew",
     townCity: "Andrew",
@@ -55,7 +48,6 @@ const StandardProfile = () => {
     state: "Andrew",
   });
 
-  // Occupation state
   const [occupationInfo, setOccupationInfo] = useState({
     employmentStatus: "Employed",
     memberOfClub: "No",

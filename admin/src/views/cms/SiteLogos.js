@@ -4,7 +4,6 @@ import { AiOutlineCloudUpload } from "react-icons/ai";
 import logo from "../../assets/logo_white.png";
 
 const SiteLogos = () => {
-  // Add states for all modals and images
   const [isWebsiteLogoModalOpen, setIsWebsiteLogoModalOpen] = useState(false);
   const [isAdminLogoModalOpen, setIsAdminLogoModalOpen] = useState(false);
   const [isFavIconModalOpen, setIsFavIconModalOpen] = useState(false);
@@ -17,7 +16,6 @@ const SiteLogos = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Generic function to handle image selection
   const handleImageSelect = (e, setImage) => {
     const file = e.target.files[0];
     if (file) {
@@ -26,7 +24,6 @@ const SiteLogos = () => {
     }
   };
 
-  // Generic modal content component
   const LogoModal = ({ title, isOpen, setIsOpen, currentLogo, setLogo }) => (
     <Modal
       isOpen={isOpen}
@@ -46,12 +43,14 @@ const SiteLogos = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Logo Preview */}
           <div className="w-32 h-32 mx-auto rounded-2xl flex items-center justify-center">
-            <img src={currentLogo} alt={title.toLowerCase()} className="max-w-full max-h-full" />
+            <img
+              src={currentLogo}
+              alt={title.toLowerCase()}
+              className="max-w-full max-h-full"
+            />
           </div>
 
-          {/* Upload Button */}
           <div className="flex flex-col items-center gap-2">
             <label className="text-primary flex items-center gap-2 cursor-pointer">
               <AiOutlineCloudUpload size={20} />
@@ -97,7 +96,11 @@ const SiteLogos = () => {
         <div className="space-y-1">
           <h3 className="text-gray-600">Website logo</h3>
           <div className="w-16 h-16 rounded-lg flex items-center justify-center">
-            <img src={websiteLogo} alt="web logo" className="max-w-full max-h-full" />
+            <img
+              src={websiteLogo}
+              alt="web logo"
+              className="max-w-full max-h-full"
+            />
           </div>
         </div>
         <button
@@ -113,7 +116,11 @@ const SiteLogos = () => {
         <div className="space-y-1">
           <h3 className="text-gray-600">Admin logo</h3>
           <div className="w-16 h-16 rounded-lg flex items-center justify-center">
-            <img src={adminLogo} alt="admin logo" className="max-w-full max-h-full" />
+            <img
+              src={adminLogo}
+              alt="admin logo"
+              className="max-w-full max-h-full"
+            />
           </div>
         </div>
         <button
@@ -129,7 +136,11 @@ const SiteLogos = () => {
         <div className="space-y-1">
           <h3 className="text-gray-600">Fav Icon</h3>
           <div className="w-16 h-16 rounded-lg flex items-center justify-center">
-            <img src={favIcon} alt="fav logo" className="max-w-full max-h-full" />
+            <img
+              src={favIcon}
+              alt="fav logo"
+              className="max-w-full max-h-full"
+            />
           </div>
         </div>
         <button
@@ -145,7 +156,11 @@ const SiteLogos = () => {
         <div className="space-y-1">
           <h3 className="text-gray-600">Footer Icon</h3>
           <div className="w-16 h-16 rounded-lg flex items-center justify-center">
-            <img src={footerIcon} alt="footer logo" className="max-w-full max-h-full" />
+            <img
+              src={footerIcon}
+              alt="footer logo"
+              className="max-w-full max-h-full"
+            />
           </div>
         </div>
         <button

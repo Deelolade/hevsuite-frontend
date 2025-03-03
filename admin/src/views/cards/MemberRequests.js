@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Modal from "react-modal";
-import { BiSearch } from "react-icons/bi";
+import { BiSearch, BiChevronDown } from "react-icons/bi";
 import CancelCardModal from "../../components/modals/cards/CancelCardModal";
 import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
 import PostCard from "../../components/modals/cards/PostCard";
 import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
+import { FiDownload } from "react-icons/fi";
 
 Modal.setAppElement("#root");
 
@@ -36,6 +37,116 @@ const MemberRequests = () => {
       setSelectedCards(cards.map((card) => card.id)); // Select all
     }
   };
+
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+
+  const handleExport = (format) => {
+    // Get selected cards or all cards if none selected
+    const cardsToExport =
+      selectedCards.length > 0
+        ? cards.filter((card) => selectedCards.includes(card.id))
+        : cards;
+
+    // Format the data based on export type
+    let exportData;
+    let fileName;
+    let fileType;
+
+    switch (format) {
+      case "pdf":
+        // In a real app, you would use a library like jsPDF
+        alert(`Exporting ${cardsToExport.length} cards as PDF`);
+        // Example implementation would go here
+        return;
+
+      case "csv":
+        // Create CSV content
+        const headers = ["Name", "Member ID", "Status", "Address"];
+        const csvContent = [
+          headers.join(","),
+          ...cardsToExport.map((card) =>
+            [
+              card.name,
+              card.memberId,
+              card.status,
+              `${card.address.line1}, ${card.address.town}, ${card.address.country}, ${card.address.postcode}`,
+            ].join(",")
+          ),
+        ].join("\n");
+
+        exportData = csvContent;
+        fileName = "member_cards.csv";
+        fileType = "text/csv";
+        break;
+
+      case "excel":
+        // For Excel, we'll use CSV format with an .xlsx extension
+        // In a real app, you would use a library like xlsx
+        const excelHeaders = [
+          "Name",
+          "Member ID",
+          "Status",
+          "Address Line 1",
+          "Town",
+          "Country",
+          "Postcode",
+        ];
+        const excelContent = [
+          excelHeaders.join(","),
+          ...cardsToExport.map((card) =>
+            [
+              card.name,
+              card.memberId,
+              card.status,
+              card.address.line1,
+              card.address.town,
+              card.address.country,
+              card.address.postcode,
+            ].join(",")
+          ),
+        ].join("\n");
+
+        exportData = excelContent;
+        fileName = "member_cards.xlsx";
+        fileType =
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        break;
+
+      default:
+        return;
+    }
+
+    // Create and download the file
+    const blob = new Blob([exportData], { type: fileType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    // Close the export menu
+    setIsExportMenuOpen(false);
+  };
+
+  const handleClickOutside = (event) => {
+    if (
+      exportMenuRef.current &&
+      !exportMenuRef.current.contains(event.target)
+    ) {
+      setIsExportMenuOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const cards = [
     {
@@ -113,9 +224,82 @@ const MemberRequests = () => {
               Select All
             </button>
           </div>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2">
+          {/* <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2">
             + Export {selectedCards.length > 0 ? selectedCards.length : ""}
-          </button>
+          </button> */}
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+            >
+              <FiDownload />
+              Export {selectedCards.length > 0 ? selectedCards.length : ""}
+              <BiChevronDown
+                className={`transition-transform ${
+                  isExportMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isExportMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("pdf")}
+                >
+                  <span className="text-red-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                      <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                    </svg>
+                  </span>
+                  Export as PDF
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("csv")}
+                >
+                  <span className="text-green-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as CSV
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("excel")}
+                >
+                  <span className="text-blue-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as Excel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

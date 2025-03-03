@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { BsFilter } from "react-icons/bs";
 import Modal from "react-modal";
 
-Modal.setAppElement("#root"); // Set the root element for accessibility
+Modal.setAppElement("#root");
 
 const NotificationItem = ({ notification, onRemove }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -26,7 +26,6 @@ const NotificationItem = ({ notification, onRemove }) => {
         <button
           onClick={handleRemove}
           className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 flex-shrink-0"
-
         >
           <IoClose size={16} className="sm:w-5 sm:h-5" />
         </button>
@@ -47,7 +46,8 @@ const NotificationItem = ({ notification, onRemove }) => {
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 1000,
-          }}}
+          },
+        }}
       >
         <h3 className="text-xl font-semibold mb-2">Remove Notification</h3>
         <p className="text-gray-600 mb-4">
@@ -93,7 +93,8 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilter }) => {
           bottom: 0,
           backgroundColor: "rgba(0, 0, 0, 0.5)",
           zIndex: 1000,
-        }}}
+        },
+      }}
     >
       <h3 className="text-xl font-semibold mb-4">Filter Notifications</h3>
       <div className="space-y-3 mb-6">
@@ -170,42 +171,42 @@ const Notification = () => {
       title: "You liked the event The Big T-Pain Party House",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: false,
-      type: "event"
+      type: "event",
     },
     {
       id: 2,
       title: "You saved the event The Big T-Pain Party House",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: true,
-      type: "event"
+      type: "event",
     },
     {
       id: 3,
       title: "New message from support team",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: false,
-      type: "message"
+      type: "message",
     },
     {
       id: 4,
       title: "Profile update successful",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: true,
-      type: "system"
+      type: "system",
     },
     {
       id: 5,
       title: "New event recommendation",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: false,
-      type: "event"
+      type: "event",
     },
     {
       id: 6,
       title: "Security alert: New login",
       timestamp: "29thDecember, 2024 by 12:09pm",
       read: false,
-      type: "system"
+      type: "system",
     },
   ]);
 
@@ -214,7 +215,9 @@ const Notification = () => {
   const [currentFilter, setCurrentFilter] = useState("all");
 
   const handleRemoveNotification = (id) => {
-    setNotifications(notifications.filter((notification) => notification.id !== id));
+    setNotifications(
+      notifications.filter((notification) => notification.id !== id)
+    );
   };
 
   const handleClearAll = () => {
@@ -268,7 +271,6 @@ const Notification = () => {
             key={notification.id}
             notification={notification}
             onRemove={handleRemoveNotification}
-            
           />
         ))}
       </div>
@@ -296,11 +298,13 @@ const Notification = () => {
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 1000,
-          }}}
+          },
+        }}
       >
         <h3 className="text-xl font-semibold mb-2">Clear All Notifications</h3>
         <p className="text-gray-600 mb-4">
-          Are you sure you want to clear all notifications? This action cannot be undone.
+          Are you sure you want to clear all notifications? This action cannot
+          be undone.
         </p>
         <div className="flex justify-end gap-3">
           <button

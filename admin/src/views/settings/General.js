@@ -30,7 +30,7 @@ const General = () => {
 
   const handleFaviconClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.click(); // Programmatically click the file input
+      fileInputRef.current.click();
     }
   };
 
@@ -61,7 +61,7 @@ const General = () => {
             <h3 className="text-lg mb-4">Favicon</h3>
             <div
               className="w-20 h-20 rounded-full  flex items-center justify-center cursor-pointer"
-              onClick={handleFaviconClick} // Add click handler for the image container
+              onClick={handleFaviconClick}
             >
               <img
                 src={selectedFavicon || logo}
@@ -75,22 +75,13 @@ const General = () => {
             </div>
           </div>
           <div>
-            {/* Hidden file input */}
-            {/* <input
-              type="file"
-              id="faviconInput"
-              accept="image/*"
-              onChange={handleFaviconSelect}
-              className="hidden"
-              ref={fileInputRef}
-            /> */}
             <input
               type="file"
               id="faviconInput"
               accept="image/*"
               onChange={handleFaviconSelect}
               className="hidden"
-              ref={fileInputRef} // Attach the ref to the file input
+              ref={fileInputRef}
             />
             <button
               onClick={toggleEditMode}

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo_white.png";
 import avatar from "../assets/user.avif";
-import { FaSignOutAlt } from "react-icons/fa";
 import { BsBell } from "react-icons/bs";
 import { BsTwitterX, BsInstagram } from "react-icons/bs";
 import ProfileModal from "./ProfileModal";
@@ -11,7 +10,6 @@ import Modal from "react-modal";
 const Header = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userEmail, setUserEmail] = useState("machoodsylter@gmail.com");
@@ -45,9 +43,7 @@ const Header = () => {
 
   return (
     <header className="absolute top-0 left-0 right-0 z-40 ">
-      {/* Navbar */}
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
-        {/* Logo */}
         <Link to="/" className="text-white text-3xl font-bold">
           <img src={logo} alt="Logo" className="h-10 sm:h-12" />
         </Link>
@@ -63,7 +59,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex sm:gap-4 md:gap-8 items-center bg-black/60 p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-1 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
+        <div className="hidden md:flex sm:gap-2 md:gap-4 items-center bg-black/60 p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-1 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
           <Link to="/register">Become a member</Link>
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
@@ -106,7 +102,6 @@ const Header = () => {
           } md:hidden fixed inset-0 bg-[#555555] z-100`}
         >
           <div className="p-6 min-h-screen flex flex-col">
-            {/* Menu Header */}
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2">
                 <img src={logo} alt="Logo" className="h-8" />
@@ -175,11 +170,9 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Bottom Section */}
             <div className="mt-auto">
               {isLoggedIn ? (
                 <>
-                  {/* User Profile Section */}
                   <div className="mb-6 text-center">
                     <img
                       src={avatar}
@@ -202,7 +195,6 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  {/* Login/Register Buttons */}
                   <div className="space-y-3 mb-6">
                     <Link
                       to="/login"
@@ -221,7 +213,6 @@ const Header = () => {
                 </>
               )}
 
-              {/* Social Links and Footer */}
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex justify-start gap-6 mb-4">
                   <a href="#" className="text-white text-xl">
@@ -268,7 +259,6 @@ const Header = () => {
             },
           }}
         >
-          {/* Add global styles for hiding scrollbars */}
           <style jsx global>{`
             /* Hide scrollbar for Chrome, Safari and Opera */
             .no-scrollbar::-webkit-scrollbar {

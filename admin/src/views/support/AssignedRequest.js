@@ -75,7 +75,6 @@ const AssignedRequest = () => {
     }
   };
 
-  // Update handleDetail to include message index reset
   const handleDetail = (request) => {
     if (request?.status === "Pending") {
       setPendingDetails(true);
@@ -83,7 +82,7 @@ const AssignedRequest = () => {
       setOpenDetails(true);
     }
     setSelectedRequest(request);
-    setCurrentMessageIndex(request.messages.length - 1); // Start from latest message
+    setCurrentMessageIndex(request.messages.length - 1); //  latest message
     setOpenOptionsId(null);
   };
 

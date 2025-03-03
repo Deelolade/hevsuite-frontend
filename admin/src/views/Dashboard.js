@@ -11,7 +11,6 @@ import { IoSparkles } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import Profile from "../components/Profile";
 import { BiSearch } from "react-icons/bi";
-import eventImage from "../assets/event.png";
 import { BsCalendar } from "react-icons/bs";
 import Modal from "react-modal";
 import avat from "../assets/user.avif";

@@ -1,20 +1,6 @@
 import React, { useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  rectSortingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable";
 import Modal from "react-modal";
 import EditMenu from "./EditMenu";
 import AddPage from "./AddPage";
@@ -33,26 +19,6 @@ const Menus = () => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-
-  // const sensors = useSensors(
-  //   useSensor(MouseSensor),
-  //   useSensor(TouchSensor),
-  //   useSensor(KeyboardSensor)
-  // );
-
-  // const handleDragEnd = (event) => {
-  //   const { active, over } = event;
-
-  //   if (active.id !== over.id) {
-  //     // Reorder menus
-  //     const newMenus = [...menus];
-  //     const activeIndex = newMenus.findIndex((menu) => menu.id === active.id);
-  //     const overIndex = newMenus.findIndex((menu) => menu.id === over.id);
-
-  //     newMenus.splice(overIndex, 0, newMenus.splice(activeIndex, 1)[0]);
-  //     setMenus(newMenus);
-  //   }
-  // };
 
   const [menus, setMenus] = useState([
     { id: 1, name: "Menu 1" },

@@ -41,7 +41,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
   };
 
   const handleActionClick = (action, user, e) => {
-    e.stopPropagation(); // Prevent row click event
+    e.stopPropagation();
     setSelectedAction(action);
     setSelectedActionUser(user);
     setIsActionModalOpen(true);

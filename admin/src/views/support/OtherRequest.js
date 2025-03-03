@@ -85,7 +85,7 @@ const OtherRequest = () => {
       setOpenDetails(true);
     }
     setSelectedRequest(request);
-    setCurrentMessageIndex(request.messages.length - 1); // Start from latest message
+    setCurrentMessageIndex(request.messages.length - 1); // latest message
     setOpenOptionsId(null);
   };
 

@@ -8,13 +8,9 @@ import linkedIn from "../assets/icons/linkedn.png";
 const Footer = () => {
   return (
     <footer className="py-8 border-t bg-gray-50 text-gray-600 hidden sm:block">
-      {/* Container */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        {/* Flex Layout for Content */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-8 sm:gap-0">
-          {/* Left Section: Follow Us & Links */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
-            {/* Follow Us */}
             <div className="flex items-center gap-4">
               <span className="font-medium">Follow us</span>
               <div className="flex gap-4">
@@ -33,7 +29,6 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Links */}
             <div className="flex gap-8 sm:gap-4">
               <Link to="/terms" className="hover:text-black transition-colors">
                 Policies
@@ -44,7 +39,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Right Section: Copyright Text */}
           <div className="text-sm sm:text-base text-right">
             &copy; 2024 Hazor Group (Trading as HH Club)
           </div>

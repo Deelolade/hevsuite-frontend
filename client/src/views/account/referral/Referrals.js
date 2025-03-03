@@ -7,10 +7,7 @@ import SuccessfulReferrals from "./SuccessfulReferrals";
 import PendingReferrals from "./PendingReferrals";
 import CancelledReferrals from "./CancelledReferrals";
 
-// Set the app element for accessibility
 Modal.setAppElement("#root");
-
-// Navigation Tabs Component
 const NavigationTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
     "Successful Referrals",
@@ -40,7 +37,7 @@ const NavigationTabs = ({ activeTab, setActiveTab }) => {
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   return (
     <div className="flex justify-center items-center gap-2 sm:gap-4 mt-4 sm:mt-8">
-      <button 
+      <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         className={`text-gray-400 hover:text-gray-600 p-1 sm:p-2 ${
           currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
@@ -55,12 +52,14 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             key={page}
             onClick={() => onPageChange(page)}
             className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
-              page === currentPage ? "bg-[#540A26]" : "bg-gray-300 hover:bg-gray-400"
+              page === currentPage
+                ? "bg-[#540A26]"
+                : "bg-gray-300 hover:bg-gray-400"
             }`}
           />
         ))}
       </div>
-      <button 
+      <button
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         className={`text-gray-400 hover:text-gray-600 p-1 sm:p-2 ${
           currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
@@ -222,11 +221,11 @@ const Referrals = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
     // Scroll to top of the referrals section
-    const referralsSection = document.querySelector('.referrals-section');
+    const referralsSection = document.querySelector(".referrals-section");
     if (referralsSection) {
       window.scrollTo({
         top: referralsSection.offsetTop - 80,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -278,7 +277,10 @@ const Referrals = () => {
         />
       )}
 
-      <SendReferralModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <SendReferralModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

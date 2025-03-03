@@ -9,7 +9,6 @@ import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 import edit_icon from "../../assets/icons/edit3.png";
 
-// Set the app element for accessibility
 Modal.setAppElement("#root");
 
 const UserManagement = () => {

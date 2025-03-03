@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
 import event_card from "../../assets/event.png";
+import image_card from "../../assets/image.jpg";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
 import Header from "../../components/Header";
@@ -56,7 +57,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative h-screen">
         <div className="absolute inset-0 bg-black/50">
-          <video
+          {/* <video
             autoPlay
             muted
             loop
@@ -65,7 +66,12 @@ const Landing = () => {
           >
             <source src="/videos/hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
-          </video>
+          </video> */}
+          <img
+            src={image_card}
+            alt=""
+            className="w-full h-full object-cover brightness-50"
+          />
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-end mb-20 text-white px-4">
           <h1 className="text-2xl lg:text-6xl md:text-5xl sm:text-2xl font-primary font-bold mb-8 text-center">
@@ -104,7 +110,7 @@ const Landing = () => {
                 className="relative group overflow-hidden rounded-2xl shadow-md min-w-[200px] flex-shrink-0" // Ensure cards don't shrink
               >
                 <div
-                  className="relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center"
+                  className="relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center bg-current"
                   style={{ backgroundImage: `url(${item.image})` }}
                 >
                   {/* Gradient Overlay */}

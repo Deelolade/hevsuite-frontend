@@ -10,7 +10,6 @@ const SupportRequestsView = ({ onBack }) => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Sample data for different request types
   const requestData = {
     all: [
       {
@@ -60,17 +59,14 @@ const SupportRequestsView = ({ onBack }) => {
     ],
   };
 
-  // Get the current data based on active tab
   const getCurrentData = () => {
     return requestData[activeTab] || requestData.all;
   };
 
-  // Handle tab click
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
 
-  // Handle file upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -82,23 +78,19 @@ const SupportRequestsView = ({ onBack }) => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = () => {
-    // Here you would typically send the data to your backend
     console.log("Submitting request:", {
       type: requestType,
       description: requestDescription,
       image: uploadedImage,
     });
 
-    // Reset form and close modal
     setRequestType("");
     setRequestDescription("");
     setUploadedImage(null);
     setShowModal(false);
   };
 
-  // Render card view for mobile
   const renderCardView = () => {
     return getCurrentData().map((request) => (
       <div

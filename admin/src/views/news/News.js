@@ -13,9 +13,6 @@ import send_icon from "../../assets/icons/send.png";
 import star_icon from "../../assets/icons/star.png";
 import book_icon from "../../assets/icons/read.png";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-// import { useEditor, EditorContent } from "@tiptap/react";
-// import StarterKit from "@tiptap/starter-kit";
-// import Underline from "@tiptap/extension-underline";
 const News = () => {
   const [currentPage, setCurrentPage] = useState(2);
   const [isAddNewsOpen, setIsAddNewsOpen] = useState(false);
@@ -30,10 +27,6 @@ const News = () => {
   const [receiverEmail, setReceiverEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  // const editor = useEditor({
-  //   extensions: [StarterKit, Underline],
-  //   content: "",
-  // });
 
   const [allNews, setNews] = useState([
     {

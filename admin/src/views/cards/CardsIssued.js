@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { BiSearch } from "react-icons/bi";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import Profile from "../../components/Profile";
 import CancelCardModal from "../../components/modals/cards/CancelCardModal";
 import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
 import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
 
-// Set app element for accessibility
 Modal.setAppElement("#root");
 
 const CardsIssued = () => {

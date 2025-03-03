@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { BsFilter } from "react-icons/bs";
 import Modal from "react-modal";
 
-Modal.setAppElement("#root"); // Set the root element for accessibility
+Modal.setAppElement("#root");
 
 const ActivityItem = ({ activity, onRemove }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -19,7 +19,9 @@ const ActivityItem = ({ activity, onRemove }) => {
           <p className="font-medium text-black text-sm sm:text-base line-clamp-2 sm:line-clamp-none">
             {activity.title}
           </p>
-          <p className="text-xs sm:text-sm text-gray-600">{activity.timestamp}</p>
+          <p className="text-xs sm:text-sm text-gray-600">
+            {activity.timestamp}
+          </p>
         </div>
         <button
           onClick={handleRemove}
@@ -44,7 +46,8 @@ const ActivityItem = ({ activity, onRemove }) => {
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 1000,
-          }}}
+          },
+        }}
       >
         <h3 className="text-xl font-semibold mb-2">Remove Activity</h3>
         <p className="text-gray-600 mb-4">
@@ -90,7 +93,8 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilter }) => {
           bottom: 0,
           backgroundColor: "rgba(0, 0, 0, 0.5)",
           zIndex: 1000,
-        }}}
+        },
+      }}
     >
       <h3 className="text-xl font-semibold mb-4">Filter Activity Log</h3>
       <div className="space-y-3 mb-6">
@@ -166,38 +170,38 @@ const Activities = () => {
       id: 1,
       title: "You logged in from a new device (Windows 10, Chrome)",
       timestamp: "17th January, 2023 by 8:20 PM",
-      type: "login"
+      type: "login",
     },
     {
       id: 2,
       title: "You changed your password successfully",
       timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "security"
+      type: "security",
     },
     {
       id: 3,
       title: "You updated your email address to hello.member@club.com",
       timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "security"
+      type: "security",
     },
     {
       id: 4,
       title:
         "Support join request for Jane Doe accepted (Device: MacBook Pro, Safari)",
       timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "support"
+      type: "support",
     },
     {
       id: 5,
       title: "you declined support join request for Sam Smith",
       timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "support"
+      type: "support",
     },
     {
       id: 6,
       title: "You logged out (iPhone 13, Safari)",
       timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "login"
+      type: "login",
     },
   ]);
 
@@ -262,7 +266,6 @@ const Activities = () => {
         onClose={() => setShowFilterModal(false)}
         onApply={handleFilter}
         currentFilter={currentFilter}
-        
       />
 
       {/* Clear All Modal */}
@@ -280,11 +283,13 @@ const Activities = () => {
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 1000,
-          }}}
+          },
+        }}
       >
         <h3 className="text-xl font-semibold mb-2">Clear Activity Log</h3>
         <p className="text-gray-600 mb-4">
-          Are you sure you want to clear your entire activity log? This action cannot be undone.
+          Are you sure you want to clear your entire activity log? This action
+          cannot be undone.
         </p>
         <div className="flex justify-end gap-3">
           <button
