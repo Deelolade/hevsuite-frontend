@@ -21,18 +21,18 @@ const Menus = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [menus, setMenus] = useState([
-    { id: 1, name: "Menu 1" },
-    { id: 2, name: "Menu 2" },
-    { id: 3, name: "Menu 3" },
-    { id: 4, name: "Menu 4" },
+    { id: 1, name: "Become a member" },
+    { id: 2, name: "How it works" },
+    { id: 3, name: "Help Centre" },
+    // { id: 4, name: "Menu 4" },
   ]);
   const [menuItems, setMenuItems] = useState([
-    { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 2, title: "Terms and Condition", visibility: false, owner: "System" },
-    { id: 3, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 4, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 5, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 6, title: "Terms and Condition", visibility: false, owner: "System" },
+    // { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
+    // { id: 2, title: "Terms and Condition", visibility: false, owner: "System" },
+    // { id: 3, title: "Terms and Condition", visibility: true, owner: "System" },
+    // { id: 4, title: "Terms and Condition", visibility: true, owner: "System" },
+    // { id: 5, title: "Terms and Condition", visibility: true, owner: "System" },
+    // { id: 6, title: "Terms and Condition", visibility: false, owner: "System" },
   ]);
 
   const handleVisibility = (id) => {
@@ -243,7 +243,7 @@ const Menus = () => {
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragEnd={handleDragEnd}
-                  className={`px-6 py-2 rounded-lg flex w-40 h-16 justify-between items-center gap-2 ${
+                  className={`px-6 py-2 rounded-lg flex w-fit  h-16 justify-between items-center gap-2 ${
                     selectedMenu === menu.id
                       ? "bg-primary text-white"
                       : "border text-gray-600"

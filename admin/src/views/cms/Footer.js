@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiEdit } from "react-icons/fi";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import Modal from "react-modal";
-import AddFooterPage from "./AddFooterPage";
+import AddFooterPage from "./AddPage";
+// import AddFooterPage from "./AddFooterPage";
 import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem";
 import EditFooter from "../../components/modals/cms/footer/EditFooter";
 import CreatedPages from "../../components/modals/cms/footer/CreatedPages";
@@ -26,6 +27,22 @@ const Footer = () => {
     { id: "policies", name: "Policies" },
     { id: "hhclub", name: "HH Club & Founder" },
   ]);
+
+  useEffect(() => {
+    if (selectedSection === "policies") {
+      setFooterItems([
+        {
+          id: 1,
+          title: "Terms and Condition",
+          visibility: true,
+          owner: "System",
+        },
+        { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
+      ]);
+    } else {
+      setFooterItems([]);
+    }
+  }, [selectedSection]);
 
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);
@@ -52,9 +69,6 @@ const Footer = () => {
   const [footerItems, setFooterItems] = useState([
     { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
-    { id: 3, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 4, title: "Privacy Policy", visibility: true, owner: "System" },
-    { id: 5, title: "Terms and Condition", visibility: false, owner: "System" },
   ]);
   const handleVisibility = (id) => {
     setFooterItems(

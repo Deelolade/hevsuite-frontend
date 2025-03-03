@@ -7,6 +7,7 @@ import logo from "../../assets/logo_white.png";
 import event_card from "../../assets/event.png";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
+import Header from "../../components/Header";
 
 const NewsDetail = () => {
   const relatedNews = [
@@ -43,7 +44,7 @@ const NewsDetail = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <HeaderOne />
+      <Header />
 
       {/* Hero Section */}
       <section className="relative h-screen">

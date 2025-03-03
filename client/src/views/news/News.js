@@ -5,7 +5,7 @@ import logo from "../../assets/logo_white.png";
 import event_card from "../../assets/event.png";
 import { Link } from "react-router-dom";
 import Footer from "../../components/Footer";
-import HeaderOne from "../../components/HeaderOne";
+// import HeaderOne from "../../components/HeaderOne";
 import Header from "../../components/Header";
 
 const News = () => {

@@ -6,7 +6,7 @@ import event_card from "../../assets/event.png";
 import image_card from "../../assets/image.jpg";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
-import Header from "../../components/Header";
+// import Header from "../../components/Header";
 
 const Landing = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -52,7 +52,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <Header />
+      <HeaderOne />
 
       {/* Hero Section */}
       <section className="relative h-screen">
