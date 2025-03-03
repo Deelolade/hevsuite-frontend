@@ -125,7 +125,7 @@ const StandardProfile = () => {
         <SupportRequestsView onBack={() => setShowRequestView(false)} />
       ) : (
         <>
-          <div className="flex items-start gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
             <img
               src={avatar}
               alt="Profile"
@@ -576,7 +576,7 @@ const StandardProfile = () => {
                 {[1, 2, 3].map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between border-b pb-2"
+                    className="flex flex-col sm:flex-row items-center justify-between border-b pb-2"
                   >
                     <div className="flex items-center gap-3">
                       <img
@@ -601,7 +601,7 @@ const StandardProfile = () => {
               Enable/disable Two Factor authentication
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -613,7 +613,7 @@ const StandardProfile = () => {
                 </div>
                 <span className="text-gray-500 text-sm">1 month ago</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -704,7 +704,7 @@ const StandardProfile = () => {
 
                 <div className="md:col-span-2">
                   <label className="block mb-2">Disable Current Card</label>
-                  <div className="flex items-center">
+                  <div className="flex flex-col sm:flex-row items-center">
                     <div className="relative flex-1 ">
                       <select
                         className="w-full px-4 py-3  bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200 appearance-none"
@@ -767,7 +767,7 @@ const StandardProfile = () => {
                 </div>
 
                 <div className="mb-6">
-                  <div className="flex space-x-2 mb-4">
+                  <div className="flex flex-col sm:flex-row space-x-0 sm:space-x-2 mb-4">
                     <button className="px-4 py-2 rounded-lg bg-white border border-gray-300">
                       All Requests
                     </button>

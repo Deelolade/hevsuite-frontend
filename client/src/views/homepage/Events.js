@@ -1,55 +1,55 @@
 import React, { useState } from "react";
 import headerBg from "../../assets/header-bg.jpg";
-
 import { Link } from "react-router-dom";
-import { BsBell, BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import { BsCalendar, BsHeart } from "react-icons/bs";
+import {
+  BsBell,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCalendar,
+  BsHeart,
+} from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
 import Header from "../../components/Header";
 import event from "../../assets/event.png";
 import Footer from "../../components/Footer";
 import avatar from "../../assets/user.avif";
 import mastercard from "../../assets/Mastercard.png";
-// import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 const EventDetailsModal = ({ event, onClose }) => {
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [modalPage, setModalPage] = useState(1);
 
   const attendees = [
-    {
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      name: "Benson Jackson",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
+    { name: "Anna Ivanovic", date: "2nd Dec., 2025", image: avatar },
+    { name: "Benson Jackson", date: "2nd Dec., 2025", image: avatar },
     { name: "Beryl Ama", date: "2nd Dec., 2025", image: avatar },
     { name: "Jack Phil", date: "2nd Dec., 2025", image: avatar },
-    {
-      name: "Matt Hardy",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      name: "Michael Jackinson",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
+    { name: "Matt Hardy", date: "2nd Dec., 2025", image: avatar },
+    { name: "Michael Jackinson", date: "2nd Dec., 2025", image: avatar },
   ];
+
+  const attendeesPerPage = 4;
+  const totalModalPages = Math.ceil(attendees.length / attendeesPerPage);
+
+  const handleModalPageChange = (page) => {
+    setModalPage(page);
+  };
+
+  const paginatedAttendees = attendees.slice(
+    (modalPage - 1) * attendeesPerPage,
+    modalPage * attendeesPerPage
+  );
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
       <div className="bg-white rounded-3xl w-full max-w-7xl overflow-hidden">
-        <div className="flex">
+        <div className="flex flex-col md:flex-row">
           {/* Left side - Image */}
-          <div className="w-5/12 relative bg-black">
+          <div className="w-full md:w-5/12 relative bg-black">
             <div className="absolute top-6 left-6 flex items-center gap-2 text-white z-10">
               <BsChevronLeft
                 size={20}
@@ -58,7 +58,7 @@ const EventDetailsModal = ({ event, onClose }) => {
               />
               <span>Invited Events</span>
             </div>
-            <div className="relative h-full">
+            <div className="relative h-full md:h-auto overflow-y-auto">
               <img
                 src={event.image}
                 alt={event.title}
@@ -111,7 +111,7 @@ const EventDetailsModal = ({ event, onClose }) => {
           </div>
 
           {/* Right side - Details */}
-          <div className="w-7/12">
+          <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh]">
             <div className="border-b">
               <div className="flex">
                 <button
@@ -204,7 +204,7 @@ const EventDetailsModal = ({ event, onClose }) => {
 
               {activeTab === "members" && (
                 <div className="space-y-4">
-                  {attendees.map((attendee, index) => (
+                  {paginatedAttendees.map((attendee, index) => (
                     <div key={index} className="flex items-center gap-4">
                       <img
                         src={attendee.image}
@@ -220,17 +220,36 @@ const EventDetailsModal = ({ event, onClose }) => {
                     </div>
                   ))}
                   <div className="flex items-center justify-center gap-2 mt-6">
-                    <button className="p-2">
+                    <button
+                      className="p-2"
+                      onClick={() =>
+                        handleModalPageChange(
+                          modalPage > 1 ? modalPage - 1 : totalModalPages
+                        )
+                      }
+                    >
                       <BsChevronLeft />
                     </button>
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 rounded-full bg-[#540A26]"></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-200"></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-200"></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-200"></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-200"></div>
+                      {Array.from({ length: totalModalPages }, (_, index) => (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full ${
+                            modalPage === index + 1
+                              ? "bg-[#540A26]"
+                              : "bg-gray-200"
+                          }`}
+                        ></div>
+                      ))}
                     </div>
-                    <button className="p-2">
+                    <button
+                      className="p-2"
+                      onClick={() =>
+                        handleModalPageChange(
+                          modalPage < totalModalPages ? modalPage + 1 : 1
+                        )
+                      }
+                    >
                       <BsChevronRight />
                     </button>
                   </div>
@@ -258,7 +277,7 @@ const PaymentMethodModal = ({ onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0  z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-3xl w-full max-w-lg p-6">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-semibold">Select your Payment Method</h2>
@@ -295,18 +314,30 @@ const Events = () => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const events = Array(12).fill({
+  const events = Array(17).fill({
     title: "The Bout for Lions",
     date: "2nd January, 2025",
     time: "10:00pm",
     image: event,
   });
 
+  const eventsPerPage = 12;
+  const totalPages = Math.ceil(events.length / eventsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const paginatedEvents = events.slice(
+    (currentPage - 1) * eventsPerPage,
+    currentPage * eventsPerPage
+  );
+
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="relative text-white">
         <div className="absolute inset-0 z-0">
           <img
@@ -320,53 +351,53 @@ const Events = () => {
           <Header />
 
           {/* Filters */}
-          <div className="px-6 py-4 flex items-center space-x-4 ">
+          <div className="px-6 py-4 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
             <select
-              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2"
+              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto mt-24"
               value={selectedAudience}
               onChange={(e) => setSelectedAudience(e.target.value)}
             >
               <option value="">Audience</option>
-              <option value="">For Members</option>
-              <option value="">Public Event</option>
-              <option value="">Vip Members</option>
+              <option value="members">For Members</option>
+              <option value="public">Public Event</option>
+              <option value="vip">Vip Members</option>
             </select>
 
             <select
-              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2"
+              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto mt-24"
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
             >
               <option value="">Country</option>
-              {/* Add options */}
+              <option value="">Ethiopia</option>
             </select>
 
             <select
-              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2"
+              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto "
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
             >
               <option value="">City</option>
-              {/* Add options */}
+              <option value="">Addis Ababa</option>
             </select>
 
-            <div className="ml-auto">
+            <div className="w-full md:w-auto">
               <select
-                className="bg-transparent border border-gray-600 rounded-lg px-4 py-2"
+                className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto "
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               >
                 <option value="">Date</option>
-                <option value="">Newest to Oldest</option>
-                <option value="">Oldest to Newest</option>
+                <option value="newest">Newest to Oldest</option>
+                <option value="oldest">Oldest to Newest</option>
               </select>
             </div>
           </div>
 
           {/* Events Grid */}
           <div className="px-6 py-8">
-            <div className="grid grid-cols-4 gap-6">
-              {events.map((event, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {paginatedEvents.map((event, index) => (
                 <div
                   key={index}
                   className="rounded-2xl overflow-hidden relative group cursor-pointer"
@@ -390,21 +421,19 @@ const Events = () => {
 
             {/* Pagination */}
             <div className="flex justify-center items-center space-x-2 mt-8">
-              <button className="w-8 h-8 rounded-full bg-[#540A26] flex items-center justify-center">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">
-                2
-              </button>
-              <button className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">
-                3
-              </button>
-              <button className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">
-                4
-              </button>
-              <button className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">
-                5
-              </button>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  className={`w-8 h-8 rounded-full ${
+                    currentPage === index + 1
+                      ? "bg-[#540A26]"
+                      : "border border-gray-600"
+                  } flex items-center justify-center`}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
             </div>
           </div>
           {selectedEvent && (
