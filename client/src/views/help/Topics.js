@@ -215,7 +215,7 @@ const Topics = () => {
                 key={index}
                 className="border-b border-gray-200 pb-4 md:pb-6"
               >
-                <div className="flex items-start gap-3 md:gap-6">
+                <div className="flex items-start gap-3 md:gap-6 ">
                   <span className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm md:text-base font-medium shrink-0 mt-1">
                     {index + 1}
                   </span>
@@ -237,11 +237,10 @@ const Topics = () => {
                     <button
                       onClick={() =>
                         setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
-                      } // Toggle expand/collapse
+                      }
                       className="text-[#540A26] text-sm md:text-base font-medium hover:text-red-600 transition-colors"
                     >
                       {expandedFAQ === faq.id ? "Read less" : "Read more"}{" "}
-                      {/* Change button text based on state */}
                     </button>
                   </div>
                 </div>

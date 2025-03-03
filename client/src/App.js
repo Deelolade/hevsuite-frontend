@@ -18,7 +18,6 @@ import RegisterStep4 from "./views/auth/register/RegisterStep4";
 import RegisterStep5 from "./views/auth/register/RegisterStep5";
 import RegisterStep6 from "./views/auth/register/RegisterStep6";
 import RegisterStep7 from "./views/auth/register/RegisterStep7";
-import RegisterStep8 from "./views/auth/register/RegisterStep8";
 import Homepage from "./views/homepage/Homepage";
 import Events from "./views/homepage/Events";
 import Ask from "./views/ask/Ask";
@@ -104,10 +103,6 @@ const router = createBrowserRouter([
   {
     path: "/register-7",
     element: <RegisterStep7 />,
-  },
-  {
-    path: "/register-8",
-    element: <RegisterStep8 />,
   },
 
   {

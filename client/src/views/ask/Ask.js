@@ -175,7 +175,7 @@ const Ask = () => {
         </div>
 
         {/* Requests Grid */}
-        <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {paginatedRequests.map((request) => (
             <div
               key={request.id}

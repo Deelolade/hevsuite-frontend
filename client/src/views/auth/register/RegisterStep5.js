@@ -34,18 +34,17 @@ const RegisterStep5 = () => {
             alt="background"
             className="w-full h-[120px] object-cover brightness-50"
           />
-          <div className="absolute inset-0 bg-black/60" />
         </div>
         <header className="relative z-10 py-4">
-          <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="container mx-auto px-4 flex justify-center items-center">
             <img
               src={logo_white}
               alt="Hevsuite Club"
               className="h-12 md:h-16"
             />
-            <button className="md:hidden text-white text-2xl">
+            {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
-            </button>
+            </button> */}
           </div>
         </header>
       </div>

@@ -1,55 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
+import { FiDownload } from "react-icons/fi";
+import Modal from "react-modal";
 import Footer from "../../../components/Footer";
-import avatar from "../../../assets/user.avif";
+import mastercard from "../../../assets/Mastercard.png";
+import american from "../../../assets/AMEX.png";
+import discover from "../../../assets/Discover.png";
+import visa from "../../../assets/VISA.png";
 import logo_white from "../../../assets/logo_white.png";
 import bg_image from "../../../assets/party3.jpg";
 
 const RegisterStep7 = () => {
   const navigate = useNavigate();
-  const referrals = [
-    {
-      id: 1,
-      name: "Andrew Bojangles",
-      avatar: avatar,
-      status: "Approved",
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: "",
+    expiry: "",
+    cvc: "",
+    country: "United States",
+    postalCode: "",
+  });
+
+  const modalStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "500px",
+      width: "90%",
+      padding: "0",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
     },
-    {
-      id: 2,
-      name: "Andrew Bojangles",
-      avatar: avatar,
-      status: "Pending",
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
     },
-    {
-      id: 3,
-      name: "Andrew Bojangles",
-      avatar: avatar,
-      status: "Pending",
+  };
+
+  const cancelModalStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "400px",
+      width: "90%",
+      padding: "0",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
     },
-  ];
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
+    },
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsModalOpen(true);
+    // Add payment processing logic here
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen">
       <div className="relative text-white">
         <div className="absolute inset-0 z-0">
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-[120px] object-cover brightness-50"
+            className="w-full h-[120px] object-cover brightness-50 "
           />
-          <div className="absolute inset-0 bg-black/60" />
         </div>
         <header className="relative z-10 py-4">
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <img
-              src={logo_white}
-              alt="Hevsuite Club"
-              className="h-12 md:h-16"
-            />
-            <button className="md:hidden text-white text-2xl">
-              <span>☰</span>
-            </button>
+          <div className="container mx-auto px-4 flex justify-center">
+            <img src={logo_white} alt="Hevsuite Club" className="h-16" />
           </div>
         </header>
       </div>
@@ -92,100 +122,299 @@ const RegisterStep7 = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-3xl text-center flex-grow">
-        <div className="mb-8 md:mb-12">
-          <div className="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full mx-auto mb-4 md:mb-8 flex items-center justify-center">
-            <svg
-              className="w-8 h-8 md:w-12 md:h-12 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl md:text-3xl font-medium mb-2 md:mb-4 text-[#540A26]">
-            Your membership application is pending for approval.
-          </h2>
-        </div>
+      <div className="container mx-auto px-4 py-12 max-w-3xl">
+        <h1 className="text-3xl font-medium text-center mb-12 text-primary font-secondary">
+          Proceed to Payment
+        </h1>
 
-        <div className="bg-white rounded-lg p-4 md:p-8 shadow-sm">
-          <h3 className="text-lg md:text-2xl font-medium mb-4 md:mb-6">
-            Check your referrals
-          </h3>
-          <div className="space-y-3 md:space-y-4">
-            {referrals.map((referral) => (
-              <div
-                key={referral.id}
-                className="flex flex-wrap md:flex-nowrap items-center justify-between bg-gray-50 p-3 md:p-4 rounded-lg"
-              >
-                <div className="flex items-center gap-2 md:gap-4 mb-2 md:mb-0 w-full md:w-auto">
-                  <img
-                    src={referral.avatar}
-                    alt={referral.name}
-                    className="w-8 h-8 md:w-10 md:h-10 rounded-full"
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Left Side - Fee Display */}
+          <div className="md:order-1">
+            <h2 className="text-[#0A5440] font-medium text-xl mb-2">
+              Membership fee
+            </h2>
+            <p className="text-gray-400 text-3xl">£120.00</p>
+          </div>
+
+          {/* Right Side - Payment Form */}
+          <div className="md:order-2 space-y-6">
+            <div>
+              <label className="block mb-2">Card</label>
+              <div className="flex gap-4">
+                <div className="relative border rounded-lg flex-1">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                    <svg
+                      className="w-5 h-5 text-blue-500"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                      <path
+                        d="M3 10H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Card"
+                    className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
+                    value={paymentDetails.cardType}
+                    onChange={(e) =>
+                      setPaymentDetails({
+                        ...paymentDetails,
+                        cardType: e.target.value,
+                      })
+                    }
                   />
-                  <span className="font-medium text-sm md:text-base">
-                    {referral.name}
-                  </span>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                  {referral.status === "Approved" ? (
-                    <span className="px-3 md:px-4 py-1 md:py-2 bg-[#0A5440] text-white rounded-lg text-xs md:text-sm">
-                      Approved
-                    </span>
-                  ) : (
-                    <>
-                      <span className="px-3 md:px-4 py-1 md:py-2 bg-white text-gray-500 border border-gray-200 rounded-lg text-xs md:text-sm">
-                        Pending
-                      </span>
-                      <span className="px-3 md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-sm">
-                        Decline
-                      </span>
-                    </>
-                  )}
-                </div>
+                <button className="w-12 h-12 border rounded-lg flex  justify-center">
+                  <svg
+                    className="w-6 h-6 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2z"
+                    />
+                  </svg>
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+            <div>
+              <label className="block mb-2">Card number</label>
+              <input
+                type="text"
+                placeholder="1234 1234 1234 1234"
+                className="w-full px-4 py-3 border rounded-lg"
+                value={paymentDetails.cardNumber}
+                onChange={(e) =>
+                  setPaymentDetails({
+                    ...paymentDetails,
+                    cardNumber: e.target.value,
+                  })
+                }
+              />
+              <div className="flex gap-2 mt-2">
+                <img src={visa} alt="Visa" className="h-6" />
+                <img src={mastercard} alt="Mastercard" className="h-6" />
+                <img src={american} alt="American Express" className="h-6" />
+                <img src={discover} alt="Discover" className="h-6" />
+              </div>
+            </div>
 
-          <div className="mt-6 md:mt-8 flex justify-between items-center">
-            <button
-              className="px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base  transition-colors"
-              onClick={() => navigate("/register-6")}
-            >
-              <svg
-                className="w-4 h-4 md:w-5 md:h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-2">Expiry</label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  className="w-full px-4 py-3 border rounded-lg"
+                  value={paymentDetails.expiry}
+                  onChange={(e) =>
+                    setPaymentDetails({
+                      ...paymentDetails,
+                      expiry: e.target.value,
+                    })
+                  }
                 />
-              </svg>
-              Add other referral
-            </button>
-            <Link
-              to="/register-8"
-              className="px-4 md:px-6 py-1 md:py-2 text-white bg-[#540A26] rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
+              </div>
+              <div>
+                <label className="block mb-2">CVC</label>
+                <input
+                  type="text"
+                  placeholder="CVC"
+                  className="w-full px-4 py-3 border rounded-lg"
+                  value={paymentDetails.cvc}
+                  onChange={(e) =>
+                    setPaymentDetails({
+                      ...paymentDetails,
+                      cvc: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-2">Country</label>
+                <select
+                  className="w-full px-4 py-3 border rounded-lg bg-white"
+                  value={paymentDetails.country}
+                  onChange={(e) =>
+                    setPaymentDetails({
+                      ...paymentDetails,
+                      country: e.target.value,
+                    })
+                  }
+                >
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Canada">Canada</option>
+                </select>
+              </div>
+              <div>
+                <label className="block mb-2">Postal code</label>
+                <input
+                  type="text"
+                  placeholder="90210"
+                  className="w-full px-4 py-3 border rounded-lg"
+                  value={paymentDetails.postalCode}
+                  onChange={(e) =>
+                    setPaymentDetails({
+                      ...paymentDetails,
+                      postalCode: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
             >
-              Go to payment
-              <span className="ml-1">→</span>
-            </Link>
+              Make Payment
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsCancelModalOpen(true)}
+              className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-lg font-medium"
+            >
+              Cancel Application
+            </button>
           </div>
         </div>
       </div>
 
       <Footer />
+
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        style={modalStyles}
+        contentLabel="Payment Success Modal"
+      >
+        <div className="relative p-8">
+          {/* Success Icon */}
+          <div className=" flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
+              <BsCheckCircleFill className="w-8 h-8 text-[#540A26]" />
+            </div>
+          </div>
+
+          {/* Modal Content */}
+          <div className="text-center mt-6">
+            <h2 className="text-2xl font-semibold mb-2">Payment Success!</h2>
+            <p className="text-gray-600 mb-8">
+              Your payment has been successfully done.
+            </p>
+
+            <div className="mb-8">
+              <h3 className="text-gray-500 mb-2">Total Payment</h3>
+              <p className="text-4xl text-gray-600">£120.00</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-500 text-sm mb-1">Ref Number</p>
+                <p className="font-medium">00008575257</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-500 text-sm mb-1">Payment Time</p>
+                <p className="font-medium">25 Feb 2023, 13:22</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-500 text-sm mb-1">Payment Method</p>
+                <p className="font-medium">Card</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-gray-500 text-sm mb-1">Sender Name</p>
+                <p className="font-medium">Antonio Roberto</p>
+              </div>
+            </div>
+
+            <button
+              className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
+              onClick={() => {
+                /* Add PDF download logic */
+              }}
+            >
+              <FiDownload className="w-5 h-5" />
+              Get PDF Receipt
+            </button>
+
+            <button
+              onClick={() => navigate("/homepage")}
+              className="w-full py-1   text-[#540A26] border-2 border-gradient_r rounded-3xl"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isCancelModalOpen}
+        onRequestClose={() => setIsCancelModalOpen(false)}
+        style={cancelModalStyles}
+        contentLabel="Cancel Application Confirmation Modal"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <span className="text-red-500">⚠</span>
+              Cancel Application
+            </h2>
+            <button
+              onClick={() => setIsCancelModalOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-6">
+            <p className="text-gray-600">
+              Are you sure you want to cancel your application? This action
+              cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsCancelModalOpen(false)}
+                className="px-6 py-2 border rounded-lg text-sm"
+              >
+                No, Keep Application
+              </button>
+              <button
+                onClick={() => {
+                  setIsCancelModalOpen(false);
+                  navigate("/homepage");
+                }}
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

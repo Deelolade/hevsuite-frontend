@@ -25,18 +25,17 @@ const Register = () => {
             alt="background"
             className="w-full h-[120px] object-cover brightness-50"
           />
-          <div className="absolute inset-0 bg-black/60" />
         </div>
         <header className="relative z-10 py-4">
-          <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="container mx-auto px-4 flex justify-center items-center w-full">
             <img
               src={logo_white}
               alt="Hevsuite Club"
               className="h-12 md:h-16"
             />
-            <button className="md:hidden text-white text-2xl">
+            {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
-            </button>
+            </button> */}
           </div>
         </header>
       </div>
@@ -79,7 +78,7 @@ const Register = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow">
+      <div className="container mx-auto sm:mx-12 md:24 px-4 py-8 md:py-12 max-w-3xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl flex-grow">
         <h1 className="text-2xl md:text-3xl font-medium text-center mb-6 md:mb-8 text-[#540A26]">
           Membership
         </h1>
