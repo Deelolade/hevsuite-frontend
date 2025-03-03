@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import TermsOfPolicy from "./TermsOfPolicy";
 import TermsOfUse from "./TermsOfUse";
@@ -13,7 +13,26 @@ const Terms = () => {
 
   const tabs = ["Terms of Policy", "Terms of Use", "Cookies Policy"];
 
-  // Mobile layout for small screens, desktop layout for medium and up
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
+  // const handleTabClick = (tab) => {
+  //   setActiveTab(tab);
+  //   document
+  //     .getElementById(tab.replace(/\s+/g, ""))
+  //     .scrollIntoView({ behavior: "smooth" });
+  // };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    const elementId = tab.replace(/\s+/g, "").toLowerCase();
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Mobile View (hidden on md and larger screens) */}
@@ -25,7 +44,6 @@ const Terms = () => {
               alt="background"
               className="w-full h-[200px] object-cover brightness-50"
             />
-            {/* <div className="absolute inset-0 bg-black/50" /> */}
           </div>
           <div className="relative z-10">
             <Header />
@@ -55,7 +73,7 @@ const Terms = () => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabClick(tab)}
                 className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors ${
                   activeTab === tab
                     ? "bg-[#540A26] text-white"
@@ -93,35 +111,37 @@ const Terms = () => {
               <div className="absolute inset-0 bg-black/50" />
             </div>
             <div className="relative z-10 min-h-screen p-16 lg:p-24 xl:p-32 font-secondary text-white">
-              <h2 className="text-3xl lg:text-4xl xl:text-5xl font-semibold mb-8">
+              <h2 className="title text-3xl md:mt-20 lg:text-4xl xl:text-5xl font-semibold mb-8">
                 {activeTab}
               </h2>
-              <div className="space-y-4 text-xl lg:text-2xl">
+              <div className="content">
                 {activeTab === "Terms of Policy" && (
-                  <>
-                    <p className="text-secondary">
+                  <div className="terms-content">
+                    <p className="text-secondary" id="termsofpolicy">
                       1. What is this privacy Policy For?
                     </p>
                     <p>2. Personal Data we collect?</p>
                     <p>3. Your Use of This Website</p>
                     <p>4. Invalidity of waiver</p>
-                  </>
+                  </div>
                 )}
                 {activeTab === "Terms of Use" && (
-                  <>
-                    <p className="text-red-500">1. Content on this SITE</p>
+                  <div className="terms-content">
+                    <p className="text-red-500" id="termsofuse">
+                      1. Content on this SITE
+                    </p>
                     <p>2. Links to Other Websites</p>
                     <p>3. Your Use of This Website</p>
                     <p>4. Invalidity of waiver</p>
-                  </>
+                  </div>
                 )}
                 {activeTab === "Cookies Policy" && (
-                  <>
-                    <p className="text-red-500">
+                  <div className="terms-content">
+                    <p className="text-red-500" id="cookiespolicy">
                       1. Cookies: what they are and How to remove them?
                     </p>
                     <p>2. What are in a cookie?</p>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -150,8 +170,8 @@ const Terms = () => {
               {tabs.map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-2 rounded-3xl transition-colors ${
+                  onClick={() => handleTabClick(tab)}
+                  className={`px-4 md:px-6 py-1.5 md:py-2 rounded-3xl transition-colors ${
                     activeTab === tab
                       ? "bg-[#540A26] text-white"
                       : "border border-[#540A26] text-[#540A26]"
@@ -176,3 +196,19 @@ const Terms = () => {
 };
 
 export default Terms;
+
+<style jsx>{`
+  .terms-content {
+    text-align: center;
+  }
+  .title {
+    text-align: center;
+    margin-top: 20rem;
+  }
+
+  @media (min-width: 700px) and (max-width: 1000px) {
+    .terms-content p {
+      font-size: 0.9rem; /* Smaller text size */
+    }
+  }
+`}</style>;

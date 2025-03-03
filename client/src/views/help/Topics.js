@@ -110,10 +110,10 @@ const Topics = () => {
         <div className="relative z-10">
           <Header />
           <div className="text-white text-center py-8 md:py-16 px-4">
-            <p className="text-sm mb-1 md:mb-2 invisible sm:visible font-secondary">
+            <p className="text-sm mb-1 md:mb-2 invisible xl:visible font-secondary">
               FAQs
             </p>
-            <h1 className="text-2xl invisible sm:visible md:text-4xl font-semibold mb-2 md:mb-4 font-secondary">
+            <h1 className="text-2xl invisible xl:visible md:text-4xl font-semibold mb-2 md:mb-4 font-secondary">
               Ask us anything
             </h1>
             <p className="mb-4 md:mb-8 text-sm invisible sm:visible md:text-base font-primary">

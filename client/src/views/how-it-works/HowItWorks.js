@@ -102,7 +102,7 @@ const HowItWorks = () => {
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-gradient-to-r from-[#540A26] to-[#1F4F46] py-8 px-4 sm:py-12 sm:px-8 max-w-4xl rounded-2xl mx-auto mb-8">
+      <div className="bg-gradient-to-r from-[#540A26] to-[#1F4F46] py-8 px-4 sm:py-12 sm:px-8 max-w-4xl rounded-2xl mx-auto mb-8 mt-12">
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between">
           {/* Left Content */}
           <div className="flex flex-col sm:flex-row items-center sm:gap-6">

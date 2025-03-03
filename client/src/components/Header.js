@@ -63,7 +63,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center bg-black/60 gap-8 p-2 px-12 rounded-l-3xl rounded-r-3xl pr-3 font-primary text-white">
+        <div className="hidden md:flex sm:gap-4 md:gap-8 items-center bg-black/60 p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-1 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
           <Link to="/register">Become a member</Link>
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
@@ -233,7 +233,7 @@ const Header = () => {
                   <p className="text-white text-lg">Follow us</p>
                 </div>
                 <div className="flex justify-start text-sm text-white ">
-                  <Link to="/policies" className="mr-8">
+                  <Link to="/terms" className="mr-8">
                     Policies
                   </Link>
                   <Link to="/club">HH Club & Founder</Link>
