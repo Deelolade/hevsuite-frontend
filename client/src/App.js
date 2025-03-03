@@ -146,34 +146,8 @@ const router = createBrowserRouter([
         path: "how-it-works",
         element: <HowItWorks />,
       },
-      // {
-      //   path: "events",
-      //   element: <Events />,
-      // },
-      // {
-      //   path: "users",
-      //   element: <Users />,
-      // },
     ],
   },
-  // errorElement: <ErrorPage />,
-  // children: [
-  // { index: true, element: <Home /> },
-  // { path: "/", element: <Login /> },
-  // { path: "/signup", element: <Signup /> },
-  // { path: "/verify-email", element: <VerifyEmail /> },
-  // { path: "/forgot-password", element: <ForgotPassword /> },
-  // { path: "reset-password/:token", element: <ResetPassword /> },
-  // {
-  //   path: "/profile",
-  //   element: (
-  //     <PrivateRoutes>
-  //       <Profile />
-  //     </PrivateRoutes>
-  //   ),
-  // },
-  // ],
-  // },
 ]);
 
 function App() {

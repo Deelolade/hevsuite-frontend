@@ -15,7 +15,10 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userEmail, setUserEmail] = useState("machoodsylter@gmail.com");
-  const [userName, setUserName] = useState({ first: "First Name", last: "Surname" });
+  const [userName, setUserName] = useState({
+    first: "First Name",
+    last: "Surname",
+  });
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -109,8 +112,8 @@ const Header = () => {
                 <img src={logo} alt="Logo" className="h-8" />
                 <span className="text-white text-xl">evsuite Club</span>
               </div>
-              <button 
-                onClick={() => setIsMenuOpen(false)} 
+              <button
+                onClick={() => setIsMenuOpen(false)}
                 className="text-2xl text-white"
               >
                 ×
@@ -120,27 +123,47 @@ const Header = () => {
             {/* Menu Items */}
             <div className="flex-grow">
               <div className="space-y-4">
-                <Link to="/" className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                <Link
+                  to="/"
+                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
                   Home
                 </Link>
-                <Link to="/how-it-works" className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                <Link
+                  to="/how-it-works"
+                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
                   How it Works
                 </Link>
                 {isLoggedIn && (
-                  <Link to="/ask" className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                  <Link
+                    to="/ask"
+                    className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  >
                     Ask
                   </Link>
                 )}
-                <Link to="/topics" className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                <Link
+                  to="/topics"
+                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
                   Help Centre
                 </Link>
                 {isLoggedIn && (
                   <>
-                    <Link to="/account" className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                    <div
+                      className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      onClick={() => {
+                        setShowProfileModal(true);
+                      }}
+                    >
                       My Account
-                    </Link>
+                    </div>
                     <div className="relative rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
-                      <Link to="/notifications" className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700">
+                      <Link
+                        to="/notifications"
+                        className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+                      >
                         Notification
                         <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                           10+
@@ -163,8 +186,12 @@ const Header = () => {
                       alt="Profile"
                       className="w-20 h-20 rounded-full mx-auto mb-3"
                     />
-                    <div className="text-white mb-1">{userName.first} {userName.last}</div>
-                    <div className="text-gray-400 text-sm mb-4">{userEmail}</div>
+                    <div className="text-white mb-1">
+                      {userName.first} {userName.last}
+                    </div>
+                    <div className="text-gray-400 text-sm mb-4">
+                      {userEmail}
+                    </div>
                     <button
                       onClick={handleLogout}
                       className="w-full bg-pink-100 text-black py-2 rounded-lg"
@@ -206,7 +233,9 @@ const Header = () => {
                   <p className="text-white text-lg">Follow us</p>
                 </div>
                 <div className="flex justify-start text-sm text-white ">
-                  <Link to="/policies" className="mr-8">Policies</Link>
+                  <Link to="/policies" className="mr-8">
+                    Policies
+                  </Link>
                   <Link to="/club">HH Club & Founder</Link>
                 </div>
                 <div className=" text-xs text-white mt-2">
@@ -253,7 +282,7 @@ const Header = () => {
             }
           `}</style>
 
-        <ProfileModal onClose={() => setShowProfileModal(false)} />
+          <ProfileModal onClose={() => setShowProfileModal(false)} />
         </Modal>
       )}
     </header>

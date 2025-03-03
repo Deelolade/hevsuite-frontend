@@ -7,7 +7,7 @@ import linkedIn from "../assets/icons/linkedn.png";
 
 const Footer = () => {
   return (
-    <footer className="py-8 border-t bg-gray-50 text-gray-600">
+    <footer className="py-8 border-t bg-gray-50 text-gray-600 hidden sm:block">
       {/* Container */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         {/* Flex Layout for Content */}
@@ -46,7 +46,7 @@ const Footer = () => {
 
           {/* Right Section: Copyright Text */}
           <div className="text-sm sm:text-base text-right">
-            © 2024 Hazor Group (Trading as HH Club)
+            &copy; 2024 Hazor Group (Trading as HH Club)
           </div>
         </div>
       </div>
