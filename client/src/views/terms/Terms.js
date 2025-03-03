@@ -171,7 +171,7 @@ const Terms = () => {
                 <button
                   key={tab}
                   onClick={() => handleTabClick(tab)}
-                  className={`px-4 md:px-6 py-1.5 md:py-2 rounded-3xl transition-colors ${
+                  className={`px-4 md:px-4 md:text-sm py-1.5 md:py-2 rounded-3xl transition-colors ${
                     activeTab === tab
                       ? "bg-[#540A26] text-white"
                       : "border border-[#540A26] text-[#540A26]"

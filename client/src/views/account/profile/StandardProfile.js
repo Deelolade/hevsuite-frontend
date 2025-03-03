@@ -7,6 +7,8 @@ import {
   BsChatDots,
 } from "react-icons/bs";
 import avatar from "../../../assets/user.avif";
+import mastercard from "../../../assets/Mastercard.png";
+
 import SupportRequestsView from "./SupportRequestsView";
 
 const StandardProfile = () => {
@@ -16,10 +18,17 @@ const StandardProfile = () => {
     occupation: true,
     referrals: true,
   });
+  // const [requestCard, setRequestCard] = useState({
+  //   fullname: "",
+  //   cardType: "Standard",
+  //   disableCard: "No"
+  // })
 
   const [isEditing, setIsEditing] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showRequestView, setShowRequestView] = useState(false);
+  const [isEditingFullName, setIsEditingFullName] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Personal information state
   const [personalInfo, setPersonalInfo] = useState({
@@ -55,7 +64,7 @@ const StandardProfile = () => {
   });
 
   const [cardRequest, setCardRequest] = useState({
-    fullName: "Good Luck",
+    fullName: "",
     cardType: "Standard",
     disableCurrent: "No",
   });
@@ -89,18 +98,66 @@ const StandardProfile = () => {
   };
 
   const handleSave = () => {
-    // Here you would typically send the updated data to your backend
     console.log("Saving profile data:", {
       personalInfo,
       contactDetails,
       occupationInfo,
     });
-
-    // Show success message or handle errors
     alert("Profile updated successfully!");
-
-    // Exit edit mode
     setIsEditing(false);
+  };
+
+  const handleRequestCard = () => {
+    console.log(cardRequest);
+    setShowPaymentModal(true);
+  };
+
+  const PaymentMethodModal = ({ onClose }) => {
+    const paymentMethods = [
+      { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
+      { id: "amazon-pay", logo: mastercard, name: "Amazon Pay" },
+      { id: "samsung-pay", logo: mastercard, name: "Samsung Pay" },
+      { id: "google-pay", logo: mastercard, name: "Google Pay" },
+      { id: "mastercard", logo: mastercard, name: "Mastercard" },
+      { id: "paypal", logo: mastercard, name: "PayPal" },
+      { id: "visa", logo: mastercard, name: "Visa" },
+      { id: "maestro", logo: mastercard, name: "Maestro" },
+      { id: "cirrus", logo: mastercard, name: "Cirrus" },
+    ];
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="bg-white rounded-3xl w-full max-w-lg p-6">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-semibold">
+              Select your Payment Method
+            </h2>
+            <button onClick={onClose} className="text-[#540A26] font-medium">
+              Back
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {paymentMethods.map((method) => (
+              <div
+                key={method.id}
+                className="bg-white rounded-lg p-4 shadow-sm border hover:border-[#540A26] cursor-pointer transition-colors"
+              >
+                <img
+                  src={method.logo}
+                  alt={method.name}
+                  className="w-full h-12 object-contain"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+            Next
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const interests = [
@@ -125,6 +182,9 @@ const StandardProfile = () => {
         <SupportRequestsView onBack={() => setShowRequestView(false)} />
       ) : (
         <>
+          {showPaymentModal && (
+            <PaymentMethodModal onClose={() => setShowPaymentModal(false)} />
+          )}
           <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
             <img
               src={avatar}
@@ -137,10 +197,13 @@ const StandardProfile = () => {
               <p className="text-gray-500">goodlucks@gmail.com</p>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 bg-gray-100 text-[#540A26] rounded-full">
+              <button
+                className="p-2 bg-gray-100 text-[#540A26] rounded-full"
+                onClick={() => setShowRequestView(true)}
+              >
                 <BsChatDots size={18} />
               </button>
-              <button onClick={() => setShowRequestView(true)}>Request</button>
+
               <button
                 className={`px-4 sm:px-6 py-1.5 sm:py-2 ${
                   isEditing ? "bg-green-600" : "bg-[#540A26]"
@@ -638,10 +701,21 @@ const StandardProfile = () => {
                     <input
                       type="text"
                       value={cardRequest.fullName}
-                      className="w-full px-4 py-3 bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200"
-                      readOnly
+                      disabled={!isEditingFullName}
+                      className={`w-full px-4 py-3 ${
+                        isEditing ? "bg-[#f9f9f9]" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
+                      onChange={(e) =>
+                        setCardRequest({
+                          ...cardRequest,
+                          fullName: e.target.value,
+                        })
+                      }
                     />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <button
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      onClick={() => setIsEditingFullName(true)}
+                    >
                       <BsPencil className="text-gray-500" />
                     </button>
                   </div>
@@ -738,10 +812,16 @@ const StandardProfile = () => {
                     </div>
                     <div className="md:col-span-2 mt-6 flex-1">
                       <div className="flex justify-end gap-3">
-                        <button className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg">
+                        <button
+                          className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
+                          onClick={() => setIsEditingFullName(false)}
+                        >
                           Cancel
                         </button>
-                        <button className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg">
+                        <button
+                          className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
+                          onClick={handleRequestCard}
+                        >
                           Request New Club Card
                         </button>
                       </div>
