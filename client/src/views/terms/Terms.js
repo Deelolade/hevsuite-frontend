@@ -133,17 +133,17 @@ const Terms = () => {
               alt="background"
               className="w-full h-[200px] object-cover brightness-50"
             />
-            <div className="absolute inset-0 bg-black/50" />
+            {/* <div className="absolute inset-0 bg-black/50" /> */}
           </div>
           <div className="relative z-10">
             <Header />
-            <div className="container mx-auto px-4 py-8">
-              <h1 className="text-2xl font-semibold mb-4 font-secondary">
+            <div className="container mx-auto px-4 py-8 ">
+              <h1 className="text-2xl font-semibold mb-4 font-secondary mt-20">
                 Policies
               </h1>
 
               {/* Search Bar */}
-              <div className="relative max-w-md mb-6">
+              <div className="relative max-w-md mb-2">
                 <input
                   type="text"
                   placeholder="Search article here"
@@ -157,14 +157,14 @@ const Terms = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-6 flex-grow mt-12">
+        <div className="container mx-auto px-4 py-6 flex-grow ">
           {/* Navigation Tabs */}
           <div className="flex flex-wrap gap-2 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1 rounded-3xl text-sm transition-colors ${
+                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors ${
                   activeTab === tab
                     ? "bg-[#540A26] text-white"
                     : "border border-[#540A26] text-[#540A26]"
