@@ -53,14 +53,16 @@ const TopicDetails = () => {
         </div>
       </div>
       {/* Header */}
-      <div className="relative z-10">
+      <div className="relative z-10 text-white">
         <Header />
         <div className="text-center py-16 px-4 sm:py-24 sm:px-8">
-          <p className="text-sm sm:text-lg mb-2 font-secondary">FAQs</p>
-          <h1 className="text-3xl sm:text-4xl font-semibold mb-4 font-secondary">
+          <p className="text-sm sm:text-lg mb-2 invisible sm:visible font-secondary">
+            FAQs
+          </p>
+          <h1 className="text-3xl sm:text-4xl invisible sm:visible font-semibold mb-4 font-secondary">
             Ask us anything
           </h1>
-          <p className="mb-8 text-base sm:text-lg font-primary">
+          <p className="mb-8 text-base invisible sm:visible sm:text-lg font-primary">
             Have any questions? We're here to assist you.
           </p>
           {/* Search Bar */}

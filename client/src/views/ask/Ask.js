@@ -160,7 +160,7 @@ const Ask = () => {
           </div>
         </div>
       </div>
-      <div className="p-4 md:p-12 mt-2">
+      <div className="p-4 md:p-12 mt-0">
         <div className="px-0 md:px-44 flex justify-between md:justify-start items-center mb-6 md:mb-8">
           <BsThreeDotsVertical className="text-xl md:text-2xl text-gray-400 cursor-pointer" />
           <button
