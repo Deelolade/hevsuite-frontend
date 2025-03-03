@@ -78,7 +78,7 @@ const Register = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto sm:mx-12 md:24 px-4 py-8 md:py-12 max-w-3xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl flex-grow">
+      <div className="container mx-auto sm:mx-12 lg:mx-28 md:24 px-4 py-8 md:py-12 max-w-3xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl flex-grow">
         <h1 className="text-2xl md:text-3xl font-medium text-center mb-6 md:mb-8 text-[#540A26]">
           Membership
         </h1>
