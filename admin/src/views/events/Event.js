@@ -5,7 +5,12 @@ import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 import { IoCloseOutline } from "react-icons/io5";
 import Modal from "react-modal";
-import { BsCalendar } from "react-icons/bs";
+import {
+  BsCalendar,
+  BsChevronLeft,
+  BsChevronRight,
+  BsHeart,
+} from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
 import edit_icon from "../../assets/icons/edit.png";
 import avat from "../../assets/user.avif";
@@ -79,6 +84,49 @@ const Event = () => {
     },
   ]);
 
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      name: "Andrew Bojangles",
+      avatar: avat,
+    },
+    {
+      id: 2,
+      name: "Emily Wilson",
+      avatar: avat,
+    },
+    {
+      id: 3,
+      name: "Michael Davis",
+      avatar: avat,
+    },
+    {
+      id: 4,
+      name: "Sophia Rodriguez",
+      avatar: avat,
+    },
+    {
+      id: 5,
+      name: "Oliver Brown",
+      avatar: avat,
+    },
+    {
+      id: 6,
+      name: "Ava Lee",
+      avatar: avat,
+    },
+    {
+      id: 7,
+      name: "Ethan Hall",
+      avatar: avat,
+    },
+    {
+      id: 8,
+      name: "Isabella Martin",
+      avatar: avat,
+    },
+  ]);
+
   const handleVisibility = (id) => {
     setEvents(
       events.map((event) =>
@@ -86,6 +134,13 @@ const Event = () => {
       )
     );
   };
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("description");
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="p-8 space-y-6 bg-gray-50 min-h-screen">
@@ -361,14 +416,16 @@ const Event = () => {
               <div>
                 <label className="block mb-1">Audience Type</label>
                 <select
-                  className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white"
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600 bg-white"
                   defaultValue=""
                 >
                   <option value="" disabled>
                     Enter who can attend?
                   </option>
+                  <option value="Public">Public</option>
                   <option value="VIP Members">VIP Members</option>
                   <option value="Standard Members">Standard Members</option>
+                  <option value="Invite Only">Invite Only</option>
                 </select>
               </div>
               <div>
@@ -405,6 +462,8 @@ const Event = () => {
                   <input
                     type="text"
                     placeholder="Search members"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
                   />
                 </div>
@@ -412,7 +471,18 @@ const Event = () => {
                   Invite Users
                 </button>
               </div>
-              <div className="mt-2 border rounded-lg h-[120px]"></div>
+              <div className="mt-2 border rounded-lg h-[120px] overflow-y-auto">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="flex items-center gap-2 py-2">
+                    <img
+                      src={user.avatar}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span>{user.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Event Image */}
@@ -475,7 +545,7 @@ const Event = () => {
         </div>
       </Modal>
 
-      <Modal
+      {/* <Modal
         isOpen={isViewEventOpen}
         onRequestClose={() => setIsViewEventOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
@@ -498,7 +568,6 @@ const Event = () => {
 
           {selectedEvent && (
             <div className="space-y-4">
-              {/* Event Image */}
               <div>
                 <div className="w-full h-64 rounded-lg overflow-hidden bg-gray-100">
                   <img
@@ -509,7 +578,7 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* Event Name */}
+              
               <div>
                 <label className="block mb-1 text-sm text-gray-600">
                   Event Name
@@ -519,7 +588,7 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* Location and Time */}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1 text-sm text-gray-600">
@@ -539,7 +608,7 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* Event Description */}
+
               <div>
                 <label className="block mb-1 text-sm text-gray-600">
                   Event Description
@@ -550,7 +619,7 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* Audience Type and Price */}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block mb-1 text-sm text-gray-600">
@@ -570,7 +639,7 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* No of Tickets */}
+              
               <div>
                 <label className="block mb-1 text-sm text-gray-600">
                   No of Tickets
@@ -580,17 +649,16 @@ const Event = () => {
                 </div>
               </div>
 
-              {/* Attending members */}
+              
               <div>
                 <label className="block mb-1 text-sm text-gray-600">
                   Attending members
                 </label>
                 <div className="mt-2 border rounded-lg h-[120px] bg-gray-50 p-4">
-                  {/* Add attending members list here */}
+                  
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   onClick={() => setIsViewEventOpen(false)}
@@ -602,6 +670,274 @@ const Event = () => {
             </div>
           )}
         </div>
+      </Modal> */}
+
+      <Modal
+        isOpen={isViewEventOpen}
+        onRequestClose={() => setIsViewEventOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-3xl w-[90%] max-w-7xl overflow-hidden"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
+      >
+        {selectedEvent && (
+          <div className="flex flex-col md:flex-row">
+            {/* Left side - Image */}
+            <div className="w-full md:w-5/12 relative bg-black">
+              <div className="absolute top-6 left-6 flex items-center gap-2 text-white z-10">
+                <BsChevronLeft
+                  size={20}
+                  className="cursor-pointer"
+                  onClick={() => setIsViewEventOpen(false)}
+                />
+                <span>Event Details</span>
+              </div>
+              <div className="relative h-[300px] md:h-[600px] overflow-y-auto">
+                <img
+                  src={selectedEvent.image}
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-cover opacity-90"
+                />
+                <div className="absolute inset-0 flex items-center justify-between px-6">
+                  <button className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <BsChevronLeft className="text-white text-xl" />
+                  </button>
+                  <button className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <BsChevronRight className="text-white text-xl" />
+                  </button>
+                </div>
+                <div className="absolute top-6 right-6">
+                  <button className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <BsHeart className="text-white text-xl" />
+                  </button>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-black to-transparent">
+                  <div className="text-3xl md:text-5xl font-bold text-white mb-2 md:mb-4">
+                    50£
+                  </div>
+                  <div className="inline-block px-3 py-1 md:px-4 md:py-1.5 rounded-full border-2 border-[#540A26] text-white mb-3 md:mb-6 text-sm md:text-base">
+                    Members Only
+                  </div>
+                  <div className="flex items-center gap-3 md:gap-6 text-white mb-2 md:mb-4 text-sm md:text-base">
+                    <div className="flex items-center gap-2">
+                      <BsCalendar />
+                      <span>{selectedEvent.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MdAccessTime />
+                      <span>{selectedEvent.time}</span>
+                    </div>
+                  </div>
+                  <p className="text-white/70 text-xs md:text-sm mb-3 md:mb-6">
+                    Note: Limited tickets available
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setIsEditEventOpen(true)}
+                      className="flex-1 py-2 md:py-4 bg-white text-[#540A26] rounded-xl text-sm md:text-lg font-medium"
+                    >
+                      Edit Event
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsViewEventOpen(false);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="flex-1 py-2 md:py-4 bg-gradient-to-r from-[#540A26] to-[#540A26] text-white rounded-xl text-sm md:text-lg font-medium"
+                    >
+                      Delete Event
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Details */}
+            <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh]">
+              <div className="border-b">
+                <div className="flex overflow-x-auto">
+                  <button
+                    className={`px-4 md:px-8 py-3 md:py-4 whitespace-nowrap ${
+                      activeTab === "description"
+                        ? "bg-[#540A26] text-white"
+                        : "bg-white text-black"
+                    }`}
+                    onClick={() => setActiveTab("description")}
+                  >
+                    Event Description
+                  </button>
+                  <button
+                    className={`px-4 md:px-8 py-3 md:py-4 whitespace-nowrap ${
+                      activeTab === "location"
+                        ? "bg-[#540A26] text-white"
+                        : "bg-white text-black"
+                    }`}
+                    onClick={() => setActiveTab("location")}
+                  >
+                    Location
+                  </button>
+                  <button
+                    className={`px-4 md:px-8 py-3 md:py-4 whitespace-nowrap ${
+                      activeTab === "members"
+                        ? "bg-[#540A26] text-white"
+                        : "bg-white text-black"
+                    }`}
+                    onClick={() => setActiveTab("members")}
+                  >
+                    Attending Members
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 md:p-8">
+                {activeTab === "description" && (
+                  <div>
+                    <h2 className="text-2xl md:text-[40px] font-bold mb-2 md:mb-4 text-black font-primary">
+                      {selectedEvent.title}
+                    </h2>
+                    <h3 className="text-lg md:text-xl mb-2 md:mb-4 text-black font-primary font-semibold">
+                      The Event of the Year! 🎵
+                    </h3>
+                    <p className="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
+                      Get ready to let loose, dance, and create unforgettable
+                      memories, a night filled with excitement, laughter, and
+                      good vibes! Whether you're here to groove on the dance
+                      floor, enjoy delicious food and drinks, or just soak in
+                      the party atmosphere, we've got it all covered.
+                    </p>
+                    <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-4 text-black">
+                      🎵 What to Expect
+                    </h3>
+                    <ul className="space-y-2 text-gray-600 list-disc p-4 text-sm md:text-base">
+                      <li>
+                        Live DJ or Band spinning your favorite hits all night
+                        long!
+                      </li>
+                      <li>
+                        Delicious Food & Drinks to keep you energized and in the
+                        party mood.
+                      </li>
+                      <li>
+                        Fun Activities & Surprises that will make this night
+                        unforgettable.
+                      </li>
+                      <li>Photo Booth to capture all your favorite moments.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {activeTab === "location" && (
+                  <div>
+                    <h2 className="text-2xl md:text-[40px] font-bold mb-2 md:mb-4 text-black font-primary">
+                      Event Location
+                    </h2>
+                    <div className="h-[300px] md:h-[400px] bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-gray-400 mb-2">
+                          <svg
+                            className="w-12 h-12 mx-auto"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            ></path>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            ></path>
+                          </svg>
+                        </div>
+                        <p className="text-gray-500">Map view</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <svg
+                        className="w-5 h-5 text-[#540A26]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        ></path>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        ></path>
+                      </svg>
+                      <span>New York, USA</span>
+                    </div>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      No. 12, Broadway Avenue, New York, USA.
+                    </p>
+                  </div>
+                )}
+
+                {activeTab === "members" && (
+                  <div className="space-y-4">
+                    <h2 className="text-2xl md:text-[40px] font-bold mb-2 md:mb-4 text-black font-primary">
+                      Attending Members
+                    </h2>
+                    {users.slice(0, 6).map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center gap-4 border-b pb-3"
+                      >
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-full"
+                        />
+                        <div>
+                          <h3 className="font-semibold text-black text-sm md:text-base">
+                            {user.name}
+                          </h3>
+                          <p className="text-gray-600 text-xs md:text-sm">
+                            Registered on {selectedEvent.date}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-center gap-2 mt-6">
+                      <button className="p-2">
+                        <BsChevronLeft />
+                      </button>
+                      <div className="flex gap-1">
+                        {Array.from({ length: 3 }, (_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full ${
+                              index === 0 ? "bg-[#540A26]" : "bg-gray-200"
+                            }`}
+                          ></div>
+                        ))}
+                      </div>
+                      <button className="p-2">
+                        <BsChevronRight />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <Modal

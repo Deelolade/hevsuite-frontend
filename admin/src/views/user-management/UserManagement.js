@@ -777,14 +777,14 @@ const UserManagement = () => {
         />
       </Modal>
 
-      <Modal
+      {/* <Modal
         isOpen={showEventModal}
         onRequestClose={() => setShowEventModal(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[1000px]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="flex h-[600px]">
-          {/* Left side - Image */}
+         
           <div className="w-1/2 relative">
             {selectedEvent && (
               <>
@@ -843,7 +843,7 @@ const UserManagement = () => {
             )}
           </div>
 
-          {/* Right side - Content */}
+          
           <div className="w-1/2 p-6 overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">{selectedEvent?.name}</h2>
@@ -878,6 +878,224 @@ const UserManagement = () => {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal> */}
+      <Modal
+        isOpen={showEventModal}
+        onRequestClose={() => setShowEventModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90%] max-w-[1000px] max-h-[90vh] overflow-hidden"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="flex flex-col md:flex-row h-[600px] max-h-[90vh]">
+          {/* Left side - Image */}
+          <div className="w-full md:w-1/2 h-[250px] md:h-full relative">
+            {selectedEvent && (
+              <>
+                <img
+                  src={selectedEvent.image}
+                  alt={selectedEvent.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 md:px-3 md:py-1 bg-[rgba(0,0,0,0.3)] backdrop-blur-sm rounded-full text-xs md:text-sm">
+                        {selectedEvent.type}
+                      </span>
+                      <span className="text-xl md:text-2xl font-bold">
+                        {selectedEvent.price}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm">
+                      <div className="flex items-center gap-1 md:gap-2">
+                        <svg
+                          className="w-4 h-4 md:w-5 md:h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {selectedEvent.date}
+                      </div>
+                      <div className="flex items-center gap-1 md:gap-2">
+                        <svg
+                          className="w-4 h-4 md:w-5 md:h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {selectedEvent.time}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Right side - Content */}
+          <div className="w-full md:w-1/2 p-4 md:p-6 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold">
+                {selectedEvent?.name}
+              </h2>
+              <button
+                onClick={() => setShowEventModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selectedEvent && (
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex items-center gap-3 text-sm md:hidden">
+                  <div className="flex items-center gap-1">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    {selectedEvent.location}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-line">
+                    {selectedEvent.description}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
+                    🎵 What to Expect
+                  </h3>
+                  <ul className="space-y-1 md:space-y-2">
+                    {selectedEvent.whatToExpect.map((item, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-2 text-sm md:text-base text-gray-600"
+                      >
+                        <span className="text-primary">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
+                    Location
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm md:text-base text-gray-600 mb-3">
+                    <svg
+                      className="w-5 h-5 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    {selectedEvent.location}
+                  </div>
+                  <div className="h-[120px] md:h-[150px] bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-gray-400 mb-1">
+                        <svg
+                          className="w-8 h-8 mx-auto"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          ></path>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          ></path>
+                        </svg>
+                      </div>
+                      <p className="text-gray-500 text-sm">Map view</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
+                    Attendees
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full"
+                      >
+                        <img
+                          src={avatar}
+                          alt="User"
+                          className="w-6 h-6 rounded-full"
+                        />
+                        <span className="text-xs md:text-sm">
+                          User {index + 1}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full">
+                      <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs">
+                        +
+                      </span>
+                      <span className="text-xs md:text-sm">12 more</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

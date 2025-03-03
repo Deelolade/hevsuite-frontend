@@ -14,10 +14,58 @@ import { BiSearch } from "react-icons/bi";
 import eventImage from "../assets/event.png";
 import { BsCalendar } from "react-icons/bs";
 import Modal from "react-modal";
+import avat from "../assets/user.avif";
 
 const Dashboard = () => {
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [addEventImages, setAddEventImages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      name: "Andrew Bojangles",
+      avatar: avat,
+    },
+    {
+      id: 2,
+      name: "Emily Wilson",
+      avatar: avat,
+    },
+    {
+      id: 3,
+      name: "Michael Davis",
+      avatar: avat,
+    },
+    {
+      id: 4,
+      name: "Sophia Rodriguez",
+      avatar: avat,
+    },
+    {
+      id: 5,
+      name: "Oliver Brown",
+      avatar: avat,
+    },
+    {
+      id: 6,
+      name: "Ava Lee",
+      avatar: avat,
+    },
+    {
+      id: 7,
+      name: "Ethan Hall",
+      avatar: avat,
+    },
+    {
+      id: 8,
+      name: "Isabella Martin",
+      avatar: avat,
+    },
+  ]);
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-4">
@@ -259,7 +307,7 @@ const Dashboard = () => {
               <div>
                 <label className="block mb-1">Audience Type</label>
                 <select
-                  className="w-full px-4 py-2 border rounded-lg text-gray-600 appearance-none bg-white"
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600  bg-white"
                   defaultValue=""
                 >
                   <option value="" disabled>
@@ -303,6 +351,8 @@ const Dashboard = () => {
                   <input
                     type="text"
                     placeholder="Search members"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-600"
                   />
                 </div>
@@ -310,7 +360,18 @@ const Dashboard = () => {
                   Invite Users
                 </button>
               </div>
-              <div className="mt-2 border rounded-lg h-[120px]"></div>
+              <div className="mt-2 border rounded-lg h-[120px] overflow-y-auto">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="flex items-center gap-2 py-2">
+                    <img
+                      src={user.avatar}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span>{user.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Event Image */}
