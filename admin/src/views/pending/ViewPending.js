@@ -40,7 +40,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       </div>
 
       {/* User Profile Header */}
-      <div className="flex justify-between">
+      <div className="md:flex justify-between">
         <div className="flex items-center gap-4 mb-8">
           <img
             src={viewUser?.avatar}
@@ -116,7 +116,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       )}
 
       {/* Personal Information */}
-      <div className="bg-white rounded-lg p-6 mb-6 font-primary">
+      <div className="bg-white rounded-lg md:p-6 mb-6 font-primary">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold font-primary text-[#323C47]">
             Personal Information
@@ -138,7 +138,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
           </button>
         </div>
         {showPersonalInfo && (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm mb-1 font-primary">
                 Title<span className="text-red-600 font-primary">*</span>
@@ -243,7 +243,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       </div>
 
       {/* Contact Details */}
-      <div className="bg-white rounded-lg p-6 mb-6 font-primary">
+      <div className="bg-white rounded-lg md:p-6 mb-6 font-primary">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-[#323C47]">
             Contact Details
@@ -266,7 +266,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
         </div>
 
         {showContactDetails && (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm  mb-1">
                 Address Line1
@@ -386,7 +386,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       </div>
 
       {/* Occupation & Interest */}
-      <div className="bg-white rounded-lg p-6 mb-6">
+      <div className="bg-white rounded-lg md:p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-[#323C47]">
             Occupation & Interest
@@ -409,7 +409,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
         </div>
         {showOccupation && (
           <>
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="block text-sm  mb-1">
                   Employment Status
@@ -467,7 +467,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
             <h4 className="text-xl font-semibold text-[#323C47] mb-4">
               User Interests
             </h4>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <p>Art & Design</p>
                 <p>Dance</p>
@@ -492,7 +492,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       </div>
 
       {/* Referrals */}
-      <div className="bg-white rounded-lg p-6 mb-6">
+      <div className="bg-white rounded-lg md:p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-[#323C47]">
             Referrals (2/3)
@@ -553,7 +553,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-end overflow-hidden md:gap-4">
         <button
           className="px-6 py-2.5 bg-[#079D64] text-white rounded-lg flex items-center gap-2 font-primary"
           onClick={() => handleAction("accept")}

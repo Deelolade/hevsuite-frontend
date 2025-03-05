@@ -41,7 +41,7 @@ const Support = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4">
+      <div className="flex flex-row md:ml-0 -ml-2 gap-4">
         <button
           className={`px-6 py-3 rounded-lg flex-1 ${
             activeTab === "evidence"

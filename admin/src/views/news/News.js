@@ -175,12 +175,12 @@ const News = () => {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
-            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <BiSearch className="absolute md:flex hidden right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
             <input
               type="text"
               placeholder="Search..."
@@ -191,7 +191,7 @@ const News = () => {
         <Profile />
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between flex-col md:flex-row gap-2 items-center">
         <button
           className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
           onClick={() => setIsAddNewsOpen(true)}
@@ -202,7 +202,7 @@ const News = () => {
         <div className="flex gap-4">
           <div className="relative">
             <select
-              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] md:min-w-[200px] hover:border-gray-300 transition-colors"
               defaultValue="all"
             >
               <option value="all">All</option>
@@ -212,7 +212,7 @@ const News = () => {
           </div>
           <div className="relative">
             <select
-              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] md:min-w-[200px] hover:border-gray-300 transition-colors"
               defaultValue="all"
             >
               <option value="all">All</option>
@@ -224,7 +224,7 @@ const News = () => {
       </div>
 
       {/* News Grid */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-4 gap-6">
         {allNews.map((news) => (
           <div
             key={news.id}
@@ -363,7 +363,7 @@ const News = () => {
       <Modal
         isOpen={isAddNewsOpen}
         onRequestClose={() => setIsAddNewsOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[96vw] max-h-[90vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50"
         style={{
           overlay: { zIndex: 1000 },
@@ -547,7 +547,7 @@ const News = () => {
       <Modal
         isOpen={isEditNewsOpen}
         onRequestClose={() => setIsEditNewsOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[96vw] max-h-[90vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50"
         style={{
           overlay: { zIndex: 1000 },
@@ -767,7 +767,7 @@ const News = () => {
       <Modal
         isOpen={isViewNewsOpen}
         onRequestClose={() => setIsViewNewsOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[96vw] max-h-[90vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50"
         style={{
           overlay: { zIndex: 1000 },

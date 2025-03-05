@@ -1,28 +1,41 @@
 import React, { useState } from "react";
 import Sidebar from "./layout/Sidebar";
 import { Outlet } from "react-router-dom";
+import { BiMenu, BiSupport } from "react-icons/bi";
+import "./layout/forced.css";
 
 const MainLayout = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 800);
 
   return (
-    <div className="flex min-h-screen bg-[#F8F8F8]">
+    <div className="flex flex-1 relative">
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 h-screen transition-width duration-300 ${
-          collapsed ? "w-20" : "w-72"
-        }`}
-      >
-        <Sidebar collapsed={collapsed} />
-      </aside>
+      <div className="md:w-72">
+        <aside
+          className={` fixed left-0 w-72 superZ top-0 h-screen overflow-auto nobar transition-transform duration-300 bg-white ${
+            collapsed ? "-translate-x-full" : "translate-x-0"
+          }`}
+        >
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+        </aside>
+      </div>
+
+      {/* Menu button (Only visible when sidebar is closed) */}
+      {collapsed && (
+        <div
+          onClick={() => setCollapsed(false)}
+          className="p-3 shadow-lg fixed top-2 left-1 z-50 rounded-lg  bg-red-200"
+        >
+          <BiMenu size={25} className="  text-black z-50 " />
+        </div>
+      )}
 
       {/* Main Content */}
       <div
-        className={`${
-          collapsed ? "ml-20" : "ml-72"
-        } flex-1 transition-all duration-300`}
+        className="w-full transition-all duration-300"
+        onClick={() => window.innerWidth < 800 && setCollapsed(true)}
       >
-        <main className="pt-[12px] p-8">
+        <main className="pt-[12px] md:px-10 px-6">
           <Outlet />
         </main>
       </div>

@@ -93,7 +93,7 @@ const Pending = () => {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-6">
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
@@ -101,7 +101,7 @@ const Pending = () => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+              className="w-32 md:w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
             />
           </div>
         </div>

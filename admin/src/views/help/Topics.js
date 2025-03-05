@@ -52,7 +52,7 @@ const Topics = () => {
   return (
     <div className="space-y-6">
       {/* Topics Grid */}
-      <div className="flex justify-between items-center  gap-8">
+      <div className="flex justify-between flex-wrap items-center  gap-8">
         <div className="relative flex-1">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -74,7 +74,7 @@ const Topics = () => {
           <span className="text-xl">+</span>
         </button>
       </div>
-      <div className="grid grid-cols-4 gap-1">
+      <div className="md:grid md:grid-cols-4 w-72 md:w-full overflow-auto flex gap-1">
         {topics.map((topic) => (
           <div
             key={topic.id}
@@ -274,7 +274,7 @@ const Topics = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -340,7 +340,7 @@ const Topics = () => {
       <Modal
         isOpen={isEditQAModalOpen}
         onRequestClose={() => setIsEditQAModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -422,7 +422,7 @@ const Topics = () => {
       <Modal
         isOpen={isCreateQAModalOpen}
         onRequestClose={() => setIsCreateQAModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -490,7 +490,7 @@ const Topics = () => {
       <Modal
         isOpen={isCreateTopicOpen}
         onRequestClose={() => setIsCreateTopicOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">

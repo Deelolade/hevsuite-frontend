@@ -14,6 +14,7 @@ import {
 import { MdAccessTime } from "react-icons/md";
 import edit_icon from "../../assets/icons/edit.png";
 import avat from "../../assets/user.avif";
+import "../layout/forced.css";
 
 const Event = () => {
   const [currentPage, setCurrentPage] = useState(2);
@@ -143,13 +144,13 @@ const Event = () => {
   );
 
   return (
-    <div className="p-8 space-y-6 bg-gray-50 min-h-screen">
+    <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
 
       <div className="flex items-center justify-between">
-        <div className="flex-1 max-w-2xl mx-auto px-4">
+        <div className="flex-1 max-w-2xl mx-auto px-8">
           <div className="relative">
-            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <BiSearch className="absolute hidden md:flex right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
             <input
               type="text"
               placeholder="Search..."
@@ -160,7 +161,7 @@ const Event = () => {
         <Profile />
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between flex-col md:flex-row gap-2 items-center">
         <button
           className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
           onClick={() => setIsAddEventOpen(true)}
@@ -171,7 +172,7 @@ const Event = () => {
         <div className="flex gap-4">
           <div className="relative">
             <select
-              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] md:min-w-[200px] hover:border-gray-300 transition-colors"
               defaultValue="all"
             >
               <option value="all">All</option>
@@ -190,7 +191,7 @@ const Event = () => {
           </div>
           <div className="relative">
             <select
-              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] min-w-[200px] hover:border-gray-300 transition-colors"
+              className="appearance-none px-6 py-2.5 border border-gray-200 rounded-lg text-[#323C47] md:min-w-[200px] hover:border-gray-300 transition-colors"
               defaultValue="all"
             >
               <option value="all">All</option>
@@ -211,7 +212,7 @@ const Event = () => {
       </div>
 
       {/* Event Grid */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-4 gap-6">
         {events.map((event) => (
           <div
             key={event.id}
@@ -292,7 +293,7 @@ const Event = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
+      <div className="flex w-72 md:w-full overflow-auto items-center justify-between">
         <div className="flex items-center gap-2 text-[#323C47]">
           Show result:
           <select className="px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300">
@@ -350,8 +351,8 @@ const Event = () => {
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
-        overlayClassName="fixed inset-0 bg-black/50 z-1000"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 superZ bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
         style={{
           overlay: { zIndex: 1000 },
           content: { zIndex: 1001 },
@@ -548,7 +549,7 @@ const Event = () => {
       {/* <Modal
         isOpen={isViewEventOpen}
         onRequestClose={() => setIsViewEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },
@@ -943,7 +944,7 @@ const Event = () => {
       <Modal
         isOpen={isEditEventOpen}
         onRequestClose={() => setIsEditEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh] overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },

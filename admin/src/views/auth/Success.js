@@ -26,7 +26,7 @@ const Success = () => {
   return (
     <div className="flex h-screen">
       <div
-        className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
+        className="md:w-2/5 w-full absolute md:relative pb-2 bg-[#1A1A1A] flex items-center justify-center p-8"
         style={{
           backgroundImage: `url(${authImage})`,
           backgroundSize: "cover",
@@ -38,7 +38,7 @@ const Success = () => {
           <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
-      <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
+      <div className="flex-1 mt-20 md:mt-0 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto text-center">
           <BsCheck2Circle className="text-[#0A5438] text-8xl mx-auto mb-4" />
           <h1 className="text-[32px] font-primary mb-3">

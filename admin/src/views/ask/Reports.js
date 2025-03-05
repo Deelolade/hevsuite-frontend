@@ -99,7 +99,7 @@ const Reports = () => {
   return (
     <div className="space-y-6">
       {/* Table */}
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg w-72 md:w-full overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -220,7 +220,7 @@ const Reports = () => {
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <ReportDetails
@@ -233,7 +233,7 @@ const Reports = () => {
       <Modal
         isOpen={isBanModalOpen}
         onRequestClose={() => setIsBanModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <BanAsk
@@ -245,7 +245,7 @@ const Reports = () => {
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <ReportRemove setIsRemoveModalOpen={setIsRemoveModalOpen} />

@@ -107,12 +107,12 @@ const Footer = () => {
         <AddFooterPage onBack={() => setShowAddPage(false)} />
       ) : (
         <>
-          <div className="flex justify-end items-center gap-2">
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[200px]">
+          <div className="flex flex-col md:flex-row justify-end items-center gap-2">
+            <select className="px-4 py-2 w-full md:w-fit border rounded-lg text-gray-600 min-w-[200px]">
               <option>Active</option>
               <option>Deleted</option>
             </select>
-            <div className="flex gap-3">
+            <div className="flex items-start justify-start md:justify-end md:items-end w-full md:w-fit gap-3">
               <button
                 className="px-6 py-2 border rounded-lg"
                 onClick={() => setIsEditFooterModalOpen(true)}
@@ -128,7 +128,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center md:w-full w-full justify-center md:gap-4">
             <button className="text-gray-400">
               <svg
                 className="w-6 h-6"
@@ -145,7 +145,7 @@ const Footer = () => {
               </svg>
             </button>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4  overflow-auto">
               {sections.map((section, index) => (
                 <button
                   key={section.id}
@@ -161,7 +161,7 @@ const Footer = () => {
                   onClick={() => setSelectedSection(section.id)}
                 >
                   {section.name}
-                  <div className="flex flex-col gap-1 ">
+                  <div className="flex flex-col  scale-75  gap-1 ">
                     <BsArrowLeft size={20} />
                     <BsArrowRight size={20} />
                   </div>
@@ -202,7 +202,7 @@ const Footer = () => {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-lg">
+          <div className="bg-white w-72 md:w-full overflow-auto  rounded-lg">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -266,7 +266,7 @@ const Footer = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between">
+          <div className="flex w-72 overflow-auto md:w-full items-center justify-between">
             <div>
               Show result:
               <select className="ml-2 px-2 py-1 border rounded">
@@ -321,7 +321,7 @@ const Footer = () => {
           <Modal
             isOpen={isAddFooterOpen}
             onRequestClose={() => setIsAddFooterOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
             overlayClassName="fixed inset-0 bg-black/50"
           >
             <div className="p-6">
@@ -399,7 +399,7 @@ const Footer = () => {
           <Modal
             isOpen={isEditItemModalOpen}
             onRequestClose={() => setIsEditItemModalOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
             overlayClassName="fixed inset-0 bg-black/50"
           >
             <EditFooterItem
@@ -411,7 +411,7 @@ const Footer = () => {
           <Modal
             isOpen={isEditFooterModalOpen}
             onRequestClose={() => setIsEditFooterModalOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
             overlayClassName="fixed inset-0 bg-black/50"
           >
             <EditFooter setIsEditFooterModalOpen={setIsEditFooterModalOpen} />

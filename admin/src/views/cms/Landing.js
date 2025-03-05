@@ -70,12 +70,12 @@ const Landing = () => {
   return (
     <div>
       {/* Filters and Add Button */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center">
         <div className="flex gap-4">
           <select
             value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value)}
-            className="px-4 py-2 border mb-6 rounded-lg text-gray-600 min-w-[200px]"
+            className="px-4 py-2 border mb-6 rounded-lg text-gray-600 md:min-w-[200px]"
           >
             <option value="overlays">Image Overlays</option>
             <option value="other">Other options</option>
@@ -83,7 +83,7 @@ const Landing = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 mb-6 border rounded-lg text-gray-600 min-w-[200px]"
+            className="px-4 py-2 mb-6 border rounded-lg text-gray-600 md:min-w-[200px]"
           >
             <option value="active">Active</option>
             <option value="deleted">Deleted</option>
@@ -98,7 +98,7 @@ const Landing = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg  w-72 md:w-full overflow-auto  ">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -202,8 +202,8 @@ const Landing = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
       >
         <EditCms
           setIsEditModalOpen={setIsEditModalOpen}
@@ -215,8 +215,8 @@ const Landing = () => {
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
       >
         <RemoveCms
           setIsRemoveModalOpen={setIsRemoveModalOpen}
@@ -226,8 +226,8 @@ const Landing = () => {
       <Modal
         isOpen={isPreviewModalOpen}
         onRequestClose={() => setIsPreviewModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
       >
         <PreviewCms
           setIsPreviewModalOpen={setIsPreviewModalOpen}
@@ -238,8 +238,8 @@ const Landing = () => {
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
       >
         <AddCms setIsAddModalOpen={setIsAddModalOpen} />
       </Modal>

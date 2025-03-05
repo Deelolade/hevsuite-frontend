@@ -57,11 +57,11 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
 
   return (
     <>
-      <div className="flex justify-end gap-8 mb-6">
+      <div className="flex justify-end md:gap-8 gap-4 mb-6">
         {/* Filter Button */}
         <div className="relative">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600  bg-white flex items-center gap-2 min-w-[200px]"
+            className="px-6 py-2.5 border rounded-lg text-gray-600  bg-white flex items-center gap-2 min-w-32"
             onClick={() => {
               setShowFilterDropdown(!showFilterDropdown);
               setShowSortDropdown(false);
@@ -113,7 +113,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         {/* Sort By Button */}
         <div className="relative">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-[200px]"
+            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-32"
             onClick={() => {
               setShowSortDropdown(!showSortDropdown);
               setShowFilterDropdown(false);
@@ -163,7 +163,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white w-72 md:w-full overflow-auto p-0 rounded-lg shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b">

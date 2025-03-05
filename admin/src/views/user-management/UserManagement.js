@@ -162,7 +162,7 @@ const UserManagement = () => {
     },
   ];
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-6 space-y-6">
       {/* Header section - updated styles */}
       <div className="flex items-center justify-end">
         <Profile />
@@ -175,7 +175,7 @@ const UserManagement = () => {
         <IoMdAdd size={20} />
       </button>
       <div className="flex justify-between gap-4">
-        <div className="flex-1 relative w-[300px]">
+        <div className="flex-1 relative w-full">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
@@ -184,7 +184,7 @@ const UserManagement = () => {
           />
         </div>
         <div className="relative">
-          <select className="appearance-none px-6 py-2.5 pr-10 border rounded-lg text-gray-600 bg-white min-w-[140px] text-sm focus:outline-none cursor-pointer">
+          <select className="appearance-none px-6 py-2.5 pr-10 border rounded-lg text-gray-600 bg-white min-w-32 text-sm focus:outline-none cursor-pointer">
             <option>Members</option>
             <option>VIP</option>
           </select>
@@ -215,7 +215,7 @@ const UserManagement = () => {
         </button>
       </div>
       {/* Table section - updated styles */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white w-72 md:w-full overflow-auto  rounded-lg shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b">

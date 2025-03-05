@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Modal from "react-modal";
-import { BiSearch } from "react-icons/bi";
+import { BiChevronDown, BiSearch } from "react-icons/bi";
 import CancelCardModal from "../../components/modals/cards/CancelCardModal";
 import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
 import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
+import { FiDownload } from "react-icons/fi";
+import "../layout/forced.css"
 
 Modal.setAppElement("#root");
 
 const CardsIssued = () => {
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [receiverEmail, setReceiverEmail] = useState("");
@@ -22,7 +27,96 @@ const CardsIssued = () => {
   // Add this state near other state declarations
   const [selectedCards, setSelectedCards] = useState([]);
   const [isBulkCancelModalOpen, setIsBulkCancelModalOpen] = useState(false);
+  const handleExport = (format) => {
+    // Get selected cards or all cards if none selected
+    const cardsToExport =
+      selectedCards.length > 0
+        ? cards.filter((card) => selectedCards.includes(card.id))
+        : cards;
 
+    // Format the data based on export type
+    let exportData;
+    let fileName;
+    let fileType;
+
+    switch (format) {
+      case "pdf":
+        // In a real app, you would use a library like jsPDF
+        alert(`Exporting ${cardsToExport.length} cards as PDF`);
+        // Example implementation would go here
+        return;
+
+      case "csv":
+        // Create CSV content
+        const headers = ["Name", "Member ID", "Status", "Address"];
+        const csvContent = [
+          headers.join(","),
+          ...cardsToExport.map((card) =>
+            [
+              card.name,
+              card.memberId,
+              card.status,
+              `${card.address.line1}, ${card.address.town}, ${card.address.country}, ${card.address.postcode}`,
+            ].join(",")
+          ),
+        ].join("\n");
+
+        exportData = csvContent;
+        fileName = "member_cards.csv";
+        fileType = "text/csv";
+        break;
+
+      case "excel":
+        // For Excel, we'll use CSV format with an .xlsx extension
+        // In a real app, you would use a library like xlsx
+        const excelHeaders = [
+          "Name",
+          "Member ID",
+          "Status",
+          "Address Line 1",
+          "Town",
+          "Country",
+          "Postcode",
+        ];
+        const excelContent = [
+          excelHeaders.join(","),
+          ...cardsToExport.map((card) =>
+            [
+              card.name,
+              card.memberId,
+              card.status,
+              card.address.line1,
+              card.address.town,
+              card.address.country,
+              card.address.postcode,
+            ].join(",")
+          ),
+        ].join("\n");
+
+        exportData = excelContent;
+        fileName = "member_cards.xlsx";
+        fileType =
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        break;
+
+      default:
+        return;
+    }
+
+    // Create and download the file
+    const blob = new Blob([exportData], { type: fileType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    // Close the export menu
+    setIsExportMenuOpen(false);
+  };
   const toggleAddress = (cardId) => {
     setExpandedAddresses((prev) =>
       prev.includes(cardId)
@@ -88,32 +182,104 @@ const CardsIssued = () => {
     // Add 8 more similar objects for the grid
   ];
   return (
-    <div className="p-6 space-y-6">
+    <div className="md:p-6 space-y-6">
       {/* Stats and Controls */}
       <div className="flex ">
-        <div className="flex items-center gap-4 justify-between w-full">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4 justify-between  md:w-full overflow-x-auto">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-3xl font-semibold">10,000</h2>
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-              <option>All</option>
-              <option>Members</option>
-              <option>VIP Members</option>
-            </select>
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-              <option>All</option>
-              <option>Active</option>
-              <option>Not Activated</option>
-              <option>Cancelled</option>
-            </select>
+            <div className="flex flex-row gap-4 overflow-hidden">
+              <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+                <option>All</option>
+                <option>Members</option>
+                <option>VIP Members</option>
+              </select>
+              <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
+                <option>All</option>
+                <option>Active</option>
+                <option>Not Activated</option>
+                <option>Cancelled</option>
+              </select>
+            </div>
           </div>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-            + Export 1
-          </button>
+          <div className="flex justify-end w-full" ref={exportMenuRef}>
+            <button
+              className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+            >
+              <FiDownload />
+              Export {selectedCards.length > 0 ? selectedCards.length : ""}
+              <BiChevronDown
+                className={`transition-transform ${
+                  isExportMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isExportMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("pdf")}
+                >
+                  <span className="text-red-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                      <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                    </svg>
+                  </span>
+                  Export as PDF
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("csv")}
+                >
+                  <span className="text-green-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as CSV
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("excel")}
+                >
+                  <span className="text-blue-500">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as Excel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex">
-        <div className="relative flex-1 mr-8">
+      <div className="flex flex-col md:flex-row md:w-full overflow-auto">
+        <div className="relative flex-1 mr-4 md:mt-2">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
@@ -121,10 +287,10 @@ const CardsIssued = () => {
             className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="grid mt-2 grid-cols-2 md:grid-cols-2 items-center gap-4">
           <button
             onClick={() => setIsIssueModalOpen(true)}
-            className="px-4 py-2 border border-primary text-[#050002] rounded-lg mr-2"
+            className="md:px-4 text-nowrap py-2 border border-primary text-[#050002] rounded-lg mr-2"
           >
             Issue New Card
           </button>
@@ -145,7 +311,8 @@ const CardsIssued = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-3 gap-6 mt-6 auto-rows-auto items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
+        {/* <div className="grid grid-cols-1 gap-6 mt-6 items-start"> */}
         {cards.map((card) => (
           <div
             key={card.id}
@@ -162,7 +329,7 @@ const CardsIssued = () => {
                       : [...prev, card.id]
                   );
                 }}
-                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="w-4 h-4 -z-10 rounded border-gray-300 text-primary focus:ring-primary"
               />
             </div>
             <div className="flex items-start gap-4">
@@ -308,16 +475,16 @@ const CardsIssued = () => {
       <Modal
         isOpen={isCancelModalOpen}
         onRequestClose={() => setIsCancelModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] superZ md:w-[450px]"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
       >
         <CancelCardModal onClose={setIsCancelModalOpen} />
       </Modal>
       <Modal
         isOpen={isIssueModalOpen}
         onRequestClose={() => setIsIssueModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] superZ md:w-[450px]"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
       >
         <IssueNewCardModal
           onClose={setIsIssueModalOpen}
@@ -327,8 +494,8 @@ const CardsIssued = () => {
       <Modal
         isOpen={isBulkCancelModalOpen}
         onRequestClose={() => setIsBulkCancelModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px] z-100"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] superZ md:w-[450px] z-100"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
       >
         <BulkCancelModal
           onClose={setIsBulkCancelModalOpen}

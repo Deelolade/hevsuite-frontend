@@ -199,112 +199,116 @@ const MemberRequests = () => {
     },
   ];
   return (
-    <div className="p-6 space-y-6">
+    <div className="md:p-6 space-y-6">
       {/* Stats and Controls */}
       <div className="flex ">
-        <div className="flex items-center gap-4 justify-between w-full">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4 justify-between  md:w-full overflow-x-auto">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-3xl font-semibold">10,000</h2>
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
-              <option>All</option>
-              <option>Members</option>
-              <option>VIP Members</option>
-            </select>
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[180px]">
-              <option>All</option>
-              <option>Pending</option>
-              <option>Cancelled</option>
-            </select>
+            <div className="flex flex-row gap-4 overflow-hidden">
+              <select className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
+                <option>All</option>
+                <option>Members</option>
+                <option>VIP Members</option>
+              </select>
+              <select className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
+                <option>All</option>
+                <option>Pending</option>
+                <option>Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex flex-row gap-4 justify-between md:justify-end  w-full overflow-hidden">
             <button
-              className={`text-gray-600 ${
+              className={`text-primary font-semibold ${
                 selectedCards.length === cards.length ? "font-semibold" : ""
               }`}
               onClick={handleSelectAll}
             >
               Select All
             </button>
+            <div className="" ref={exportMenuRef}>
+              <button
+                className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              >
+                <FiDownload />
+                Export {selectedCards.length > 0 ? selectedCards.length : ""}
+                <BiChevronDown
+                  className={`transition-transform ${
+                    isExportMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isExportMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                    onClick={() => handleExport("pdf")}
+                  >
+                    <span className="text-red-500">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                        <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                      </svg>
+                    </span>
+                    Export as PDF
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                    onClick={() => handleExport("csv")}
+                  >
+                    <span className="text-green-500">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                    Export as CSV
+                  </button>
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                    onClick={() => handleExport("excel")}
+                  >
+                    <span className="text-blue-500">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                    Export as Excel
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           {/* <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2">
             + Export {selectedCards.length > 0 ? selectedCards.length : ""}
           </button> */}
-          <div className="relative" ref={exportMenuRef}>
-            <button
-              className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
-              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-            >
-              <FiDownload />
-              Export {selectedCards.length > 0 ? selectedCards.length : ""}
-              <BiChevronDown
-                className={`transition-transform ${
-                  isExportMenuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {isExportMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                  onClick={() => handleExport("pdf")}
-                >
-                  <span className="text-red-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
-                      <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-                    </svg>
-                  </span>
-                  Export as PDF
-                </button>
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                  onClick={() => handleExport("csv")}
-                >
-                  <span className="text-green-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                  Export as CSV
-                </button>
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                  onClick={() => handleExport("excel")}
-                >
-                  <span className="text-blue-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                  Export as Excel
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
-      <div className="flex">
-        <div className="relative flex-1 mr-4">
+      <div className="flex flex-col md:flex-row md:w-full overflow-auto">
+        <div className="relative flex-1 mr-4 md:mt-2">
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl" />
           <input
             type="text"
@@ -312,7 +316,7 @@ const MemberRequests = () => {
             className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="grid mt-2 grid-cols-2 md:grid-cols-3 items-center gap-4">
           <button
             onClick={() => setIsPostModalOpen(true)}
             className="px-4 py-2 bg-[#00B707] text-white rounded-lg"
@@ -321,7 +325,7 @@ const MemberRequests = () => {
           </button>
           <button
             onClick={() => setIsIssueModalOpen(true)}
-            className="px-4 py-2 border border-primary text-[#050002] rounded-lg"
+            className="text-nowrap px-0 md:px-4 py-2 border border-primary text-[#050002] rounded-lg"
           >
             Issue New Card
           </button>
@@ -342,7 +346,7 @@ const MemberRequests = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-3 gap-6 mt-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
         {cards.map((card) => (
           <div
             key={card.id}
@@ -504,8 +508,8 @@ const MemberRequests = () => {
       <Modal
         isOpen={isPostModalOpen}
         onRequestClose={() => setIsPostModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg  w-[90vw] superZ md:w-[450px]"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
         style={{
           overlay: { zIndex: 1000 },
           content: { zIndex: 1001 },
@@ -516,8 +520,8 @@ const MemberRequests = () => {
       <Modal
         isOpen={isCancelModalOpen}
         onRequestClose={() => setIsCancelModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg  w-[90vw] superZ md:w-[450px]"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
         style={{
           overlay: { zIndex: 1000 },
           content: { zIndex: 1001 },
@@ -528,8 +532,8 @@ const MemberRequests = () => {
       <Modal
         isOpen={isIssueModalOpen}
         onRequestClose={() => setIsIssueModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg  w-[90vw] superZ md:w-[450px]"
+        overlayClassName="fixed inset-0 superZ bg-black/50"
         style={{
           overlay: { zIndex: 1000 },
           content: { zIndex: 1001 },
@@ -544,8 +548,8 @@ const MemberRequests = () => {
       <Modal
         isOpen={isBulkCancelModalOpen}
         onRequestClose={() => setIsBulkCancelModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[450px] z-100"
-        overlayClassName="fixed inset-0 bg-black/50 z-100"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg  w-[90vw] superZ md:w-[450px] z-100"
+        overlayClassName="fixed inset-0 superZ bg-black/50 z-100"
         style={{
           overlay: { zIndex: 1000 },
           content: { zIndex: 1001 },

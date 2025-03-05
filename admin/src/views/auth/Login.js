@@ -35,7 +35,7 @@ const Login = () => {
     <div className="flex min-h-screen">
       {/* Left Section */}
       <div
-        className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
+        className="w-full pb-2 absolute md:relative md:w-2/5 bg-[#1A1A1A] flex items-center justify-center md:p-8"
         style={{
           backgroundImage: `url(${authImage})`,
           backgroundSize: "cover",
@@ -54,9 +54,9 @@ const Login = () => {
       </div>
 
       {/* Right Section */}
-      <div className="w-1/2 flex items-center justify-center p-8">
+      <div className="md:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <h1 className="text-[48px] font-secondary font-medium text-center mb-12">
+          <h1 className="text-[48px] font-secondary font-bold md:font-medium text-center mb-12">
             Welcome Admin!
           </h1>
           <div className="flex items-center justify-center  ">

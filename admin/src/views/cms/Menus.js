@@ -93,12 +93,12 @@ const Menus = () => {
         <AddPage onBack={() => setShowAddPage(false)} />
       ) : (
         <>
-          <div className="flex justify-end items-center gap-2">
-            <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[200px]">
+          <div className="flex flex-col md:flex-row justify-end items-center gap-2">
+            <select className="px-4 py-2 w-full md:w-fit border rounded-lg text-gray-600 min-w-[200px]">
               <option>Active</option>
               <option>Deleted</option>
             </select>
-            <div className="flex gap-3">
+            <div className="flex items-start justify-start md:justify-end md:items-end w-full md:w-fit gap-3">
               <button
                 className="px-6 py-2 border rounded-lg"
                 onClick={() => setIsEditMenuOpen(true)}
@@ -115,8 +115,8 @@ const Menus = () => {
               <Modal
                 isOpen={isAddMenuOpen}
                 onRequestClose={() => setIsAddMenuOpen(false)}
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-                overlayClassName="fixed inset-0 bg-black/50"
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
+                overlayClassName="fixed superZ inset-0 bg-black/50"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
@@ -218,7 +218,7 @@ const Menus = () => {
           </div>
 
           {/* Menu Navigation */}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center md:w-full w-full justify-center md:gap-4">
             <button className="text-gray-400">
               <svg
                 className="w-6 h-6"
@@ -235,7 +235,7 @@ const Menus = () => {
               </svg>
             </button>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4  overflow-auto">
               {menus.map((menu, index) => (
                 <button
                   key={menu.id}
@@ -251,7 +251,7 @@ const Menus = () => {
                   onClick={() => setSelectedMenu(menu.id)}
                 >
                   {menu.name}
-                  <div className="flex flex-col gap-1 ">
+                  <div className="flex flex-col scale-75 gap-1 ">
                     <BsArrowLeft size={20} />
                     <BsArrowRight size={20} />
                   </div>
@@ -348,7 +348,7 @@ const Menus = () => {
             </table>
           </div> */}
 
-          <div className="bg-white rounded-lg">
+          <div className="bg-white w-72 md:w-full overflow-auto rounded-lg">
             <div className="flex flex-col">
               <div className="flex justify-between items-center py-4 px-6">
                 <span className="text-sm font-medium">Page Title</span>
@@ -404,7 +404,7 @@ const Menus = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between">
+          <div className="flex w-72 overflow-auto md:w-full items-center justify-between">
             <div>
               Show result:
               <select className="ml-2 px-2 py-1 border rounded">
@@ -459,8 +459,8 @@ const Menus = () => {
           <Modal
             isOpen={isEditMenuOpen}
             onRequestClose={() => setIsEditMenuOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-            overlayClassName="fixed inset-0 bg-black/50"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50 superZ"
           >
             <EditMenu
               setIsEditMenuOpen={setIsEditMenuOpen}
@@ -472,8 +472,8 @@ const Menus = () => {
           <Modal
             isOpen={isRemoveModalOpen}
             onRequestClose={() => setIsRemoveModalOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-            overlayClassName="fixed inset-0 bg-black/50"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50 superZ"
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
@@ -519,8 +519,8 @@ const Menus = () => {
           <Modal
             isOpen={isEditItemModalOpen}
             onRequestClose={() => setIsEditItemModalOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-            overlayClassName="fixed inset-0 bg-black/50"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+            overlayClassName="fixed inset-0 bg-black/50 superZ"
           >
             <EditMenuItem
               setIsEditItemModalOpen={setIsEditItemModalOpen}

@@ -93,7 +93,7 @@ const Dashboard = () => {
       </button>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <StatCard
           icon={<BsPeople className="text-xl" />}
           label="Total Members"
@@ -136,7 +136,7 @@ const Dashboard = () => {
         />
       </div>
       {/* Analytics Section */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="col-span-2 bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -194,7 +194,7 @@ const Dashboard = () => {
         </div>
       </div>
       {/* Revenue Section - adjusted height */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+      <div className="bg-white rounded-lg p-6 md:w-full shadow-sm w-80 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Revenue</h2>
         </div>

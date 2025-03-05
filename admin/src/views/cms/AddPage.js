@@ -113,7 +113,7 @@ const AddPage = ({ onBack }) => {
   const inputRef2 = createRef();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
       {/* Header with back button */}
       <div className="flex items-center gap-2">
         <button className="text-gray-600" onClick={onBack}>
@@ -123,8 +123,8 @@ const AddPage = ({ onBack }) => {
       </div>
 
       {/* Page Title */}
-      <div className="bg-white rounded-lg p-4">
-        <div className="flex justify-between">
+      <div className="bg-white rounded-lg md:ml-0 -ml-8 p-4">
+        <div className="flex justify-between flex-col md:flex-row">
           <div>
             <label className="block text-sm mb-2">Page Title</label>
             <input
@@ -132,7 +132,7 @@ const AddPage = ({ onBack }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Title"
-              className="w-96 px-3 py-2 border rounded-lg text-sm"
+              className="md:w-96 px-3 py-2 border rounded-lg text-sm"
             />
           </div>
           <button className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm ">
@@ -289,7 +289,7 @@ const AddPage = ({ onBack }) => {
       <div className="bg-white rounded-lg p-4">
         <div>
           <p className="text-sm text-primary mb-4 w-44">Click Any To Edit</p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 -ml-6 mb-6">
             <div className="bg-white p-4 col-span-3 space-x-2 overflow-auto scrollBar flex flex-row">
               {editors.map((editor, indx) => (
                 <div className="flex flex-row" key={editor.id}>

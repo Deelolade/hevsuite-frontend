@@ -1,0 +1,12 @@
+.nobar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.nobar::-webkit-scrollbar {
+  display: none;
+}
+
+.superZ {
+  z-index: 100000 !important;
+}

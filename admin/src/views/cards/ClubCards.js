@@ -9,9 +9,9 @@ const ClubCards = () => {
   return (
     <div className="space-y-6">
       {/* Tab Buttons */}
-      <div className="flex gap-4 mb-6 justify-between p-6 ">
+      <div className="flex flex-row mt-14 md:gap-4 mb-6 justify-between md:p-6 pt-6 ">
         <button
-          className={`px-4 ml-4 mr-4 flex-1 rounded-lg ${
+          className={`px-4 ml-4 mr-4 flex-1 rounded-lg text-xs py-2 ${
             activeTab === "new"
               ? "bg-primary text-white"
               : "border border-primary text-[#050002"
@@ -21,7 +21,7 @@ const ClubCards = () => {
           New & Existing Members Requests
         </button>
         <button
-          className={`px-6 ml-4 mr-8 flex-1 rounded-lg ${
+          className={`px-6 ml-4 mr-8 flex-1 rounded-lg text-xs py-2 ${
             activeTab === "cards"
               ? "bg-primary text-white"
               : "border border-primary text-[#050002"
@@ -30,10 +30,10 @@ const ClubCards = () => {
         >
           Cards Issued
         </button>
-        <div className="flex items-center justify-between">
+      </div>
+        <div className="absolute right-10 top-0  items-center justify-between">
           <Profile />
         </div>
-      </div>
 
       {/* Render appropriate component based on active tab */}
       {activeTab === "new" ? <MemberRequests /> : <CardsIssued />}

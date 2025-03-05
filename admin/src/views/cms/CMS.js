@@ -27,12 +27,12 @@ const CMS = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="md:p-6 px-4 space-y-6 ">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
-            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+            <BiSearch className="absolute right-8 opacity-0 md:opacity-100 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
             <input
               type="text"
               placeholder="Search..."
@@ -44,7 +44,7 @@ const CMS = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-8 font-primary font-semibold border-b">
+      <div className="flex md:ml-0 -ml-8 gap-8 font-primary font-semibold border-b">
         <button
           className={`pb-4 px-2 ${
             activeTab === "landing"

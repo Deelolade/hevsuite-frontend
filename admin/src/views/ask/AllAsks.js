@@ -104,7 +104,7 @@ const AllAsks = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg w-72 md:w-full overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -223,7 +223,7 @@ const AllAsks = () => {
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <AllAskDetails
@@ -234,7 +234,7 @@ const AllAsks = () => {
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <AllAskRemove setIsRemoveModalOpen={setIsRemoveModalOpen} />

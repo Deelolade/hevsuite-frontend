@@ -23,7 +23,7 @@ const EmailVerification = () => {
   return (
     <div className="flex h-screen">
       <div
-        className="w-2/5 bg-[#1A1A1A] flex items-center justify-center p-8"
+        className="md:w-2/5 w-full absolute md:relative pb-2 bg-[#1A1A1A] flex items-center justify-center p-8"
         style={{
           backgroundImage: `url(${authImage})`,
           backgroundSize: "cover",

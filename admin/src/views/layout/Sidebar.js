@@ -12,9 +12,10 @@ import { RiUserSettingsLine, RiQuestionAnswerLine } from "react-icons/ri";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { MdOutlinePendingActions, MdOutlineSettings } from "react-icons/md";
 import { TbBuildingBank } from "react-icons/tb";
-import { BiSupport } from "react-icons/bi";
-import { CgWebsite } from "react-icons/cg";
+import { BiMenu, BiSupport } from "react-icons/bi";
+import { CgClose, CgWebsite } from "react-icons/cg";
 import logo_red from "../../assets/logo_red.png";
+import "./forced.css";
 
 const menuItems = [
   { path: "dashboard", icon: <BsGrid1X2Fill size={20} />, label: "Dashboard" },
@@ -56,7 +57,7 @@ const menuItems = [
   },
 ];
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,12 +69,19 @@ const Sidebar = ({ collapsed }) => {
 
   return (
     <div
-      className={`h-screen bg-[#1A1A1A] text-white flex flex-col transition-width duration-300 ${
-        collapsed ? "w-20" : "w-72"
-      }`}
+      className={` md:h-fit h-screen fixed z-50 bg-[#1A1A1A] text-white  flex-col transition-width duration-300 `}
+      style={{
+        zIndex: 200,
+      }}
     >
+      {/* <BiMenu size={30} className='absolute text-black z-50 right-0'/> */}
       {/* Logo */}
-      <div className="p-6">
+      <div className="p-6 relative">
+        <CgClose
+          size={20}
+          className="absolute top-2 right-2 md:hidden"
+          onClick={() => setCollapsed(!collapsed)}
+        />
         <div className="flex items-center gap-3 pl-4">
           <img
             src={logo_red}
