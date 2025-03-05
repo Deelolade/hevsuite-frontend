@@ -91,7 +91,7 @@ const Evidence = () => {
         </div>
 
         {/* Requests Table */}
-        <div className="md:w-full w-72 overflow-auto">
+        <div className="md:w-full w-[90vw] overflow-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b text-quatr font-semibold">

@@ -56,7 +56,7 @@ const Login = () => {
       {/* Right Section */}
       <div className="md:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <h1 className="text-[48px] font-secondary font-bold md:font-medium text-center mb-12">
+          <h1 className="text-[48px] mt-10 font-secondary font-bold md:font-medium text-center mb-12">
             Welcome Admin!
           </h1>
           <div className="flex items-center justify-center  ">

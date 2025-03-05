@@ -30,7 +30,7 @@ const TwoFactorAuth = () => {
           <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
-      <div className="flex-1 flex flex-col justify-center px-[52px] bg-white">
+      <div className="flex-1 mt-10 flex flex-col justify-center px-[52px] bg-white">
         <div className="w-full max-w-[380px] mx-auto">
           <h1 className="text-[32px] font-primary mb-4 text-center">
             Two-Factor Authentication

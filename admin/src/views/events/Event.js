@@ -293,7 +293,7 @@ const Event = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex w-72 md:w-full overflow-auto items-center justify-between">
+      <div className="flex w-[95vw] md:w-full overflow-auto items-center justify-between">
         <div className="flex items-center gap-2 text-[#323C47]">
           Show result:
           <select className="px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300">

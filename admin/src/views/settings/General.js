@@ -54,7 +54,7 @@ const General = () => {
   return (
     <div>
       {/* General Settings Content */}
-      <div className="space-y-8">
+      <div className="space-y-8 ]">
         {/* Favicon */}
         <div className="flex items-center justify-between">
           <div>
@@ -163,7 +163,7 @@ const General = () => {
       <Modal
         isOpen={isMaintenanceModalOpen}
         onRequestClose={() => setIsMaintenanceModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">

@@ -97,15 +97,15 @@ const OtherRequest = () => {
   return (
     <div>
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl">User Requests</h2>
-          <div className="flex items-center gap-4">
+      <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
+          <h2 className="text-xl font-primary text-[1A1A1A]">User Requests</h2>
+          <div className="flex  flex-col md:flex-row items-center gap-4">
             <div className="relative">
-              <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <BiSearch className="absolute hidden md:flex left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search"
-                className="pl-10 pr-4 py-2 border rounded-lg"
+                className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
               />
             </div>
             <select
@@ -124,6 +124,7 @@ const OtherRequest = () => {
         </div>
 
         {/* Requests Table */}
+        <div className="md:w-full w-[90vw] overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -140,18 +141,23 @@ const OtherRequest = () => {
               <tr key={request.id} className="border-b">
                 <td className="py-4">{request.id}</td>
                 <td className="py-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={request.user.avatar}
-                      alt={request.user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span>{request.user.name}</span>
-                  </div>
-                </td>
-                <td className="py-4">{request.type}</td>
-                <td className="py-4">{request.submissionDate}</td>
-                <td className="py-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={request.user.avatar}
+                        alt={request.user.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
+                        {request.user.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{request.type}</p>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{request.submissionDate}</p>
+                  </td><td className="py-4">
                   <span
                     className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
                       request?.status === "Declined" ? "text-red-500" : ""
@@ -216,6 +222,7 @@ const OtherRequest = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       <Modal
         isOpen={isAssignModalOpen}

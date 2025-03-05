@@ -18,7 +18,7 @@ const Pricing = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border">
+      <div className="bg-white rounded-lg border md:w-full w-[90vw] overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">

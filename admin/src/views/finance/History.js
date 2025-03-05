@@ -49,103 +49,116 @@ const History = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       <div className="flex justify-end">
         <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2 flex-end mr-12">
           + Export 1
         </button>
       </div>
-      <table className="w-full">
-        <thead>
-          <tr className="border-b text-gray-600">
-            <th className="py-4 px-4 text-left">
-              <input
-                type="checkbox"
-                onChange={handleSelectAll}
-                className="rounded border-gray-300"
-              />
-            </th>
-            <th className="py-4 text-left">User</th>
-            <th className="py-4 text-left">Payment Type</th>
-            <th className="py-4 text-left">Amount Paid</th>
-            <th className="py-4 text-left">Transaction Date</th>
-            <th className="py-4 text-left">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <React.Fragment key={transaction.id}>
-              <tr className="border-b">
-                <td className="py-4 px-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.includes(transaction.id)}
-                    onChange={() => handleSelectRow(transaction.id)}
-                    className="rounded border-gray-300"
-                  />
-                </td>
-                <td className="py-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={transaction.user.avatar}
-                      alt={transaction.user.name}
-                      className="w-8 h-8 rounded-full"
+      <div className="md:w-full w-[90vw] overflow-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b text-gray-600">
+              <th className="py-4 px-4 text-left">
+                <input
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300"
+                />
+              </th>
+              <th className="py-4 text-left">User</th>
+              <th className="py-4 text-left">Payment Type</th>
+              <th className="py-4 text-left">Amount Paid</th>
+              <th className="py-4 text-left">Transaction Date</th>
+              <th className="py-4 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((transaction) => (
+              <React.Fragment key={transaction.id}>
+                <tr className="border-b">
+                  <td className="py-4 px-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(transaction.id)}
+                      onChange={() => handleSelectRow(transaction.id)}
+                      className="rounded border-gray-300"
                     />
-                    <span>{transaction.user.name}</span>
-                  </div>
-                </td>
-                <td className="py-4">{transaction.paymentType}</td>
-                <td className="py-4">{transaction.amount}</td>
-                <td className="py-4">{transaction.date}</td>
-                <td className="py-4">
-                  <button
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                    onClick={() => toggleRow(transaction.id)}
-                  >
-                    <BiChevronDown
-                      size={20}
-                      className={`transform transition-transform ${
-                        expandedRows.includes(transaction.id)
-                          ? "rotate-180"
-                          : ""
-                      }`}
-                    />
-                  </button>
-                </td>
-              </tr>
-              {expandedRows.includes(transaction.id) && (
-                <tr className="bg-gray-50">
-                  <td colSpan="6" className="p-4">
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <label className="text-sm text-gray-500">
-                          Event Title
-                        </label>
-                        <p>{transaction.event.title}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-500">Date</label>
-                        <p>{transaction.event.date}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-500">Time</label>
-                        <p>{transaction.event.time}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-500">Price</label>
-                        <p>{transaction.event.price}</p>
-                      </div>
+                  </td>
+                  <td className="py-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={transaction.user.avatar}
+                        alt={transaction.user.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
+                        {transaction.user.name}
+                      </span>
                     </div>
                   </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">
+                      {transaction.paymentType}
+                    </p>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{transaction.amount}</p>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{transaction.date}</p>
+                  </td>
+
+                  <td className="py-4">
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded-lg"
+                      onClick={() => toggleRow(transaction.id)}
+                    >
+                      <BiChevronDown
+                        size={20}
+                        className={`transform transition-transform ${
+                          expandedRows.includes(transaction.id)
+                            ? "rotate-180"
+                            : ""
+                        }`}
+                      />
+                    </button>
+                  </td>
                 </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+                {expandedRows.includes(transaction.id) && (
+                  <tr className="bg-gray-50">
+                    <td colSpan="6" className="p-4">
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <label className="text-sm text-gray-500">
+                            Event Title
+                          </label>
+                          <p>{transaction.event.title}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Date</label>
+                          <p>{transaction.event.date}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Time</label>
+                          <p>{transaction.event.time}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Price</label>
+                          <p>{transaction.event.price}</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between w-[90vw] overflow-auto md:w-full items-center">
         <div className="flex items-center gap-2">
           <span className="text-gray-500">Show result:</span>
           <select

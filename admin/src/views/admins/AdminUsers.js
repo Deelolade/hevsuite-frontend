@@ -50,14 +50,14 @@ const AdminUsers = () => {
   };
 
   return (
-    <div>
+    <div className='pb-4'>
       {/* Header */}
-      <div className="flex justify-between items-center pb-8">
+      <div className="md:flex  justify-between items-center pb-8">
         <div className="flex items-center gap-2">
           <h2 className="text-xl">8 Admin Users</h2>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="md:flex grid grid-cols-2  items-center gap-4">
+          <div className="relative mt-4 md:mt-0 col-span-2">
             <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -78,7 +78,7 @@ const AdminUsers = () => {
       </div>
 
       {/* Admin Grid */}
-      <div className="grid grid-cols-5 gap-8 mb-8 h-56">
+      <div className="md:grid md:grid-cols-5 flex w-[95vw] md:w-full overflow-auto gap-8 mb-8 h-56">
         {/* <div className="border rounded-lg p-6 flex items-center justify-center">
           <button className="text-primary">+ Add admin</button>
         </div> */}
@@ -117,68 +117,74 @@ const AdminUsers = () => {
       </div>
 
       {/* Admin Table */}
-      <table className="w-full">
-        <thead>
-          <tr className="border-b">
-            <th className="py-4 px-4 text-left">
-              <input type="checkbox" className="rounded border-gray-300" />
-            </th>
-            <th className="py-4 text-left">User</th>
-            <th className="py-4 text-left">Status</th>
-            <th className="py-4 text-left">Email</th>
-            <th className="py-4 text-left">Role</th>
-            <th className="py-4 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {admins.map((admin) => (
-            <tr key={admin.id} className="border-b">
-              <td className="py-4 px-4">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.includes(admin.id)}
-                  onChange={() => handleSelectRow(admin.id)}
-                  className="rounded border-gray-300"
-                />
-              </td>
-              <td className="py-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={admin.avatar}
-                    alt={admin.name}
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <span>{admin.name}</span>
-                </div>
-              </td>
-              <td className="py-4">
-                <span className="text-green-500">{admin.status}</span>
-              </td>
-              <td className="py-4">{admin.email}</td>
-              <td className="py-4">{admin.role}</td>
-              <td className="py-4">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="text-primary"
-                    onClick={() => handleEditClick(admin)}
-                  >
-                    <BsPencil size={18} />
-                  </button>
-                  <button
-                    className="text-primary"
-                    onClick={() => handleDeleteClick(admin)}
-                  >
-                    <BsTrash size={18} />
-                  </button>
-                </div>
-              </td>
+      <div className="w-[90vw] overflow-auto md:w-full">
+        <table className=" w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="py-4 px-4 text-left">
+                <input type="checkbox" className="rounded border-gray-300" />
+              </th>
+              <th className="py-4 text-left">User</th>
+              <th className="py-4 text-left">Status</th>
+              <th className="py-4 text-left">Email</th>
+              <th className="py-4 text-left">Role</th>
+              <th className="py-4 text-left">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {admins.map((admin) => (
+              <tr key={admin.id} className="border-b">
+                <td className="py-4 px-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.includes(admin.id)}
+                    onChange={() => handleSelectRow(admin.id)}
+                    className="rounded border-gray-300"
+                  />
+                </td>
+                <td className="py-4">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={admin.avatar}
+                      alt={admin.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span className='w-32 md:w-full'>{admin.name}</span>
+                  </div>
+                </td>
+                <td className="py-4">
+                  <span className="text-green-500 md:w-fit w-44 px-2">{admin.status}</span>
+                </td>
+                <td className="py-4">
+                  <p className="py-4 w-44 md:w-fit text-wrap">{admin.email}</p>
+                </td>
+                <td className="py-4">
+                  <p className="py-4 w-32 md:w-fit">{admin.role}</p>
+                </td>
+                <td className="py-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="text-primary"
+                      onClick={() => handleEditClick(admin)}
+                    >
+                      <BsPencil size={18} />
+                    </button>
+                    <button
+                      className="text-primary"
+                      onClick={() => handleDeleteClick(admin)}
+                    >
+                      <BsTrash size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center">
+      <div className="flex w-[90vw] overflow-auto md:w-full justify-between items-center">
         <div className="flex items-center gap-2">
           <span className="text-gray-500">Show result:</span>
           <select
@@ -216,7 +222,7 @@ const AdminUsers = () => {
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -298,7 +304,7 @@ const AdminUsers = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -382,7 +388,7 @@ const AdminUsers = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onRequestClose={() => setIsDeleteModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">

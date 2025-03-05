@@ -44,10 +44,10 @@ const Permissions = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="md:flex justify-between items-center mb-6">
         <h2 className="text-xl">8 Admin Users</h2>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="md:flex grid grid-cols-2  items-center gap-4">
+          <div className="relative md:mt-0 mt-4 col-span-2">
             <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -71,7 +71,7 @@ const Permissions = () => {
       </div>
 
       {/* Permissions Table */}
-      <div className="bg-white rounded-lg border">
+      <div className="bg-white rounded-lg border w-[95vw] md:w-full overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -126,7 +126,7 @@ const Permissions = () => {
       <Modal
         isOpen={isCreateRoleOpen}
         onRequestClose={() => setIsCreateRoleOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -235,7 +235,7 @@ const Permissions = () => {
       <Modal
         isOpen={isDeleteRoleOpen}
         onRequestClose={() => setIsDeleteRoleOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -349,7 +349,7 @@ const Permissions = () => {
       <Modal
         isOpen={isConfirmDeleteOpen}
         onRequestClose={() => setIsConfirmDeleteOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">

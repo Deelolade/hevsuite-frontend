@@ -74,7 +74,7 @@ const CodeVerification = () => {
           <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
         </div>
       </div>
-      <div className="flex-1 flex flex-col justify-center md:px-[52px] px-6 bg-white">
+      <div className="flex-1 mt-10 flex flex-col justify-center md:px-[52px] px-6 bg-white">
         <div className="w-full mt-4 md:max-w-[380px] mx-auto">
           <h1 className="text-[32px] font-primary mb-3 text-center">
             Two-Factor Authentication

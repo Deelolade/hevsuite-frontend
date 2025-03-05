@@ -25,7 +25,7 @@ const Finance = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
@@ -39,7 +39,7 @@ const Finance = () => {
         </div>
         <Profile />
       </div>
-      <div className=" font-primary font-semibold border-b">
+      <div className="w-[90vw] md:w-full font-primary font-semibold border-b">
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 ${

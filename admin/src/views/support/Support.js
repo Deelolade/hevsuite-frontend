@@ -24,7 +24,7 @@ const Support = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">

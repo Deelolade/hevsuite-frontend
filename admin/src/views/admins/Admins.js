@@ -23,7 +23,7 @@ const Admins = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
           <div className="relative">
@@ -37,7 +37,7 @@ const Admins = () => {
         </div>
         <Profile />
       </div>
-      <div className="border-b font-primary font-semibold">
+      <div className="border-b font-primary font-semibold w-[90vw] md:w-full overflow-auto">
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 flex items-center gap-2 ${

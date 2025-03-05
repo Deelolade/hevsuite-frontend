@@ -92,7 +92,7 @@ const TopAsks = () => {
   return (
     <div className="space-y-6">
       {/* Table */}
-      <div className="bg-white rounded-lg w-72 md:w-full overflow-auto">
+      <div className="bg-white rounded-lg w-[95vw] md:w-full overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b text-[#7D7D7D]">

@@ -170,7 +170,7 @@ const SocialLinks = () => {
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -263,7 +263,7 @@ const SocialLinks = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -350,7 +350,7 @@ const SocialLinks = () => {
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[500px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">

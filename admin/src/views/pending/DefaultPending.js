@@ -163,7 +163,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         </div>
       </div>
 
-      <div className="bg-white w-72 md:w-full overflow-auto p-0 rounded-lg shadow-sm">
+      <div className="bg-white w-[95vw] md:w-full overflow-auto p-0 rounded-lg shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b">

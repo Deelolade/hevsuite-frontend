@@ -202,7 +202,7 @@ const Footer = () => {
           </div>
 
           {/* Table */}
-          <div className="bg-white w-72 md:w-full overflow-auto  rounded-lg">
+          <div className="bg-white w-[95vw] md:w-full overflow-auto  rounded-lg">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
@@ -266,7 +266,7 @@ const Footer = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex w-72 overflow-auto md:w-full items-center justify-between">
+          <div className="flex w-[95vw] overflow-auto md:w-full items-center justify-between">
             <div>
               Show result:
               <select className="ml-2 px-2 py-1 border rounded">

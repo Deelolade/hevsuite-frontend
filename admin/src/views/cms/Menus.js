@@ -348,7 +348,7 @@ const Menus = () => {
             </table>
           </div> */}
 
-          <div className="bg-white w-72 md:w-full overflow-auto rounded-lg">
+          <div className="bg-white w-[95vw] md:w-full overflow-auto rounded-lg">
             <div className="flex flex-col">
               <div className="flex justify-between items-center py-4 px-6">
                 <span className="text-sm font-medium">Page Title</span>
@@ -404,7 +404,7 @@ const Menus = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex w-72 overflow-auto md:w-full items-center justify-between">
+          <div className="flex w-[95vw] overflow-auto md:w-full items-center justify-between">
             <div>
               Show result:
               <select className="ml-2 px-2 py-1 border rounded">
