@@ -202,7 +202,7 @@ const Footer = () => {
           </div>
 
           {/* Table */}
-          <div className="bg-white w-[95vw] md:w-full overflow-auto  rounded-lg">
+          <div className="bg-white w-[90vw] md:w-full overflow-auto  rounded-lg">
             <table className="w-full">
               <thead>
                 <tr className="border-b">

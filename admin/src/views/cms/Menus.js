@@ -348,7 +348,7 @@ const Menus = () => {
             </table>
           </div> */}
 
-          <div className="bg-white w-[95vw] md:w-full overflow-auto rounded-lg">
+          <div className="bg-white w-[90vw] md:w-full overflow-auto rounded-lg">
             <div className="flex flex-col">
               <div className="flex justify-between items-center py-4 px-6">
                 <span className="text-sm font-medium">Page Title</span>

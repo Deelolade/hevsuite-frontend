@@ -98,7 +98,7 @@ const Landing = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg  w-[95vw] md:w-full overflow-auto  ">
+      <div className="bg-white rounded-lg  w-[90vw] md:w-full overflow-auto  ">
         <table className="w-full">
           <thead>
             <tr className="border-b">

@@ -85,7 +85,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
             </svg>
           </button>
           {showFilterDropdown && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
+            <div className="absolute left-0 md:right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
               <div className="py-2">
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
@@ -163,7 +163,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         </div>
       </div>
 
-      <div className="bg-white w-[95vw] md:w-full overflow-auto p-0 rounded-lg shadow-sm">
+      <div className="bg-white w-[90vw] md:w-full overflow-auto p-0 rounded-lg shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -307,7 +307,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         <Modal
           isOpen={isActionModalOpen}
           onRequestClose={() => setIsActionModalOpen(false)}
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[93vw]"
           overlayClassName="fixed inset-0 bg-black/50"
         >
           <div className="p-6">

@@ -78,7 +78,7 @@ const AdminUsers = () => {
       </div>
 
       {/* Admin Grid */}
-      <div className="md:grid md:grid-cols-5 flex w-[95vw] md:w-full overflow-auto gap-8 mb-8 h-56">
+      <div className="md:grid md:grid-cols-5 flex w-[90vw] md:w-full overflow-auto gap-8 mb-8 h-56">
         {/* <div className="border rounded-lg p-6 flex items-center justify-center">
           <button className="text-primary">+ Add admin</button>
         </div> */}

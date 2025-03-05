@@ -74,7 +74,7 @@ const Topics = () => {
           <span className="text-xl">+</span>
         </button>
       </div>
-      <div className="md:grid md:grid-cols-4 w-[95vw] md:w-full overflow-auto flex gap-1">
+      <div className="md:grid md:grid-cols-4 w-[90vw] md:w-full overflow-auto flex gap-1">
         {topics.map((topic) => (
           <div
             key={topic.id}

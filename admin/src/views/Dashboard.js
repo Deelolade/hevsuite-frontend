@@ -240,7 +240,8 @@ const Dashboard = () => {
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg w-[600px] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] overflow-y-auto will-change-transform"
+
         overlayClassName="fixed inset-0 bg-black/50 z-1000"
         style={{
           overlay: { zIndex: 1000 },

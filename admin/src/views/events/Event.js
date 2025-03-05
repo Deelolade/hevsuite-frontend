@@ -293,7 +293,7 @@ const Event = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex w-[95vw] md:w-full overflow-auto items-center justify-between">
+      <div className="flex w-[90vw] md:w-full overflow-auto items-center justify-between">
         <div className="flex items-center gap-2 text-[#323C47]">
           Show result:
           <select className="px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-300 focus:ring-1 focus:ring-gray-300">
@@ -351,7 +351,7 @@ const Event = () => {
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 superZ bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 superZ bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh]  will-change-transform overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 superZ"
         style={{
           overlay: { zIndex: 1000 },
@@ -549,7 +549,7 @@ const Event = () => {
       {/* <Modal
         isOpen={isViewEventOpen}
         onRequestClose={() => setIsViewEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh]  will-change-transform overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },
@@ -684,7 +684,7 @@ const Event = () => {
         }}
       >
         {selectedEvent && (
-          <div className="flex flex-col md:flex-row">
+          <div className="flex md:h-full h-[80vh] overflow-auto flex-col md:flex-row">
             {/* Left side - Image */}
             <div className="w-full md:w-5/12 relative bg-black">
               <div className="absolute top-6 left-6 flex items-center gap-2 text-white z-10">
@@ -756,7 +756,7 @@ const Event = () => {
             </div>
 
             {/* Right side - Details */}
-            <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh]">
+            <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh]  will-change-transform">
               <div className="border-b">
                 <div className="flex overflow-x-auto">
                   <button
@@ -944,7 +944,7 @@ const Event = () => {
       <Modal
         isOpen={isEditEventOpen}
         onRequestClose={() => setIsEditEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh] overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[90vw] max-h-[80vh]  will-change-transform overflow-y-auto"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },

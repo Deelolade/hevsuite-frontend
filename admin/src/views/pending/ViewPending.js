@@ -596,7 +596,7 @@ const ViewPending = ({ setShowViewPending, viewUser }) => {
       <Modal
         isOpen={isActionModalOpen}
         onRequestClose={() => setIsActionModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[93vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
