@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Background from  "../../assets/party.jpg";
+import Background from "../../assets/party.jpg";
 import HeaderOne from "./HeaderOne";
 
 export const ImageSlides = ({
@@ -15,14 +15,14 @@ export const ImageSlides = ({
   //   return <div>No slides available</div>;
   // }
 
-  const { image, title, content, path } = savedSlides[currentSlide];
+  const { image, title, content, path, link } = savedSlides[currentSlide];
 
   const handleSlideChange = (index) => {
     setCurrentSlide(index);
   };
   return (
     <div className="relative">
-        <HeaderOne/>
+      <HeaderOne />
       {savedSlides.length > 1 && (
         <div className="absolute bottom-[8%] left-1/2 z-10 flex -translate-x-1/2 flex-row gap-4">
           {savedSlides.map((_, index) => (
@@ -43,21 +43,21 @@ export const ImageSlides = ({
         className={`relative w-full h-[50vh] md:h-[65vh] bg-cover bg-center`}
         style={{ backgroundImage: `url(${image ? image : Background})` }}
       >
-        <div className="absolute lg:pt-20 inset-0 bg-transparent flex flex-col items-center justify-center gap-3 text-white text-center p-6">
-          <h1 className="text-white text-4xl mb-6 tracking-wide  lg:text-6xl lg:scale-110 md:text-5xl font-bold w-full lg:w-[60%]">
+        <div className="absolute lg:pt-20 inset-0 bg-transparent flex flex-col items-center justify-end gap-3 text-white text-center p-6">
+          {/* <h1 className="text-white text-4xl mb-6 tracking-wide  lg:text-6xl lg:scale-110 md:text-5xl font-bold w-full lg:w-[60%]">
             {title}
-          </h1>
+          </h1> */}
           {/* <p className="text-[17px] md:text-[18px] font-[400]"> */}
 
           <div dangerouslySetInnerHTML={{ __html: content }} />
           {/* {text} */}
           {/* </p> */}
-          {showLink && (
+          {title && (
             <Link
-              to={path}
-              className="bg-[#000080] py-4 px-10 rounded-lg mt-10"
+              to={link}
+              className="px-8 py-3 mb-10 scale-[80%] md:px-6 md:py-2 sm:px-4 sm:py-1 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary text-xl md:text-lg sm:text-base"
             >
-              Get Started
+              {title}
             </Link>
           )}
         </div>
