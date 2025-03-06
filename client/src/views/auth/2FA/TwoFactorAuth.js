@@ -55,7 +55,7 @@ const TwoFactorAuth = () => {
 
       {/* Two-Factor Auth Form - Centered on mobile, right side on desktop */}
       <div className="flex items-center justify-center relative z-10 p-4 md:p-16">
-        <div className="w-full max-w-md p-8 rounded-lg md:bg-transparent md:p-0">
+        <div className="w-full max-w-md rounded-lg md:bg-transparent md:p-0">
           {/* Logo for mobile only */}
           <div className="flex justify-center mb-6 md:hidden">
             <div className="w-24 h-24 bg-[#540A26] rounded-2xl flex items-center justify-center">
