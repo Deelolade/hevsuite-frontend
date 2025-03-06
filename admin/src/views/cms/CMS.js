@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BiSearch } from "react-icons/bi";
 
 import Profile from "../../components/Profile";
@@ -10,6 +10,15 @@ import SiteLogos from "./SiteLogos";
 
 const CMS = () => {
   const [activeTab, setActiveTab] = useState("landing");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search).get("tab");
+    if (params === "footer") {
+      setActiveTab("footer");
+    }
+    if (params === "menu") {
+      setActiveTab("menus");
+    }
+  }, []);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -51,7 +60,9 @@ const CMS = () => {
               ? "border-b-4 border-primary text-black "
               : "text-[#737374]"
           }`}
-          onClick={() => setActiveTab("landing")}
+          onClick={() => {
+            setActiveTab("landing");
+          }}
         >
           Landing Pages
         </button>
@@ -61,7 +72,10 @@ const CMS = () => {
               ? "border-b-4 border-primary text-black"
               : "text-[#737374]"
           }`}
-          onClick={() => setActiveTab("menus")}
+          onClick={() => {
+            setActiveTab("menus");
+            window.history.pushState(null, "", `?tab=menu`);
+          }}
         >
           Menus
         </button>
@@ -71,7 +85,10 @@ const CMS = () => {
               ? "border-b-4 border-primary text-black "
               : "text-[#737374]"
           }`}
-          onClick={() => setActiveTab("footer")}
+          onClick={() => {
+            setActiveTab("footer");
+            window.history.pushState(null, "", `?tab=footer`);
+          }}
         >
           Footer
         </button>

@@ -4,9 +4,15 @@ import EditorToolbar, { modules, formats } from "./editorToolbar";
 import ReactQuill from "react-quill-new";
 import "react-quill/dist/quill.snow.css";
 import { AiOutlineCloudUpload } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const AddPage = ({ onBack }) => {
   const [title, setTitle] = useState("");
+  const navigate = useNavigate();
   const [buttonText, setButtonText] = useState("");
   const [link, setLink] = useState("");
   const [slides, setSlides] = useState(() => {
@@ -388,13 +394,53 @@ const AddPage = ({ onBack }) => {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3">
-        <button className="px-6 py-2 w-28  border rounded-lg text-sm font-semibold">
+        <button
+          className="px-6 py-2 w-28  border rounded-lg text-sm font-semibold hover:bg-red-200 duration-1000 transition-all"
+          onClick={() => navigate("./preview")}
+        >
           Preview
         </button>
-        <button className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm">
+        <button
+          onClick={() => {
+            MySwal.fire({
+              title: <strong>Confirm</strong>,
+              text: "Are you sure you want to remove all saved contents?",
+              icon: "warning",
+              confirmButtonText: "Yes",
+              confirmButtonColor: "#900C3F",
+              showCancelButton: true,
+              cancelButtonColor: "gray",
+            }).then(() => {
+              sessionStorage.clear();
+              window.location.reload();
+            });
+          }}
+          className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm"
+        >
           Remove
         </button>
-        <button className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm">
+        <button
+          onClick={() => {
+            MySwal.fire({
+              title: <strong>Confirm</strong>,
+              text: "Are you sure you want to upload all saved contents?",
+              icon: "warning",
+              confirmButtonText: "Yes",
+              confirmButtonColor: "#900C3F",
+              showCancelButton: true,
+              cancelButtonColor: "gray",
+            }).then(() => {
+              MySwal.fire({
+                title: <strong>Success</strong>,
+                text: "Contents saved successfully.",
+                icon: "success",
+                confirmButtonText: "Ok",
+                confirmButtonColor: "#900C3F",
+              }).then(() => [navigate("/admin/cms"), window.location.reload()]);
+            });
+          }}
+          className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm"
+        >
           Confirm
         </button>
       </div>

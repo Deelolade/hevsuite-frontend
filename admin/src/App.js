@@ -24,6 +24,7 @@ import AdminProfile from "./views/profile/AdminProfile";
 import ForgotPassword from "./views/auth/ForgotPassword/ForgotPassword";
 import ResetSuccess from "./views/auth/ForgotPassword/ResetSuccess";
 import ResetPassword from "./views/auth/ForgotPassword/ResetPassword";
+import PagePreview from "./views/cms/PreviewPage";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
       { path: "users", element: <UserManagement /> },
       { path: "cards", element: <ClubCards /> },
       { path: "cms", element: <CMS /> },
+      { path: "cms/preview", element: <PagePreview/>},
       { path: "events", element: <Event /> },
       { path: "news", element: <News /> },
       { path: "asks", element: <Ask /> },

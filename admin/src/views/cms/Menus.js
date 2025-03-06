@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
 import Modal from "react-modal";
@@ -86,6 +86,17 @@ const Menus = () => {
     setDraggingItems(null);
     setDragOverItems(null);
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search).get("edit");
+    if (params === "1") {
+      setShowAddPage(true);
+    }
+    // if (params === "menu") {
+    //   setActiveTab("menus");
+    // }
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -279,7 +290,10 @@ const Menus = () => {
           <div className="flex justify-end">
             <button
               className="px-6 py-2 bg-primary text-white rounded-lg"
-              onClick={() => setShowAddPage(true)}
+              onClick={() => {
+                setShowAddPage(true);
+                window.history.pushState(null, "", `?tab=menu&edit=1`);
+              }}
             >
               Add New Page
             </button>

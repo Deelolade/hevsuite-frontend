@@ -101,15 +101,35 @@ const Footer = () => {
     setDraggingItems(null);
     setDragItemsOver(null);
   };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search).get("edit");
+    if (params === "1") {
+      setShowAddPage(true);
+    }
+    if (params === "2") {
+      setShowAddPage(true);
+      setShowEditPage(true);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
       {/* Controls */}
       {showAddPage ? (
         showEditPage ? (
-          <EditPage onBack={() => setShowAddPage(false)} />
+          <EditPage
+            onBack={() => {
+              setShowAddPage(false);
+              setShowEditPage(false);
+            }}
+          />
         ) : (
-          <AddFooterPage onBack={() => setShowAddPage(false)} />
+          <AddFooterPage
+            onBack={() => {
+              setShowAddPage(false);
+              setShowEditPage(false);
+            }}
+          />
         )
       ) : (
         <>
@@ -201,7 +221,10 @@ const Footer = () => {
           <div className="flex justify-end">
             <button
               className="px-6 py-2 bg-primary text-white rounded-lg"
-              onClick={() => setShowAddPage(true)}
+              onClick={() => {
+                setShowAddPage(true);
+                window.history.pushState(null, "", `?tab=footer&edit=1`);
+              }}
             >
               Add New Page
             </button>
@@ -261,6 +284,11 @@ const Footer = () => {
                           setSelectedItem(item);
                           setShowEditPage(true);
                           setShowAddPage(true);
+                          window.history.pushState(
+                            null,
+                            "",
+                            `?tab=footer&edit=2`
+                          );
                           // setIsEditItemModalOpen(true);
                         }}
                       >
