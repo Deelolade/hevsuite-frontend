@@ -8,6 +8,9 @@ import bg_image from "../../../assets/party3.jpg";
 
 const RegisterApproval = ({ setApproval }) => {
   const navigate = useNavigate();
+  React.useEffect(() => {
+    window.scrollTo({ top: 50, behavior: "smooth", });
+  }, []);
   const referrals = [
     {
       id: 1,

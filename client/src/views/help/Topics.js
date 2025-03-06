@@ -103,14 +103,14 @@ const Topics = () => {
           <img
             src={bg_image}
             alt="background"
-            className="w-full h-[200px] md:h-[315px] object-cover brightness-50"
+            className="w-full h-[200px] md:h-[380px] object-cover brightness-50"
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
         <div className="relative z-10">
           <Header />
           <div className="text-white text-center py-8 md:py-16 px-4">
-            <p className="text-sm mb-1 md:mb-2 invisible xl:visible font-secondary">
+            <p className="text-sm mb-1 md:mb-2 md:mt-16 invisible xl:visible font-secondary">
               FAQs
             </p>
             <h1 className="text-2xl invisible xl:visible md:text-4xl font-semibold mb-2 md:mb-4 font-secondary">

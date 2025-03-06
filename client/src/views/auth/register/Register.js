@@ -44,7 +44,7 @@ const Register = () => {
       <div className="container mx-auto px-4 py-6 mt-8">
         <div className="flex flex-wrap justify-center gap-4 pb-6 md:pb-0">
           {[...Array(7)].map((_, index) => (
-            <div key={index} className="flex items-center flex-shrink-0">
+            <div key={index} className="flex items-center flex-shrink-0 mb-4">
               <div className="relative">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${

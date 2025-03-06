@@ -5,6 +5,7 @@ import { MdAccessTime } from "react-icons/md";
 import { IoArrowBack } from "react-icons/io5";
 import logo from "../../assets/logo_white.png";
 import event_card from "../../assets/event.png";
+import image_card from "../../assets/image.jpg";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
 import Header from "../../components/Header";
@@ -47,7 +48,7 @@ const NewsDetail = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative h-screen">
+      <section className="relative ">
         <Link
           to="/news"
           className="absolute top-20 md:top-32 left-4 md:left-12 z-10 flex items-center gap-2 text-white"
@@ -55,8 +56,13 @@ const NewsDetail = () => {
           <IoArrowBack />
           <span>back</span>
         </Link>
-        <div className="absolute inset-0 bg-black/50">
-          <video
+        <div className="relative inset-0 bg-black/50">
+        <img
+            src={image_card}
+            alt=""
+            className="w-full md:h-[70vh] h-[50vh] object-cover brightness-50"
+          />
+          {/* <video
             autoPlay
             muted
             loop
@@ -65,9 +71,9 @@ const NewsDetail = () => {
           >
             <source src="/videos/hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
-          </video>
+          </video> */}
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-end mb-20 text-white">
+        <div className=" hidden absolute inset-0  flex-col items-center justify-end mb-20 text-white">
           <div className="flex gap-2 mt-8">
             <button className="w-2 h-2 rounded-full bg-white"></button>
             <button className="w-2 h-2 rounded-full bg-white/50"></button>
