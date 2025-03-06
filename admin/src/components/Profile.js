@@ -67,12 +67,13 @@ const Profile = () => {
           }}
         >
           <BsBell className="text-2xl text-gray-600" />
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-600 rounded-full p-2 text-center flex items-center justify-center text-white text-[10px]">
+            3
+          </span>
         </button>
 
         {showNotifications && (
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
-
             <div className="px-4 py-2 border-b border-gray-100">
               <h3 className="font-semibold">Notifications</h3>
             </div>
@@ -99,9 +100,9 @@ const Profile = () => {
                 </div>
               ))}
             </div>
-            <div className="px-4 py-2 border-t border-gray-100">
-              <button className="text-sm text-primary hover:underline w-full text-center">
-                View All Notifications
+            <div className="px-4 py-2 border-t flex w-full justify-end  border-gray-100">
+              <button className="text-sm bg-primary rounded-lg w-fit text-white hover:underline px-6 py-2 text-center">
+                Clear
               </button>
             </div>
           </div>

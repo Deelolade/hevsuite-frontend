@@ -7,6 +7,7 @@ import AddFooterPage from "./AddPage";
 import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem";
 import EditFooter from "../../components/modals/cms/footer/EditFooter";
 import CreatedPages from "../../components/modals/cms/footer/CreatedPages";
+import EditPage from "./EditPage";
 
 const Footer = () => {
   const [selectedSection, setSelectedSection] = useState("policies");
@@ -22,6 +23,7 @@ const Footer = () => {
   const [isEditFooterModalOpen, setIsEditFooterModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCreatedPagesOpen, setIsCreatedPagesOpen] = useState(false);
+  const [showEditPage, setShowEditPage] = useState(false);
 
   const [sections, setSections] = useState([
     { id: "policies", name: "Policies" },
@@ -104,7 +106,11 @@ const Footer = () => {
     <div className="space-y-6">
       {/* Controls */}
       {showAddPage ? (
-        <AddFooterPage onBack={() => setShowAddPage(false)} />
+        showEditPage ? (
+          <EditPage onBack={() => setShowAddPage(false)} />
+        ) : (
+          <AddFooterPage onBack={() => setShowAddPage(false)} />
+        )
       ) : (
         <>
           <div className="flex flex-col md:flex-row justify-end items-center gap-2">
@@ -253,7 +259,9 @@ const Footer = () => {
                         className="text-primary"
                         onClick={() => {
                           setSelectedItem(item);
-                          setIsEditItemModalOpen(true);
+                          setShowEditPage(true);
+                          setShowAddPage(true);
+                          // setIsEditItemModalOpen(true);
                         }}
                       >
                         <FiEdit size={18} />

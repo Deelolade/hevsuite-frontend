@@ -14,6 +14,10 @@ import { BiSearch } from "react-icons/bi";
 import { BsCalendar } from "react-icons/bs";
 import Modal from "react-modal";
 import avat from "../assets/user.avif";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const Dashboard = () => {
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
@@ -241,7 +245,6 @@ const Dashboard = () => {
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] overflow-y-auto will-change-transform"
-
         overlayClassName="fixed inset-0 bg-black/50 z-1000"
         style={{
           overlay: { zIndex: 1000 },
@@ -426,7 +429,19 @@ const Dashboard = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg">
+              <button
+                className="px-6 py-2 bg-primary text-white rounded-lg"
+                onClick={() => {
+                  setIsAddEventOpen(false);
+                  MySwal.fire({
+                    title: <strong>Success!</strong>,
+                    text: "Created Event Successfully!",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                    confirmButtonColor: "#722F37", 
+                  });
+                }}
+              >
                 Create Event
               </button>
             </div>
