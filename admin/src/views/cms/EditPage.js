@@ -409,9 +409,11 @@ const EditPage = ({ onBack }) => {
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
               cancelButtonColor: "gray",
-            }).then(() => {
-              sessionStorage.clear();
-              window.location.reload();
+            }).then((result) => {
+              if (result.isConfirmed) {
+                sessionStorage.clear();
+                window.location.reload();
+              }
             });
           }}
           className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm"
@@ -428,14 +430,19 @@ const EditPage = ({ onBack }) => {
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
               cancelButtonColor: "gray",
-            }).then(() => {
-              MySwal.fire({
-                title: <strong>Success</strong>,
-                text: "Contents saved successfully.",
-                icon: "success",
-                confirmButtonText: "Ok",
-                confirmButtonColor: "#900C3F",
-              }).then(() => [navigate("/admin/cms"), window.location.reload()]);
+            }).then((result) => {
+              if (result.isConfirmed) {
+                MySwal.fire({
+                  title: <strong>Success</strong>,
+                  text: "Contents saved successfully.",
+                  icon: "success",
+                  confirmButtonText: "Ok",
+                  confirmButtonColor: "#900C3F",
+                }).then(() => [
+                  navigate("/admin/cms"),
+                  window.location.reload(),
+                ]);
+              }
             });
           }}
           className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm"

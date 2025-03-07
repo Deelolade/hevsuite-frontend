@@ -42,7 +42,7 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed bg-black bg-opacity-40  backdrop-blur-md top-0 left-0 right-0 z-40 ">
+    <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40 ">
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
         <Link to="/" className="text-white text-3xl font-bold">
           <img src={logo} alt="Logo" className="h-10 sm:h-12" />
@@ -99,9 +99,9 @@ const Header = () => {
         <div
           className={`${
             isMenuOpen ? "block" : "hidden"
-          } md:hidden fixed inset-0 h-screen bg-black bg-opacity-95  backdrop-blur-md  z-100`}
+          } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
         >
-          <div className="p-6 min-h-[100vh] flex flex-col">
+          <div className="p-6 h-full flex flex-col overflow-auto">
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-2">
                 <img src={logo} alt="Logo" className="h-8" />
@@ -117,44 +117,44 @@ const Header = () => {
 
             {/* Menu Items */}
             <div className="flex-grow">
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Link
                   to="/"
-                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  className="block bg-black text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                 >
                   Home
                 </Link>
                 <Link
                   to="/how-it-works"
-                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                 >
                   How it Works
                 </Link>
                 {isLoggedIn && (
                   <Link
                     to="/ask"
-                    className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                    className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                   >
                     Ask
                   </Link>
                 )}
                 <Link
                   to="/topics"
-                  className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                 >
                   Help Centre
                 </Link>
                 {isLoggedIn && (
                   <>
                     <div
-                      className="block text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      className="block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                       onClick={() => {
                         setShowProfileModal(true);
                       }}
                     >
                       My Account
                     </div>
-                    <div className="relative rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                    <div className="relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
                       <Link
                         to="/notifications"
                         className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
@@ -173,11 +173,11 @@ const Header = () => {
             <div className="mt-auto">
               {isLoggedIn ? (
                 <>
-                  <div className="mb-6 text-center">
+                  <div className="mb-6  text-center">
                     <img
                       src={avatar}
                       alt="Profile"
-                      className="w-20 h-20 rounded-full mx-auto mb-3"
+                      className="w-16 h-16 rounded-full mx-auto mb-3"
                     />
                     <div className="text-white mb-1">
                       {userName.first} {userName.last}
@@ -187,7 +187,7 @@ const Header = () => {
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full bg-pink-100 text-black py-2 rounded-lg"
+                      className="w-full text-sm bg-pink-100 text-black py-2 rounded-lg"
                     >
                       Logout
                     </button>
