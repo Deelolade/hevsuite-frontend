@@ -7,6 +7,12 @@ import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime, MdPerson } from "react-icons/md";
 import { IoLocationOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
+import "./forced.css";
 
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
@@ -101,15 +107,15 @@ const Homepage = () => {
           <img
             src={headerBg}
             alt="background"
-            className="w-full h-full object-cover"
+            className="w-full h-screen object-cover"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/50 h-screen" />
         </div>
         <div className="relative z-10">
           <Header />
           <div className="max-w-[1400px] mx-auto px-4">
             {/* Filters */}
-            <div className="py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className=" flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-32">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
@@ -210,85 +216,59 @@ const Homepage = () => {
             {/* Event Slider */}
             <div className="relative py-8">
               {/* Mobile Slider */}
-              <div className="md:hidden">
-                <div className="relative rounded-xl overflow-hidden h-[350px]">
-                  <img
-                    src={events[activeSlide].image}
-                    alt={events[activeSlide].title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black">
-                    <h3 className="text-xl font-semibold">
-                      {events[activeSlide].title}
-                    </h3>
-                    <div className="flex items-center gap-4 mt-2 text-sm">
-                      <div className="flex items-center gap-1">
-                        <BsCalendar className="w-4 h-4" />
-                        <span>{events[activeSlide].date}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MdAccessTime className="w-4 h-4" />
-                        <span>{events[activeSlide].time}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-4">
-                  <button
-                    onClick={handlePrevSlide}
-                    className="bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-                  >
-                    ←
-                  </button>
-                  <div className="flex justify-center gap-2 items-center">
-                    {events.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={`w-2 h-2 rounded-full ${
-                          idx === activeSlide ? "bg-red-500" : "bg-gray-500"
-                        }`}
-                        onClick={() => setActiveSlide(idx)}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={handleNextSlide}
-                    className="bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-                  >
-                    →
-                  </button>
-                </div>
-              </div>
 
               {/* Desktop Slider */}
-              <div className="hidden md:block">
-                <div className="flex justify-center items-center gap-4">
-                  {events
-                    .slice(
-                      (activeSlide === 0
-                        ? events.length - 1
-                        : activeSlide - 1) % events.length,
-                      ((activeSlide === 0
-                        ? events.length - 1
-                        : activeSlide - 1) %
-                        events.length) +
-                        3
-                    )
-                    .map((event, idx) => (
+              <div className=" relative flex flex-col  items-center">
+                <div className="flex items-center md:-ml-10 flex-row absolute -bottom-20  justify-center gap-24 mb-4">
+                  <button className="custom-prev scale-150  p-2 z-50 rounded-full hover:bg-black/70 transition-colors">
+                    ←
+                  </button>
+                  <button className="custom-next z-50 scale-150  p-2 rounded-full hover:bg-black/70 transition-colors">
+                    →
+                  </button>
+                  <div className="swiper-pagination text-white"></div>
+                </div>
+                <Swiper
+                  modules={[Navigation, Pagination]}
+                  
+                  onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
+                  slidesPerView={3}
+                  breakpoints={{
+                    1024: { slidesPerView: 3 },
+                    768: { slidesPerView: 1 },
+                    640: { slidesPerView: 1 },
+                    0: { slidesPerView: 1 },
+                  }}s
+                  spaceBetween={10} // Further reduced gap between slides
+                  pagination={{
+                    el: ".swiper-pagination",
+                    clickable: true,
+                    renderBullet: (index, className) =>
+                      `<span class="${className} w-3 h-3 bg-red-500 rounded-full mx-1"></span>`,
+                  }}
+                  centeredSlides={true}
+                  loop={true}
+                  navigation={{
+                    nextEl: ".custom-next",
+                    prevEl: ".custom-prev",
+                  }}
+                  className="w-[80%]"
+                >
+                  {events.map((event, idx) => (
+                    <SwiperSlide key={event.id}>
                       <div
-                        key={event.id}
-                        className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
-                          idx === 1
-                            ? "w-[500px] h-[400px]"
-                            : "w-[300px] h-[300px] opacity-70"
-                        }`}
+                        // className={`transition-all duration-300 ${
+                        //   activeSlide === idx ? "scale-110 opacity-100" : "scale-90 opacity-70"
+                        // }`}
+                        className={`relative bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] h-[300px]
+                      ${activeSlide === idx ? " opacity-100 h-[320px] " : " opacity-70 mt-2"}`}
                       >
                         <img
                           src={event.image}
                           alt={event.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full  object-cover bg-cover bg-center "
                         />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-primary/50">
                           <h3 className="text-xl font-semibold">
                             {event.title}
                           </h3>
@@ -304,31 +284,9 @@ const Homepage = () => {
                           </div>
                         </div>
                       </div>
-                    ))}
-                </div>
-                <button
-                  onClick={handlePrevSlide}
-                  className="absolute left-8 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-                >
-                  ←
-                </button>
-                <button
-                  onClick={handleNextSlide}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full hover:bg-black/70 transition-colors"
-                >
-                  →
-                </button>
-                <div className="flex justify-center gap-2 mt-6">
-                  {events.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-2 h-2 rounded-full cursor-pointer ${
-                        idx === activeSlide ? "bg-red-500" : "bg-gray-500"
-                      }`}
-                      onClick={() => setActiveSlide(idx)}
-                    />
+                    </SwiperSlide>
                   ))}
-                </div>
+                </Swiper>
               </div>
 
               <div className="text-center md:text-right mt-4 px-4">
@@ -345,7 +303,7 @@ const Homepage = () => {
       </header>
 
       {/* Newsroom */}
-      <section className="py-8 md:py-16">
+      <section className="py-8 mt-32 md:mt-8 md:py-16">
         <div className="container mx-auto px-4 md:px-12">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 font-secondary text-gradient_r">
             Newsroom
@@ -357,7 +315,7 @@ const Homepage = () => {
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover bg-cover bg-center bg-current"
                   />
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black text-white">
                     <h3 className="text-lg md:text-xl font-semibold">

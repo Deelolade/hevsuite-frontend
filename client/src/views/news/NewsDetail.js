@@ -147,7 +147,7 @@ const NewsDetail = () => {
                       style={{ backgroundImage: `url(${item.image})` }}
                     >
                       {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/90 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/30 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-3">
                         <h3 className="text-xl sm:text-lg font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {item.title}

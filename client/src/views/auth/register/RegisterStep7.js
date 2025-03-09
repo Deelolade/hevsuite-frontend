@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BsCheckCircleFill } from "react-icons/bs";
+import { BsCheck, BsCheckCircleFill } from "react-icons/bs";
 import { FiDownload } from "react-icons/fi";
 import Modal from "react-modal";
 import Footer from "../../../components/Footer";
@@ -13,7 +13,7 @@ import bg_image from "../../../assets/party3.jpg";
 
 const RegisterStep7 = () => {
   React.useEffect(() => {
-    window.scrollTo({ top: 50, behavior: "smooth", });
+    window.scrollTo({ top: 50, behavior: "smooth" });
   }, []);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +36,7 @@ const RegisterStep7 = () => {
       maxWidth: "500px",
       width: "90%",
       padding: "0",
+      height: "95vh",
       border: "none",
       borderRadius: "24px",
       backgroundColor: "white",
@@ -69,6 +70,17 @@ const RegisterStep7 = () => {
     setIsModalOpen(true);
     // Add payment processing logic here
   };
+  const [isPopoverVisible, setPopoverVisible] = useState(false);
+  const [mode, setMode] = useState("Card");
+  // Toggle the visibility of the popover
+  const togglePopover = () => {
+    setPopoverVisible(!isPopoverVisible);
+  };
+
+  function handleMode(val) {
+    setPopoverVisible(false);
+    setMode(val);
+  }
 
   return (
     <div className="min-h-screen">
@@ -142,160 +154,200 @@ const RegisterStep7 = () => {
           {/* Right Side - Payment Form */}
           <div className="md:order-2 space-y-6">
             <div>
-              <label className="block mb-2">Card</label>
+              <label className="block mb-2">{mode}</label>
               <div className="flex gap-4">
-                <div className="relative border rounded-lg flex-1">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                {mode === "Card" ? (
+                  <div className="relative border rounded-lg flex-1">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                      <svg
+                        className="w-5 h-5 text-blue-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <rect
+                          x="3"
+                          y="5"
+                          width="18"
+                          height="14"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M3 10H21"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Card"
+                      className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
+                      value={paymentDetails.cardType}
+                      onChange={(e) =>
+                        setPaymentDetails({
+                          ...paymentDetails,
+                          cardType: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="underline cursor-pointer mr-8 font-bold justify-center flex items-center text-primary">
+                    Proceed to PayPal For Payment
+                  </div>
+                )}
+                <div className="inline-block relative">
+                  <button
+                    className="w-12 h-12 border rounded-lg flex  justify-center"
+                    onClick={togglePopover}
+                  >
                     <svg
-                      className="w-5 h-5 text-blue-500"
+                      className="w-6 h-6 text-gray-400"
                       viewBox="0 0 24 24"
                       fill="none"
+                      stroke="currentColor"
                     >
-                      <rect
-                        x="3"
-                        y="5"
-                        width="18"
-                        height="14"
-                        rx="2"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
                       <path
-                        d="M3 10H21"
-                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         strokeWidth="2"
+                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2z"
                       />
                     </svg>
-                  </div>
+                  </button>
+                  {isPopoverVisible && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border p-3">
+                      <div
+                        className="cursor-pointer p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg"
+                        onClick={() => handleMode("Card")}
+                      >
+                        Card{" "}
+                        {mode === "Card" && (
+                          <BsCheck className="text-green-400" />
+                        )}
+                      </div>
+                      <div
+                        className="cursor-pointer p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg"
+                        onClick={() => handleMode("PayPal")}
+                      >
+                        PayPal{" "}
+                        {mode === "PayPal" && (
+                          <BsCheck className="text-green-400" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {mode === "Card" && (
+              <>
+                <div>
+                  <label className="block mb-2">Card number</label>
                   <input
                     type="text"
-                    placeholder="Card"
-                    className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
-                    value={paymentDetails.cardType}
+                    placeholder="1234 1234 1234 1234"
+                    className="w-full px-4 py-3 border rounded-lg"
+                    value={paymentDetails.cardNumber}
                     onChange={(e) =>
                       setPaymentDetails({
                         ...paymentDetails,
-                        cardType: e.target.value,
+                        cardNumber: e.target.value,
                       })
                     }
                   />
-                </div>
-                <button className="w-12 h-12 border rounded-lg flex  justify-center">
-                  <svg
-                    className="w-6 h-6 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2z"
+                  <div className="flex gap-2 mt-2">
+                    <img src={visa} alt="Visa" className="h-6" />
+                    <img src={mastercard} alt="Mastercard" className="h-6" />
+                    <img
+                      src={american}
+                      alt="American Express"
+                      className="h-6"
                     />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block mb-2">Card number</label>
-              <input
-                type="text"
-                placeholder="1234 1234 1234 1234"
-                className="w-full px-4 py-3 border rounded-lg"
-                value={paymentDetails.cardNumber}
-                onChange={(e) =>
-                  setPaymentDetails({
-                    ...paymentDetails,
-                    cardNumber: e.target.value,
-                  })
-                }
-              />
-              <div className="flex gap-2 mt-2">
-                <img src={visa} alt="Visa" className="h-6" />
-                <img src={mastercard} alt="Mastercard" className="h-6" />
-                <img src={american} alt="American Express" className="h-6" />
-                <img src={discover} alt="Discover" className="h-6" />
-              </div>
-            </div>
+                    <img src={discover} alt="Discover" className="h-6" />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-2">Expiry</label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className="w-full px-4 py-3 border rounded-lg"
-                  value={paymentDetails.expiry}
-                  onChange={(e) =>
-                    setPaymentDetails({
-                      ...paymentDetails,
-                      expiry: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block mb-2">CVC</label>
-                <input
-                  type="text"
-                  placeholder="CVC"
-                  className="w-full px-4 py-3 border rounded-lg"
-                  value={paymentDetails.cvc}
-                  onChange={(e) =>
-                    setPaymentDetails({
-                      ...paymentDetails,
-                      cvc: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2">Expiry</label>
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      className="w-full px-4 py-3 border rounded-lg"
+                      value={paymentDetails.expiry}
+                      onChange={(e) =>
+                        setPaymentDetails({
+                          ...paymentDetails,
+                          expiry: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2">CVC</label>
+                    <input
+                      type="text"
+                      placeholder="CVC"
+                      className="w-full px-4 py-3 border rounded-lg"
+                      value={paymentDetails.cvc}
+                      onChange={(e) =>
+                        setPaymentDetails({
+                          ...paymentDetails,
+                          cvc: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-2">Country</label>
-                <select
-                  className="w-full px-4 py-3 border rounded-lg bg-white"
-                  value={paymentDetails.country}
-                  onChange={(e) =>
-                    setPaymentDetails({
-                      ...paymentDetails,
-                      country: e.target.value,
-                    })
-                  }
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2">Country</label>
+                    <select
+                      className="w-full px-4 py-3 border rounded-lg bg-white"
+                      value={paymentDetails.country}
+                      onChange={(e) =>
+                        setPaymentDetails({
+                          ...paymentDetails,
+                          country: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="United States">United States</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Canada">Canada</option>
+                      <option value="Canada">Canada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block mb-2">Postal code</label>
+                    <input
+                      type="text"
+                      placeholder="90210"
+                      className="w-full px-4 py-3 border rounded-lg"
+                      value={paymentDetails.postalCode}
+                      onChange={(e) =>
+                        setPaymentDetails({
+                          ...paymentDetails,
+                          postalCode: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
                 >
-                  <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Canada">Canada</option>
-                </select>
-              </div>
-              <div>
-                <label className="block mb-2">Postal code</label>
-                <input
-                  type="text"
-                  placeholder="90210"
-                  className="w-full px-4 py-3 border rounded-lg"
-                  value={paymentDetails.postalCode}
-                  onChange={(e) =>
-                    setPaymentDetails({
-                      ...paymentDetails,
-                      postalCode: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
-            >
-              Make Payment
-            </button>
-
+                  Make Payment
+                </button>
+              </>
+            )}
             <button
               type="button"
               onClick={() => setIsCancelModalOpen(true)}
@@ -408,7 +460,7 @@ const RegisterStep7 = () => {
               <button
                 onClick={() => {
                   setIsCancelModalOpen(false);
-                  navigate("/homepage");
+                  navigate("/");
                 }}
                 className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
               >

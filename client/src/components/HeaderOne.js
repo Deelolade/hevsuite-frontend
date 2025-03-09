@@ -59,7 +59,7 @@ const HeaderOne = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex sm:gap-2 md:gap-4 items-center bg-black/60 p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
+        <div className="hidden fixed bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-4 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
           <Link to="/register">Become a member</Link>
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>

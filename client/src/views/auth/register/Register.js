@@ -129,8 +129,7 @@ const Register = () => {
                 for this application. All potential members should be aware that
                 we do not accept membership applications through third parties
                 (including any agencies or concierges) or social media accounts.
-                The only way to apply for membership is via our website or by
-                contacting the Membership team directly.
+                The only way to apply for membership is via our website.
               </p>
             </div>
             <hr />
@@ -142,9 +141,16 @@ const Register = () => {
               <p className="text-sm md:text-base">
                 To finalise your application, we kindly ask you to fill out both
                 a Direct Debit mandate and your credit/debit card details which
-                will be used to take the subscription payment, if elected for
-                membership. Please be assured that Auto Cancel will be processed
-                until your application has been successfully approved.
+                will be used to take payment for joining and non-engagement (see
+                our support link for more). Payment only be taken after you’ve
+                successfully been accepted by our members.
+              </p>
+            </div>
+
+            <div>
+              <p className='font-semibold'>
+                PS - Non-engagement fee is paid ONLY for not attending any
+                occasion every 28 days.
               </p>
             </div>
           </div>

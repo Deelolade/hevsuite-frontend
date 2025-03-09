@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
 import event_card from "../../assets/event.png";
@@ -12,7 +12,7 @@ import "swiper/css";
 // import Header from "../../components/Header";
 
 const Landing = () => {
-
+  const navigate = useNavigate();
   const newsItems = [
     {
       id: 1,
@@ -56,7 +56,6 @@ const Landing = () => {
       time: "10:00pm",
       image: event_card,
     },
-   
   ];
   const swiperRef = useRef(null); // Create a reference for the Swiper instance
 
@@ -158,12 +157,15 @@ const Landing = () => {
             >
               {newsItems.map((item) => (
                 <SwiperSlide key={item.id}>
-                  <div className="relative group overflow-hidden rounded-2xl shadow-md flex-shrink-0">
+                  <div
+                    onClick={() => navigate("/news-detail")}
+                    className="relative cursor-pointer group overflow-hidden rounded-2xl shadow-md flex-shrink-0"
+                  >
                     <div
                       className="relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center bg-current"
                       style={{ backgroundImage: `url(${item.image})` }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/90 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/30 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <h3 className="text-xl md:text-lg sm:text-base font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {item.title}

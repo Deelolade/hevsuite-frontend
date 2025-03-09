@@ -1,13 +1,14 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
 import Footer from "../../../components/Footer";
 import logo_white from "../../../assets/logo_white.png";
 import bg_image from "../../../assets/party3.jpg";
+import Swal from "sweetalert2";
 
 const RegisterStep3 = () => {
   useEffect(() => {
-    window.scrollTo({ top: 50, behavior: "smooth", });
+    window.scrollTo({ top: 50, behavior: "smooth" });
   }, []);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -288,12 +289,38 @@ const RegisterStep3 = () => {
         </form>
 
         <div className="flex justify-between mt-6 md:mt-8">
-          <Link
-            to="/register-2"
-            className="text-gray-600 font-medium text-sm md:text-base"
-          >
-            BACK
-          </Link>
+          <div>
+            <Link
+              className="text-red-600 mr-6 font-medium text-sm md:text-base"
+              to="#"
+              onClick={() =>
+                Swal.fire({
+                  title: "Cancel Registration?",
+                  text: "You won't be able to regain progress!",
+                  imageUrl: "/logo_white.png", // Change this to your image path
+                  imageWidth: 70,
+                  imageHeight: 70,
+                  showCancelButton: true,
+                  confirmButtonText: "Yes",
+                  cancelButtonText: "No",
+                  confirmButtonColor: "#900C3F",
+                  cancelButtonColor: "gray",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    navigate("/");
+                  }
+                })
+              }
+            >
+              CANCEL
+            </Link>
+            <Link
+              to="/register-2"
+              className="text-gray-600 font-medium text-sm md:text-base"
+            >
+              BACK
+            </Link>
+          </div>
           <button
             onClick={handleSubmit}
             className="px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl text-sm md:text-base hover:bg-[#540A26] hover:text-white transition-colors"

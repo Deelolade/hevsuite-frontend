@@ -59,10 +59,10 @@ const Header = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex sm:gap-2 md:gap-4 items-center bg-black/60 p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
-          <Link to="/register">Become a member</Link>
+        <div className="hidden fixed bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-4 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
+          <Link to="/ask">Ask</Link>
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
@@ -177,12 +177,12 @@ const Header = () => {
                     <img
                       src={avatar}
                       alt="Profile"
-                      className="w-16 h-16 rounded-full mx-auto mb-3"
+                      className="w-16 h-16 rounded-full mx-auto my-6"
                     />
-                    <div className="text-white mb-1">
+                    <div className="text-white mb-3">
                       {userName.first} {userName.last}
                     </div>
-                    <div className="text-gray-400 text-sm mb-4">
+                    <div className="text-gray-200 text-sm mb-6">
                       {userEmail}
                     </div>
                     <button
