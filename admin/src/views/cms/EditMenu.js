@@ -148,7 +148,7 @@ const EditMenu = ({ setIsEditMenuOpen, setMenuVisibility, menuVisibility }) => {
           </button>
           <button
             onClick={() => setIsDeleteModalOpen(true)}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
+            className="px-6 py-2 hidden bg-red-500 text-white rounded-lg text-sm"
           >
             Delete Menu
           </button>

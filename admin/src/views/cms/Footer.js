@@ -40,6 +40,9 @@ const Footer = () => {
           owner: "System",
         },
         { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
+
+        { id: 3, title: "Cookie Policy", visibility: true, owner: "System" },
+        { id: 4, title: "Code of Conduct", visibility: true, owner: "System" },
       ]);
     } else {
       setFooterItems([]);
@@ -71,6 +74,8 @@ const Footer = () => {
   const [footerItems, setFooterItems] = useState([
     { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
     { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
+    { id: 3, title: "Cookie Policy", visibility: true, owner: "System" },
+    { id: 4, title: "Code of Conduct", visibility: true, owner: "System" },
   ]);
   const handleVisibility = (id) => {
     setFooterItems(
@@ -211,8 +216,13 @@ const Footer = () => {
               </svg>
             </button>
             <div
-              onClick={() => setIsCreatedPagesOpen(true)}
-              className="bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => setSelectedSection("Created")}
+              // onClick={() => setIsCreatedPagesOpen(true)}
+              className={`bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-primary/50 transition-colors ${
+                selectedSection === "Created"
+                  ? "bg-primary text-white"
+                  : "border text-gray-600"
+              }`}
             >
               Created Pages
             </div>
@@ -287,7 +297,7 @@ const Footer = () => {
                           window.history.pushState(
                             null,
                             "",
-                            `?tab=footer&edit=2`
+                            `?tab=footer&edit=2&system=true`
                           );
                           // setIsEditItemModalOpen(true);
                         }}

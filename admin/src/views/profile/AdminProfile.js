@@ -198,7 +198,6 @@ const AdminProfile = () => {
               >
                 <option value="Email">Email</option>
                 <option value="SMS">SMS</option>
-                <option value="Authenticator">Authenticator</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg

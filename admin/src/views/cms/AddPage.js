@@ -141,9 +141,6 @@ const AddPage = ({ onBack }) => {
               className="md:w-96 px-3 py-2 border rounded-lg text-sm"
             />
           </div>
-          <button className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm ">
-            Add Slide
-          </button>
         </div>
       </div>
 
@@ -403,9 +400,12 @@ const AddPage = ({ onBack }) => {
         <button
           onClick={() => {
             MySwal.fire({
+              imageUrl: "/logo_white.png",
+              imageWidth: 70,
+              imageHeight: 70,
               title: <strong>Confirm</strong>,
               text: "Are you sure you want to remove all saved contents?",
-              icon: "warning",
+                  
               confirmButtonText: "Yes",
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
@@ -424,9 +424,12 @@ const AddPage = ({ onBack }) => {
         <button
           onClick={() => {
             MySwal.fire({
+              imageUrl: "/logo_white.png",
+              imageWidth: 70,
+              imageHeight: 70,
               title: <strong>Confirm</strong>,
               text: "Are you sure you want to upload all saved contents?",
-              icon: "warning",
+                  
               confirmButtonText: "Yes",
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
@@ -434,9 +437,12 @@ const AddPage = ({ onBack }) => {
             }).then((result) => {
               if (result.isConfirmed) {
                 MySwal.fire({
+                  imageUrl: "/logo_white.png",
+                  imageWidth: 70,
+                  imageHeight: 70,
                   title: <strong>Success</strong>,
                   text: "Contents saved successfully.",
-                  icon: "success",
+                      
                   confirmButtonText: "Ok",
                   confirmButtonColor: "#900C3F",
                 }).then(() => [

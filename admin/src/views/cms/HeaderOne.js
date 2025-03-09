@@ -40,7 +40,7 @@ const HeaderOne = () => {
   };
 
   return (
-    <header className="absolute bg-gradient-to-b from-black to-transparent  top-0 left-0 right-0 z-40 ">
+    <header className="absolute top-0 left-0 right-0 z-40 ">
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
         <Link to="/" className="text-white text-3xl font-bold">
           <img src={logo} alt="Logo" className="h-10 sm:h-12" />

@@ -6,17 +6,25 @@ import "./layout/forced.css";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(window.innerWidth < 800);
+  const [minimize, setMinimize] = useState(false);
 
   return (
     <div className="flex flex-1 relative">
       {/* Sidebar */}
-      <div className="md:w-72">
+      <div className={`${minimize ? "md:w-20" : "md:w-72"}`}>
         <aside
-          className={` fixed left-0 w-72 superZ top-0 h-screen overflow-auto nobar transition-transform duration-300 bg-white ${
+          className={` fixed left-0 ${
+            minimize ? "w-20" : "w-72"
+          } superZ top-0 h-screen overflow-auto nobar transition-transform duration-300 bg-white ${
             collapsed ? "-translate-x-full" : "translate-x-0"
           }`}
         >
-          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          <Sidebar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            minimize={minimize}
+            setMinimize={setMinimize}
+          />
         </aside>
       </div>
 

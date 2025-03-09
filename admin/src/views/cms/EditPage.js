@@ -41,12 +41,20 @@ const EditPage = ({ onBack }) => {
       ? JSON.parse(savedContents)
       : [{ id: 1, title: "", content: "", checked: true }];
   });
+  const [isSystem, setIsSystem] = useState(false);
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search).get("system");
+    if (String(params) === "true") {
+      setIsSystem(true);
+    }
     sessionStorage.setItem("contents", JSON.stringify(editors));
   }, [editors]);
   useEffect(() => {
     sessionStorage.setItem("slides", JSON.stringify(slides));
   }, [slides]);
+  useEffect(() => {
+    sessionStorage.setItem("mainText", JSON.stringify(title));
+  }, [title]);
   const [selectedSlide, setSelectedSlide] = useState(null);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(null);
   const [selectedEditor, setSelectedEditor] = useState(null);
@@ -140,15 +148,18 @@ const EditPage = ({ onBack }) => {
               className="md:w-96 px-3 py-2 border rounded-lg text-sm"
             />
           </div>
-          <button className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm ">
-            Add Slide
-          </button>
         </div>
       </div>
 
       {/* Hero Section */}
-      <p className="text-sm text-primary mb-4 w-44">Click Any To Edit</p>
-      <div className="grid grid-cols-1 md:grid-cols-4 mb-2">
+      <p className={`text-sm text-primary mb-4 w-44 ${isSystem && "hidden"}`}>
+        Click Any To Edit
+      </p>
+      <div
+        className={`grid grid-cols-1 md:grid-cols-4 mb-2 ${
+          isSystem && "hidden"
+        }`}
+      >
         <div className="bg-white p-4 col-span-3 space-x-2 overflow-auto scrollBar flex flex-row">
           {slides.map((slide, indx) => (
             <div key={slide.id} className="flex flex-row">
@@ -395,16 +406,21 @@ const EditPage = ({ onBack }) => {
       <div className="flex justify-end gap-3">
         <button
           className="px-6 py-2 w-28  border rounded-lg text-sm font-semibold hover:bg-red-200 duration-1000 transition-all"
-          onClick={() => navigate("./preview")}
+          onClick={() =>
+            isSystem ? navigate("./preview-system") : navigate("./preview")
+          }
         >
           Preview
         </button>
         <button
           onClick={() => {
             MySwal.fire({
+              imageUrl: "/logo_white.png",
+              imageWidth: 70,
+              imageHeight: 70,
               title: <strong>Confirm</strong>,
               text: "Are you sure you want to remove all saved contents?",
-              icon: "warning",
+
               confirmButtonText: "Yes",
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
@@ -423,9 +439,12 @@ const EditPage = ({ onBack }) => {
         <button
           onClick={() => {
             MySwal.fire({
+              imageUrl: "/logo_white.png",
+              imageWidth: 70,
+              imageHeight: 70,
               title: <strong>Confirm</strong>,
               text: "Are you sure you want to upload all saved contents?",
-              icon: "warning",
+
               confirmButtonText: "Yes",
               confirmButtonColor: "#900C3F",
               showCancelButton: true,
@@ -433,9 +452,12 @@ const EditPage = ({ onBack }) => {
             }).then((result) => {
               if (result.isConfirmed) {
                 MySwal.fire({
+                  imageUrl: "/logo_white.png",
+                  imageWidth: 70,
+                  imageHeight: 70,
                   title: <strong>Success</strong>,
                   text: "Contents saved successfully.",
-                  icon: "success",
+
                   confirmButtonText: "Ok",
                   confirmButtonColor: "#900C3F",
                 }).then(() => [

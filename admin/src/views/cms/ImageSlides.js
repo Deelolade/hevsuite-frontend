@@ -7,6 +7,7 @@ export const ImageSlides = ({
   savedSlides = [],
   showLink = true,
   className,
+  nullify,
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   // console.log(savedSlides);
@@ -24,7 +25,11 @@ export const ImageSlides = ({
     <div className="relative">
       <HeaderOne />
       {savedSlides.length > 1 && (
-        <div className="absolute bottom-[8%] left-1/2 z-10 flex -translate-x-1/2 flex-row gap-4">
+        <div
+          className={`${
+            nullify && "hidden"
+          }  absolute bottom-[8%] left-1/2 z-10 flex -translate-x-1/2 flex-row gap-4`}
+        >
           {savedSlides.map((_, index) => (
             <button
               key={index}
@@ -40,7 +45,9 @@ export const ImageSlides = ({
         </div>
       )}
       <div
-        className={`relative w-full h-[50vh] md:h-[65vh] bg-cover bg-center`}
+        className={`${
+          nullify && "hidden"
+        } relative w-full h-[50vh] md:h-[65vh] bg-cover bg-center`}
         style={{ backgroundImage: `url(${image ? image : Background})` }}
       >
         <div className="absolute lg:pt-20 inset-0 bg-transparent flex flex-col items-center justify-end gap-3 text-white text-center p-6">

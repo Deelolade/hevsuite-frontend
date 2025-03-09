@@ -12,7 +12,7 @@ import { RiUserSettingsLine, RiQuestionAnswerLine } from "react-icons/ri";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { MdOutlinePendingActions, MdOutlineSettings } from "react-icons/md";
 import { TbBuildingBank } from "react-icons/tb";
-import { BiMenu, BiSupport } from "react-icons/bi";
+import { BiChevronLeft, BiMenu, BiSupport } from "react-icons/bi";
 import { CgClose, CgWebsite } from "react-icons/cg";
 import logo_red from "../../assets/logo_red.png";
 import "./forced.css";
@@ -57,7 +57,7 @@ const menuItems = [
   },
 ];
 
-const Sidebar = ({ collapsed, setCollapsed }) => {
+const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,7 +69,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   return (
     <div
-      className={` md:h-fit h-screen fixed z-50 bg-[#1A1A1A] text-white  flex-col transition-width duration-300 `}
+      className={` md:h-fit ${
+        minimize ? "w-20" : ""
+      } h-screen fixed z-50 bg-[#1A1A1A] text-white  flex-col transition-width duration-300 `}
       style={{
         zIndex: 200,
       }}
@@ -82,22 +84,41 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           className="absolute top-2 right-2 md:hidden"
           onClick={() => setCollapsed(!collapsed)}
         />
-        <div className="flex items-center gap-3 pl-4">
-          <img
-            src={logo_red}
-            alt="logo"
-            className={`w-[75px] h-[60px] transition-opacity duration-300 ${
-              collapsed ? "opacity-0" : "opacity-100"
-            }`}
-          />
-          <h1
-            className={`text-3xl font-montserrat font-bold transition-opacity duration-300 ${
-              collapsed ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            Hevsuite Club
-          </h1>
-        </div>
+        <BiChevronLeft
+          size={30}
+          className={`absolute md:flex hidden cursor-pointer ${
+            minimize && "rotate-180 !top-12 !right-0"
+          } transition-all  top-20 right-2`}
+          onClick={() => setMinimize(!minimize)}
+        />
+        {!minimize ? (
+          <div className="flex items-center gap-3 pl-4">
+            <img
+              src={logo_red}
+              alt="logo"
+              className={`w-[75px] h-[60px] transition-opacity duration-300 ${
+                collapsed ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <h1
+              className={`text-3xl font-montserrat font-bold transition-opacity duration-300 ${
+                collapsed ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              Hevsuite Club
+            </h1>
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <img
+              src={logo_red}
+              alt="logo"
+              className={`w-[75px]  transition-opacity duration-300 ${
+                collapsed ? "opacity-0" : "opacity-100"
+              }`}
+            />
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -120,13 +141,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   <div className="flex items-center justify-center w-10">
                     {item.icon}
                   </div>
-                  <span
-                    className={`text-sm transition-opacity duration-300 ${
-                      collapsed ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    {item.label}
-                  </span>
+                  {!minimize && (
+                    <span
+                      className={`text-sm transition-opacity duration-300 ${
+                        collapsed ? "opacity-0" : "opacity-100"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  )}
                 </Link>
               </li>
             );
@@ -139,19 +162,35 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           collapsed ? "opacity-0" : "opacity-100"
         }`}
       >
-        <button
-          className="flex items-center gap-3 px-4 pl-12 py-2.5 w-full text-red-500 hover:text-red-400 transition-colors"
-          onClick={handleLogout}
-        >
-          <FaSignOutAlt size={20} />
-          <span
-            className={`text-sm transition-opacity duration-300 ${
-              collapsed ? "opacity-0" : "opacity-100"
-            }`}
+        {minimize ? (
+          <button
+            className="flex items-center flex-col w-full text-red-500 hover:text-red-400 transition-colors"
+            onClick={handleLogout}
           >
-            Log-out
-          </span>
-        </button>
+            <FaSignOutAlt size={20} />
+            <span
+              className={`text-sm transition-opacity duration-300 ${
+                collapsed ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              Log-out
+            </span>
+          </button>
+        ) : (
+          <button
+            className="flex items-center gap-3 px-4 pl-12 py-2.5 w-full text-red-500 hover:text-red-400 transition-colors"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt size={20} />
+            <span
+              className={`text-sm transition-opacity duration-300 ${
+                collapsed ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              Log-out
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );

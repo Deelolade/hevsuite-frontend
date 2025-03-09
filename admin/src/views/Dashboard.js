@@ -316,8 +316,10 @@ const Dashboard = () => {
                   <option value="" disabled>
                     Enter who can attend?
                   </option>
+                  <option value="Public">Public</option>
                   <option value="VIP Members">VIP Members</option>
                   <option value="Standard Members">Standard Members</option>
+                  <option value="Invite Only">Invite Only</option>
                 </select>
               </div>
               <div>
@@ -434,11 +436,14 @@ const Dashboard = () => {
                 onClick={() => {
                   setIsAddEventOpen(false);
                   MySwal.fire({
+                    imageUrl: "/logo_white.png",
+                    imageWidth: 70,
+                    imageHeight: 70,
                     title: <strong>Success!</strong>,
                     text: "Created Event Successfully!",
-                    icon: "success",
+
                     confirmButtonText: "OK",
-                    confirmButtonColor: "#722F37", 
+                    confirmButtonColor: "#722F37",
                   });
                 }}
               >

@@ -249,7 +249,7 @@ const Event = () => {
               style={{ backgroundImage: `url(${event.image})` }}
             >
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#540A26]/90 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#540A26]/50 to-transparent" />
 
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -676,7 +676,7 @@ const Event = () => {
       <Modal
         isOpen={isViewEventOpen}
         onRequestClose={() => setIsViewEventOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-3xl w-[90%] max-w-7xl overflow-hidden"
+        className="absolute top-1/2 left-1/2 md:left-auto md:-translate-x-0 md:right-0 transform -translate-x-1/2 -translate-y-1/2 z-100 bg-white rounded-3xl w-[90%] max-w-7xl md:w-[75%] overflow-hidden"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },
