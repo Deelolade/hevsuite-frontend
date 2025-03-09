@@ -46,7 +46,7 @@ const EventDetailsModal = ({ event, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full max-w-7xl overflow-hidden">
+      <div className="bg-white rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -64,17 +64,17 @@ const EventDetailsModal = ({ event, onClose }) => {
                 alt={event.title}
                 className="w-full h-full object-cover opacity-90"
               />
-              <div className="absolute inset-0 flex items-center justify-between px-6">
-                <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+              <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
+                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <BsChevronLeft className="text-white text-xl" />
                 </button>
-                <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
                   <BsChevronRight className="text-white text-xl" />
                 </button>
               </div>
               <div className="absolute top-6 right-6">
-                <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <BsHeart className="text-white text-xl" />
+                <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm  active:text-red-500 flex items-center justify-center">
+                  <BsHeart className="text-white text-xl transition-all duration-300 active:text-red-500" />
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
@@ -352,8 +352,9 @@ const Events = () => {
 
           {/* Filters */}
           <div className="px-6 py-4 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+            <div className="md:mt-44 mt-20" />
             <select
-              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto mt-24"
+              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto mt-20"
               value={selectedAudience}
               onChange={(e) => setSelectedAudience(e.target.value)}
             >
@@ -381,21 +382,19 @@ const Events = () => {
               <option value="">Addis Ababa</option>
             </select>
 
-            <div className="w-full md:w-auto">
-              <select
-                className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto "
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              >
-                <option value="">Date</option>
-                <option value="newest">Newest to Oldest</option>
-                <option value="oldest">Oldest to Newest</option>
-              </select>
-            </div>
+            <select
+              className="bg-transparent border border-gray-600 rounded-lg px-4 py-2 w-full md:w-auto "
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            >
+              <option value="">Date</option>
+              <option value="newest">Newest to Oldest</option>
+              <option value="oldest">Oldest to Newest</option>
+            </select>
           </div>
 
           {/* Events Grid */}
-          <div className="px-6 py-8">
+          <div className="px-6 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {paginatedEvents.map((event, index) => (
                 <div
@@ -420,20 +419,27 @@ const Events = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center items-center space-x-2 mt-8">
-              {Array.from({ length: totalPages }, (_, index) => (
-                <button
-                  key={index}
-                  className={`w-8 h-8 rounded-full ${
-                    currentPage === index + 1
-                      ? "bg-[#540A26]"
-                      : "border border-gray-600"
-                  } flex items-center justify-center`}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+            <div className="w-full flex justify-between items-center">
+              <div className="h-2 w-2" />
+              <div className="flex justify-center ml-10 items-center space-x-2 mt-8">
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${
+                      currentPage === index + 1 ? "bg-[#540A26]" : "bg-gray-400"
+                    } flex items-center justify-center`}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {/* {index + 1} */}
+                  </button>
+                ))}
+              </div>
+              <Link
+                to="/homepage"
+                className="text-white border mt-4 p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
+              >
+                Exit View
+              </Link>
             </div>
           </div>
           {selectedEvent && (

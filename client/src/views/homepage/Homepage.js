@@ -6,7 +6,7 @@ import Footer from "../../components/Footer";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime, MdPerson } from "react-icons/md";
 import { IoLocationOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -59,6 +59,7 @@ const Homepage = () => {
       image: event,
     },
   ];
+  const navigate = useNavigate();
 
   const newsItems = [
     {
@@ -193,7 +194,7 @@ const Homepage = () => {
                 </div>
               </div>
 
-              <div className="relative w-full md:w-auto mt-32 md:mt-32">
+              <div className="relative w-full md:w-auto mt-2 md:mt-32">
                 <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
@@ -230,7 +231,6 @@ const Homepage = () => {
                 </div>
                 <Swiper
                   modules={[Navigation, Pagination]}
-                  
                   onSlideChange={(swiper) => setActiveSlide(swiper.realIndex)}
                   slidesPerView={3}
                   breakpoints={{
@@ -238,7 +238,8 @@ const Homepage = () => {
                     768: { slidesPerView: 1 },
                     640: { slidesPerView: 1 },
                     0: { slidesPerView: 1 },
-                  }}s
+                  }}
+                  s
                   spaceBetween={10} // Further reduced gap between slides
                   pagination={{
                     el: ".swiper-pagination",
@@ -261,7 +262,11 @@ const Homepage = () => {
                         //   activeSlide === idx ? "scale-110 opacity-100" : "scale-90 opacity-70"
                         // }`}
                         className={`relative bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] h-[300px]
-                      ${activeSlide === idx ? " opacity-100 h-[320px] " : " opacity-70 mt-2"}`}
+                      ${
+                        activeSlide === idx
+                          ? " opacity-100 md:h-[320px]  h-[400px]"
+                          : " opacity-70 mt-2"
+                      }`}
                       >
                         <img
                           src={event.image}
@@ -289,10 +294,10 @@ const Homepage = () => {
                 </Swiper>
               </div>
 
-              <div className="text-center md:text-right mt-4 px-4">
+              <div className="text-center md:text-right mt-20 md:mt-4 px-4">
                 <Link
                   to="/events"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-white border p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
                 >
                   View All
                 </Link>
@@ -308,10 +313,14 @@ const Homepage = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 font-secondary text-gradient_r">
             Newsroom
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="flex w-[90vw] md:w-fit md:overflow-hidden overflow-auto md:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {newsItems.map((item) => (
-              <div key={item.id} className="relative group">
-                <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden">
+              <div
+                key={item.id}
+                className="relative cursor-pointer group"
+                onClick={() => navigate("/news-detail")}
+              >
+                <div className="relative w-80  md:w-fit h-80 md:h-80 rounded-2xl overflow-hidden">
                   <img
                     src={item.image}
                     alt={item.title}
@@ -337,7 +346,10 @@ const Homepage = () => {
             ))}
           </div>
           <div className="text-center mt-6 md:mt-8">
-            <button className="bg-gradient-to-r  from-[#8B0000] to-[#4B0082] text-white px-8 py-2 rounded-full">
+            <button
+              onClick={() => navigate("/events")}
+              className=" border-gray-600 text-white px-8 py-2 rounded-full"
+            >
               View all
             </button>
           </div>

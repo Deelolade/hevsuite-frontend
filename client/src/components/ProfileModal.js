@@ -7,8 +7,9 @@ import Activities from "../views/account/activity/Activities";
 import Settings from "../views/account/settings/Settings";
 import Notification from "../views/account/notifications/Notification";
 import Referrals from "../views/account/referral/Referrals";
+import { useNavigate } from "react-router-dom";
 
-const ProfileModal = ({ onClose }) => {
+const ProfileModal = ({ onClose, forNotification }) => {
   const tabs = [
     "Account Profile",
     "Your Events",
@@ -20,13 +21,40 @@ const ProfileModal = ({ onClose }) => {
     "Settings",
   ];
 
-  const [activeTab, setActiveTab] = useState(tabs[0]);
-
+  const [activeTab, setActiveTab] = useState(
+    forNotification.current ? tabs[5] : tabs[0]
+  );
+  const navigate = useNavigate();
   const handleLogout = () => {
     console.log("Logout functionality goes here");
+    navigate("/");
     if (onClose) onClose();
   };
 
+  const containerRef = React.useRef(null);
+  let isDragging = false;
+  let startX;
+  let scrollLeft;
+
+  // Handle mouse down event to start dragging
+  const handleMouseDown = (e) => {
+    isDragging = true;
+    startX = e.clientX;
+    scrollLeft = containerRef.current.scrollLeft;
+  };
+
+  // Handle mouse move event while dragging
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const x = e.clientX;
+    const walk = (x - startX) * 2; // Control the speed of scroll
+    containerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  // Handle mouse up event to stop dragging
+  const handleMouseUp = () => {
+    isDragging = false;
+  };
   return (
     <div className="relative bg-transparent rounded-3xl overflow-hidden">
       <div className="p-4 md:p-6 border-b border-transparent relative">
@@ -46,7 +74,14 @@ const ProfileModal = ({ onClose }) => {
         </div>
 
         {/* Tabs - Scrollable on Mobile with hidden scrollbar */}
-        <div className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-12 no-scrollbar">
+        <div
+          ref={containerRef}
+          className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-12 no-scrollbar cursor-grab"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
           <div className="flex gap-2 min-w-max">
             {tabs.map((tab) => (
               <button

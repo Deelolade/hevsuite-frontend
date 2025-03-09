@@ -148,7 +148,7 @@ const Topics = () => {
               {popularTopics.map((topic) => (
                 <div
                   key={topic.id}
-                  className="w-full md:w-auto min-w-[280px] md:min-w-0 bg-white rounded-lg p-4 md:p-6 shadow-md cursor-pointer mb-4 md:mb-0"
+                  className="w-full md:w-auto min-w-[280px] md:min-w-0 bg-white rounded-lg p-4 md:p-6 shadow-xl cursor-pointer mb-4 md:mb-4"
                   onClick={() => navigate(`/topic-details/${topic.id}`)}
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-[#540A26] rounded-lg text-white flex items-center justify-center text-xl md:text-2xl mb-3 md:mb-4">

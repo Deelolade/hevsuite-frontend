@@ -18,6 +18,7 @@ const Header = () => {
     last: "Surname",
   });
 
+  const notRef = React.useRef(false);
   useEffect(() => {
     if (isMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -44,7 +45,7 @@ const Header = () => {
   return (
     <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40 ">
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
-        <Link to="/" className="text-white text-3xl font-bold">
+        <Link to="/homepage" className="text-white text-3xl font-bold">
           <img src={logo} alt="Logo" className="h-10 sm:h-12" />
         </Link>
 
@@ -66,7 +67,13 @@ const Header = () => {
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
-                <div className="relative">
+                <div
+                  className="relative"
+                  onClick={() => {
+                    notRef.current = true;
+                    setShowProfileModal(true);
+                  }}
+                >
                   <BsBell className="w-6 h-6" />
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
                     10+
@@ -74,7 +81,10 @@ const Header = () => {
                 </div>
                 <div
                   className="flex items-center space-x-2 cursor-pointer"
-                  onClick={() => setShowProfileModal(true)}
+                  onClick={() => {
+                    notRef.current = false;
+                    setShowProfileModal(true);
+                  }}
                 >
                   <img
                     src={avatar}
@@ -149,6 +159,7 @@ const Header = () => {
                     <div
                       className="block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                       onClick={() => {
+                        notRef.current = false;
                         setShowProfileModal(true);
                       }}
                     >
@@ -272,7 +283,10 @@ const Header = () => {
             }
           `}</style>
 
-          <ProfileModal onClose={() => setShowProfileModal(false)} />
+          <ProfileModal
+            forNotification={notRef}
+            onClose={() => setShowProfileModal(false)}
+          />
         </Modal>
       )}
     </header>

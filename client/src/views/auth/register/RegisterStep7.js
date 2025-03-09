@@ -154,50 +154,62 @@ const RegisterStep7 = () => {
           {/* Right Side - Payment Form */}
           <div className="md:order-2 space-y-6">
             <div>
-              <label className="block mb-2">{mode}</label>
+              <label className="block mb-2 font-medium text-xl text-[#0A5440]">{mode}</label>
               <div className="flex gap-4">
-                {mode === "Card" ? (
-                  <div className="relative border rounded-lg flex-1">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                      <svg
-                        className="w-5 h-5 text-blue-500"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <rect
-                          x="3"
-                          y="5"
-                          width="18"
-                          height="14"
-                          rx="2"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                {(() => {
+                  if (mode === "Card") {
+                    return (
+                      <div className="relative border rounded-lg flex-1">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                          <svg
+                            className="w-5 h-5 text-blue-500"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <rect
+                              x="3"
+                              y="5"
+                              width="18"
+                              height="14"
+                              rx="2"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            />
+                            <path
+                              d="M3 10H21"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Card"
+                          className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
+                          value={paymentDetails.cardType}
+                          onChange={(e) =>
+                            setPaymentDetails({
+                              ...paymentDetails,
+                              cardType: e.target.value,
+                            })
+                          }
                         />
-                        <path
-                          d="M3 10H21"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Card"
-                      className="w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none"
-                      value={paymentDetails.cardType}
-                      onChange={(e) =>
-                        setPaymentDetails({
-                          ...paymentDetails,
-                          cardType: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div className="underline cursor-pointer mr-8 font-bold justify-center flex items-center text-primary">
-                    Proceed to PayPal For Payment
-                  </div>
-                )}
+                      </div>
+                    );
+                  } else if (mode === "PayPal") {
+                    return (
+                      <div className="underline cursor-pointer mr-8 font-bold text-sm justify-center flex items-center text-primary">
+                        Proceed to PayPal For Payment
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="underline cursor-pointer mr-8 text-sm font-bold justify-center flex items-center text-primary">
+                        Proceed to Google Pay For Payment
+                      </div>
+                    );
+                  }
+                })()}
                 <div className="inline-block relative">
                   <button
                     className="w-12 h-12 border rounded-lg flex  justify-center"
@@ -234,6 +246,15 @@ const RegisterStep7 = () => {
                       >
                         PayPal{" "}
                         {mode === "PayPal" && (
+                          <BsCheck className="text-green-400" />
+                        )}
+                      </div>
+                      <div
+                        className="cursor-pointer p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg"
+                        onClick={() => handleMode("Google Pay")}
+                      >
+                        Google Pay{" "}
+                        {mode === "Google Pay" && (
                           <BsCheck className="text-green-400" />
                         )}
                       </div>

@@ -5,13 +5,14 @@ import { IoClose } from "react-icons/io5";
 import Header from "../../components/Header";
 import bg_image from "../../assets/party3.jpg";
 import Footer from "../../components/Footer";
-import { BiErrorCircle } from "react-icons/bi";
+import { BiErrorCircle, BiMinus } from "react-icons/bi";
 import { AiOutlineSend } from "react-icons/ai";
 import avatar from "../../assets/user.avif";
 
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [showAbandonModal, setShowAbandonModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState("");
@@ -40,9 +41,11 @@ const Ask = () => {
       border: "none",
       borderRadius: "24px",
       backgroundColor: "white",
+      zIndex: 10000,
     },
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.75)",
+      zIndex: 10000,
     },
   };
 
@@ -179,7 +182,7 @@ const Ask = () => {
           {paginatedRequests.map((request) => (
             <div
               key={request.id}
-              className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-sm"
+              className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-xl"
             >
               <button
                 className="absolute top-4 md:top-5 right-3 md:right-4"
@@ -195,7 +198,7 @@ const Ask = () => {
                 <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
                   {request.title} {request.id}
                 </h3>
-                <p className="text-[#979797] font-primary text-sm md:text-base">
+                <p className="text-[#979797] font-primary text-sm ">
                   {request.description}
                 </p>
               </div>
@@ -372,101 +375,122 @@ const Ask = () => {
         style={chatModalStyles}
         contentLabel="Chat Modal"
       >
-        <div className="rounded-t-2xl bg-gradient-to-r from-[#540A26] to-[#0A5440] p-4">
-          <div className="flex items-center gap-3">
-            <img
-              src={avatar}
-              alt={selectedRequest?.createdBy || "User"}
-              className="w-10 h-10 rounded-full"
-            />
-            <div className="text-white">
+        {minimized ? (
+          <div
+            className="rounded-t-2xl animate-pulse bg-gradient-to-r from-[#540A26] to-[#0A5440] cursor-pointer p-3"
+            onClick={() => setMinimized(false)}
+          >
+            <div className="text-white flex justify-evenly text-sm">
               <h3 className="font-medium">
                 {selectedRequest?.createdBy || "User"}
               </h3>
-              <span className="text-sm flex items-center gap-1">
+              <span className="text-xs flex items-center gap-1">
                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
                 Online
               </span>
             </div>
-            <button
-              onClick={() => setIsChatModalOpen(false)}
-              className="ml-auto text-white hover:opacity-80"
-            >
-              <IoClose size={24} />
-            </button>
           </div>
-        </div>
-
-        <div className="h-96 p-4 overflow-y-auto">
-          {selectedRequest && (
-            <div className="bg-gray-100 p-3 rounded-lg mb-4">
-              <h4 className="font-medium text-sm">{selectedRequest.title}</h4>
-              <p className="text-sm text-gray-600">
-                {selectedRequest.description}
-              </p>
-            </div>
-          )}
-
-          {(messages[selectedRequest?.id] || []).map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.isUser ? "justify-end" : "justify-start"
-              } mb-4`}
-            >
-              <div
-                className={`max-w-[80%] p-3 rounded-2xl ${
-                  message.isUser
-                    ? "bg-gray-100 text-black"
-                    : "bg-[#0A5440] text-white"
-                }`}
-              >
-                <p>{message.text}</p>
-                <span className="text-xs mt-1 block text-right">
-                  {message.time}
-                </span>
+        ) : (
+          <>
+            <div className="rounded-t-2xl bg-gradient-to-r from-[#540A26] to-[#0A5440] p-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={avatar}
+                  alt={selectedRequest?.createdBy || "User"}
+                  className="w-10 h-10 rounded-full"
+                />
+                <div className="text-white">
+                  <h3 className="font-medium">
+                    {selectedRequest?.createdBy || "User"}
+                  </h3>
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    Online
+                  </span>
+                </div>
+                <button
+                  onClick={() => setMinimized(true)}
+                  className="ml-auto text-white hover:opacity-80"
+                >
+                  <BiMinus size={24} />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="p-4 border-t">
-          <div className="relative flex items-center gap-4">
-            <button
-              className="px-4 py-2 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-sm"
-              onClick={() => setShowAbandonModal(true)}
-            >
-              Abandon Ask
-            </button>
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder="Type your message here..."
-                className="w-full pr-12 pl-4 py-3 bg-gray-100 rounded-full"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]"
-                onClick={() => {
-                  if (newMessage.trim()) {
-                    const updatedMessages = {
-                      ...messages,
-                      [selectedRequest.id]: [
-                        ...(messages[selectedRequest.id] || []),
-                        { text: newMessage, time: "7:20", isUser: true },
-                      ],
-                    };
-                    setMessages(updatedMessages);
-                    setNewMessage("");
-                  }
-                }}
-              >
-                <AiOutlineSend size={24} />
-              </button>
+            <div className="h-96 p-4 overflow-y-auto">
+              {selectedRequest && (
+                <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                  <h4 className="font-medium text-sm">
+                    {selectedRequest.title}
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    {selectedRequest.description}
+                  </p>
+                </div>
+              )}
+
+              {(messages[selectedRequest?.id] || []).map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.isUser ? "justify-end" : "justify-start"
+                  } mb-4`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-2xl ${
+                      message.isUser
+                        ? "bg-gray-100 text-black"
+                        : "bg-[#0A5440] text-white"
+                    }`}
+                  >
+                    <p>{message.text}</p>
+                    <span className="text-xs mt-1 block text-right">
+                      {message.time}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
+
+            <div className="p-4 border-t">
+              <div className="relative flex items-center gap-4">
+                <button
+                  className="px-4 py-2 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-sm"
+                  onClick={() => setShowAbandonModal(true)}
+                >
+                  Abandon Ask
+                </button>
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder="Type your message here..."
+                    className="w-full pr-12 pl-4 py-3 bg-gray-100 rounded-full"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                  />
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]"
+                    onClick={() => {
+                      if (newMessage.trim()) {
+                        const updatedMessages = {
+                          ...messages,
+                          [selectedRequest.id]: [
+                            ...(messages[selectedRequest.id] || []),
+                            { text: newMessage, time: "7:20", isUser: true },
+                          ],
+                        };
+                        setMessages(updatedMessages);
+                        setNewMessage("");
+                      }
+                    }}
+                  >
+                    <AiOutlineSend size={24} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </Modal>
       <Modal
         isOpen={showReportModal}

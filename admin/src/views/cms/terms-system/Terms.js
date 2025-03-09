@@ -32,10 +32,10 @@ const Terms = ({ contents, title }) => {
   };
 
   return (
-    <div className="min-h-screen relative w-fit bg-white">
+    <div className="min-h-screen relative -mt-2   bg-white">
       {/* Mobile View (hidden on md and larger screens) */}
       <div className="md:hidden flex flex-col min-h-screen">
-        <div className="relative text-white">
+        <div className="relative w-full text-white">
           <div className="absolute inset-0 z-0">
             <img
               src={bg_image}
@@ -66,21 +66,7 @@ const Terms = ({ contents, title }) => {
 
         <div className="container mx-auto px-4 py-6 flex-grow ">
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors ${
-                  activeTab === tab
-                    ? "bg-[#540A26] text-white"
-                    : "border border-[#540A26] text-[#540A26]"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        
 
           {/* Content */}
           <div>
