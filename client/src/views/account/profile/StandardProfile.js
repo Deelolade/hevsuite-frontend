@@ -10,6 +10,7 @@ import avatar from "../../../assets/user.avif";
 import mastercard from "../../../assets/Mastercard.png";
 
 import SupportRequestsView from "./SupportRequestsView";
+import Swal from "sweetalert2";
 
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
@@ -719,15 +720,15 @@ const StandardProfile = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span>Club Card Fee:</span>
-                        <span className="font-medium">$10</span>
+                        <span className="font-medium">£10</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping Fee:</span>
-                        <span className="font-medium">$5</span>
+                        <span className="font-medium">£5</span>
                       </div>
                       <div className="border-t border-gray-300 my-2 pt-2 flex justify-between">
                         <span>Total:</span>
-                        <span className="font-medium">$15</span>
+                        <span className="font-medium">£15</span>
                       </div>
                     </div>
                   </div>
@@ -806,9 +807,21 @@ const StandardProfile = () => {
                       <div className="flex justify-end gap-3">
                         <button
                           className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
-                          onClick={() => setIsEditingFullName(false)}
+                          onClick={() => {
+                            Swal.fire({
+                              title: "Success",
+                              text: "Profile Updated Successfully!",
+                              imageUrl: "/logo_white.png", // Change this to your image path
+                              imageWidth: 70,
+                              imageHeight: 70,
+                              showCancelButton: false,
+                              confirmButtonText: "Ok",
+                              confirmButtonColor: "#900C3F",
+                            });
+                            setIsEditingFullName(false);
+                          }}
                         >
-                          Cancel
+                          Save
                         </button>
                         <button
                           className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"

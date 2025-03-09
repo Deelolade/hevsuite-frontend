@@ -29,6 +29,7 @@
 // );
 
 import React from "react";
+import Swal from "sweetalert2";
 
 export const renderArchivedGridView = (ask) => (
   <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm text-[#444444]">
@@ -57,7 +58,23 @@ export const renderArchivedGridView = (ask) => (
           </p>
         </div>
       </div>
-      <div className="w-full text-center py-1.5 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm">
+      <div
+        onClick={() =>
+          Swal.fire({
+            title: "Mark Delivered?",
+            text: "Are you sure you want to mark this as delivered? This action can not be undone.",
+            imageUrl: "/logo_white.png", // Change this to your image path
+            imageWidth: 70,
+            imageHeight: 70,
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            confirmButtonColor: "#0E5B31",
+            cancelButtonColor: "gray",
+          })
+        }
+        className="w-full cursor-pointer text-center py-1.5 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm"
+      >
         Delivered
       </div>
     </div>

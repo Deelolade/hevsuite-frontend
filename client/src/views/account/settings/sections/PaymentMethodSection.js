@@ -5,10 +5,13 @@ import Modal from "../components/Modal";
 import visa from "../../../../assets/VISA.png";
 import amex from "../../../../assets/AMEX.png";
 import discover from "../../../../assets/Discover.png";
+import { PaymentMethodModal } from "../../events/EventDetails";
+import Swal from "sweetalert2";
 
 const PaymentMethodSection = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false); // Changed default to false for better mobile experience
+  const [openModalPayment, setOpenModalPayment] = useState(false);
 
   const AddPaymentModal = () => (
     <Modal
@@ -97,7 +100,10 @@ const PaymentMethodSection = () => {
             />
           </div>
         </div>
-        <button className="w-full bg-primary text-white rounded-lg p-2 sm:p-3 mt-2 sm:mt-4 text-sm sm:text-base hover:bg-[#6b0d31]">
+        <button
+          onClick={() => setShowAddModal(false)}
+          className="w-full bg-primary text-white rounded-lg p-2 sm:p-3 mt-2 sm:mt-4 text-sm sm:text-base hover:bg-[#6b0d31]"
+        >
           Save
         </button>
       </div>
@@ -141,8 +147,45 @@ const PaymentMethodSection = () => {
               </span>
             </div>
           </div>
+          <div className="border rounded-lg p-3 mt-4 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <input
+                type="radio"
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                checked
+                disabled
+                // readOnly
+              />
+              <div className="flex items-center gap-1 sm:gap-2">
+                <FaCreditCard className="text-[#FF5F00] text-xl sm:text-2xl" />
+                <div>
+                  <p className="font-medium text-sm sm:text-base">Mastercard</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Ends 3456</p>
+                </div>
+              </div>
+              <span
+                onClick={() =>
+                  Swal.fire({
+                    title: "Remove Card?",
+                    text: "You won't be able to undo this action!",
+                    imageUrl: "/logo_white.png", // Change this to your image path
+                    imageWidth: 70,
+                    imageHeight: 70,
+                    showCancelButton: true,
+                    confirmButtonText: "Remove",
+                    cancelButtonText: "No",
+                    confirmButtonColor: "#900C3F",
+                    cancelButtonColor: "gray",
+                  })
+                }
+                className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-red-500 font-medium"
+              >
+                Remove
+              </span>
+            </div>
+          </div>
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => setOpenModalPayment(true)}
             className="px-4 sm:px-6 py-1.5 sm:py-2 text-[#540A26] rounded-lg text-sm sm:text-base mt-2 sm:mt-3"
           >
             + Add Payment Method
@@ -237,6 +280,12 @@ const PaymentMethodSection = () => {
           </div>
         )}
       </div>
+      {openModalPayment && (
+        <PaymentMethodModal
+          onClose={() => setOpenModalPayment(false)}
+          showNewModal={() => setShowAddModal(true)}
+        />
+      )}
 
       <AddPaymentModal />
     </div>

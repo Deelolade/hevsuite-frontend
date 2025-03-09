@@ -11,13 +11,58 @@ const YourAsks = () => {
   const [activeTab, setActiveTab] = useState("Your Asks");
   const [filter, setFilter] = useState("Current");
 
-  const asks = Array(7).fill({
-    title: "Event Volunteer",
-    description: "We Need volunteer too.....",
-    name: "Anna Ivanovic",
-    date: "2nd Dec., 2025",
-    image: avatar,
-  });
+  const asks = [
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+      delivered: true,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+    {
+      title: "Event Volunteer",
+      description: "We Need volunteer too.....",
+      name: "Anna Ivanovic",
+      date: "2nd Dec., 2025",
+      image: avatar,
+    },
+  ];
 
   const acceptedAsks = Array(7).fill({
     title: "Event Volunteer",

@@ -32,11 +32,17 @@
     scrollbar-width: none; /* Firefox */
   }
 }
-* {
+
+
+.playfair {
   font-family: 'Playfair Display', serif;
 }
 
-/* You can also apply it more selectively */
+* {
+  font-family: 'Lato', sans-serif;
+}
+
+/* Or apply it specifically to the body if you don't want it globally */
 body {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Lato', sans-serif;
 }

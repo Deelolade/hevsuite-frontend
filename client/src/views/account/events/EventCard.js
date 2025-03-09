@@ -3,12 +3,15 @@ import { BsCalendar } from "react-icons/bs";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
+import EventDetailsModal, { PaymentMethodModal } from "./EventDetails";
+import Swal from "sweetalert2";
 
 const EventCard = ({ event, activeTab }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [openModalPayment, setOpenModalPayment] = useState(false);
 
   const modalStyles = {
     content: {
@@ -51,7 +54,20 @@ const EventCard = ({ event, activeTab }) => {
       case "Saved Events":
         return (
           <button
-            onClick={() => setIsRemoveModalOpen(true)}
+            onClick={() =>
+              Swal.fire({
+                title: "Remove Saved Event?",
+                text: "You won't be able to undo this action!",
+                imageUrl: "/logo_white.png", // Change this to your image path
+                imageWidth: 70,
+                imageHeight: 70,
+                showCancelButton: true,
+                confirmButtonText: "Remove",
+                cancelButtonText: "No",
+                confirmButtonColor: "#900C3F",
+                cancelButtonColor: "gray",
+              })
+            }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"
           >
             Remove
@@ -60,7 +76,20 @@ const EventCard = ({ event, activeTab }) => {
       case "Attending Events":
         return (
           <button
-            onClick={() => setIsCancelModalOpen(true)}
+            onClick={() =>
+              Swal.fire({
+                title: "Cancel Attendance?",
+                text: "You won't be able to undo this action!",
+                imageUrl: "/logo_white.png", // Change this to your image path
+                imageWidth: 70,
+                imageHeight: 70,
+                showCancelButton: true,
+                confirmButtonText: "Yes, Cancel",
+                cancelButtonText: "No",
+                confirmButtonColor: "#900C3F",
+                cancelButtonColor: "gray",
+              })
+            }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"
           >
             Cancel Attendance
@@ -76,14 +105,15 @@ const EventCard = ({ event, activeTab }) => {
         return null;
     }
   };
-
+  const [selectedEvent, setSelectedEvent] = useState(null);
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full">
       <div className="relative w-full pt-[60%]">
         <img
           src={event.image}
           alt={event.title}
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          onClick={() => setSelectedEvent(event)}
+          className="absolute  cursor-pointer top-0 left-0 w-full h-full object-cover"
         />
       </div>
       <div className="p-3 sm:p-4 flex-grow flex flex-col">
@@ -98,14 +128,26 @@ const EventCard = ({ event, activeTab }) => {
         <div className="mt-auto">
           {getActionButtons()}
           {activeTab !== "Invited Events" && (
-            <button className="w-full flex items-center justify-between px-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base py-1">
+            <button
+              onClick={() => setSelectedEvent(event)}
+              className="w-full flex items-center justify-between px-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base py-1"
+            >
               <span>View Details</span>
               <HiOutlineArrowRight />
             </button>
           )}
         </div>
       </div>
-
+      {selectedEvent && (
+        <EventDetailsModal
+          event={selectedEvent}
+          eventType={activeTab}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
+      {openModalPayment && (
+        <PaymentMethodModal onClose={() => setOpenModalPayment(false)} />
+      )}
       <Modal
         isOpen={isAcceptModalOpen}
         onRequestClose={() => setIsAcceptModalOpen(false)}
@@ -144,6 +186,7 @@ const EventCard = ({ event, activeTab }) => {
               <button
                 onClick={() => {
                   setIsAcceptModalOpen(false);
+                  setOpenModalPayment(true);
                 }}
                 className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#0E5B31] text-white rounded-lg text-xs sm:text-sm"
               >

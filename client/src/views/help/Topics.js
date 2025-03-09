@@ -209,40 +209,41 @@ const Topics = () => {
           <h2 className="text-2xl md:text-4xl mb-6 md:mb-12 text-[#540A26] text-center font-secondary">
             FAQs
           </h2>
-          <div className="space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="border-b border-gray-200 pb-4 md:pb-6"
+                className="flex items-start gap-3 md:gap-6 border-b-0 pb-4 md:pb-6"
               >
-                <div className="flex items-start gap-3 md:gap-6 ">
-                  <span className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm md:text-base font-medium shrink-0 mt-1">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
-                      {faq.question}
-                    </h3>
-                    <p
-                      className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {faq.answer}
-                    </p>
-                    <button
-                      onClick={() =>
-                        setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
-                      }
-                      className="text-[#540A26] text-sm md:text-base font-medium hover:text-red-600 transition-colors"
-                    >
-                      {expandedFAQ === faq.id ? "Read less" : "Read more"}{" "}
-                    </button>
-                  </div>
+                <span className="relative w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm md:text-base font-medium shrink-0 mt-1">
+                  {index + 1}
+                  <span className="absolute md:block hidden -bottom-28 left-1/2 transform -translate-x-1/2 w-[2px] h-24 bg-[#540A26]"></span>{" "}
+                  {/* Added vertical line under circle */}
+                </span>
+
+                <div>
+                  <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">
+                    {faq.question}
+                  </h3>
+                  <p
+                    className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {faq.answer}
+                  </p>
+                  <button
+                    onClick={() =>
+                      setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
+                    }
+                    className="text-[#540A26] text-sm md:text-base font-medium hover:text-red-600 transition-colors"
+                  >
+                    {expandedFAQ === faq.id ? "Read less" : "Read more"}{" "}
+                  </button>
                 </div>
               </div>
             ))}
