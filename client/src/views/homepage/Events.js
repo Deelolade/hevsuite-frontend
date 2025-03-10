@@ -16,7 +16,7 @@ import Footer from "../../components/Footer";
 import avatar from "../../assets/user.avif";
 import mastercard from "../../assets/Mastercard.png";
 
-const EventDetailsModal = ({ event, onClose }) => {
+const EventDetailsModal = ({ event, onClose, events }) => {
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -44,10 +44,25 @@ const EventDetailsModal = ({ event, onClose }) => {
   );
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
+  const [currentEventIndex, setCurrentEventIndex] = useState(
+    events.findIndex((eventx) => eventx.title === event.title)
+  );
+
+  const handleNext = () => {
+    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentEventIndex((prevIndex) =>
+      prevIndex === 0 ? events.length - 1 : prevIndex - 1
+    );
+  };
+
+  const currentEvent = events[currentEventIndex];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+      <div className="bg-white h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
         <div className="flex flex-col md:flex-row">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -61,15 +76,21 @@ const EventDetailsModal = ({ event, onClose }) => {
             </div>
             <div className="relative h-full md:h-auto overflow-y-auto">
               <img
-                src={event.image}
+                src={currentEvent.image}
                 alt={event.title}
                 className="w-full h-full object-cover opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
-                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <button
+                  onClick={handlePrev}
+                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                >
                   <BsChevronLeft className="text-white text-xl" />
                 </button>
-                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <button
+                  onClick={handleNext}
+                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                >
                   <BsChevronRight className="text-white text-xl" />
                 </button>
               </div>
@@ -152,7 +173,7 @@ const EventDetailsModal = ({ event, onClose }) => {
               {activeTab === "description" && (
                 <div>
                   <h2 className="text-[40px] font-bold mb-4 text-black font-primary">
-                    Board Members Meeting
+                    {currentEvent.title}
                   </h2>
                   <h3 className="text-xl mb-4 text-black font-primary font-semibold">
                     The Party of the Year! 🎵
@@ -199,7 +220,16 @@ const EventDetailsModal = ({ event, onClose }) => {
                     <p className="mt-4 text-gray-600">
                       No. 12, Kudirat Abiola Avenue, Ikeja, NG.
                     </p> */}
-                  <h1>hello</h1>
+
+                  <div>
+                    <div id="google-maps-canvas" className="h-full">
+                      <iframe
+                        className="md:h-[500px] w-full"
+                        frameborder="0"
+                        src="https://www.google.com/maps/embed/v1/place?q=uk+london,+brixton+brockwell+park&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -446,6 +476,7 @@ const Events = () => {
           {selectedEvent && (
             <EventDetailsModal
               event={selectedEvent}
+              events={events}
               onClose={() => setSelectedEvent(null)}
             />
           )}

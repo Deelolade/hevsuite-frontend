@@ -94,8 +94,8 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
   const currentEvent = events[currentEventIndex];
 
   return (
-    <div className="fixed inset-0 z-50 superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white md:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+    <div className="fixed inset-0 z-50  superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
+      <div className="bg-white h-[90vh]  rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
         <div className="flex flex-col md:flex-row md:h-full">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -253,7 +253,16 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                     <p className="mt-4 text-gray-600">
                       No. 12, Kudirat Abiola Avenue, Ikeja, NG.
                     </p> */}
-                  <h1>hello</h1>
+                  {/* <h1>hello</h1> */}
+                  <div>
+                    <div id="google-maps-canvas" className="h-full">
+                      <iframe
+                        className="md:h-[500px] w-full"
+                        frameborder="0"
+                        src="https://www.google.com/maps/embed/v1/place?q=uk+london,+brixton+brockwell+park&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
