@@ -169,7 +169,7 @@ const Payment = () => {
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[90vw]"
+        className="absolute h-[95vh] overflow-auto top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[90vw]"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
         <div className="p-6">
@@ -192,7 +192,14 @@ const Payment = () => {
                 className="w-full px-4 py-2 border rounded-lg"
               />
             </div>
-
+            <div>
+              <label className="block mb-2">Allowed Members</label>
+              <select className="w-full px-4 py-2 border rounded-lg text-quatr">
+                <option>All Members</option>
+                <option>VIP Members</option>
+                <option>Standard Members</option>
+              </select>
+            </div>
             <div>
               <label className="block mb-2">API Key</label>
               <input
@@ -261,7 +268,7 @@ const Payment = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[90vw]"
+        className="absolute h-[95vh] overflow-auto top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[90vw]"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
         <div className="p-6">
@@ -284,6 +291,14 @@ const Payment = () => {
                 className="w-full px-4 py-2 border rounded-lg"
                 disabled
               />
+            </div>
+            <div>
+              <label className="block mb-2">Allowed Members</label>
+              <select className="w-full px-4 py-2 border rounded-lg text-quatr">
+                <option>All Members</option>
+                <option>VIP Members</option>
+                <option>Standard Members</option>
+              </select>
             </div>
 
             <div>

@@ -9,6 +9,7 @@ import {
 import { MdAccessTime } from "react-icons/md";
 import avatar from "../../../assets/user.avif";
 import party from "../../../assets/party2.jpg";
+import eventimg from "../../../assets/event.png";
 import mastercard from "../../../assets/Mastercard.png";
 
 const EventDetailsModal = ({ event, onClose, eventType }) => {
@@ -53,7 +54,7 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
       title: "Battle for NBA Cup",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: event.image,
+      image: eventimg,
     },
     {
       id: 3,
@@ -67,7 +68,7 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
       title: "Battle for NBA Cup",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: event.image,
+      image: eventimg,
     },
     {
       id: 5,
@@ -110,8 +111,8 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
             <div className="relative h-full overflow-y-auto">
               <img
                 src={currentEvent.image}
-                alt={event.title}
-                className="w-full h-full object-center bg-center bg-current opacity-90"
+                alt={currentEvent.title}
+                className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
                 <button

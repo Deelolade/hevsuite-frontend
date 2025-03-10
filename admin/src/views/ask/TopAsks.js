@@ -26,6 +26,8 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
+
     },
     {
       id: 2,
@@ -36,6 +38,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
     {
       id: 3,
@@ -46,6 +49,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
     {
       id: 4,
@@ -56,6 +60,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
     {
       id: 5,
@@ -66,6 +71,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
     {
       id: 6,
@@ -76,6 +82,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
     {
       id: 7,
@@ -86,6 +93,7 @@ const TopAsks = () => {
       },
       asksClaimed: 120,
       asksDelivered: 100,
+      memberStatus: "Standard Member"
     },
   ];
 

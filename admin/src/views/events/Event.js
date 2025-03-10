@@ -143,6 +143,20 @@ const Event = () => {
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedUsers, setSelectedUsers] = useState([]);
+
+  const handleCheckboxChange = (user) => {
+    setSelectedUsers((prev) =>
+      prev.some((u) => u.id === user.id)
+        ? prev.filter((u) => u.id !== user.id)
+        : [...prev, user]
+    );
+  };
+
+  const removeUser = (userId) => {
+    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
+
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
@@ -249,7 +263,7 @@ const Event = () => {
               style={{ backgroundImage: `url(${event.image})` }}
             >
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#540A26]/50 to-transparent" />
+              <div className="absolute inset-0 " />
 
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
@@ -472,15 +486,53 @@ const Event = () => {
                   Invite Users
                 </button>
               </div>
-              <div className="mt-2 border rounded-lg h-[120px] overflow-y-auto">
+              <div>
+                {selectedUsers.length > 0 && (
+                  <div className="flex flex-wrap p-4 m-2 rounded-lg border-gray-200 border gap-2 mb-2">
+                    {selectedUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center gap-3 pr-3 border border-gray-200 bg-white shadow-2xl rounded-full"
+                      >
+                        <img
+                          src={user.avatar}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <span>{user.name}</span>
+                        <button
+                          onClick={() => removeUser(user.id)}
+                          className="text-black"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="border rounded-lg h-[120px] overflow-y-auto">
                 {filteredUsers.map((user) => (
-                  <div key={user.id} className="flex items-center gap-2 py-2">
+                  <div
+                    key={user.id}
+                    className={` items-center gap-2 p-2 ${
+                      selectedUsers.some((u) => u.id === user.id)
+                        ? "hidden"
+                        : "flex"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="mx-2"
+                      checked={selectedUsers.some((u) => u.id === user.id)}
+                      onChange={() => handleCheckboxChange(user)}
+                    />
                     <img
                       src={user.avatar}
                       alt="Avatar"
                       className="w-8 h-8 rounded-full"
                     />
-                    <span>{user.name}</span>
+                    <span className="ml-4">{user.name}</span>
                   </div>
                 ))}
               </div>

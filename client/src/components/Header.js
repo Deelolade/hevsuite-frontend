@@ -129,7 +129,7 @@ const Header = () => {
             <div className="flex-grow">
               <div className="space-y-2">
                 <Link
-                  to="/"
+                  to="/homepage"
                   className="block bg-black text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                 >
                   Home

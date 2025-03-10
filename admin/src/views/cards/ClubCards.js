@@ -7,7 +7,7 @@ const ClubCards = () => {
   const [activeTab, setActiveTab] = useState("new");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-screen overflow-hidden">
       {/* Tab Buttons */}
       <div className="flex flex-row mt-14 md:gap-4 mb-6 justify-between md:p-6 pt-6 ">
         <button

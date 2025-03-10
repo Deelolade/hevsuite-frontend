@@ -61,6 +61,13 @@ const Homepage = () => {
       time: "10:00pm",
       image: party,
     },
+    {
+      id: 6,
+      title: "Battle for NBA Cup",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: event,
+    },
   ];
   const navigate = useNavigate();
 
@@ -111,16 +118,22 @@ const Homepage = () => {
           <img
             src={headerBg}
             alt="background"
-            className="w-full h-screen object-cover"
+            className={`w-full ${
+              showFilters ? "h-[120vh]" : "h-screen"
+            } object-cover`}
           />
-          <div className="absolute inset-0 bg-black/50 h-screen" />
+          <div
+            className={`absolute inset-0 bg-black/50 ${
+              showFilters ? "h-[120vh]" : "h-screen"
+            }`}
+          />
         </div>
         <div className="relative z-10">
           <Header />
           <div className="max-w-[1400px] mx-auto px-4">
             {/* Filters */}
             <div className=" flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-32">
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-24 md:mt-32">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="md:hidden w-full bg-[#540A26] text-white py-2 px-4 rounded-lg mb-2"

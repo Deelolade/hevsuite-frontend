@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { BiSearch } from "react-icons/bi";
+import { BiCheck, BiSearch } from "react-icons/bi";
 import { BsPencil } from "react-icons/bs";
 import { IoMdAdd } from "react-icons/io";
 import Profile from "../../components/Profile";
@@ -161,8 +161,11 @@ const UserManagement = () => {
       photo: avatar,
     },
   ];
+
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("Active");
   return (
-    <div className="px-6 space-y-6">
+    <div className="md:px-6 space-y-6">
       {/* Header section - updated styles */}
       <div className="flex items-center justify-end">
         <Profile />
@@ -204,15 +207,44 @@ const UserManagement = () => {
             </svg>
           </div>
         </div>
-        <button className="p-2 hover:bg-gray-50 rounded-full">
-          <svg
-            className="w-6 h-6 text-gray-400"
-            fill="currentColor"
-            viewBox="0 0 24 24"
+        <div className="relative">
+          <button
+            onClick={() => {
+              setShowFilterDropdown(!showFilterDropdown);
+              // setShowSortDropdown(false);
+            }}
+            className="p-2 hover:bg-gray-50 rounded-full"
           >
-            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-          </svg>
-        </button>
+            <svg
+              className="w-6 h-6 text-gray-400"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+          </button>
+          {showFilterDropdown && (
+            <div className="absolute  right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
+              <div className="py-2">
+                {["All", "Active", "Restricted", "Banned"].map((r) => (
+                  <button
+                    key={r}
+                    className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                    onClick={() => {
+                      setSelectedFilter(r);
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    {r}&nbsp;
+                    {selectedFilter === r && (
+                      <BiCheck className="text-green-400 inline-block" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       {/* Table section - updated styles */}
       <div className="bg-white w-[90vw] md:w-full overflow-auto  rounded-lg shadow-sm">
@@ -713,7 +745,7 @@ const UserManagement = () => {
         </table>
 
         {/* Pagination - updated styles */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+        <div className="px-6 py-4 w-[90vw]  overflow-auto border-t border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Show result:</span>
             <select className="border rounded-md px-2 py-1 text-sm min-w-[60px]">

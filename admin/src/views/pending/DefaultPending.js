@@ -8,9 +8,9 @@ import {
 import Modal from "react-modal";
 
 const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("Filter");
   const [selectedSort, setSelectedSort] = useState("Sort by");
 
@@ -94,7 +94,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                     setShowFilterDropdown(false);
                   }}
                 >
-                  Fee completed
+                  New Applications
                 </button>
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
@@ -103,7 +103,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                     setShowFilterDropdown(false);
                   }}
                 >
-                  Complete supporter status
+                  Declined Applications
                 </button>
               </div>
             </div>

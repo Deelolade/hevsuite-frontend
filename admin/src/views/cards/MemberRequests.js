@@ -197,27 +197,103 @@ const MemberRequests = () => {
         postcode: "Andrew",
       },
     },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Cancelled",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Cancelled",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Cancelled",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
+    {
+      id: 4,
+      name: "Anna Ivanovic",
+      memberId: "12345678",
+      status: "Cancelled",
+      address: {
+        line1: "Andrew",
+        town: "Andrew",
+        country: "Andrew",
+        postcode: "Andrew",
+      },
+    },
   ];
+  const [vip, setVIP] = useState(false);
+  const [Pending, setPending] = useState(false);
   return (
     <div className="md:p-6 space-y-6">
       {/* Stats and Controls */}
-      <div className="flex ">
+      <div className="flex  md:-mt-10">
         <div className="flex flex-col md:flex-row items-center gap-4 justify-between  md:w-full overflow-x-auto">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-3xl font-semibold">10,000</h2>
             <div className="flex flex-row gap-4 overflow-hidden">
-              <select className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
-                <option>All</option>
-                <option>Members</option>
-                <option>VIP Members</option>
+              <select
+                onChange={(e) =>
+                  e.target.value === "VIP" ? setVIP(true) : setVIP(false)
+                }
+                className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
+              >
+                <option value="All">All</option>
+                <option value="Members">Members</option>
+                <option value="VIP">VIP Members</option>
               </select>
-              <select className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
-                <option>All</option>
-                <option>Pending</option>
-                <option>Cancelled</option>
+              <select
+                onChange={(e) =>
+                  e.target.value === "Pending"
+                    ? setPending(true)
+                    : setPending(false)
+                }
+                className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
+              >
+                <option value="All">All</option>
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
               </select>
+              {Pending && (
+                <select className="px-4 hidden md:inline-block py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
+                  <option value="All">New Registration</option>
+                  <option value="Pending">Replacement</option>
+                  <option value="Cancelled">Promoted</option>
+                </select>
+              )}
             </div>
           </div>
+          {Pending && (
+            <select className="px-4 self-start mr-0 ml-0 md:hidden py-2 border rounded-lg text-gray-600 md:min-w-[180px]">
+              <option value="All">New Registration</option>
+              <option value="Pending">Replacement</option>
+              <option value="Cancelled">Promoted</option>
+            </select>
+          )}
           <div className="flex flex-row gap-4 justify-between md:justify-end  w-full overflow-hidden">
             <button
               className={`text-primary font-semibold ${
@@ -346,11 +422,13 @@ const MemberRequests = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
+      <div className="grid overflow-auto h-72 pb-10 grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
         {cards.map((card) => (
           <div
             key={card.id}
-            className="bg-white rounded-xl p-4 shadow-sm relative"
+            className={`${
+              vip ? "bg-[#FFB800]/70" : "bg-white"
+            } h-full rounded-xl p-4 shadow-sm relative`}
           >
             <div className="absolute top-4 right-4 z-10">
               <input

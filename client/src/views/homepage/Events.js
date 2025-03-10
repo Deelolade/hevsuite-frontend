@@ -62,8 +62,8 @@ const EventDetailsModal = ({ event, onClose, events }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
-        <div className="flex flex-col md:flex-row">
+      <div className="bg-white  rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+        <div className="flex flex-col h-[90vh] md:flex-row">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
             <div className="absolute top-6 left-6 flex items-center gap-2 text-white z-10">
@@ -78,7 +78,7 @@ const EventDetailsModal = ({ event, onClose, events }) => {
               <img
                 src={currentEvent.image}
                 alt={event.title}
-                className="w-full h-full object-cover opacity-90"
+                className="w-full md:h-full h-[25rem] object-cover opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
                 <button

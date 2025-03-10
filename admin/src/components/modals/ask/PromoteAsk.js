@@ -47,7 +47,14 @@ const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
                 {selectedUser.asksDelivered}
               </div>
             </div>
-
+            <div>
+              <label className="block text-sm mb-1">
+                Current Membership Type
+              </label>
+              <div className="px-4 py-2 border rounded-lg bg-gray-50 text-quatr">
+                {selectedUser.memberStatus}
+              </div>
+            </div>
             <div>
               <label className="block text-sm mb-1">Promote</label>
               <select className="w-full px-4 py-2 border rounded-lg text-quatr">
