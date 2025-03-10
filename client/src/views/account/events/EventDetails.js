@@ -7,8 +7,8 @@ import {
   BsHeart,
 } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
-import eventimg from "../../../assets/event.png";
 import avatar from "../../../assets/user.avif";
+import party from "../../../assets/party2.jpg";
 import mastercard from "../../../assets/Mastercard.png";
 
 const EventDetailsModal = ({ event, onClose, eventType }) => {
@@ -40,10 +40,63 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
 
+  const events = [
+    {
+      id: 1,
+      title: "The Bout for Lions",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: party,
+    },
+    {
+      id: 2,
+      title: "Battle for NBA Cup",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: event.image,
+    },
+    {
+      id: 3,
+      title: "The Adventurer",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: party,
+    },
+    {
+      id: 4,
+      title: "Battle for NBA Cup",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: event.image,
+    },
+    {
+      id: 5,
+      title: "The Bout for Lions",
+      date: "2nd January, 2025",
+      time: "10:00pm",
+      image: party,
+    },
+  ];
+  const [currentEventIndex, setCurrentEventIndex] = useState(
+    events.findIndex((eventx) => eventx.title === event.title)
+  );
+
+  const handleNext = () => {
+    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentEventIndex((prevIndex) =>
+      prevIndex === 0 ? events.length - 1 : prevIndex - 1
+    );
+  };
+
+  const currentEvent = events[currentEventIndex];
+
   return (
     <div className="fixed inset-0 z-50 superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
-        <div className="flex flex-col md:flex-row">
+      <div className="bg-white md:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+        <div className="flex flex-col md:flex-row md:h-full">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
             <div className="absolute top-6 left-6 flex items-center gap-2 text-white z-10">
@@ -56,15 +109,21 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
             </div>
             <div className="relative h-full overflow-y-auto">
               <img
-                src={event.image}
+                src={currentEvent.image}
                 alt={event.title}
                 className="w-full h-full object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
-                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <button
+                  onClick={handlePrev}
+                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                >
                   <BsChevronLeft className="text-white text-xl" />
                 </button>
-                <button className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <button
+                  onClick={handleNext}
+                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                >
                   <BsChevronRight className="text-white text-xl" />
                 </button>
               </div>
@@ -91,6 +150,12 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                 <p className="text-white/70 text-sm mb-6">
                   Note: You can only buy one ticket
                 </p>
+                <button
+                  // onClick={() => setShowPaymentModal(true)}
+                  className="w-full opacity-0 py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                >
+                  Attend
+                </button>
                 {showPaymentModal && (
                   <PaymentMethodModal
                     onClose={() => setShowPaymentModal(false)}
@@ -141,7 +206,7 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
               {activeTab === "description" && (
                 <div>
                   <h2 className="text-[40px] font-bold mb-4 text-black font-primary">
-                    Board Members Meeting
+                    {currentEvent.title}
                   </h2>
                   <h3 className="text-xl mb-4 text-black font-primary font-semibold">
                     The Party of the Year! 🎵

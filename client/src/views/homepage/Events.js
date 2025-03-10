@@ -11,6 +11,7 @@ import {
 import { MdAccessTime } from "react-icons/md";
 import Header from "../../components/Header";
 import event from "../../assets/event.png";
+import party from "../../assets/party2.jpg";
 import Footer from "../../components/Footer";
 import avatar from "../../assets/user.avif";
 import mastercard from "../../assets/Mastercard.png";
@@ -399,7 +400,7 @@ const Events = () => {
               {paginatedEvents.map((event, index) => (
                 <div
                   key={index}
-                  className="rounded-2xl overflow-hidden relative group cursor-pointer"
+                  className="rounded-2xl overflow-hidden  bg-black relative group cursor-pointer"
                   onClick={() => setSelectedEvent(event)}
                 >
                   <img
@@ -407,7 +408,7 @@ const Events = () => {
                     alt={event.title}
                     className="w-full h-[300px] object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black">
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-xl font-semibold">{event.title}</h3>
                     <div className="flex items-center space-x-4 mt-2">
                       <span>{event.date}</span>

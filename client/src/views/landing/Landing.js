@@ -165,7 +165,7 @@ const Landing = () => {
                       className="relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center bg-current"
                       style={{ backgroundImage: `url(${item.image})` }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/30 to-transparent" />
+                      <div className="absolute inset-0 " />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <h3 className="text-xl md:text-lg sm:text-base font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {item.title}

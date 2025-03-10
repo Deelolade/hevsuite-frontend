@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "../../components/Header";
 import headerBg from "../../assets/header-bg.jpg";
 import event from "../../assets/event.png";
+import party from "../../assets/party2.jpg";
 import Footer from "../../components/Footer";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime, MdPerson } from "react-icons/md";
@@ -13,6 +14,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 import "./forced.css";
+import EventDetailsModal from "../account/events/EventDetails";
 
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
@@ -21,6 +23,7 @@ const Homepage = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [activeSlide, setActiveSlide] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const events = [
     {
@@ -28,7 +31,7 @@ const Homepage = () => {
       title: "The Bout for Lions",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: event,
+      image: party,
     },
     {
       id: 2,
@@ -42,7 +45,7 @@ const Homepage = () => {
       title: "The Adventurer",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: event,
+      image: party,
     },
     {
       id: 4,
@@ -56,7 +59,7 @@ const Homepage = () => {
       title: "The Bout for Lions",
       date: "2nd January, 2025",
       time: "10:00pm",
-      image: event,
+      image: party,
     },
   ];
   const navigate = useNavigate();
@@ -224,7 +227,7 @@ const Homepage = () => {
                   <button className="custom-prev scale-150  p-2 z-50 rounded-full hover:bg-black/70 transition-colors">
                     ←
                   </button>
-                  <button className="custom-next z-50 scale-150  p-2 rounded-full hover:bg-black/70 transition-colors">
+                  <button className="custom-next z-50 scale-150  p-2 rounded-full  hover:bg-black/50 transition-colors">
                     →
                   </button>
                   <div className="swiper-pagination text-white"></div>
@@ -258,14 +261,15 @@ const Homepage = () => {
                   {events.map((event, idx) => (
                     <SwiperSlide key={event.id}>
                       <div
+                        onClick={() => setSelectedEvent(event)}
                         // className={`transition-all duration-300 ${
                         //   activeSlide === idx ? "scale-110 opacity-100" : "scale-90 opacity-70"
                         // }`}
-                        className={`relative bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] h-[300px]
+                        className={`relative cursor-pointer bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] 
                       ${
                         activeSlide === idx
                           ? " opacity-100 md:h-[320px]  h-[400px]"
-                          : " opacity-70 mt-2"
+                          : " opacity-70 scale-90 md:h-[320px] h-[400px]"
                       }`}
                       >
                         <img
@@ -273,7 +277,7 @@ const Homepage = () => {
                           alt={event.title}
                           className="w-full h-full  object-cover bg-cover bg-center "
                         />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-primary/50">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 ">
                           <h3 className="text-xl font-semibold">
                             {event.title}
                           </h3>
@@ -355,7 +359,13 @@ const Homepage = () => {
           </div>
         </div>
       </section>
-
+      {selectedEvent && (
+        <EventDetailsModal
+          event={selectedEvent}
+          eventType={"Home"}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
       <Footer />
     </div>
   );

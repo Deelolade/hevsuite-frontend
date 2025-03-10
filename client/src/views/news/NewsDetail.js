@@ -57,7 +57,7 @@ const NewsDetail = () => {
           <span>back</span>
         </Link>
         <div className="relative inset-0 bg-black/50">
-        <img
+          <img
             src={image_card}
             alt=""
             className="w-full md:h-[70vh] h-[50vh] object-cover brightness-50"
@@ -140,15 +140,18 @@ const NewsDetail = () => {
                 {relatedNews.map((item) => (
                   <div
                     key={item.id}
+                    onClick={() =>
+                      window.scrollTo({ top: 50, behavior: "smooth" })
+                    }
                     className="relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] flex-shrink-0"
                   >
                     <div
-                      className="relative h-80 sm:h-64 rounded-2xl bg-cover bg-center"
+                      className="relative h-80 sm:h-64 rounded-2xl bg-cover bg-current bg-center"
                       style={{ backgroundImage: `url(${item.image})` }}
                     >
                       {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-gradient_r/30 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-3">
+                      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-3 !z-50 ">
+                        <div className="absolute inset-0   !z-10" />
                         <h3 className="text-xl sm:text-lg font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                           {item.title}
                         </h3>
