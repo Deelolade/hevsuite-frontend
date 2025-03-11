@@ -7,6 +7,7 @@ import amex from "../../../../assets/AMEX.png";
 import discover from "../../../../assets/Discover.png";
 import { PaymentMethodModal } from "../../events/EventDetails";
 import Swal from "sweetalert2";
+import { showModal } from "../../../../components/FireModal";
 
 const PaymentMethodSection = () => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -165,17 +166,11 @@ const PaymentMethodSection = () => {
               </div>
               <span
                 onClick={() =>
-                  Swal.fire({
+                  showModal({
                     title: "Remove Card?",
                     text: "You won't be able to undo this action!",
-                    imageUrl: "/logo_white.png", // Change this to your image path
-                    imageWidth: 70,
-                    imageHeight: 70,
-                    showCancelButton: true,
-                    confirmButtonText: "Remove",
-                    cancelButtonText: "No",
-                    confirmButtonColor: "#900C3F",
-                    cancelButtonColor: "gray",
+                    confirmText: "Remove",
+                    onConfirm: () => {},
                   })
                 }
                 className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-red-500 font-medium"

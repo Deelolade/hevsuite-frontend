@@ -11,6 +11,7 @@ import mastercard from "../../../assets/Mastercard.png";
 
 import SupportRequestsView from "./SupportRequestsView";
 import Swal from "sweetalert2";
+import { showModal } from "../../../components/FireModal";
 
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
@@ -808,15 +809,11 @@ const StandardProfile = () => {
                         <button
                           className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
                           onClick={() => {
-                            Swal.fire({
+                            showModal({
                               title: "Success",
                               text: "Profile Updated Successfully!",
-                              imageUrl: "/logo_white.png", // Change this to your image path
-                              imageWidth: 70,
-                              imageHeight: 70,
-                              showCancelButton: false,
-                              confirmButtonText: "Ok",
-                              confirmButtonColor: "#900C3F",
+                              confirmText: "Ok",
+                              onConfirm: () => {},
                             });
                             setIsEditingFullName(false);
                           }}

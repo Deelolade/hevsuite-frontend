@@ -8,7 +8,6 @@ import { FiDownload } from "react-icons/fi";
 import "../layout/forced.css"
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf/dist/polyfills.es.js";
 import autoTable from "jspdf-autotable";
 
 Modal.setAppElement("#root");

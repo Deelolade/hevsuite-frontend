@@ -26,6 +26,7 @@
 
 import React from "react";
 import Swal from "sweetalert2";
+import { showModal } from "../../../../../../components/FireModal";
 
 const AcceptedListArchived = (ask) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 text-[#444444]">
@@ -55,17 +56,11 @@ const AcceptedListArchived = (ask) => (
     </div>
     <div
       onClick={() =>
-        Swal.fire({
+        showModal({
           title: "Mark Delivered?",
-          text: "Are you sure you want to mark this as delivered? This action can not be undone.",
-          imageUrl: "/logo_white.png", // Change this to your image path
-          imageWidth: 70,
-          imageHeight: 70,
-          showCancelButton: true,
-          confirmButtonText: "Yes",
-          cancelButtonText: "No",
-          confirmButtonColor: "#0E5B31",
-          cancelButtonColor: "gray",
+          message: "Are you sure you want to mark this as delivered? This action can not be undone.",
+          confirmText: "Yes",
+          onConfirm: () => {},
         })
       }
       className="px-3 cursor-pointer sm:px-4 py-1 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm whitespace-nowrap"

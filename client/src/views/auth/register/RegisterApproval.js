@@ -6,11 +6,12 @@ import avatar from "../../../assets/user.avif";
 import logo_white from "../../../assets/logo_white.png";
 import bg_image from "../../../assets/party3.jpg";
 import Swal from "sweetalert2";
+import { showModal } from "../../../components/FireModal";
 
 const RegisterApproval = ({ setApproval }) => {
   const navigate = useNavigate();
   React.useEffect(() => {
-    window.scrollTo({ top: 50, behavior: "smooth", });
+    window.scrollTo({ top: 50, behavior: "smooth" });
   }, []);
   const referrals = [
     {
@@ -91,26 +92,17 @@ const RegisterApproval = ({ setApproval }) => {
                       <span className="px-3 md:px-4 py-1 md:py-2 bg-white text-gray-500 border border-gray-200 rounded-lg text-xs md:text-sm">
                         Pending
                       </span>
-                      <span 
-                       onClick={() =>
-                        Swal.fire({
-                          title: "Decline Approval Request?",
-                          text: "This action can not be undone!",
-                          imageUrl: "/logo_white.png", // Change this to your image path
-                          imageWidth: 70,
-                          imageHeight: 70,
-                          showCancelButton: true,
-                          confirmButtonText: "Yes",
-                          cancelButtonText: "No",
-                          confirmButtonColor: "#900C3F",
-                          cancelButtonColor: "gray",
-                        }).then((result) => {
-                          if (result.isConfirmed) {
-                            // navigate("/");
-                          }
-                        })
-                      }
-                      className="px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-sm">
+                      <span
+                        onClick={() =>
+                          showModal({
+                            title: "Decline Approval Request?",
+                            text: "This action can not be undone!",
+                            confirmText: "Yes",
+                            onConfirm: () => {},
+                          })
+                        }
+                        className="px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-sm"
+                      >
                         Decline
                       </span>
                     </>

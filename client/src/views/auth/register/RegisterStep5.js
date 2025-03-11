@@ -5,6 +5,7 @@ import Footer from "../../../components/Footer";
 import logo_white from "../../../assets/logo_white.png";
 import bg_image from "../../../assets/party3.jpg";
 import Swal from "sweetalert2";
+import { showModal } from "../../../components/FireModal";
 
 const RegisterStep5 = () => {
   React.useEffect(() => {
@@ -280,21 +281,13 @@ const RegisterStep5 = () => {
               className="text-red-600 mr-6 font-medium text-sm md:text-base"
               to="#"
               onClick={() =>
-                Swal.fire({
+                showModal({
                   title: "Cancel Registration?",
                   text: "You won't be able to regain progress!",
-                  imageUrl: "/logo_white.png", // Change this to your image path
-                  imageWidth: 70,
-                  imageHeight: 70,
-                  showCancelButton: true,
-                  confirmButtonText: "Yes",
-                  cancelButtonText: "No",
-                  confirmButtonColor: "#900C3F",
-                  cancelButtonColor: "gray",
-                }).then((result) => {
-                  if (result.isConfirmed) {
+                  confirmText: "Yes",
+                  onConfirm: () => {
                     navigate("/");
-                  }
+                  },
                 })
               }
             >

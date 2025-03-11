@@ -24,6 +24,7 @@
 
 import React from "react";
 import Swal from "sweetalert2";
+import { showModal } from "../../../../../../components/FireModal";
 
 export const renderArchivedListView = (ask) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 text-[#444444]">
@@ -51,22 +52,18 @@ export const renderArchivedListView = (ask) => (
         <p className="text-xs sm:text-sm text-gray-600">{ask.date}</p>
       </div>
     </div>
-    <div 
-    onClick={() =>
-      Swal.fire({
-        title: "Mark Delivered?",
-        text: "Are you sure you want to mark this as delivered? This action can not be undone.",
-        imageUrl: "/logo_white.png", // Change this to your image path
-        imageWidth: 70,
-        imageHeight: 70,
-        showCancelButton: true,
-        confirmButtonText: "Yes",
-        cancelButtonText: "No",
-        confirmButtonColor: "#0E5B31",
-        cancelButtonColor: "gray",
-      })
-    }
-    className="px-3 cursor-pointer sm:px-4 py-1 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm whitespace-nowrap">
+    <div
+      onClick={() =>
+        showModal({
+          title: "Mark Delivered?",
+          message:
+            "Are you sure you want to mark this as delivered? This action can not be undone.",
+          confirmText: "Yes",
+          onConfirm: () => {},
+        })
+      }
+      className="px-3 cursor-pointer sm:px-4 py-1 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm whitespace-nowrap"
+    >
       Delivered
     </div>
   </div>

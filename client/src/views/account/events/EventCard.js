@@ -5,6 +5,7 @@ import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
 import EventDetailsModal, { PaymentMethodModal } from "./EventDetails";
 import Swal from "sweetalert2";
+import { showModal } from "../../../components/FireModal";
 
 const EventCard = ({ event, activeTab }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -55,17 +56,11 @@ const EventCard = ({ event, activeTab }) => {
         return (
           <button
             onClick={() =>
-              Swal.fire({
+              showModal({
                 title: "Remove Saved Event?",
                 text: "You won't be able to undo this action!",
-                imageUrl: "/logo_white.png", // Change this to your image path
-                imageWidth: 70,
-                imageHeight: 70,
-                showCancelButton: true,
-                confirmButtonText: "Remove",
-                cancelButtonText: "No",
-                confirmButtonColor: "#900C3F",
-                cancelButtonColor: "gray",
+                confirmText: "Yes",
+                onConfirm: () => {},
               })
             }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"
@@ -77,17 +72,11 @@ const EventCard = ({ event, activeTab }) => {
         return (
           <button
             onClick={() =>
-              Swal.fire({
+              showModal({
                 title: "Cancel Attendance?",
                 text: "You won't be able to undo this action!",
-                imageUrl: "/logo_white.png", // Change this to your image path
-                imageWidth: 70,
-                imageHeight: 70,
-                showCancelButton: true,
-                confirmButtonText: "Yes, Cancel",
-                cancelButtonText: "No",
-                confirmButtonColor: "#900C3F",
-                cancelButtonColor: "gray",
+                confirmText: "Yes",
+                onConfirm: () => {},
               })
             }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"

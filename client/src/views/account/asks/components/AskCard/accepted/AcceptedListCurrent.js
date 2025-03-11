@@ -37,6 +37,7 @@
 
 import React from "react";
 import Swal from "sweetalert2";
+import { showModal } from "../../../../../../components/FireModal";
 
 const AcceptedListCurrent = (ask, activeTab) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 text-[#444444]">
@@ -67,17 +68,12 @@ const AcceptedListCurrent = (ask, activeTab) => (
     {activeTab === "Accepted Asks" ? (
       <button
         onClick={() =>
-          Swal.fire({
+          showModal({
             title: "Abandon Ask?",
-            text: "You have previously marked this as delivered, are you sure you want to abandon this ask?",
-            imageUrl: "/logo_white.png", // Change this to your image path
-            imageWidth: 70,
-            imageHeight: 70,
-            showCancelButton: true,
-            confirmButtonText: "Yes",
-            cancelButtonText: "No",
-            confirmButtonColor: "#900C3F",
-            cancelButtonColor: "gray",
+            message:
+              "You have previously marked this as delivered, are you sure you want to abandon this ask?",
+            confirmText: "Yes",
+            onConfirm: () => {},
           })
         }
         className="bg-red-500 text-white px-3 sm:px-6 py-1 sm:py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap"
@@ -88,17 +84,12 @@ const AcceptedListCurrent = (ask, activeTab) => (
       <div className="flex gap-2 sm:gap-4">
         <button
           onClick={() =>
-            Swal.fire({
+            showModal({
               title: "Delete Ask?",
-              text: "Are you sure you want to delete this? This action can not be undone.",
-              imageUrl: "/logo_white.png", // Change this to your image path
-              imageWidth: 70,
-              imageHeight: 70,
-              showCancelButton: true,
-              confirmButtonText: "Yes",
-              cancelButtonText: "No",
-              confirmButtonColor: "#900C3F",
-              cancelButtonColor: "gray",
+              message:
+                "Are you sure you want to delete this? This action can not be undone.",
+              confirmText: "Yes",
+              onConfirm: () => {},
             })
           }
           className="bg-red-500 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap"
@@ -107,17 +98,12 @@ const AcceptedListCurrent = (ask, activeTab) => (
         </button>
         <div
           onClick={() =>
-            Swal.fire({
+            showModal({
               title: "Mark Delivered?",
-              text: "Are you sure you want to mark this as delivered? This action can not be undone.",
-              imageUrl: "/logo_white.png", // Change this to your image path
-              imageWidth: 70,
-              imageHeight: 70,
-              showCancelButton: true,
-              confirmButtonText: "Yes",
-              cancelButtonText: "No",
-              confirmButtonColor: "#0E5B31",
-              cancelButtonColor: "gray",
+              message:
+                "Are you sure you want to mark this as delivered? This action can not be undone.",
+              confirmText: "Yes",
+              onConfirm: () => {},
             })
           }
           className="px-3 cursor-pointer sm:px-4 py-1 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm whitespace-nowrap"
