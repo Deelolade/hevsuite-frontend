@@ -3,6 +3,7 @@ import { BiSearch } from "react-icons/bi";
 import { BsPencil, BsTrash, BsEyeSlash, BsEye } from "react-icons/bs";
 import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
+import ExportButton from "../ExportButton";
 
 const AdminUsers = () => {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -50,7 +51,7 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className='pb-4'>
+    <div className="pb-4">
       {/* Header */}
       <div className="md:flex  justify-between items-center pb-8">
         <div className="flex items-center gap-2">
@@ -71,9 +72,10 @@ const AdminUsers = () => {
           >
             Add Admin User
           </button>
-          <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-            Export ↑
-          </button>
+          <ExportButton
+            data={admins.map(({ avatar, ...rest }) => rest)}
+            fileName="admin_users"
+          />
         </div>
       </div>
 
@@ -149,11 +151,13 @@ const AdminUsers = () => {
                       alt={admin.name}
                       className="w-8 h-8 rounded-full"
                     />
-                    <span className='w-32 md:w-full'>{admin.name}</span>
+                    <span className="w-32 md:w-full">{admin.name}</span>
                   </div>
                 </td>
                 <td className="py-4">
-                  <span className="text-green-500 md:w-fit w-44 px-2">{admin.status}</span>
+                  <span className="text-green-500 md:w-fit w-44 px-2">
+                    {admin.status}
+                  </span>
                 </td>
                 <td className="py-4">
                   <p className="py-4 w-44 md:w-fit text-wrap">{admin.email}</p>

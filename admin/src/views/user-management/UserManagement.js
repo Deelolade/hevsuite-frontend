@@ -745,7 +745,7 @@ const UserManagement = () => {
         </table>
 
         {/* Pagination - updated styles */}
-        <div className="px-6 py-4 w-[90vw]  overflow-auto border-t border-gray-100 flex items-center justify-between">
+        <div className="px-6 py-4 w-[90vw] md:w-full overflow-auto border-t border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Show result:</span>
             <select className="border rounded-md px-2 py-1 text-sm min-w-[60px]">

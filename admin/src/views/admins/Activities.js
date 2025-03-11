@@ -1,4 +1,5 @@
 import React from "react";
+import ExportButton from "../ExportButton";
 
 const Activities = () => {
   const activities = [
@@ -48,9 +49,7 @@ const Activities = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-medium">All Activities</h2>
-        <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-          Export ↑
-        </button>
+        <ExportButton data={activities} fileName="activities" />
       </div>
 
       <div className="bg-white rounded-lg border">

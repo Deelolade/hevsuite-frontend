@@ -9,6 +9,7 @@ import {
 import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
+import ExportButton from "../ExportButton";
 
 const OtherRequest = () => {
   const [statusFilter, setStatusFilter] = useState("Pending");
@@ -94,10 +95,21 @@ const OtherRequest = () => {
     setIsAssignModalOpen(true);
     setOpenOptionsId(null);
   };
+  const formattedRequests = requests.map((request) => ({
+    ID: request.id,
+    Name: request.user.name,
+    Email: request.user.email,
+    Type: request.type,
+    SubmissionDate: request.submissionDate,
+    Status: request.status,
+    Messages: request.messages
+      .map((msg) => `${msg.date}: ${msg.text}`)
+      .join(" | "),
+  }));
   return (
     <div>
       <div>
-      <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
+        <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
           <h2 className="text-xl font-primary text-[1A1A1A]">User Requests</h2>
           <div className="flex  flex-col md:flex-row items-center gap-4">
             <div className="relative">
@@ -117,30 +129,31 @@ const OtherRequest = () => {
               <option>Approved</option>
               <option>Declined</option>
             </select>
-            <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-              + Export ↑
-            </button>
+            <ExportButton
+              data={formattedRequests}
+              fileName="other_request"
+            />
           </div>
         </div>
 
         {/* Requests Table */}
         <div className="md:w-full w-[90vw] overflow-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-4">No</th>
-              <th className="text-left py-4">User</th>
-              <th className="text-left py-4">Type</th>
-              <th className="text-left py-4">Submission Date</th>
-              <th className="text-left py-4">Status</th>
-              <th className="text-left py-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((request) => (
-              <tr key={request.id} className="border-b">
-                <td className="py-4">{request.id}</td>
-                <td className="py-4">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-4">No</th>
+                <th className="text-left py-4">User</th>
+                <th className="text-left py-4">Type</th>
+                <th className="text-left py-4">Submission Date</th>
+                <th className="text-left py-4">Status</th>
+                <th className="text-left py-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map((request) => (
+                <tr key={request.id} className="border-b">
+                  <td className="py-4">{request.id}</td>
+                  <td className="py-4">
                     <div className="flex items-center gap-3">
                       <img
                         src={request.user.avatar}
@@ -156,72 +169,75 @@ const OtherRequest = () => {
                     <p className="py-4 w-32 md:w-fit">{request.type}</p>
                   </td>
                   <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">{request.submissionDate}</p>
-                  </td><td className="py-4">
-                  <span
-                    className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
-                      request?.status === "Declined" ? "text-red-500" : ""
-                    }`}
-                  >
-                    {request.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    {request.status === "Pending" && (
-                      <>
-                        <button
-                          className="p-1 text-green-600 hover:text-green-700"
-                          nClick={() => {
-                            setSelectedRequest(request);
-                            setIsApproveModalOpen(true);
-                          }}
-                        >
-                          <BsCheckCircleFill size={24} />
-                        </button>
-                        <button
-                          className="p-1 text-red-600 hover:text-red-700"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setIsDeclineModalOpen(true);
-                          }}
-                        >
-                          <BsXCircleFill size={24} />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="p-1 text-gray-400 hover:text-gray-500"
-                      onClick={() => {
-                        setOpenOptionsId(
-                          openOptionsId === request.id ? null : request.id
-                        );
-                      }}
+                    <p className="py-4 w-32 md:w-fit">
+                      {request.submissionDate}
+                    </p>
+                  </td>
+                  <td className="py-4">
+                    <span
+                      className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
+                        request?.status === "Declined" ? "text-red-500" : ""
+                      }`}
                     >
-                      <BsThreeDots size={20} />
-                    </button>
-                    {openOptionsId === request.id && (
-                      <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                        <button
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                          onClick={() => handleDetail(request)}
-                        >
-                          Detail
-                        </button>
-                        <button
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
-                          onClick={() => handleAssign(request)}
-                        >
-                          Assign Admin
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {request.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {request.status === "Pending" && (
+                        <>
+                          <button
+                            className="p-1 text-green-600 hover:text-green-700"
+                            nClick={() => {
+                              setSelectedRequest(request);
+                              setIsApproveModalOpen(true);
+                            }}
+                          >
+                            <BsCheckCircleFill size={24} />
+                          </button>
+                          <button
+                            className="p-1 text-red-600 hover:text-red-700"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setIsDeclineModalOpen(true);
+                            }}
+                          >
+                            <BsXCircleFill size={24} />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="p-1 text-gray-400 hover:text-gray-500"
+                        onClick={() => {
+                          setOpenOptionsId(
+                            openOptionsId === request.id ? null : request.id
+                          );
+                        }}
+                      >
+                        <BsThreeDots size={20} />
+                      </button>
+                      {openOptionsId === request.id && (
+                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                            onClick={() => handleDetail(request)}
+                          >
+                            Detail
+                          </button>
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
+                            onClick={() => handleAssign(request)}
+                          >
+                            Assign Admin
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
       <Modal

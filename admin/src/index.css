@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  font-family: "Lato", sans-serif !important;
+}
+
+/* Or apply it specifically to the body if you don't want it globally */
+body {
+  font-family: "Lato", sans-serif !important;
+}

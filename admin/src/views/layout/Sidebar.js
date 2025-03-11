@@ -88,7 +88,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
           size={30}
           className={`absolute md:flex hidden cursor-pointer ${
             minimize && "rotate-180 !top-12 !right-0"
-          } transition-all  top-20 right-2`}
+          } transition-all delay-100  top-20 right-2`}
           onClick={() => setMinimize(!minimize)}
         />
         {!minimize ? (

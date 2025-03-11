@@ -6,6 +6,11 @@ import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
 import PostCard from "../../components/modals/cards/PostCard";
 import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
 import { FiDownload } from "react-icons/fi";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf/dist/polyfills.es.js";
+import autoTable from "jspdf-autotable";
+
 
 Modal.setAppElement("#root");
 
@@ -42,58 +47,60 @@ const MemberRequests = () => {
   const exportMenuRef = useRef(null);
 
   const handleExport = (format) => {
-    // Get selected cards or all cards if none selected
     const cardsToExport =
       selectedCards.length > 0
         ? cards.filter((card) => selectedCards.includes(card.id))
         : cards;
 
-    // Format the data based on export type
-    let exportData;
-    let fileName;
-    let fileType;
+    if (cardsToExport.length === 0) return alert("No data to export");
 
     switch (format) {
-      case "pdf":
-        // In a real app, you would use a library like jsPDF
-        alert(`Exporting ${cardsToExport.length} cards as PDF`);
-        // Example implementation would go here
-        return;
+      case "pdf": {
+        const doc = new jsPDF();
+        doc.text("Member Cards", 14, 10);
 
-      case "csv":
-        // Create CSV content
-        const headers = ["Name", "Member ID", "Status", "Address"];
-        const csvContent = [
-          headers.join(","),
-          ...cardsToExport.map((card) =>
-            [
-              card.name,
-              card.memberId,
-              card.status,
-              `${card.address.line1}, ${card.address.town}, ${card.address.country}, ${card.address.postcode}`,
-            ].join(",")
-          ),
-        ].join("\n");
-
-        exportData = csvContent;
-        fileName = "member_cards.csv";
-        fileType = "text/csv";
-        break;
-
-      case "excel":
-        // For Excel, we'll use CSV format with an .xlsx extension
-        // In a real app, you would use a library like xlsx
-        const excelHeaders = [
+        const tableColumn = [
           "Name",
           "Member ID",
           "Status",
-          "Address Line 1",
+          "Address",
           "Town",
           "Country",
           "Postcode",
         ];
-        const excelContent = [
-          excelHeaders.join(","),
+        const tableRows = cardsToExport.map((card) => [
+          card.name,
+          card.memberId,
+          card.status,
+          card.address.line1,
+          card.address.town,
+          card.address.country,
+          card.address.postcode,
+        ]);
+
+        autoTable(doc, {
+          head: [tableColumn],
+          body: tableRows,
+          startY: 20,
+          headStyles: { fillColor: "#900C3F" },
+        });
+
+        doc.save("member_cards.pdf");
+        break;
+      }
+
+      case "csv": {
+        const headers = [
+          "Name",
+          "Member ID",
+          "Status",
+          "Address",
+          "Town",
+          "Country",
+          "Postcode",
+        ];
+        const csvContent = [
+          headers.join(","),
           ...cardsToExport.map((card) =>
             [
               card.name,
@@ -107,28 +114,41 @@ const MemberRequests = () => {
           ),
         ].join("\n");
 
-        exportData = excelContent;
-        fileName = "member_cards.xlsx";
-        fileType =
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "member_cards.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
         break;
+      }
+
+      case "excel": {
+        const worksheet = XLSX.utils.json_to_sheet(
+          cardsToExport.map((card) => ({
+            Name: card.name,
+            "Member ID": card.memberId,
+            Status: card.status,
+            "Address Line 1": card.address.line1,
+            Town: card.address.town,
+            Country: card.address.country,
+            Postcode: card.address.postcode,
+          }))
+        );
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+        XLSX.writeFile(workbook, "member_cards.xlsx");
+        break;
+      }
 
       default:
         return;
     }
 
-    // Create and download the file
-    const blob = new Blob([exportData], { type: fileType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    // Close the export menu
     setIsExportMenuOpen(false);
   };
 
@@ -156,9 +176,9 @@ const MemberRequests = () => {
       status: "Pending",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -168,9 +188,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -180,9 +200,9 @@ const MemberRequests = () => {
       status: "Pending",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -192,9 +212,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -204,9 +224,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -216,9 +236,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -228,9 +248,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
     {
@@ -240,9 +260,9 @@ const MemberRequests = () => {
       status: "Cancelled",
       address: {
         line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
+        town: "My Town",
+        country: "My Country",
+        postcode: "#000060",
       },
     },
   ];

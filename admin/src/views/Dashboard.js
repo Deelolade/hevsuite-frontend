@@ -16,6 +16,8 @@ import Modal from "react-modal";
 import avat from "../assets/user.avif";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import Chart from "react-apexcharts";
+import { showModal } from "../components/FireModal";
 
 const MySwal = withReactContent(Swal);
 
@@ -69,7 +71,7 @@ const Dashboard = () => {
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const handleCheckboxChange = (user) => {
@@ -83,6 +85,125 @@ const Dashboard = () => {
   const removeUser = (userId) => {
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
   };
+  const options = {
+    chart: {
+      type: "area",
+      toolbar: { show: false },
+    },
+    xaxis: {
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+    },
+    stroke: {
+      curve: "smooth",
+      colors: ["#900C3F"],
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.5,
+        opacityTo: 0.1,
+        colorStops: [
+          { offset: 0, color: "#900C3F", opacity: 0.8 },
+          { offset: 100, color: "#900C3F", opacity: 0 },
+        ],
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    markers: {
+      colors: ["#900C3F"],
+      strokeColors: "#900C3F",
+      strokeWidth: 2,
+    },
+    tooltip: {
+      theme: "light",
+      marker: {
+        fillColors: ["#900C3F"],
+      },
+    },
+  };
+
+  const series = [
+    {
+      name: "Users",
+      data: [300, 400, 350, 500, 490, 600, 700, 800, 900, 850, 750, 650],
+    },
+  ];
+
+  const optionsDonut = {
+    chart: {
+      type: "donut",
+    },
+    colors: ["#FFCC00", "#900C3F"],
+    legend: {
+      show: false,
+    },
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+  const seriesDonut = [33, 67];
+
+  const optionsColumn = {
+    chart: {
+      type: "bar",
+      toolbar: { show: false },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 8,
+        columnWidth: "30%",
+      },
+    },
+    dataLabels: {
+      enabled: false, // This removes only the numbers on the bars
+    },
+    colors: ["#900C3F"],
+    yaxis: {
+      labels: {
+        formatter: (value) => `${value}K`,
+      },
+    },
+    xaxis: {
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+    },
+  };
+
+  const seriesColumn = [
+    {
+      name: "Earnings",
+      data: [80, 120, 150, 200, 180, 220, 300, 250, 270, 350, 370, 400],
+    },
+  ];
 
   return (
     <div className="space-y-4 md:p-6">
@@ -155,7 +276,7 @@ const Dashboard = () => {
       </div>
       {/* Analytics Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-2 bg-white rounded-lg p-6 shadow-sm">
+        <div className="col-span-2 bg-white rounded-lg p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-semibold">Analytics</h2>
@@ -178,81 +299,53 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-          <div className="h-[200px] bg-white rounded-lg">
+          <div className="h-[350px] bg-white rounded-lg">
             {/* Chart placeholder */}
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              Area Chart Placeholder
-            </div>
+            <Chart options={options} series={series} type="area" height={350} />
           </div>
         </div>
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="bg-white rounded-lg p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Event Type</h2>
           </div>
-          <div className="h-[250px]">
+          <div className="h-[350px]">
             <div className="mb-6">
               {/* Donut chart placeholder */}
-              <div className="w-full h-40 flex items-center justify-center text-gray-400">
-                Donut Chart Placeholder
-              </div>
+              <Chart
+                options={optionsDonut}
+                series={seriesDonut}
+                type="donut"
+                height={350}
+              />
             </div>
             <div className="space-y-3">
               <EventTypeRow
-                color="#0A5438"
+                color="#900C3F"
                 label="MEMBERS ONLY"
-                percentage="81.94%"
+                percentage="67.94%"
               />
               <EventTypeRow
                 color="#FFD700"
                 label="VIP ONLY"
-                percentage="81.94%"
+                percentage="33.94%"
               />
             </div>
           </div>
         </div>
       </div>
       {/* Revenue Section - adjusted height */}
-      <div className="bg-white rounded-lg p-6 md:w-full shadow-sm w-80 overflow-auto">
+      <div className="bg-white rounded-lg p-6 md:w-full shadow-2xl w-80 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Revenue</h2>
         </div>
-        <div className="relative h-[200px] pt-6">
+        <div className="relative pt-6">
           {/* Y-axis labels */}
-          <div className="absolute left-0 top-6 bottom-8 flex flex-col justify-between text-sm text-gray-400">
-            <span>400k</span>
-            <span>300k</span>
-            <span>200k</span>
-            <span>100k</span>
-            <span>0</span>
-          </div>
-
-          {/* Chart area */}
-          <div className="ml-12 h-full">
-            <div className="flex items-end h-[calc(100%-2rem)] gap-2">
-              {[
-                { month: "JAN", height: "30%" },
-                { month: "FEB", height: "25%" },
-                { month: "MAR", height: "20%" },
-                { month: "APR", height: "35%" },
-                { month: "MAY", height: "40%" },
-                { month: "JUN", height: "30%" },
-                { month: "JUL", height: "25%" },
-                { month: "AUG", height: "15%" },
-                { month: "SEP", height: "35%" },
-                { month: "OCT", height: "45%" },
-                { month: "NOV", height: "50%" },
-                { month: "DEC", height: "55%" },
-              ].map(({ month, height }) => (
-                <div key={month} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="w-full bg-[#540A26] rounded-sm"
-                    style={{ height }}
-                  ></div>
-                  <span className="mt-2 text-xs text-gray-400">{month}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Chart
+            options={optionsColumn}
+            series={seriesColumn}
+            type="bar"
+            height={350}
+          />
         </div>
       </div>
       <Modal
@@ -487,15 +580,11 @@ const Dashboard = () => {
                 className="px-6 py-2 bg-primary text-white rounded-lg"
                 onClick={() => {
                   setIsAddEventOpen(false);
-                  MySwal.fire({
-                    imageUrl: "/logo_white.png",
-                    imageWidth: 70,
-                    imageHeight: 70,
-                    title: <strong>Success!</strong>,
-                    text: "Created Event Successfully!",
-
-                    confirmButtonText: "OK",
-                    confirmButtonColor: "#722F37",
+                  showModal({
+                    title: "Success!",
+                    message: "Created Event Successfully!",
+                    confirmText: "Ok",
+                    onConfirm: () => console.log("Confirmed!"),
                   });
                 }}
               >
@@ -509,7 +598,7 @@ const Dashboard = () => {
   );
 };
 const StatCard = ({ icon, label, value, IconWrapper }) => (
-  <div className="bg-white p-4 rounded-lg shadow-sm">
+  <div className="bg-white p-4 rounded-lg shadow-xl">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-gray-500 text-sm mb-2">{label}</p>

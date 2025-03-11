@@ -9,6 +9,7 @@ import {
 import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
+import ExportButton from "../ExportButton";
 
 const AssignedRequest = () => {
   const [statusFilter, setStatusFilter] = useState("Pending");
@@ -91,6 +92,18 @@ const AssignedRequest = () => {
     setIsAssignModalOpen(true);
     setOpenOptionsId(null);
   };
+  const formattedRequests = requests.map((request) => ({
+    ID: request.id,
+    Name: request.user.name,
+    Email: request.user.email,
+    Type: request.type,
+    SubmissionDate: request.submissionDate,
+    Status: request.status,
+    Messages: request.messages
+      .map((msg) => `${msg.date}: ${msg.text}`)
+      .join(" | "),
+  }));
+
   return (
     <div>
       <div>
@@ -114,9 +127,10 @@ const AssignedRequest = () => {
               <option>Approved</option>
               <option>Declined</option>
             </select>
-            <button className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2">
-              + Export ↑
-            </button>
+            <ExportButton
+              data={formattedRequests}
+              fileName="assigned_request"
+            />
           </div>
         </div>
 

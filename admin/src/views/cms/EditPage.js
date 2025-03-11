@@ -7,6 +7,7 @@ import { AiOutlineCloudUpload } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { showModal } from "../../components/FireModal";
 const MySwal = withReactContent(Swal);
 
 const EditPage = ({ onBack }) => {
@@ -414,22 +415,14 @@ const EditPage = ({ onBack }) => {
         </button>
         <button
           onClick={() => {
-            MySwal.fire({
-              imageUrl: "/logo_white.png",
-              imageWidth: 70,
-              imageHeight: 70,
-              title: <strong>Confirm</strong>,
-              text: "Are you sure you want to remove all saved contents?",
-
-              confirmButtonText: "Yes",
-              confirmButtonColor: "#900C3F",
-              showCancelButton: true,
-              cancelButtonColor: "gray",
-            }).then((result) => {
-              if (result.isConfirmed) {
+            showModal({
+              title: "Confirm",
+              message: "Are you sure you want to remove all saved contents?",
+              confirmText: "Yes",
+              onConfirm: () => {
                 sessionStorage.clear();
                 window.location.reload();
-              }
+              },
             });
           }}
           className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm"
@@ -438,33 +431,21 @@ const EditPage = ({ onBack }) => {
         </button>
         <button
           onClick={() => {
-            MySwal.fire({
-              imageUrl: "/logo_white.png",
-              imageWidth: 70,
-              imageHeight: 70,
-              title: <strong>Confirm</strong>,
-              text: "Are you sure you want to upload all saved contents?",
-
-              confirmButtonText: "Yes",
-              confirmButtonColor: "#900C3F",
-              showCancelButton: true,
-              cancelButtonColor: "gray",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                MySwal.fire({
-                  imageUrl: "/logo_white.png",
-                  imageWidth: 70,
-                  imageHeight: 70,
-                  title: <strong>Success</strong>,
-                  text: "Contents saved successfully.",
-
-                  confirmButtonText: "Ok",
-                  confirmButtonColor: "#900C3F",
-                }).then(() => [
-                  navigate("/admin/cms"),
-                  window.location.reload(),
-                ]);
-              }
+            showModal({
+              title: "Confirm",
+              message: "Are you sure you want to upload all saved contents?",
+              confirmText: "Yes",
+              onConfirm: () => {
+                showModal({
+                  title: "Success",
+                  message: "Contents saved successfully.",
+                  confirmText: "Ok",
+                  onConfirm: () => {
+                    navigate("/admin/cms");
+                    window.location.reload();
+                  },
+                });
+              },
             });
           }}
           className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm"
