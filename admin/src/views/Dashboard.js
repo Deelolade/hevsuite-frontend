@@ -89,6 +89,9 @@ const Dashboard = () => {
     chart: {
       type: "area",
       toolbar: { show: false },
+      zoom: {
+        enabled: false,
+      },
     },
     xaxis: {
       categories: [
@@ -106,6 +109,7 @@ const Dashboard = () => {
         "Dec",
       ],
     },
+
     stroke: {
       curve: "smooth",
       colors: ["#900C3F"],
@@ -168,7 +172,7 @@ const Dashboard = () => {
     plotOptions: {
       bar: {
         borderRadius: 8,
-        columnWidth: "30%",
+        columnWidth: window.innerWidth > 600 ? "30%" : "65%",
       },
     },
     dataLabels: {
@@ -304,7 +308,8 @@ const Dashboard = () => {
             <Chart options={options} series={series} type="area" height={350} />
           </div>
         </div>
-        <div className="bg-white rounded-lg p-6 shadow-xl">
+        {/*"Donut Desktop"*/}
+        <div className="hidden md:block bg-white rounded-lg p-6 shadow-xl ">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Event Type</h2>
           </div>
@@ -333,8 +338,37 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {/*"Donut Mobile"*/}
+      <div className="md:hidden bg-white rounded-lg p-6 shadow-xl ">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold">Event Type</h2>
+        </div>
+        <div className="h-full">
+          <div className="mb-6">
+            {/* Donut chart placeholder */}
+            <Chart
+              options={optionsDonut}
+              series={seriesDonut}
+              type="donut"
+              height={350}
+            />
+          </div>
+          <div className="space-y-3">
+            <EventTypeRow
+              color="#900C3F"
+              label="MEMBERS ONLY"
+              percentage="67.94%"
+            />
+            <EventTypeRow
+              color="#FFD700"
+              label="VIP ONLY"
+              percentage="33.94%"
+            />
+          </div>
+        </div>
+      </div>
       {/* Revenue Section - adjusted height */}
-      <div className="bg-white rounded-lg p-6 md:w-full shadow-2xl w-80 overflow-auto">
+      <div className=" bg-white rounded-lg p-6 w-full shadow-xl  mb-10 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold">Revenue</h2>
         </div>
@@ -348,6 +382,8 @@ const Dashboard = () => {
           />
         </div>
       </div>
+      <br />
+      <br />
       <Modal
         isOpen={isAddEventOpen}
         onRequestClose={() => setIsAddEventOpen(false)}
