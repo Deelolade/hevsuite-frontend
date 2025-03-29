@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { BsCheckCircleFill } from "react-icons/bs";
-import Footer from "../../../components/Footer";
-import logo_white from "../../../assets/logo_white.png";
-import bg_image from "../../../assets/party3.jpg";
-import Swal from "sweetalert2";
-import { showModal } from "../../../components/FireModal";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { BsCheckCircleFill } from 'react-icons/bs';
+import Footer from '../../../components/Footer';
+import logo_white from '../../../assets/logo_white.png';
+import bg_image from '../../../assets/party3.jpg';
+import Swal from 'sweetalert2';
+import { showModal } from '../../../components/FireModal';
 
 const RegisterStep4 = () => {
   useEffect(() => {
-    window.scrollTo({ top: 50, behavior: "smooth" });
+    window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    employmentStatus: "",
+    employmentStatus: '',
     interests: [],
-    otherClubMembership: "",
-    preferredSocialMedia: "",
+    otherClubMembership: '',
+    preferredSocialMedia: '',
     marketingConsent: false,
   });
 
   const interests = [
-    ["Art & Design", "Cigars", "Country Pursuits"],
-    ["Dance", "Family Entertainment", "Fashion"],
-    ["Film", "Food", "Literature"],
-    ["Music/Dj", "Politics", "Sport"],
-    ["Technology", "Theatre", "Travel"],
-    ["Wellness & Beauty", "Wine & Spirits", "Yoga"],
+    ['Art & Design', 'Cigars', 'Country Pursuits'],
+    ['Dance', 'Family Entertainment', 'Fashion'],
+    ['Film', 'Food', 'Literature'],
+    ['Music/Dj', 'Politics', 'Sport'],
+    ['Technology', 'Theatre', 'Travel'],
+    ['Wellness & Beauty', 'Wine & Spirits', 'Yoga'],
   ];
 
   const handleInterestToggle = (interest) => {
@@ -38,25 +38,25 @@ const RegisterStep4 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate("/register-5");
+    navigate('/register-5');
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="relative text-white">
-        <div className="absolute inset-0 z-0">
+    <div className='min-h-screen flex flex-col'>
+      <div className='relative text-white'>
+        <div className='absolute inset-0 z-0'>
           <img
             src={bg_image}
-            alt="background"
-            className="w-full h-[120px] object-cover brightness-50"
+            alt='background'
+            className='w-full h-[120px] object-cover brightness-50'
           />
         </div>
-        <header className="relative z-10 py-4">
-          <div className="container mx-auto px-4 flex justify-center items-center">
+        <header className='relative z-10 py-4'>
+          <div className='container mx-auto px-4 flex justify-center items-center'>
             <img
               src={logo_white}
-              alt="Hevsuite Club"
-              className="h-12 md:h-16"
+              alt='Hevsuite Club'
+              className='h-12 md:h-16'
             />
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
@@ -66,34 +66,34 @@ const RegisterStep4 = () => {
       </div>
 
       {/* Progress Steps */}
-      <div className="container mx-auto px-4 py-6 mt-8">
-        <div className="flex flex-wrap justify-center gap-4 pb-6 md:pb-0">
+      <div className='container mx-auto px-4 py-6 mt-8'>
+        <div className='flex flex-wrap justify-center gap-4 pb-6 md:pb-0'>
           {[...Array(7)].map((_, index) => (
-            <div key={index} className="flex items-center flex-shrink-0 mb-4">
-              <div className="relative">
+            <div key={index} className='flex items-center flex-shrink-0 mb-4'>
+              <div className='relative'>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     index < 4
-                      ? "bg-[#0A5440]"
-                      : "bg-white border-2 border-gray-300"
+                      ? 'bg-[#0A5440]'
+                      : 'bg-white border-2 border-gray-300'
                   }`}
                 >
                   {index < 3 ? (
-                    <BsCheckCircleFill className="text-white" />
+                    <BsCheckCircleFill className='text-white' />
                   ) : index === 3 ? (
-                    <span className="text-white">4</span>
+                    <span className='text-white'>4</span>
                   ) : (
-                    <span className="text-gray-500">{`0${index + 1}`}</span>
+                    <span className='text-gray-500'>{`0${index + 1}`}</span>
                   )}
                 </div>
-                <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs md:text-sm">
+                <p className='absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs md:text-sm'>
                   Step {index + 1}
                 </p>
               </div>
               {index < 6 && (
                 <div
                   className={`w-12 md:w-32 h-[2px] ${
-                    index < 3 ? "bg-[#0A5440]" : "bg-gray-300"
+                    index < 3 ? 'bg-[#0A5440]' : 'bg-gray-300'
                   }`}
                 />
               )}
@@ -103,9 +103,9 @@ const RegisterStep4 = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow">
-        <h1 className="text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]">
-          <span className="w-6 h-6 md:w-8 md:h-8 bg-[#540A26] rounded-full flex items-center justify-center text-white text-sm md:text-base">
+      <div className='container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow'>
+        <h1 className='text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]'>
+          <span className='w-6 h-6 md:w-8 md:h-8 bg-[#eae5e7] rounded-full flex items-center justify-center text-white text-sm md:text-base'>
             👤
           </span>
           Occupation & Interest
@@ -113,46 +113,46 @@ const RegisterStep4 = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#E3F8F959] p-4 md:p-8 rounded-lg space-y-4 md:space-y-8"
+          className='bg-[#E3F8F959] p-4 md:p-8 rounded-lg space-y-4 md:space-y-8'
         >
           <div>
-            <label className="block mb-1 md:mb-2 text-sm md:text-base">
-              Employment Status<span className="text-red-500">*</span>
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
+              Employment Status<span className='text-red-500'>*</span>
             </label>
             <select
-              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base"
+              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
               value={formData.employmentStatus}
               onChange={(e) =>
                 setFormData({ ...formData, employmentStatus: e.target.value })
               }
               required
             >
-              <option value="">Select Option</option>
-              <option value="employed">Employed</option>
-              <option value="self-employed">Self-employed</option>
-              <option value="retired">Retired</option>
-              <option value="student">Student</option>
+              <option value=''>Select Option</option>
+              <option value='employed'>Employed</option>
+              <option value='self-employed'>Self-employed</option>
+              <option value='retired'>Retired</option>
+              <option value='student'>Student</option>
             </select>
           </div>
 
           <div>
-            <h3 className="text-lg md:text-xl font-medium text-center mb-2 md:mb-4">
+            <h3 className='text-lg md:text-xl font-medium text-center mb-2 md:mb-4'>
               Your Interest
             </h3>
-            <p className="text-center text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
+            <p className='text-center text-gray-600 mb-4 md:mb-6 text-sm md:text-base'>
               Please select all/any interests from the following:
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4'>
               {interests.flat().map((interest, index) => (
                 <label
                   key={index}
-                  className="flex items-center gap-2 text-sm md:text-base"
+                  className='flex items-center gap-2 text-sm md:text-base'
                 >
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={formData.interests.includes(interest)}
                     onChange={() => handleInterestToggle(interest)}
-                    className="w-4 h-4 rounded border-gray-300"
+                    className='w-4 h-4 rounded border-gray-300'
                   />
                   <span>{interest}</span>
                 </label>
@@ -161,13 +161,13 @@ const RegisterStep4 = () => {
           </div>
 
           <div>
-            <label className="block mb-1 md:mb-2 text-sm md:text-base">
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
               Are you a member of any other club?
             </label>
             <input
-              type="text"
-              placeholder="Enter club name"
-              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base"
+              type='text'
+              placeholder='Enter club name'
+              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
               value={formData.otherClubMembership}
               onChange={(e) =>
                 setFormData({
@@ -179,12 +179,12 @@ const RegisterStep4 = () => {
           </div>
 
           <div>
-            <label className="block mb-1 md:mb-2 text-sm md:text-base">
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
               Preferred Social Media Platform
-              <span className="text-red-500">*</span>
+              <span className='text-red-500'>*</span>
             </label>
             <select
-              className="w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base"
+              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
               value={formData.preferredSocialMedia}
               onChange={(e) =>
                 setFormData({
@@ -194,24 +194,24 @@ const RegisterStep4 = () => {
               }
               required
             >
-              <option value="">Select an Option</option>
-              <option value="facebook">Facebook</option>
-              <option value="instagram">Instagram</option>
-              <option value="twitter">Twitter</option>
-              <option value="linkedin">LinkedIn</option>
+              <option value=''>Select an Option</option>
+              <option value='facebook'>Facebook</option>
+              <option value='instagram'>Instagram</option>
+              <option value='twitter'>Twitter</option>
+              <option value='linkedin'>LinkedIn</option>
             </select>
           </div>
 
-          <label className="flex items-start gap-2">
+          <label className='flex items-start gap-2'>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={formData.marketingConsent}
               onChange={(e) =>
                 setFormData({ ...formData, marketingConsent: e.target.checked })
               }
-              className="mt-1 w-4 h-4 rounded border-gray-300"
+              className='mt-1 w-4 h-4 rounded border-gray-300'
             />
-            <span className="text-xs md:text-sm text-gray-600">
+            <span className='text-xs md:text-sm text-gray-600'>
               By ticking this box, you are confirming that you are happy to
               receive marketing communications from us. You can choose to
               unsubscribe at any time by clicking unsubscribe in the footer of
@@ -220,18 +220,18 @@ const RegisterStep4 = () => {
           </label>
         </form>
 
-        <div className="flex justify-between mt-6 md:mt-8">
+        <div className='flex justify-between items-center mt-6 md:mt-8'>
           <div>
             <Link
-              className="text-red-600 mr-6 font-medium text-sm md:text-base"
-              to="#"
+              className='text-red-600 mr-6 font-medium text-sm md:text-base'
+              to='#'
               onClick={() =>
                 showModal({
-                  title: "Cancel Registration?",
+                  title: 'Cancel Registration?',
                   text: "You won't be able to regain progress!",
-                  confirmText: "Yes",
+                  confirmText: 'Yes',
                   onConfirm: () => {
-                    navigate("/");
+                    navigate('/');
                   },
                 })
               }
@@ -239,15 +239,15 @@ const RegisterStep4 = () => {
               CANCEL
             </Link>
             <Link
-              to="/register-3"
-              className="text-gray-600 font-medium text-sm md:text-base"
+              to='/register-3'
+              className='text-gray-600 font-medium text-sm md:text-base'
             >
               BACK
             </Link>
           </div>
           <button
             onClick={handleSubmit}
-            className="px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl text-sm md:text-base hover:bg-[#540A26] hover:text-white transition-colors"
+            className='px-4 md:px-6 py-1 md:py-2 text-[#540A26] border-2 border-[#540A26] rounded-3xl text-sm md:text-base hover:bg-[#540A26] hover:text-white transition-colors'
           >
             Continue →
           </button>
