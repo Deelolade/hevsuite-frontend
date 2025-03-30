@@ -1,1 +1,1 @@
-export const base_url = "http://localhost:4141/api/v1";
+export const base_url = process.env.REACT_APP_API_BASE_URL;
