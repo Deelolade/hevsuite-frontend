@@ -1,20 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService';
 
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (finalData, { rejectWithValue }) => {
-    try {
-      const response = await authService.register(finalData);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data || { message: 'Registration failed' }
-      );
-    }
-  }
-);
-
 const initialState = {
   currentStep: 1,
   totalSteps: 7,

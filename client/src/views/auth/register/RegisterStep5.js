@@ -10,9 +10,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   prevStep,
   updateStepData,
-  registerUser,
   reset,
 } from '../../../features/auth/registerSlice';
+import toast from 'react-hot-toast';
+import authService from '../../../services/authService';
 
 const RegisterStep5 = () => {
   React.useEffect(() => {
@@ -39,7 +40,7 @@ const RegisterStep5 = () => {
     setFormData({ ...formData, [type]: file });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
@@ -51,9 +52,16 @@ const RegisterStep5 = () => {
       ...data.step5,
     };
 
-    dispatch(registerUser(finalData));
-
-    navigate('/register-6');
+    try {
+      await authService.register(finalData);
+      navigate('/register-6');
+      toast.success(
+        'User Registered Successfully. Please check email and verify to continue.'
+      );
+      dispatch(reset());
+    } catch (error) {
+      toast.error('Something went wrong. Please try again');
+    }
   };
 
   return (

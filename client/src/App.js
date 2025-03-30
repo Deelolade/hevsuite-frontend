@@ -27,6 +27,9 @@ import Terms from './views/terms/Terms';
 import HowItWorks from './views/how-it-works/HowItWorks';
 import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
 
 const isAuthenticated = () => {
   return localStorage.getItem('user') === null;

@@ -10,8 +10,27 @@ const register = async (userData) => {
   return response.data;
 };
 
+// Login user
+const loginUser = async (userData) => {
+  const response = await axios.post(API_URL + 'login', userData);
+  return response.data;
+};
+
+const setup2FA = async (data) => {
+  const response = await axios.post(API_URL + 'setup-2fa', data);
+  return response.data;
+};
+
+const verify2FA = async (data) => {
+  const response = await axios.post(API_URL + 'verify-2fa', data);
+  return response.data;
+};
+
 const authService = {
   register,
+  loginUser,
+  setup2FA,
+  verify2FA,
 };
 
 export default authService;
