@@ -8,6 +8,13 @@ import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 import { CountrySelect } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  prevStep,
+  nextStep,
+  updateStepData,
+  reset,
+} from '../../../features/auth/registerSlice';
 
 const RegisterStep2 = () => {
   useEffect(() => {
@@ -15,26 +22,14 @@ const RegisterStep2 = () => {
   }, []);
 
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    title: '',
-    forename: '',
-    surname: '',
-    gender: '',
-    dateOfBirth: '',
-    nationality: '',
-    additionalNationality: '',
-    relationshipStatus: '',
-  });
 
-  const steps = [
-    { number: '1', label: 'Step 1', completed: true },
-    { number: '2', label: 'Step2', active: true },
-    { number: '03', label: 'Step 3' },
-    { number: '04', label: 'Step 4' },
-    { number: '05', label: 'Step 5' },
-    { number: '06', label: 'Step 6' },
-    { number: '07', label: 'Step 7' },
-  ];
+  const { currentStep, formData: data } = useSelector(
+    (state) => state.register
+  );
+
+  const [formData, setFormData] = useState({ ...data.step2 });
+
+  const dispatch = useDispatch();
 
   const changeNationalityHandler = (country, key) => {
     setFormData((prev) => ({ ...prev, [key]: country.name }));
@@ -42,7 +37,8 @@ const RegisterStep2 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add form submission logic here
+    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    dispatch(nextStep());
     navigate('/register-3');
   };
 
@@ -201,9 +197,9 @@ const RegisterStep2 = () => {
               <input
                 type='date'
                 className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
-                value={formData.dateOfBirth}
+                value={formData.dob}
                 onChange={(e) =>
-                  setFormData({ ...formData, dateOfBirth: e.target.value })
+                  setFormData({ ...formData, dob: e.target.value })
                 }
                 required
               />
@@ -292,6 +288,7 @@ const RegisterStep2 = () => {
                   text: "You won't be able to regain progress!",
                   confirmText: 'Yes',
                   onConfirm: () => {
+                    dispatch(reset());
                     navigate('/');
                   },
                 })
@@ -302,6 +299,9 @@ const RegisterStep2 = () => {
             <Link
               to='/register'
               className='text-gray-600 font-medium text-sm md:text-base'
+              onClick={() => {
+                dispatch(prevStep());
+              }}
             >
               BACK
             </Link>

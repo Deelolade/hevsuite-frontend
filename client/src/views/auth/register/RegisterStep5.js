@@ -6,6 +6,13 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  prevStep,
+  updateStepData,
+  registerUser,
+  reset,
+} from '../../../features/auth/registerSlice';
 
 const RegisterStep5 = () => {
   React.useEffect(() => {
@@ -14,6 +21,13 @@ const RegisterStep5 = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const { currentStep, formData: data } = useSelector(
+    (state) => state.register
+  );
+
   const [formData, setFormData] = useState({
     proofOfId: null,
     picture: null,
@@ -27,6 +41,18 @@ const RegisterStep5 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+
+    const finalData = {
+      ...data.step2,
+      ...data.step3,
+      ...data.step4,
+      ...data.step5,
+    };
+
+    dispatch(registerUser(finalData));
+
     navigate('/register-6');
   };
 
@@ -286,6 +312,7 @@ const RegisterStep5 = () => {
                   text: "You won't be able to regain progress!",
                   confirmText: 'Yes',
                   onConfirm: () => {
+                    dispatch(reset());
                     navigate('/');
                   },
                 })
@@ -296,6 +323,9 @@ const RegisterStep5 = () => {
             <Link
               to='/register-4'
               className='text-gray-600 font-medium text-sm md:text-base'
+              onClick={() => {
+                dispatch(prevStep());
+              }}
             >
               BACK
             </Link>

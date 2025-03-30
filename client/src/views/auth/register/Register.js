@@ -4,17 +4,18 @@ import { BsCheckCircleFill } from 'react-icons/bs';
 import Footer from '../../../components/Footer';
 import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
+import { useSelector, useDispatch } from 'react-redux';
+import { nextStep, updateStepData } from '../../../features/auth/registerSlice';
 
 const Register = () => {
-  const steps = [
-    { number: '1', label: 'Step 1', active: true },
-    { number: '02', label: 'Step2' },
-    { number: '03', label: 'Step 3' },
-    { number: '04', label: 'Step 4' },
-    { number: '05', label: 'Step 5' },
-    { number: '06', label: 'Step 6' },
-    { number: '07', label: 'Step 7' },
-  ];
+  const dispatch = useDispatch();
+
+  const { currentStep } = useSelector((state) => state.register);
+
+  const handleUpdateStep = () => {
+    dispatch(updateStepData({ step: `step${currentStep}`, data: {} }));
+    dispatch(nextStep());
+  };
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -163,6 +164,7 @@ const Register = () => {
           <Link
             to='/register-2'
             className='inline-flex border-2 border-[#540A26] rounded-3xl items-center px-6 py-2 text-[#540A26] text-base md:text-lg font-medium hover:bg-[#540A26] hover:text-white transition-colors'
+            onClick={handleUpdateStep}
           >
             Continue <span className='ml-2'>→</span>
           </Link>

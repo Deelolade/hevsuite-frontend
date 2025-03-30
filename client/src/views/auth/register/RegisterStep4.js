@@ -6,19 +6,27 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  prevStep,
+  nextStep,
+  updateStepData,
+  reset,
+} from '../../../features/auth/registerSlice';
 
 const RegisterStep4 = () => {
   useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
+
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    employmentStatus: '',
-    interests: [],
-    otherClubMembership: '',
-    preferredSocialMedia: '',
-    marketingConsent: false,
-  });
+  const dispatch = useDispatch();
+
+  const { currentStep, formData: data } = useSelector(
+    (state) => state.register
+  );
+
+  const [formData, setFormData] = useState({ ...data.step4 });
 
   const interests = [
     ['Art & Design', 'Cigars', 'Country Pursuits'],
@@ -38,6 +46,8 @@ const RegisterStep4 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    dispatch(nextStep());
     navigate('/register-5');
   };
 
@@ -231,6 +241,7 @@ const RegisterStep4 = () => {
                   text: "You won't be able to regain progress!",
                   confirmText: 'Yes',
                   onConfirm: () => {
+                    dispatch(reset());
                     navigate('/');
                   },
                 })
@@ -241,6 +252,7 @@ const RegisterStep4 = () => {
             <Link
               to='/register-3'
               className='text-gray-600 font-medium text-sm md:text-base'
+              onClick={() => dispatch(prevStep())}
             >
               BACK
             </Link>

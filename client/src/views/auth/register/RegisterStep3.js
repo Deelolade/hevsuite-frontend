@@ -12,39 +12,33 @@ import {
   PhonecodeSelect,
 } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  prevStep,
+  nextStep,
+  updateStepData,
+  reset,
+} from '../../../features/auth/registerSlice';
 
 const RegisterStep3 = () => {
   useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    addressLine1: '',
-    townCity: '',
-    country: '',
-    countryId: '',
-    postcode: '',
-    primaryEmail: '',
-    secondaryEmail: '',
-    state: '',
-    primaryPhone: '',
-    primaryPhoneCode: '',
-    secondaryPhone: '',
-    secondaryPhoneCode: '',
-  });
+  const dispatch = useDispatch();
 
-  const steps = [
-    { number: '1', label: 'Step 1', completed: true },
-    { number: '2', label: 'Step2', completed: true },
-    { number: '3', label: 'Step 3', active: true },
-    { number: '04', label: 'Step 4' },
-    { number: '05', label: 'Step 5' },
-    { number: '06', label: 'Step 6' },
-    { number: '07', label: 'Step 7' },
-  ];
+  const { currentStep, formData: data } = useSelector(
+    (state) => state.register
+  );
+
+  const [formData, setFormData] = useState({ ...data.step3 });
+
+  const [countryId, setCountryId] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    dispatch(nextStep());
     navigate('/register-4');
   };
 
@@ -146,9 +140,9 @@ const RegisterStep3 = () => {
               type='text'
               placeholder='Town/City'
               className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
-              value={formData.townCity}
+              value={formData.city}
               onChange={(e) =>
-                setFormData({ ...formData, townCity: e.target.value })
+                setFormData({ ...formData, city: e.target.value })
               }
               required
             />
@@ -159,13 +153,13 @@ const RegisterStep3 = () => {
               Country<span className='text-red-500'>*</span>
             </label>
             <CountrySelect
-              onChange={(country) =>
+              onChange={(country) => {
                 setFormData((prev) => ({
                   ...prev,
                   country: country.name,
-                  countryId: country.id,
-                }))
-              }
+                }));
+                setCountryId(country.id);
+              }}
               onTextChange={() => {
                 setFormData((prev) => ({
                   ...prev,
@@ -238,7 +232,7 @@ const RegisterStep3 = () => {
               State<span className='text-red-500'>*</span>
             </label>
             <StateSelect
-              countryid={formData.countryId}
+              countryid={countryId}
               placeHolder='Select State'
               onChange={(state) => {
                 setFormData((prev) => ({ ...prev, state: state.name }));
@@ -343,6 +337,7 @@ const RegisterStep3 = () => {
                   text: "You won't be able to regain progress!",
                   confirmText: 'Yes',
                   onConfirm: () => {
+                    dispatch(reset());
                     navigate('/');
                   },
                 })
@@ -353,6 +348,7 @@ const RegisterStep3 = () => {
             <Link
               to='/register-2'
               className='text-gray-600 font-medium text-sm md:text-base'
+              onClick={() => dispatch(prevStep())}
             >
               BACK
             </Link>

@@ -1,26 +1,26 @@
-import React, { useState } from "react";
-import Header from "../../components/Header";
-import headerBg from "../../assets/header-bg.jpg";
-import event from "../../assets/event.png";
-import party from "../../assets/party2.jpg";
-import Footer from "../../components/Footer";
-import { BsCalendar } from "react-icons/bs";
-import { MdAccessTime, MdPerson } from "react-icons/md";
-import { IoLocationOutline } from "react-icons/io5";
-import { Link, useNavigate } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
-import "./forced.css";
-import EventDetailsModal from "../account/events/EventDetails";
+import React, { useState } from 'react';
+import Header from '../../components/Header';
+import headerBg from '../../assets/header-bg.jpg';
+import event from '../../assets/event.png';
+import party from '../../assets/party2.jpg';
+import Footer from '../../components/Footer';
+import { BsCalendar } from 'react-icons/bs';
+import { MdAccessTime, MdPerson } from 'react-icons/md';
+import { IoLocationOutline } from 'react-icons/io5';
+import { Link, useNavigate } from 'react-router-dom';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
+import './forced.css';
+import EventDetailsModal from '../account/events/EventDetails';
 
 const Homepage = () => {
-  const [selectedAudience, setSelectedAudience] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedAudience, setSelectedAudience] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [activeSlide, setActiveSlide] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -28,44 +28,44 @@ const Homepage = () => {
   const events = [
     {
       id: 1,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'The Bout for Lions',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: party,
     },
     {
       id: 2,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'Battle for NBA Cup',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
     {
       id: 3,
-      title: "The Adventurer",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'The Adventurer',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: party,
     },
     {
       id: 4,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'Battle for NBA Cup',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
     {
       id: 5,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'The Bout for Lions',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: party,
     },
     {
       id: 6,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'Battle for NBA Cup',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
   ];
@@ -74,30 +74,30 @@ const Homepage = () => {
   const newsItems = [
     {
       id: 1,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'The Bout for Lions',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
     {
       id: 2,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'Battle for NBA Cup',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
     {
       id: 3,
-      title: "The Adventurer",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'The Adventurer',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
     {
       id: 4,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
+      title: 'Battle for NBA Cup',
+      date: '2nd January, 2025',
+      time: '10:00pm',
       image: event,
     },
   ];
@@ -111,98 +111,98 @@ const Homepage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className='min-h-screen'>
       {/* Header */}
-      <header className="relative text-white">
-        <div className="absolute inset-0 z-0">
+      <header className='relative text-white'>
+        <div className='absolute inset-0 z-0'>
           <img
             src={headerBg}
-            alt="background"
+            alt='background'
             className={`w-full ${
-              showFilters ? "h-[120vh]" : "h-screen"
+              showFilters ? 'h-[120vh]' : 'h-screen'
             } object-cover`}
           />
           <div
             className={`absolute inset-0 bg-black/50 ${
-              showFilters ? "h-[120vh]" : "h-screen"
+              showFilters ? 'h-[120vh]' : 'h-screen'
             }`}
           />
         </div>
-        <div className="relative z-10">
+        <div className='relative z-10'>
           <Header />
-          <div className="max-w-[1400px] mx-auto px-4">
+          <div className='max-w-[1400px] mx-auto px-4'>
             {/* Filters */}
-            <div className=" flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-24 md:mt-32">
+            <div className=' flex flex-col md:flex-row items-center gap-4 justify-center'>
+              <div className='w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-28'>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden w-full bg-[#540A26] text-white py-2 px-4 rounded-lg mb-2"
+                  className='md:hidden w-full bg-[#540A26] text-white py-2 px-4 rounded-lg mb-2'
                 >
-                  {showFilters ? "Hide Filters" : "Show Filters"}
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
                 </button>
 
                 <div
                   className={`w-full md:flex items-center gap-2 md:gap-4 ${
                     showFilters
-                      ? "flex flex-col md:flex-row"
-                      : "hidden md:flex md:flex-row"
+                      ? 'flex flex-col md:flex-row'
+                      : 'hidden md:flex md:flex-row'
                   }`}
                 >
-                  <div className="relative w-full md:w-auto">
-                    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className='relative w-full md:w-auto'>
+                    <MdPerson className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
                     <select
-                      className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
                       value={selectedAudience}
                       onChange={(e) => setSelectedAudience(e.target.value)}
                     >
-                      <option value="" className="text-black">
+                      <option value='' className='text-black'>
                         Audience
                       </option>
-                      <option value="members" className="text-black">
+                      <option value='members' className='text-black'>
                         For Members
                       </option>
-                      <option value="public" className="text-black">
+                      <option value='public' className='text-black'>
                         Public Event
                       </option>
-                      <option value="vip" className="text-black">
+                      <option value='vip' className='text-black'>
                         Vip Members
                       </option>
                     </select>
                   </div>
 
-                  <div className="relative w-full md:w-auto mt-2 md:mt-0">
-                    <IoLocationOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className='relative w-full md:w-auto mt-2 md:mt-0'>
+                    <IoLocationOutline className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
                     <select
-                      className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
                       value={selectedCountry}
                       onChange={(e) => setSelectedCountry(e.target.value)}
                     >
-                      <option value="" className="text-black">
+                      <option value='' className='text-black'>
                         Country
                       </option>
-                      <option value="ethiopia" className="text-black">
+                      <option value='ethiopia' className='text-black'>
                         Ethiopia
                       </option>
-                      <option value="kenya" className="text-black">
+                      <option value='kenya' className='text-black'>
                         Kenya
                       </option>
                     </select>
                   </div>
 
-                  <div className="relative w-full md:w-auto mt-2 md:mt-0">
-                    <IoLocationOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <div className='relative w-full md:w-auto mt-2 md:mt-0'>
+                    <IoLocationOutline className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
                     <select
-                      className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
                     >
-                      <option value="" className="text-black">
+                      <option value='' className='text-black'>
                         City
                       </option>
-                      <option value="addis" className="text-black">
+                      <option value='addis' className='text-black'>
                         Addis Ababa
                       </option>
-                      <option value="nairobi" className="text-black">
+                      <option value='nairobi' className='text-black'>
                         Nairobi
                       </option>
                     </select>
@@ -210,20 +210,20 @@ const Homepage = () => {
                 </div>
               </div>
 
-              <div className="relative w-full md:w-auto mt-2 md:mt-32">
-                <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div className='relative w-full md:w-auto mt-2 md:mt-28'>
+                <BsCalendar className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
                 <select
-                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                 >
-                  <option value="" className="text-black">
+                  <option value='' className='text-black'>
                     Date
                   </option>
-                  <option value="newest" className="text-black">
+                  <option value='newest' className='text-black'>
                     Newest to Oldest
                   </option>
-                  <option value="oldest" className="text-black">
+                  <option value='oldest' className='text-black'>
                     Oldest to Newest
                   </option>
                 </select>
@@ -231,19 +231,19 @@ const Homepage = () => {
             </div>
 
             {/* Event Slider */}
-            <div className="relative py-8">
+            <div className='relative py-8'>
               {/* Mobile Slider */}
 
               {/* Desktop Slider */}
-              <div className=" relative flex flex-col  items-center">
-                <div className="flex items-center md:-ml-10 flex-row absolute -bottom-20  justify-center gap-24 mb-4">
-                  <button className="custom-prev scale-150  p-2 z-50 rounded-full hover:bg-black/70 transition-colors">
+              <div className=' relative flex flex-col  items-center'>
+                <div className='flex items-center md:-ml-10 flex-row absolute -bottom-20  justify-center gap-32 mb-4'>
+                  <button className='custom-prev scale-150  p-2 z-50 rounded-full hover:bg-black/70 transition-colors'>
                     ←
                   </button>
-                  <button className="custom-next z-50 scale-150  p-2 rounded-full  hover:bg-black/50 transition-colors">
+                  <button className='custom-next z-50 scale-150  p-2 rounded-full  hover:bg-black/50 transition-colors'>
                     →
                   </button>
-                  <div className="swiper-pagination text-white"></div>
+                  <div className='swiper-pagination text-white'></div>
                 </div>
                 <Swiper
                   modules={[Navigation, Pagination]}
@@ -256,9 +256,9 @@ const Homepage = () => {
                     0: { slidesPerView: 1 },
                   }}
                   s
-                  spaceBetween={10} // Further reduced gap between slides
+                  spaceBetween={8} // Further reduced gap between slides
                   pagination={{
-                    el: ".swiper-pagination",
+                    el: '.swiper-pagination',
                     clickable: true,
                     renderBullet: (index, className) =>
                       `<span class="${className} w-3 h-3 bg-red-500 rounded-full mx-1"></span>`,
@@ -266,10 +266,10 @@ const Homepage = () => {
                   centeredSlides={true}
                   loop={true}
                   navigation={{
-                    nextEl: ".custom-next",
-                    prevEl: ".custom-prev",
+                    nextEl: '.custom-next',
+                    prevEl: '.custom-prev',
                   }}
-                  className="w-[80%]"
+                  className='w-[80%]'
                 >
                   {events.map((event, idx) => (
                     <SwiperSlide key={event.id}>
@@ -281,26 +281,26 @@ const Homepage = () => {
                         className={`relative cursor-pointer bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] 
                       ${
                         activeSlide === idx
-                          ? " opacity-100 md:h-[320px]  h-[400px]"
-                          : " opacity-70 scale-90 md:h-[320px] h-[400px]"
+                          ? ' opacity-100 md:h-[400px]  h-[400px]'
+                          : ' opacity-70 scale-90 md:h-[400px] h-[400px]'
                       }`}
                       >
                         <img
                           src={event.image}
                           alt={event.title}
-                          className="w-full h-full  object-cover bg-cover bg-center "
+                          className='w-full h-full  object-cover bg-cover bg-center '
                         />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 ">
-                          <h3 className="text-xl font-semibold">
+                        <div className='absolute bottom-0 left-0 right-0 p-4 '>
+                          <h3 className='text-xl font-semibold'>
                             {event.title}
                           </h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm">
-                            <div className="flex items-center gap-1">
-                              <BsCalendar className="w-4 h-4" />
+                          <div className='flex items-center gap-4 mt-2 text-sm'>
+                            <div className='flex items-center gap-1'>
+                              <BsCalendar className='w-4 h-4' />
                               <span>{event.date}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <MdAccessTime className="w-4 h-4" />
+                            <div className='flex items-center gap-1'>
+                              <MdAccessTime className='w-4 h-4' />
                               <span>{event.time}</span>
                             </div>
                           </div>
@@ -311,10 +311,10 @@ const Homepage = () => {
                 </Swiper>
               </div>
 
-              <div className="text-center md:text-right mt-20 md:mt-4 px-4">
+              <div className='text-center md:text-right mt-20 md:mt-4 px-4'>
                 <Link
-                  to="/events"
-                  className="text-white border p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
+                  to='/events'
+                  className='text-white border p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm'
                 >
                   View All
                 </Link>
@@ -325,35 +325,35 @@ const Homepage = () => {
       </header>
 
       {/* Newsroom */}
-      <section className="py-8 mt-32 md:mt-8 md:py-16">
-        <div className="container mx-auto px-4 md:px-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 font-secondary text-gradient_r">
+      <section className='py-8 mt-32 md:mt-8 md:py-16'>
+        <div className='container mx-auto px-4 md:px-12'>
+          <h2 className='text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 font-secondary text-gradient_r'>
             Newsroom
           </h2>
-          <div className="flex w-[90vw] md:w-fit md:overflow-hidden overflow-auto md:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className='flex w-[90vw] md:w-full md:overflow-hidden overflow-auto md:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
             {newsItems.map((item) => (
               <div
                 key={item.id}
-                className="relative cursor-pointer group"
-                onClick={() => navigate("/news-detail")}
+                className='relative cursor-pointer group'
+                onClick={() => navigate('/news-detail')}
               >
-                <div className="relative w-80  md:w-fit h-80 md:h-80 rounded-2xl overflow-hidden">
+                <div className='relative w-80 md:w-92 h-80 md:h-80 rounded-2xl overflow-hidden'>
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover bg-cover bg-center bg-current"
+                    className='w-full h-full object-cover bg-cover bg-center bg-current'
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black text-white">
-                    <h3 className="text-lg md:text-xl font-semibold">
+                  <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black text-white'>
+                    <h3 className='text-lg md:text-xl font-semibold'>
                       {item.title}
                     </h3>
-                    <div className="flex items-center gap-4 mt-2 text-xs md:text-sm">
-                      <div className="flex items-center gap-1">
-                        <BsCalendar className="w-3 h-3 md:w-4 md:h-4" />
+                    <div className='flex items-center justify-between gap-5 mt-2 text-xs md:text-sm'>
+                      <div className='flex items-center gap-2'>
+                        <BsCalendar className='w-3 h-3 md:w-4 md:h-4' />
                         <span>{item.date}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <MdAccessTime className="w-3 h-3 md:w-4 md:h-4" />
+                      <div className='flex items-center gap-2'>
+                        <MdAccessTime className='w-3 h-3 md:w-4 md:h-4' />
                         <span>{item.time}</span>
                       </div>
                     </div>
@@ -362,10 +362,10 @@ const Homepage = () => {
               </div>
             ))}
           </div>
-          <div className="text-center mt-6 md:mt-8">
+          <div className='text-center mt-6 md:mt-8'>
             <button
-              onClick={() => navigate("/events")}
-              className=" border-gray-600 text-white px-8 py-2 rounded-full"
+              onClick={() => navigate('/events')}
+              className=' border-gray-600 text-white px-8 py-2 rounded-full'
             >
               View all
             </button>
@@ -375,7 +375,7 @@ const Homepage = () => {
       {selectedEvent && (
         <EventDetailsModal
           event={selectedEvent}
-          eventType={"Home"}
+          eventType={'Home'}
           onClose={() => setSelectedEvent(null)}
         />
       )}
