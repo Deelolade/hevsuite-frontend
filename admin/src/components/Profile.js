@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
-import { BsBell, BsChevronDown } from "react-icons/bs";
-import { useNavigate, Link } from "react-router-dom";
-import avatar from "../assets/user.avif";
+import React, { useState, useRef, useEffect } from 'react';
+import { BsBell, BsChevronDown } from 'react-icons/bs';
+import { useNavigate, Link } from 'react-router-dom';
+import avatar from '../assets/user.avif';
+import authService from '../store/auth/authService';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Profile = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
+  const [profileData, setProfileData] = useState({});
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -23,85 +25,92 @@ const Profile = () => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    const getProfile = async () => {
+      const response = await authService.getProfile();
+      setProfileData(response.user);
+    };
+
+    getProfile();
+
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   const notifications = [
     {
       id: 1,
-      title: "New Event Added",
-      time: "2 hours ago",
+      title: 'New Event Added',
+      time: '2 hours ago',
       isRead: false,
     },
     {
       id: 2,
-      title: "Profile Updated",
-      time: "5 hours ago",
+      title: 'Profile Updated',
+      time: '5 hours ago',
       isRead: true,
     },
     {
       id: 3,
-      title: "New Message Received",
-      time: "1 day ago",
+      title: 'New Message Received',
+      time: '1 day ago',
       isRead: true,
     },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.clear();
-    navigate("/");
-    window.location.reload();
+    await authService.logout();
+    navigate('/');
   };
 
   return (
-    <div className="flex items-center gap-6">
-      <div className="relative" ref={notificationRef}>
+    <div className='flex items-center gap-6'>
+      <div className='relative' ref={notificationRef}>
         <button
-          className="relative"
+          className='relative'
           onClick={() => {
             setShowNotifications(!showNotifications);
             setShowDropdown(false);
           }}
         >
-          <BsBell className="text-2xl text-gray-600" />
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-600 rounded-full p-2 text-center flex items-center justify-center text-white text-[10px]">
+          <BsBell className='text-2xl text-gray-600' />
+          <span className='absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-600 rounded-full p-2 text-center flex items-center justify-center text-white text-[10px]'>
             3
           </span>
         </button>
 
         {showNotifications && (
-          <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
-            <div className="px-4 py-2 border-b border-gray-100">
-              <h3 className="font-semibold">Notifications</h3>
+          <div className='absolute left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100'>
+            <div className='px-4 py-2 border-b border-gray-100'>
+              <h3 className='font-semibold'>Notifications</h3>
             </div>
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className='max-h-[400px] overflow-y-auto'>
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                    !notification.isRead ? "bg-blue-50" : ""
+                    !notification.isRead ? 'bg-blue-50' : ''
                   }`}
                 >
-                  <div className="flex justify-between items-start">
+                  <div className='flex justify-between items-start'>
                     <p
                       className={`${
-                        !notification.isRead ? "font-semibold" : ""
+                        !notification.isRead ? 'font-semibold' : ''
                       }`}
                     >
                       {notification.title}
                     </p>
-                    <span className="text-xs text-gray-500">
+                    <span className='text-xs text-gray-500'>
                       {notification.time}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="px-4 py-2 border-t flex w-full justify-end  border-gray-100">
-              <button className="text-sm bg-primary rounded-lg w-fit text-white hover:underline px-6 py-2 text-center">
+            <div className='px-4 py-2 border-t flex w-full justify-end  border-gray-100'>
+              <button className='text-sm bg-primary rounded-lg w-fit text-white hover:underline px-6 py-2 text-center'>
                 Clear
               </button>
             </div>
@@ -109,32 +118,38 @@ const Profile = () => {
         )}
       </div>
 
-      <div className="relative" ref={profileRef}>
+      <div className='relative' ref={profileRef}>
         <button
-          className="flex items-center gap-3"
+          className='flex items-center gap-3'
           onClick={() => {
             setShowDropdown(!showDropdown);
             setShowNotifications(false);
           }}
         >
-          <div className="text-right">
-            <h3 className="font-medium">Raed</h3>
-            <p className="text-sm text-gray-500">Admin</p>
+          <div className='text-right'>
+            <h3 className='font-medium'>{profileData.forename}</h3>
+            <p className='text-sm text-gray-500 capitalize'>
+              {profileData.role}
+            </p>
           </div>
-          <img src={avatar} alt="profile" className="w-10 h-10 rounded-full" />
-          <BsChevronDown className="text-gray-400" />
+          <img
+            src={avatar}
+            alt='profile'
+            className='w-10 h-10 rounded-full object-cover'
+          />
+          <BsChevronDown className='text-gray-400' />
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+          <div className='absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100'>
             <Link
-              to="/admin/profile"
-              className="block px-4 py-2 text-lg text-gray-700 hover:bg-gray-50"
+              to='/admin/profile'
+              className='block px-4 py-2 text-lg text-gray-700 hover:bg-gray-50'
             >
               Your Profile
             </Link>
             <button
-              className="block px-4 py-2 text-lg text-red-600 hover:bg-gray-50"
+              className='block px-4 py-2 text-lg text-red-600 hover:bg-gray-50'
               onClick={handleLogout}
             >
               Logout

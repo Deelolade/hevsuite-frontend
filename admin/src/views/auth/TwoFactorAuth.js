@@ -1,72 +1,80 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import logo_white from "../../assets/logo_white.png";
-import authImage from "../../assets/image.jpg";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import logo_white from '../../assets/logo_white.png';
+import authImage from '../../assets/image.jpg';
+import authService from '../../store/auth/authService';
 
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
-  const [input, setInput] = useState("email");
+  const [input, setInput] = useState('email');
 
-  const handleMethodSelection = () => {
-    if (input === "email") {
-      navigate("/email-verification");
+  const handleMethodSelection = async () => {
+    if (input === 'email') {
+      await Promise.all([
+        authService.setup2FA({ method: 'email' }),
+        authService.logout(),
+      ]);
     } else {
-      navigate("/phone-verification");
+      await Promise.all([
+        authService.setup2FA({ method: 'phone' }),
+        authService.logout(),
+      ]);
     }
+    navigate('/success');
   };
 
   return (
-    <div className="flex h-screen ">
+    <div className='flex h-screen '>
       <div
-        className="md:w-2/5 absolute md:relative pb-2 w-full bg-[#1A1A1A] flex items-center justify-center p-8"
+        className='md:w-2/5 absolute md:relative pb-2 w-full bg-[#1A1A1A] flex items-center justify-center p-8'
         style={{
           backgroundImage: `url(${authImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       >
-        <div className="text-center">
-          <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
+        <div className='text-center'>
+          <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+          <h1 className='text-white text-[40px] font-primary'>Hevsuite Club</h1>
         </div>
       </div>
-      <div className="flex-1 mt-10 flex flex-col justify-center px-[52px] bg-white">
-        <div className="w-full max-w-[380px] mx-auto">
-          <h1 className="text-[32px] font-primary mb-4 text-center">
+      <div className='flex-1 mt-10 flex flex-col justify-center px-[52px] bg-white'>
+        <div className='w-full max-w-[380px] mx-auto'>
+          <h1 className='text-[32px] font-primary mb-4 text-center'>
             Two-Factor Authentication
           </h1>
-          <p className="text-gray-600 text-sm font-primary  mb-8">
+          <p className='text-gray-600 text-sm font-primary  mb-8'>
             Protect Your Password. How would you like to receive one-time
             password(OTP)?
           </p>
 
-          <div className="space-y-4">
-            <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer">
+          <div className='space-y-4'>
+            <label className='flex items-center space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer'>
               <input
-                type="radio"
-                name="auth-method"
-                className="text-primary"
-                onChange={() => setInput("phone")}
+                type='radio'
+                name='auth-method'
+                className='text-primary'
+                onChange={() => setInput('phone')}
               />
               <div>
-                <p className="text-sm font-primary">Phone Number</p>
-                <p className="text-xs text-gray-500 font-primary">
+                <p className='text-sm font-primary'>Phone Number</p>
+                <p className='text-xs text-gray-500 font-primary'>
                   Use phone number to receive verification codes
                 </p>
               </div>
             </label>
 
-            <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-[4px] cursor-pointer">
+            <label className='flex items-center space-x-3 p-4 border border-gray-200 rounded-[4px] cursor-pointer'>
               <input
-                type="radio"
-                name="auth-method"
-                className="text-primary"
+                type='radio'
+                name='auth-method'
+                className='text-primary'
                 defaultChecked
-                onChange={() => setInput("email")}
+                onChange={() => setInput('email')}
               />
               <div>
-                <p className="text-sm font-primary">Email</p>
-                <p className="text-xs text-gray-500 font-primary">
+                <p className='text-sm font-primary'>Email</p>
+                <p className='text-xs text-gray-500 font-primary'>
                   Receive verification code via email
                 </p>
               </div>
@@ -74,13 +82,21 @@ const TwoFactorAuth = () => {
 
             <button
               onClick={handleMethodSelection}
-              className="w-full py-3.5  text-white text-sm font-secondary border rounded-3xl "
+              className='w-full py-3.5  text-white text-sm font-secondary border rounded-3xl '
               style={{
-                background: "linear-gradient(to right, #540A26, #0A5438)",
+                background: 'linear-gradient(to right, #540A26, #0A5438)',
               }}
             >
               Continue
             </button>
+            <div
+              className='w-full flex items-center justify-center hover:underline cursor-pointer text-sm'
+              onClick={() => {
+                navigate('/admin');
+              }}
+            >
+              Skip for now
+            </div>
           </div>
         </div>
       </div>

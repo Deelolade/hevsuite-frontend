@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsCheckCircleFill } from 'react-icons/bs';
 import Footer from '../../../components/Footer';
@@ -34,10 +34,21 @@ const RegisterStep3 = () => {
   const [formData, setFormData] = useState({ ...data.step3 });
 
   const [countryId, setCountryId] = useState('');
+  const [primaryPhoneCode, setPrimaryPhoneCode] = useState('');
+  const [secondaryPhoneCode, setSecondaryPhoneCode] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    dispatch(
+      updateStepData({
+        step: `step${currentStep}`,
+        data: {
+          ...formData,
+          primaryPhone: `${primaryPhoneCode}${formData.primaryPhone}`,
+          secondaryPhone: `${secondaryPhoneCode}${formData.secondaryPhone}`,
+        },
+      })
+    );
     dispatch(nextStep());
     navigate('/register-4');
   };
@@ -256,16 +267,9 @@ const RegisterStep3 = () => {
             </label>
             <div className='grid grid-cols-3 gap-2 md:gap-4'>
               <PhonecodeSelect
-                onChange={(code) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    primaryPhoneCode: code.phone_code,
-                  }))
-                }
-                onTextChange={() =>
-                  setFormData((prev) => ({ ...prev, primaryPhoneCode: '' }))
-                }
-                defaultValue={formData.primaryPhoneCode}
+                onChange={(code) => setPrimaryPhoneCode(code.phone_code)}
+                onTextChange={() => setPrimaryPhoneCode('')}
+                defaultValue={primaryPhoneCode}
                 placeHolder='Select Phone Code'
                 style={{
                   width: '100%',
@@ -294,16 +298,9 @@ const RegisterStep3 = () => {
             </label>
             <div className='grid grid-cols-3 gap-2 md:gap-4'>
               <PhonecodeSelect
-                onChange={(code) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    secondaryPhoneCode: code.phone_code,
-                  }))
-                }
-                onTextChange={() =>
-                  setFormData((prev) => ({ ...prev, secondaryPhoneCode: '' }))
-                }
-                defaultValue={formData.secondaryPhoneCode}
+                onChange={(code) => setSecondaryPhoneCode(code.phone_code)}
+                onTextChange={() => setSecondaryPhoneCode('')}
+                defaultValue={secondaryPhoneCode}
                 placeHolder='Select Phone Code'
                 style={{
                   width: '100%',

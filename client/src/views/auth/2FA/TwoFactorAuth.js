@@ -10,9 +10,15 @@ const TwoFactorAuth = () => {
 
   const handleMethodSelection = async () => {
     if (input === 'email') {
-      await authService.setup2FA({ method: 'email' });
+      await Promise.all([
+        authService.setup2FA({ method: 'email' }),
+        authService.logout(),
+      ]);
     } else {
-      await authService.setup2FA({ method: 'phone' });
+      await Promise.all([
+        authService.setup2FA({ method: 'phone' }),
+        authService.logout(),
+      ]);
     }
     navigate('/success');
   };
@@ -113,6 +119,14 @@ const TwoFactorAuth = () => {
               >
                 Continue
               </button>
+              <div
+                className='w-full flex items-center justify-center hover:underline cursor-pointer text-sm'
+                onClick={() => {
+                  navigate('/homepage');
+                }}
+              >
+                Skip for now
+              </div>
             </div>
           </div>
 

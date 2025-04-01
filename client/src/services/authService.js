@@ -26,10 +26,16 @@ const verify2FA = async (data) => {
   return response.data;
 };
 
+const logout = async () => {
+  const response = await axios.post(API_URL + 'logout');
+  return response.data;
+};
+
 const authService = {
   register,
   loginUser,
   setup2FA,
+  logout,
   verify2FA,
 };
 

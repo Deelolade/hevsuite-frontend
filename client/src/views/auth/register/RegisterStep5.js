@@ -43,13 +43,17 @@ const RegisterStep5 = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (formData.password !== formData.confirmPassword) return;
+
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
 
     const finalData = {
       ...data.step2,
       ...data.step3,
       ...data.step4,
-      ...data.step5,
+      proofOfId: formData.proofOfId,
+      picture: formData.picture,
+      password: formData.password,
     };
 
     try {

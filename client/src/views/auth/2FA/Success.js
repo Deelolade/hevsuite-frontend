@@ -1,59 +1,43 @@
-import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import logo from "../../../assets/logo_white.png";
-import image from "../../../assets/image.jpg";
-import { BsCheck2Circle } from "react-icons/bs";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import logo from '../../../assets/logo_white.png';
+import image from '../../../assets/image.jpg';
+import { BsCheck2Circle } from 'react-icons/bs';
 
 const Success = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const verificationType = location.state?.type || "email";
-  const value = location.state?.value || "goodluck@gmail.com";
-
-  const messages = {
-    email: {
-      first: `Your email is sent to ${value}`,
-      second:
-        "Authentication number will be sent to this email when logging in",
-    },
-    phone: {
-      first: `Your Phone number is set to ${value}`,
-      second:
-        "Authentication number will be sent to this number when logging in",
-    },
-  };
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-2 relative">
+    <div className='min-h-screen md:grid md:grid-cols-2 relative'>
       {/* Background Image - Visible on all screens */}
-      <div className="absolute inset-0 md:relative md:block">
-        <div className="absolute inset-0">
+      <div className='absolute inset-0 md:relative md:block'>
+        <div className='absolute inset-0'>
           <img
             src={image}
-            alt="Background"
-            className="w-full h-full object-cover"
+            alt='Background'
+            className='w-full h-full object-cover'
           />
           {/* Dark overlay for mobile */}
-          <div className="absolute inset-0 bg-black/60 md:bg-transparent"></div>
+          <div className='absolute inset-0 bg-black/60 md:bg-transparent'></div>
         </div>
 
         {/* Desktop Left Side Content */}
-        <div className="hidden md:flex relative z-10 p-16 flex-col h-full">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-32 h-32 rounded-2xl mb-4">
+        <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
+          <div className='flex flex-col items-center text-center'>
+            <div className='w-32 h-32 rounded-2xl mb-4'>
               <img
                 src={logo}
-                alt="Hevsuite Club"
-                className="w-full h-full p-4"
+                alt='Hevsuite Club'
+                className='w-full h-full p-4'
               />
             </div>
-            <h1 className="text-5xl text-white font-medium">Hevsuite Club</h1>
+            <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
-          <div className="mt-auto text-center flex justify-center gap-8 p-8">
-            <p className="text-white text-xl pt-4">Don't have membership?</p>
+          <div className='mt-auto text-center flex justify-center gap-8 p-8'>
+            <p className='text-white text-xl pt-4'>Don't have membership?</p>
             <Link
-              to="/register"
-              className="p-4 px-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium"
+              to='/register'
+              className='p-4 px-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-lg font-medium'
             >
               Become a Member
             </Link>
@@ -62,44 +46,36 @@ const Success = () => {
       </div>
 
       {/* Success Message - Centered on mobile, right side on desktop */}
-      <div className="flex items-center justify-center relative z-10 p-4 md:p-16">
-        <div className="w-full max-w-md rounded-lg md:bg-transparent md:p-0">
+      <div className='flex items-center justify-center relative z-10 p-4 md:p-16'>
+        <div className='w-full max-w-md rounded-lg md:bg-transparent md:p-0'>
           {/* Logo for mobile only */}
-          <div className="flex justify-center mb-6 md:hidden">
-            <div className="w-24 h-24 bg-[#540A26] rounded-2xl flex items-center justify-center">
-              <img src={logo} alt="Logo" className="w-16 h-16" />
+          <div className='flex justify-center mb-6 md:hidden'>
+            <div className='w-24 h-24 bg-[#540A26] rounded-2xl flex items-center justify-center'>
+              <img src={logo} alt='Logo' className='w-16 h-16' />
             </div>
           </div>
-          <div className="bg-white max-w-md p-8 rounded-xl">
-            <div className="text-center">
-              <BsCheck2Circle className="text-[#0A5438] text-6xl md:text-8xl mx-auto mb-4" />
-              <h2 className="text-2xl md:text-3xl font-medium mb-3 font-primary text-[#333333]">
+          <div className='bg-white max-w-md p-8 rounded-xl'>
+            <div className='text-center'>
+              <BsCheck2Circle className='text-[#0A5438] text-6xl md:text-8xl mx-auto mb-4' />
+              <h2 className='text-2xl md:text-3xl font-medium mb-3 font-primary text-[#333333]'>
                 Successfully Enabled
               </h2>
-              <div className="space-y-2 mb-8">
-                <p className="text-gray-500 text-sm font-primary">
-                  {messages[verificationType].first}
-                </p>
-                <p className="text-gray-500 text-sm font-primary">
-                  {messages[verificationType].second}
-                </p>
-              </div>
 
               <button
-                onClick={() => navigate("/homepage")}
-                className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium"
+                onClick={() => navigate('/homepage')}
+                className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
               >
-                Go to Homepage
+                Continue
               </button>
             </div>
           </div>
 
           {/* Mobile-only bottom section */}
-          <div className="md:hidden mt-8 text-center">
-            <p className="text-white mb-4">Don't have an Account?</p>
+          <div className='md:hidden mt-8 text-center'>
+            <p className='text-white mb-4'>Don't have an Account?</p>
             <Link
-              to="/register"
-              className="inline-block px-6 py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-base font-medium"
+              to='/register'
+              className='inline-block px-6 py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-base font-medium'
             >
               Become a member now
             </Link>
