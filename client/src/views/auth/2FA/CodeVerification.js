@@ -37,7 +37,7 @@ const CodeVerification = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await authService.verify2FA({ code: parseInt(code.join('')) });
+      await authService.verify2FA({ code: code.join('') });
       navigate('/success');
     } catch (error) {
       toast.error('Invalid Verification Code. Please try again.');

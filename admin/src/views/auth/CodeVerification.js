@@ -18,7 +18,7 @@ const CodeVerification = () => {
 
   const handleVerify = async () => {
     try {
-      await authService.codeVerify({ code: parseInt(code.join(''), 10) });
+      await authService.codeVerify({ code: code.join('') });
       navigate('/success');
     } catch (error) {
       toast.error(

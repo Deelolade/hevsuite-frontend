@@ -84,7 +84,7 @@ const RegisterStep6 = () => {
           <img
             src={bg_image}
             alt='background'
-            className='w-full h-[120px] object-cover brightness-50 object-cover'
+            className='w-full h-[120px] object-cover brightness-50 '
           />
         </div>
         <header className='relative z-10 py-4'>
