@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsCheckCircleFill, BsThreeDotsVertical } from 'react-icons/bs';
 import Modal from 'react-modal';
@@ -10,16 +10,24 @@ import bg_image from '../../../assets/party3.jpg';
 import RegisterApproval from './RegisterApproval';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
+import referralService from '../../../services/referralService';
 
 const RegisterStep6 = () => {
-  React.useEffect(() => {
-    window.scrollTo({ top: 50, behavior: 'smooth' });
-  }, []);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [approval, setApproval] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo({ top: 50, behavior: 'smooth' });
+
+    const checkReferral = async () => {
+      const response = await referralService.checkReferral();
+      console.log(response);
+    };
+    checkReferral();
+  }, []);
 
   const members = [
     {
@@ -76,7 +84,7 @@ const RegisterStep6 = () => {
           <img
             src={bg_image}
             alt='background'
-            className='w-full h-[120px] object-cover brightness-50'
+            className='w-full h-[120px] object-cover brightness-50 object-cover'
           />
         </div>
         <header className='relative z-10 py-4'>

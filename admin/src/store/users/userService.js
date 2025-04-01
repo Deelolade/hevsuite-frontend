@@ -1,9 +1,9 @@
-import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
+import axios from 'axios';
+import { base_url } from '../../constants/axiosConfig';
 const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
+  const adminData = localStorage.getItem('admin');
   const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
+  return admin?.token || '';
 };
 
 const pendingUsers = async ({ page, limit, search, sortBy, filter }) => {
@@ -20,17 +20,10 @@ const pendingUsers = async ({ page, limit, search, sortBy, filter }) => {
   return response.data;
 };
 
-const memberUsers = async ({ page, limit, search, filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/users?page=${page}&limit=${limit}&filter=${filter}&search=${search}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
+export const memberUsers = async (page = 1, search = '', role = '') => {
+  const response = await axios.get(`${base_url}/api/user/users`, {
+    params: { page, limit: 6, search, role },
+  });
   return response.data;
 };
 

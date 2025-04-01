@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { BiSearch } from "react-icons/bi";
-import { BsPencil, BsTrash, BsEyeSlash, BsEye } from "react-icons/bs";
-import Modal from "react-modal";
-import avatar from "../../assets/user.avif";
-import ExportButton from "../ExportButton";
+import React, { useState } from 'react';
+import { BiSearch } from 'react-icons/bi';
+import { BsPencil, BsTrash, BsEyeSlash, BsEye } from 'react-icons/bs';
+import Modal from 'react-modal';
+import avatar from '../../assets/user.avif';
+import ExportButton from '../ExportButton';
 
 const AdminUsers = () => {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -14,25 +14,36 @@ const AdminUsers = () => {
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [newAdmin, setNewAdmin] = useState({
+    fullname: '',
+    email: '',
+    role: 'admin',
+    password: '',
+  });
+
   const admins = [
     {
       id: 1,
-      name: "John Johnsnon",
-      role: "Super Admin",
-      status: "Active",
-      email: "someone@gmail.com",
+      name: 'John Johnsnon',
+      role: 'Super Admin',
+      status: 'Active',
+      email: 'someone@gmail.com',
       avatar: avatar,
     },
     {
       id: 2,
-      name: "Jane Cooper",
-      role: "Super Admin",
-      status: "Active",
-      email: "someone@gmail.com",
+      name: 'Jane Cooper',
+      role: 'Super Admin',
+      status: 'Active',
+      email: 'someone@gmail.com',
       avatar: avatar,
     },
     // ... more admins
   ];
+
+  const handleNewAdmin = (event, id) => {
+    setNewAdmin((prev) => ({ ...prev, [id]: event.target.value }));
+  };
 
   const handleSelectRow = (id) => {
     setSelectedRows((prev) =>
@@ -51,44 +62,48 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="pb-4">
+    <div className='pb-4'>
       {/* Header */}
-      <div className="md:flex  justify-between items-center pb-8">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl">8 Admin Users</h2>
+      <div className='md:flex  justify-between items-center pb-8'>
+        <div className='flex items-center gap-2'>
+          <h2 className='text-xl'>8 Admin Users</h2>
         </div>
-        <div className="md:flex grid grid-cols-2  items-center gap-4">
-          <div className="relative mt-4 md:mt-0 col-span-2">
-            <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className='md:flex grid grid-cols-2  items-center gap-4'>
+          <div className='relative mt-4 md:mt-0 col-span-2'>
+            <BiSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
             <input
-              type="text"
-              placeholder="Search"
-              className="pl-10 pr-4 py-2 border rounded-lg w-[300px]"
+              type='text'
+              placeholder='Search'
+              className='pl-10 pr-4 py-2 border rounded-lg w-[300px]'
             />
           </div>
           <button
-            className="px-6 py-2 bg-primary text-white rounded-lg"
+            className='px-6 py-2 bg-primary text-white rounded-lg'
             onClick={() => setIsAddModalOpen(true)}
           >
             Add Admin User
           </button>
           <ExportButton
             data={admins.map(({ avatar, ...rest }) => rest)}
-            fileName="admin_users"
+            fileName='admin_users'
           />
         </div>
       </div>
 
       {/* Admin Grid */}
-      <div className="md:grid md:grid-cols-5 flex w-[90vw] md:w-full overflow-auto gap-8 mb-8 h-56">
+      <div className='md:grid md:grid-cols-5 flex w-[90vw] md:w-full overflow-auto gap-8 mb-8 h-56'>
         {/* <div className="border rounded-lg p-6 flex items-center justify-center">
           <button className="text-primary">+ Add admin</button>
         </div> */}
-        <div className="border rounded-lg p-4 flex flex-col items-center relative">
-          <div className="flex justify-between mb-4">
-            <img src={avatar} alt="John" className="w-20 h-20 rounded-full" />
+        <div className='border rounded-lg p-4 flex flex-col items-center relative'>
+          <div className='flex justify-between mb-4'>
+            <img
+              src={avatar}
+              alt='John'
+              className='w-20 h-20 rounded-full object-cover'
+            />
             <button
-              className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+              className='absolute right-2 top-2 text-gray-400 hover:text-gray-600'
               onClick={() => {
                 // setSelectedAdmin(admin);
                 setIsDeleteModalOpen(true);
@@ -97,14 +112,18 @@ const AdminUsers = () => {
               ✕
             </button>
           </div>
-          <h3 className="font-medium">John Johnsnon</h3>
-          <p className="text-gray-500">CEO</p>
+          <h3 className='font-medium'>John Johnsnon</h3>
+          <p className='text-gray-500'>CEO</p>
         </div>
-        <div className="border rounded-lg p-4 flex flex-col items-center relative">
-          <div className="flex justify-between mb-4">
-            <img src={avatar} alt="Jane" className="w-20 h-20 rounded-full" />
+        <div className='border rounded-lg p-4 flex flex-col items-center relative'>
+          <div className='flex justify-between mb-4'>
+            <img
+              src={avatar}
+              alt='Jane'
+              className='w-20 h-20 rounded-full object-cover'
+            />
             <button
-              className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+              className='absolute right-2 top-2 text-gray-400 hover:text-gray-600'
               onClick={() => {
                 // setSelectedAdmin(admin);
                 setIsDeleteModalOpen(true);
@@ -113,68 +132,68 @@ const AdminUsers = () => {
               ✕
             </button>
           </div>
-          <h3 className="font-medium">Jane Cooper</h3>
-          <p className="text-gray-500">Design Lead</p>
+          <h3 className='font-medium'>Jane Cooper</h3>
+          <p className='text-gray-500'>Design Lead</p>
         </div>
       </div>
 
       {/* Admin Table */}
-      <div className="w-[90vw] overflow-auto md:w-full">
-        <table className=" w-full">
+      <div className='w-[90vw] overflow-auto md:w-full'>
+        <table className=' w-full'>
           <thead>
-            <tr className="border-b">
-              <th className="py-4 px-4 text-left">
-                <input type="checkbox" className="rounded border-gray-300" />
+            <tr className='border-b'>
+              <th className='py-4 px-4 text-left'>
+                <input type='checkbox' className='rounded border-gray-300' />
               </th>
-              <th className="py-4 text-left">User</th>
-              <th className="py-4 text-left">Status</th>
-              <th className="py-4 text-left">Email</th>
-              <th className="py-4 text-left">Role</th>
-              <th className="py-4 text-left">Actions</th>
+              <th className='py-4 text-left'>User</th>
+              <th className='py-4 text-left'>Status</th>
+              <th className='py-4 text-left'>Email</th>
+              <th className='py-4 text-left'>Role</th>
+              <th className='py-4 text-left'>Actions</th>
             </tr>
           </thead>
           <tbody>
             {admins.map((admin) => (
-              <tr key={admin.id} className="border-b">
-                <td className="py-4 px-4">
+              <tr key={admin.id} className='border-b'>
+                <td className='py-4 px-4'>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={selectedRows.includes(admin.id)}
                     onChange={() => handleSelectRow(admin.id)}
-                    className="rounded border-gray-300"
+                    className='rounded border-gray-300'
                   />
                 </td>
-                <td className="py-4">
-                  <div className="flex items-center gap-3">
+                <td className='py-4'>
+                  <div className='flex items-center gap-3'>
                     <img
                       src={admin.avatar}
                       alt={admin.name}
-                      className="w-8 h-8 rounded-full"
+                      className='w-8 h-8 rounded-full'
                     />
-                    <span className="w-32 md:w-full">{admin.name}</span>
+                    <span className='w-32 md:w-full'>{admin.name}</span>
                   </div>
                 </td>
-                <td className="py-4">
-                  <span className="text-green-500 md:w-fit w-44 px-2">
+                <td className='py-4'>
+                  <span className='text-green-500 md:w-fit w-44 px-2'>
                     {admin.status}
                   </span>
                 </td>
-                <td className="py-4">
-                  <p className="py-4 w-44 md:w-fit text-wrap">{admin.email}</p>
+                <td className='py-4'>
+                  <p className='py-4 w-44 md:w-fit text-wrap'>{admin.email}</p>
                 </td>
-                <td className="py-4">
-                  <p className="py-4 w-32 md:w-fit">{admin.role}</p>
+                <td className='py-4'>
+                  <p className='py-4 w-32 md:w-fit'>{admin.role}</p>
                 </td>
-                <td className="py-4">
-                  <div className="flex items-center gap-2">
+                <td className='py-4'>
+                  <div className='flex items-center gap-2'>
                     <button
-                      className="text-primary"
+                      className='text-primary'
                       onClick={() => handleEditClick(admin)}
                     >
                       <BsPencil size={18} />
                     </button>
                     <button
-                      className="text-primary"
+                      className='text-primary'
                       onClick={() => handleDeleteClick(admin)}
                     >
                       <BsTrash size={18} />
@@ -188,98 +207,111 @@ const AdminUsers = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex w-[90vw] overflow-auto md:w-full justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-500">Show result:</span>
+      <div className='flex w-[90vw] overflow-auto md:w-full justify-between items-center'>
+        <div className='flex items-center gap-2'>
+          <span className='text-gray-500'>Show result:</span>
           <select
             value={rowsPerPage}
             onChange={(e) => setRowsPerPage(Number(e.target.value))}
-            className="border rounded-lg px-2 py-1"
+            className='border rounded-lg px-2 py-1'
           >
             <option value={6}>6</option>
             <option value={12}>12</option>
             <option value={24}>24</option>
           </select>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-400">←</button>
-          <button className="w-8 h-8 flex items-center justify-center">
+        <div className='flex items-center gap-2'>
+          <button className='p-2 text-gray-400'>←</button>
+          <button className='w-8 h-8 flex items-center justify-center'>
             1
           </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-green-800 text-white rounded-lg">
+          <button className='w-8 h-8 flex items-center justify-center bg-green-800 text-white rounded-lg'>
             2
           </button>
-          <button className="w-8 h-8 flex items-center justify-center">
+          <button className='w-8 h-8 flex items-center justify-center'>
             3
           </button>
-          <button className="w-8 h-8 flex items-center justify-center">
+          <button className='w-8 h-8 flex items-center justify-center'>
             4
           </button>
           <span>...</span>
-          <button className="w-8 h-8 flex items-center justify-center">
+          <button className='w-8 h-8 flex items-center justify-center'>
             20
           </button>
-          <button className="p-2 text-gray-400">→</button>
+          <button className='p-2 text-gray-400'>→</button>
         </div>
       </div>
 
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]'
+        overlayClassName='fixed inset-0 bg-black/50'
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Add New Admin user</h2>
+        <div className='p-6'>
+          <div className='flex justify-between items-center mb-6'>
+            <h2 className='text-xl'>Add New Admin user</h2>
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className='text-gray-400 hover:text-gray-600'
             >
               ✕
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
-              <label className="block mb-2">Full Name</label>
+              <label className='block mb-2'>Full Name</label>
               <input
-                type="text"
-                placeholder="Name"
-                className="w-full px-4 py-2 border rounded-lg"
+                type='text'
+                placeholder='Name'
+                value={newAdmin.fullname}
+                onChange={(event) => {
+                  setNewAdmin(event, 'fullname');
+                }}
+                className='w-full px-4 py-2 border rounded-lg'
               />
             </div>
 
             <div>
-              <label className="block mb-2">Email</label>
+              <label className='block mb-2'>Email</label>
               <input
-                type="email"
-                placeholder="name@gmail.com"
-                className="w-full px-4 py-2 border rounded-lg"
+                type='email'
+                placeholder='name@gmail.com'
+                value={newAdmin.email}
+                onChange={(event) => {
+                  setNewAdmin(event, 'email');
+                }}
+                className='w-full px-4 py-2 border rounded-lg'
               />
             </div>
 
             <div>
-              <label className="block mb-2">Role</label>
-              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
-                <option value="">Select role</option>
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
+              <label className='block mb-2'>Role</label>
+              <select
+                value={newAdmin.value}
+                className='w-full px-4 py-2 border rounded-lg text-gray-600'
+              >
+                <option value='admin'>Admin</option>
               </select>
             </div>
 
             <div>
-              <label className="block mb-2">Password</label>
-              <div className="relative">
+              <label className='block mb-2'>Password</label>
+              <div className='relative'>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="********"
-                  className="w-full px-4 py-2 border rounded-lg pr-10"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='********'
+                  value={newAdmin.password}
+                  onChange={(event) => {
+                    setNewAdmin(event, 'password');
+                  }}
+                  className='w-full px-4 py-2 border rounded-lg pr-10'
                 />
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
                 >
                   {showPassword ? (
                     <BsEyeSlash size={20} />
@@ -290,14 +322,14 @@ const AdminUsers = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className='flex justify-end gap-3 pt-4'>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                className='px-6 py-2 border rounded-lg hover:bg-gray-50'
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+              <button className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'>
                 Add Admin
               </button>
             </div>
@@ -308,62 +340,62 @@ const AdminUsers = () => {
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]'
+        overlayClassName='fixed inset-0 bg-black/50'
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Edit Admin User</h2>
+        <div className='p-6'>
+          <div className='flex justify-between items-center mb-6'>
+            <h2 className='text-xl'>Edit Admin User</h2>
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className='text-gray-400 hover:text-gray-600'
             >
               ✕
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
-              <label className="block mb-2">Full Name</label>
+              <label className='block mb-2'>Full Name</label>
               <input
-                type="text"
-                defaultValue={selectedAdmin?.name || "Moshood Adam"}
-                className="w-full px-4 py-2 border rounded-lg"
+                type='text'
+                defaultValue={selectedAdmin?.name || 'Moshood Adam'}
+                className='w-full px-4 py-2 border rounded-lg'
               />
             </div>
 
             <div>
-              <label className="block mb-2">Email</label>
+              <label className='block mb-2'>Email</label>
               <input
-                type="email"
-                defaultValue={selectedAdmin?.email || "moshood@gmail.com"}
-                className="w-full px-4 py-2 border rounded-lg"
+                type='email'
+                defaultValue={selectedAdmin?.email || 'moshood@gmail.com'}
+                className='w-full px-4 py-2 border rounded-lg'
               />
             </div>
 
             <div>
-              <label className="block mb-2">Role</label>
+              <label className='block mb-2'>Role</label>
               <select
-                className="w-full px-4 py-2 border rounded-lg text-gray-600"
-                defaultValue={selectedAdmin?.role || "Super Admin"}
+                className='w-full px-4 py-2 border rounded-lg text-gray-600'
+                defaultValue={selectedAdmin?.role || 'Super Admin'}
               >
-                <option value="Super Admin">Super Admin</option>
-                <option value="Admin">Admin</option>
+                <option value='Super Admin'>Super Admin</option>
+                <option value='Admin'>Admin</option>
               </select>
             </div>
 
             <div>
-              <label className="block mb-2">Update Password</label>
-              <div className="relative">
+              <label className='block mb-2'>Update Password</label>
+              <div className='relative'>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="********"
-                  className="w-full px-4 py-2 border rounded-lg pr-10"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='********'
+                  className='w-full px-4 py-2 border rounded-lg pr-10'
                 />
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
                 >
                   {showPassword ? (
                     <BsEyeSlash size={20} />
@@ -374,14 +406,14 @@ const AdminUsers = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className='flex justify-end gap-3 pt-4'>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                className='px-6 py-2 border rounded-lg hover:bg-gray-50'
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+              <button className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'>
                 Update Changes
               </button>
             </div>
@@ -392,36 +424,36 @@ const AdminUsers = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onRequestClose={() => setIsDeleteModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[500px] w-[95vw]'
+        overlayClassName='fixed inset-0 bg-black/50'
       >
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-              <span className="text-red-500 text-xl">⚠</span>
+        <div className='p-6'>
+          <div className='flex items-center gap-4 mb-6'>
+            <div className='w-10 h-10 rounded-full bg-red-50 flex items-center justify-center'>
+              <span className='text-red-500 text-xl'>⚠</span>
             </div>
-            <h2 className="text-xl">Delete Admin User</h2>
+            <h2 className='text-xl'>Delete Admin User</h2>
             <button
               onClick={() => setIsDeleteModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600 ml-auto"
+              className='text-gray-400 hover:text-gray-600 ml-auto'
             >
               ✕
             </button>
           </div>
 
-          <p className="text-gray-600 mb-8">
+          <p className='text-gray-600 mb-8'>
             Are you sure you want to delete this admin user? Deleting this user
             will permanently erase it from the system.
           </p>
 
-          <div className="flex justify-end gap-3">
+          <div className='flex justify-end gap-3'>
             <button
               onClick={() => setIsDeleteModalOpen(false)}
-              className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+              className='px-6 py-2 border rounded-lg hover:bg-gray-50'
             >
               Cancel
             </button>
-            <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+            <button className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'>
               Delete
             </button>
           </div>

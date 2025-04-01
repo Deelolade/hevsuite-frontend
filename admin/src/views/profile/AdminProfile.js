@@ -193,8 +193,9 @@ const AdminProfile = () => {
                 }`}
                 disabled={true}
               >
-                <option value='Super Admin'>Super Admin</option>
-                <option value='member'>Member</option>
+                <option value={profileData.role} className='capitalize'>
+                  {profileData.role}
+                </option>
               </select>
             </div>
           </div>

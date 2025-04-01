@@ -6,7 +6,7 @@ function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(base_url + '/api/check-auth', { credentials: 'include' })
+    fetch(base_url + '/api/admin/check-auth', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         setIsAuthenticated(data.isAuthenticated);
