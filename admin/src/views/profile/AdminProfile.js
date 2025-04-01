@@ -20,8 +20,8 @@ const AdminProfile = () => {
     fullName: '',
     email: '',
     role: '',
-    password: 'password',
-    twoFactorPreference: 'Email',
+    password: '',
+    twoFactorPreference: 'email',
     avatar: avatar,
   });
 
@@ -29,14 +29,12 @@ const AdminProfile = () => {
     const fetchProfile = async () => {
       try {
         const response = await authService.getProfile();
-        console.log(response);
         setProfileData({
           fullName: response.user.forename + ' ' + response.user.surname,
           email: response.user.primaryEmail,
           role: response.user.role,
-          password: 'password',
-          twoFactorPreference:
-            response.user.twoFactorPreference === 'email' ? 'Email' : 'Phone',
+          password: '',
+          twoFactorPreference: response.user.twoFactorPreference,
           avatar: avatar,
         });
       } catch (error) {
@@ -81,20 +79,24 @@ const AdminProfile = () => {
         primaryEmail: profileData.email,
         role: profileData.role,
         twoFAMethod: profileData.twoFactorPreference,
-        new_password: profileData.password,
       },
       confirmPassword: confirmPassword,
     };
+
+    if (profileData.password.length > 1) {
+      data.updates.new_password = profileData.password;
+    }
+
     try {
       const response = await authService.updateProfile(data);
       console.log(response);
+      window.location.reload();
     } catch (error) {
       toast.error('Invalid Password');
     }
     setIsConfirmModalOpen(false);
     setIsEditMode(false);
     setConfirmPassword('');
-    // window.location.reload();
   };
 
   const handleInputChange = (field, value) => {
@@ -203,12 +205,13 @@ const AdminProfile = () => {
             <div className='relative'>
               <input
                 type={showPassword ? 'text' : 'password'}
-                value={profileData.password}
+                value={!isEditMode ? 'password' : profileData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className={`w-full px-4 py-2 border rounded-lg ${
                   !isEditMode ? 'bg-gray-50' : 'bg-white'
                 }`}
                 readOnly={!isEditMode}
+                placeholder='Enter new password'
               />
               <button
                 type='button'
@@ -249,8 +252,8 @@ const AdminProfile = () => {
                 }`}
                 disabled={!isEditMode}
               >
-                <option value='Email'>Email</option>
-                <option value='Phone'>SMS</option>
+                <option value='email'>Email</option>
+                <option value='phone'>SMS</option>
               </select>
               <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                 <svg
