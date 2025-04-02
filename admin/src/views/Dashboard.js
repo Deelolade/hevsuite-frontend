@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   BsPeople,
@@ -19,6 +19,7 @@ import withReactContent from 'sweetalert2-react-content';
 import Chart from 'react-apexcharts';
 import { showModal } from '../components/FireModal';
 import eventService from '../store/events/eventService';
+import userService from '../store/users/userService';
 
 const MySwal = withReactContent(Swal);
 
@@ -110,48 +111,23 @@ const Dashboard = () => {
     }
   };
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'Andrew Bojangles',
-      avatar: avat,
-    },
-    {
-      id: 2,
-      name: 'Emily Wilson',
-      avatar: avat,
-    },
-    {
-      id: 3,
-      name: 'Michael Davis',
-      avatar: avat,
-    },
-    {
-      id: 4,
-      name: 'Sophia Rodriguez',
-      avatar: avat,
-    },
-    {
-      id: 5,
-      name: 'Oliver Brown',
-      avatar: avat,
-    },
-    {
-      id: 6,
-      name: 'Ava Lee',
-      avatar: avat,
-    },
-    {
-      id: 7,
-      name: 'Ethan Hall',
-      avatar: avat,
-    },
-    {
-      id: 8,
-      name: 'Isabella Martin',
-      avatar: avat,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    if (isAddEventOpen) {
+      const getUsers = async () => {
+        const response = await userService.userSearch(searchQuery);
+        const newData = response.users.map((user) => ({
+          id: user._id,
+          name: user.forename + ' ' + user.surname,
+          avatar: user.avatar || avat,
+        }));
+        setUsers(newData);
+      };
+      getUsers();
+    }
+  }, [searchQuery, isAddEventOpen]);
+
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -524,7 +500,6 @@ const Dashboard = () => {
                     placeholder='Enter event time'
                     className='w-full px-4 py-2 border rounded-lg text-gray-600'
                   />
-                  <BsCalendar className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400' />
                 </div>
               </div>
             </div>
@@ -616,7 +591,7 @@ const Dashboard = () => {
                         <img
                           src={user.avatar}
                           alt='Avatar'
-                          className='w-8 h-8 rounded-full'
+                          className='w-8 h-8 rounded-full object-cover'
                         />
                         <span>{user.name}</span>
                         <button
@@ -649,7 +624,7 @@ const Dashboard = () => {
                     <img
                       src={user.avatar}
                       alt='Avatar'
-                      className='w-8 h-8 rounded-full'
+                      className='w-8 h-8 rounded-full object-cover'
                     />
                     <span className='ml-4'>{user.name}</span>
                   </div>

@@ -49,11 +49,19 @@ const editUser = async (data) => {
   return response.data;
 };
 
+const userSearch = async (query) => {
+  const response = await axios.get(
+    `${base_url}/api/user/users/search?q=${encodeURIComponent(query)}`
+  );
+  return response.data;
+};
+
 const userService = {
   pendingUsers,
   inviteUser,
   memberUsers,
   editUser,
+  userSearch,
 };
 
 export default userService;
