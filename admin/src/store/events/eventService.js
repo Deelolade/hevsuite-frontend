@@ -1,9 +1,9 @@
-import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
+import axios from 'axios';
+import { base_url } from '../../constants/axiosConfig';
 const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
+  const adminData = localStorage.getItem('admin');
   const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
+  return admin?.token || '';
 };
 
 const getAllEvents = async ({ status, filter }) => {
@@ -21,13 +21,7 @@ const getAllEvents = async ({ status, filter }) => {
 };
 
 const createEvent = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/create-event`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-  });
+  const response = await axios.post(`${base_url}/api/events`, data);
   return response.data;
 };
 
