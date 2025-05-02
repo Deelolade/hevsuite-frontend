@@ -34,7 +34,6 @@ const CardPaymentForm = ({isEditing}) => {
           fullName: formData.fullname,
           cardNumber: formData.cardNumber,
           expirationDate: formData.expiration,
-          securityCode: formData.cvc,
           country: formData.country,
           zipCode: formData.zipcode,
           editing: isEditing
