@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
@@ -7,56 +7,65 @@ import image_card from "../../assets/image.jpg";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
 import { Swiper, SwiperSlide } from "swiper/react";
+import {formatDateWithSuffix,formatTime} from "../../utils/formatDate";
 // import "swiper/swiper-bundle.min.css";
 import "swiper/css";
 // import Header from "../../components/Header";
-
+import { fetchNonExpiredNews } from '../../features/newsSlice';
+import { useDispatch, useSelector } from 'react-redux';
 const Landing = () => {
+    const dispatch = useDispatch();
+   
+    useEffect(() => {
+      dispatch(fetchNonExpiredNews());
+    }, [dispatch]);
+    
+    const { newsItems, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
-  const newsItems = [
-    {
-      id: 1,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-    {
-      id: 2,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-    {
-      id: 3,
-      title: "The Adventurer",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-    {
-      id: 4,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-    {
-      id: 5,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-    {
-      id: 6,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: event_card,
-    },
-  ];
+  // const newsItems = [
+  //   {
+  //     id: 1,
+  //     title: "The Bout for Lions",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Battle for NBA Cup",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "The Adventurer",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "Battle for NBA Cup",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "Battle for NBA Cup",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 6,
+  //     title: "Battle for NBA Cup",
+  //     date: "2nd January, 2025",
+  //     time: "10:00pm",
+  //     image: event_card,
+  //   },
+  // ];
   const swiperRef = useRef(null); // Create a reference for the Swiper instance
 
   const handleSlideChange = (index) => {
@@ -133,6 +142,13 @@ const Landing = () => {
 
       {/* Newsroom Section */}
       <section className="py-16 md:py-12 sm:py-8">
+      {loading ? (
+      <p className="text-center text-lg text-gray-600">Loading news...</p>
+    ) : error ? (
+      <p className="text-center text-red-500">Error: {error}</p>
+    ) : newsItems.length === 0 ? (
+      <p className="text-center text-gray-500">No news available.</p>
+    ) : (
         <div className="container mx-auto px-4 sm:px-6 md:px-8">
           <h2 className="text-xl lg:text-4xl md:text-3xl sm:text-2xl font-bold text-center mb-12 font-secondary text-gradient_r">
             Newsroom
@@ -175,13 +191,13 @@ const Landing = () => {
                             <div className="flex items-center gap-2 text-white/80">
                               <BsCalendar className="w-4 h-4 sm:w-3 sm:h-3" />
                               <span className="text-[12px] sm:text-[10px]">
-                                {item.date}
+                                {formatDateWithSuffix(item.expireDate)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-white/80">
                               <MdAccessTime className="w-4 h-4 sm:w-3 sm:h-3" />
                               <span className="text-[12px] sm:text-[10px]">
-                                {item.time}
+                              {formatTime(item.expireDate)}
                               </span>
                             </div>
                           </div>
@@ -231,6 +247,7 @@ const Landing = () => {
             </Link>
           </div>
         </div>
+    )}
       </section>
 
       {/* Footer */}

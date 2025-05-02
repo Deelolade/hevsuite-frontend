@@ -9,39 +9,58 @@ import image_card from '../../assets/image.jpg';
 import Footer from '../../components/Footer';
 import HeaderOne from '../../components/HeaderOne';
 import Header from '../../components/Header';
-
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import {formatDateWithSuffix,formatTime} from "../../utils/formatDate";
 const NewsDetail = () => {
-  const relatedNews = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-  ];
+  // const relatedNews = [
+  //   {
+  //     id: 1,
+  //     title: 'The Bout for Lions',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'The Adventurer',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  // ];
+  const allNewsItems = useSelector((state) => state.news.newsItems);
+  const selectedNews = useSelector((state) => state.news.selectedNews);
+  const navigate = useNavigate();
 
+  // Filter out the selectedNews from allNewsItems to get relatedNews
+  const relatedNews = allNewsItems.filter(news => news.id !== selectedNews?.id);
+
+
+  useEffect(() => {
+
+    if (!selectedNews) {
+      navigate('/news'); // Redirect if no news selected (e.g. on refresh)
+    }
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/news/${selectedNews._id}/increment-reads`, { method: 'PUT' });
+  }, [selectedNews, navigate]);
+
+  if (!selectedNews) return null;
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -86,45 +105,25 @@ const NewsDetail = () => {
       <section className='container mx-auto px-4 md:px-12 py-16'>
         <div>
           <h1 className='text-3xl md:text-4xl font-semibold mb-4 font-primary text-gradient_r'>
-            The Kings Halloween Event Celebration Party
+          {selectedNews.title}
           </h1>
           <div className='flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 mb-8'>
             <div className='flex items-center gap-2'>
               <BsCalendar className='w-4 h-4' />
-              <span>2nd January, 2025</span>
+              <span>{formatDateWithSuffix(selectedNews.expireDate)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <MdAccessTime className='w-4 h-4' />
-              <span>10:00pm</span>
+              <span>{formatTime(selectedNews.expireDate)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <span>👁</span>
-              <span>105 reads</span>
+              <span>{selectedNews.reads} reads</span>
             </div>
           </div>
           <div className='prose max-w-none'>
             <p className='pb-4'>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu
-              turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus
-              nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum
-              tellus elit sed risus. Maecenas eget condimentum velit, sit amet
-              feugiat lectus. Class aptent taciti sociosqu ad litora torquent
-              per conubia nostra, per inceptos himenaeos. Praesent auctor purus
-              luctus enim egestas, ac scelerisque ante pulvinar. Donec ut
-              rhoncus ex. Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur
-              vel bibendum lorem. Morbi convallis convallis diam sit amet
-              lacinia. Aliquam in elementum tellus.
-            </p>
-            <p className='pb-4'>
-              Curabitur tempor quis eros tempus lacinia. Nam bibendum
-              pellentesque quam a convallis. Sed ut vulputate nisi. Integer in
-              felis sed leo vestibulum venenatis. Suspendisse quis arcu sem.
-              Aenean feugiat ex eu vestibulum vestibulum. Morbi a eleifend
-              magna. Nam metus lacus, porttitor eu mauris a, blandit ultrices
-              nibh. Mauris sit amet magna non ligula vestibulum eleifend. Nulla
-              varius volutpat turpis sed lacinia. Nam eget mi in purus lobortis
-              eleifend. Sed nec ante dictum sem condimentum ullamcorper quis
-              venenatis nisi. Proin vitae facilisis nisi, ac posuere leo.
+              {selectedNews.description}
             </p>
           </div>
         </div>
