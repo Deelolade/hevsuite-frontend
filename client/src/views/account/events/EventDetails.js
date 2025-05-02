@@ -11,6 +11,8 @@ import avatar from "../../../assets/user.avif";
 import party from "../../../assets/party2.jpg";
 import eventimg from "../../../assets/event.png";
 import mastercard from "../../../assets/Mastercard.png";
+import paypal from "../../../assets/PayPal.png";
+import stripe from "../../../assets/Stripe.png"
 
 const EventDetailsModal = ({ event, onClose, eventType }) => {
   const [activeTab, setActiveTab] = useState("description");
@@ -328,18 +330,25 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
   );
 };
 
-export const PaymentMethodModal = ({ onClose, showNewModal }) => {
+export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect }) => {
+   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const paymentMethods = [
-    { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
-    { id: "amazon-pay", logo: mastercard, name: "Amazon Pay" },
-    { id: "samsung-pay", logo: mastercard, name: "Samsung Pay" },
-    { id: "google-pay", logo: mastercard, name: "Google Pay" },
     { id: "mastercard", logo: mastercard, name: "Mastercard" },
-    { id: "paypal", logo: mastercard, name: "PayPal" },
-    { id: "visa", logo: mastercard, name: "Visa" },
-    { id: "maestro", logo: mastercard, name: "Maestro" },
-    { id: "cirrus", logo: mastercard, name: "Cirrus" },
+    { id: "paypal", logo: paypal, name: "PayPal" },
+    { id: "stripe", logo: stripe, name: "Stripe" },
   ];
+
+  const handleMethodSelection = ()=>{
+    if (selectedPaymentMethod) {
+      
+      // Optionally call showNewModal or close the modal
+      onPaymentMethodSelect(selectedPaymentMethod);
+      showNewModal();
+      onClose();
+    } else {
+      alert("Please select a payment method.");
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
@@ -355,11 +364,12 @@ export const PaymentMethodModal = ({ onClose, showNewModal }) => {
           {paymentMethods.map((method) => (
             <div
               key={method.id}
-              onClick={() => {
-                onClose();
-                showNewModal();
-              }}
-              className="bg-white rounded-lg p-4 shadow-sm border hover:border-[#540A26] cursor-pointer transition-colors"
+              onClick={() => setSelectedPaymentMethod(method.name)}
+              className={`bg-white rounded-lg p-4 shadow-sm border cursor-pointer transition-colors ${
+                selectedPaymentMethod === method.name
+                  ? 'border-[#540A26] bg-[#540A26]/10'
+                  : 'hover:border-[#540A26] border-gray-200'
+              }`}
             >
               <img
                 src={method.logo}
@@ -370,7 +380,7 @@ export const PaymentMethodModal = ({ onClose, showNewModal }) => {
           ))}
         </div>
 
-        <button className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+        <button onClick={()=>handleMethodSelection()} className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
           Next
         </button>
       </div>
