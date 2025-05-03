@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BsCalendar } from 'react-icons/bs';
 import { MdAccessTime } from 'react-icons/md';
 import logo from '../../assets/logo_white.png';
@@ -10,53 +10,63 @@ import image_card from '../../assets/image.jpg';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import Header from '../../components/Header';
-
+import { fetchNonExpiredNews } from '../../features/newsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedNews } from '../../features/newsSlice';
+import {formatDateWithSuffix,formatTime} from "../../utils/formatDate";
 const News = () => {
+      const dispatch = useDispatch();
+     
+      useEffect(() => {
+        dispatch(fetchNonExpiredNews());
+      }, [dispatch]);
+      
+      const { newsItems, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
-  const newsItems = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 5,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 6,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-  ];
+  // const newsItems = [
+  //   {
+  //     id: 1,
+  //     title: 'The Bout for Lions',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'The Adventurer',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 5,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  //   {
+  //     id: 6,
+  //     title: 'Battle for NBA Cup',
+  //     date: '2nd January, 2025',
+  //     time: '10:00pm',
+  //     image: event_card,
+  //   },
+  // ];
   const swiperRef = useRef(null); // Create a reference for the Swiper instance
 
   const handleSlideChange = (index) => {
@@ -157,7 +167,10 @@ const News = () => {
               {newsItems.map((item) => (
                 <SwiperSlide key={item.id}>
                   <div
-                    onClick={() => navigate('/news-detail')}
+                     onClick={() => {
+                      dispatch(setSelectedNews(item));
+                      navigate('/news-detail');
+                    }}
                     className='relative group cursor-pointer overflow-hidden rounded-2xl shadow-md flex-shrink-0'
                   >
                     <div
@@ -174,13 +187,13 @@ const News = () => {
                             <div className='flex items-center gap-2 text-white/80'>
                               <BsCalendar className='w-4 h-4 sm:w-3 sm:h-3' />
                               <span className='text-[12px] sm:text-[10px]'>
-                                {item.date}
+                                {formatDateWithSuffix(item.expireDate)}
                               </span>
                             </div>
                             <div className='flex items-center gap-2 text-white/80'>
                               <MdAccessTime className='w-4 h-4 sm:w-3 sm:h-3' />
                               <span className='text-[12px] sm:text-[10px]'>
-                                {item.time}
+                                {formatTime(item.expireDate)}
                               </span>
                             </div>
                           </div>

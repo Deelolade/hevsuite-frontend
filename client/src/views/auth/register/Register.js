@@ -1,20 +1,26 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { BsCheckCircleFill } from 'react-icons/bs';
 import Footer from '../../../components/Footer';
 import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import { useSelector, useDispatch } from 'react-redux';
 import { nextStep, updateStepData } from '../../../features/auth/registerSlice';
+import { reset } from '../../../features/auth/registerSlice';
 
 const Register = () => {
   const dispatch = useDispatch();
-
+  useEffect(() => {
+    dispatch(reset());
+  }, []);
   const { currentStep } = useSelector((state) => state.register);
-
+  console.log('Current Step:', currentStep);
+  const navigate = useNavigate();
   const handleUpdateStep = () => {
     dispatch(updateStepData({ step: `step${currentStep}`, data: {} }));
     dispatch(nextStep());
+    navigate('/register-2');
   };
 
   return (
@@ -161,13 +167,12 @@ const Register = () => {
         </div>
 
         <div className='text-center mt-8 md:mt-12'>
-          <Link
-            to='/register-2'
+          <button
             className='inline-flex border-2 border-[#540A26] rounded-3xl items-center px-6 py-2 text-[#540A26] text-base md:text-lg font-medium hover:bg-[#540A26] hover:text-white transition-colors'
             onClick={handleUpdateStep}
           >
             Continue <span className='ml-2'>→</span>
-          </Link>
+          </button>
         </div>
       </div>
 
