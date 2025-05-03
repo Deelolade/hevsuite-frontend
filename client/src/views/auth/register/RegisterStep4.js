@@ -27,7 +27,7 @@ const RegisterStep4 = () => {
   );
 
   const [formData, setFormData] = useState({ ...data.step4 });
-
+  const [errors, setErrors] = useState({});
   const interests = [
     ['Art & Design', 'Cigars', 'Country Pursuits'],
     ['Dance', 'Family Entertainment', 'Fashion'],
@@ -46,6 +46,30 @@ const RegisterStep4 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    const newErrors = {};
+
+    // Validate required fields
+    if (!formData.employmentStatus) {
+      newErrors.employmentStatus = "Employment status is required";
+    }
+    if (!formData.preferredSocialMedia) {
+      newErrors.preferredSocialMedia = "Preferred social media is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to first error
+      const firstError = Object.keys(newErrors)[0];
+      document.querySelector(`[name="${firstError}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
+    // Clear errors
+  setErrors({});
+
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
     dispatch(nextStep());
     navigate('/register-5');
@@ -130,7 +154,9 @@ const RegisterStep4 = () => {
               Employment Status<span className='text-red-500'>*</span>
             </label>
             <select
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${
+                errors.employmentStatus ? 'border-red-500' : ''
+              }`}
               value={formData.employmentStatus}
               onChange={(e) =>
                 setFormData({ ...formData, employmentStatus: e.target.value })
@@ -194,7 +220,9 @@ const RegisterStep4 = () => {
               <span className='text-red-500'>*</span>
             </label>
             <select
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${
+                errors.preferredSocialMedia ? 'border-red-500' : ''
+              }`}
               value={formData.preferredSocialMedia}
               onChange={(e) =>
                 setFormData({

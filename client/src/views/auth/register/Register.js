@@ -15,7 +15,6 @@ const Register = () => {
     dispatch(reset());
   }, []);
   const { currentStep } = useSelector((state) => state.register);
-  console.log('Current Step:', currentStep);
   const navigate = useNavigate();
   const handleUpdateStep = () => {
     dispatch(updateStepData({ step: `step${currentStep}`, data: {} }));

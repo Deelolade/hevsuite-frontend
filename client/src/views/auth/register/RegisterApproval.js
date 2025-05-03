@@ -7,34 +7,36 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
+import toast from 'react-hot-toast';
+import referralService from '../../../services/referralService';
 
-const RegisterApproval = ({ setApproval }) => {
+const RegisterApproval = ({ setApproval ,referrals,setReferrals}) => {
   const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
-  const referrals = [
-    {
-      id: 1,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Approved',
-    },
-    {
-      id: 2,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Pending',
-    },
-    {
-      id: 3,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Pending',
-    },
-  ];
+  // const referrals = [
+  //   {
+  //     id: 1,
+  //     name: 'Andrew Bojangles',
+  //     avatar: avatar,
+  //     status: 'Approved',
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Andrew Bojangles',
+  //     avatar: avatar,
+  //     status: 'Pending',
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Andrew Bojangles',
+  //     avatar: avatar,
+  //     status: 'Pending',
+  //   },
+  // ];
 
-  const allApproved = referrals.every(
+  const allApproved = referrals.length > 0 && referrals.every(
     (referral) => referral.status === 'Approved'
   );
   return (
@@ -67,19 +69,19 @@ const RegisterApproval = ({ setApproval }) => {
             Check your referrals
           </h3>
           <div className='space-y-3 md:space-y-4'>
-            {referrals.map((referral) => (
+            {referrals.length>0 && referrals.map((referral) => (
               <div
                 key={referral.id}
                 className='flex flex-wrap md:flex-nowrap items-center justify-between bg-gray-50 p-3 md:p-4 rounded-lg'
               >
                 <div className='flex items-center gap-2 md:gap-4 mb-2 md:mb-0 w-full md:w-auto'>
                   <img
-                    src={referral.avatar}
-                    alt={referral.name}
+                    src={referral.userId.profilePhoto || avatar}
+                    alt={`${referral.userId.forename} ${referral.userId.surname}`}
                     className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover'
                   />
                   <span className='font-medium text-sm md:text-base'>
-                    {referral.name}
+                    {`${referral.userId.forename} ${referral.userId.surname}`}
                   </span>
                 </div>
                 <div className='flex flex-wrap gap-2 w-full md:w-auto justify-end'>
@@ -98,7 +100,15 @@ const RegisterApproval = ({ setApproval }) => {
                             title: 'Decline Approval Request?',
                             text: 'This action can not be undone!',
                             confirmText: 'Yes',
-                            onConfirm: () => {},
+                            onConfirm: async () => {
+                              try {
+                                await referralService.declineReferral(referral.userId._id); 
+                                setReferrals(prev => prev.filter(r => r._id !== referral._id));
+                                toast.success('Referral declined successfully');
+                              } catch (error) {
+                                toast.error(error.message);
+                              }
+                            },
                           })
                         }
                         className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
