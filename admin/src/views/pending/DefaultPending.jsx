@@ -1,26 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import avatar from "../../assets/user.avif";
+import Modal from "react-modal";
 
 import {
   BsThreeDotsVertical,
   BsXCircleFill,
   BsCheckCircleFill,
 } from "react-icons/bs";
-import Modal from "react-modal";
 
-const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
+const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccept, onReject }) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Filter");
-  const [selectedSort, setSelectedSort] = useState("Sort by");
+  const [selectedFilter, setSelectedFilter] = useState("All");
+  const [selectedSort, setSelectedSort] = useState("Date (Newest)");
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [sortedUsers, setSortedUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [selectedActionUser, setSelectedActionUser] = useState(null);
 
+  // Apply filters and sorting when pendingUsers, selectedFilter, or selectedSort changes
+  useEffect(() => {
+    // Apply filter
+    let filtered = [...pendingUsers];
+    
+    if (selectedFilter === "Fee completed") {
+      filtered = filtered.filter(user => user.joinFeeStatus === "Paid");
+    } else if (selectedFilter === "Fee pending") {
+      filtered = filtered.filter(user => user.joinFeeStatus === "Pending");
+    } else if (selectedFilter === "Supporters complete") {
+      filtered = filtered.filter(user => user.supportersStatus === "3/3");
+    } else if (selectedFilter === "Supporters incomplete") {
+      filtered = filtered.filter(user => user.supportersStatus !== "3/3");
+    }
+    
+    // Apply sorting
+    let sorted = [...filtered];
+    
+    if (selectedSort === "Date (Newest)") {
+      // Assuming the most recent users are at the end of the array
+      // If you have a createdAt field, you can sort by that
+      sorted = sorted.sort((a, b) => {
+        // If you have a createdAt field, use it for sorting
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        // Otherwise, just keep the original order
+        return 0;
+      });
+    } else if (selectedSort === "Date (Oldest)") {
+      sorted = sorted.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        }
+        return 0;
+      });
+    } else if (selectedSort === "Name (A-Z)") {
+      sorted = sorted.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (selectedSort === "Name (Z-A)") {
+      sorted = sorted.sort((a, b) => b.name.localeCompare(a.name));
+    }
+    
+    setFilteredUsers(sorted);
+    setSortedUsers(sorted);
+    
+    // Calculate total pages
+    setTotalPages(Math.ceil(sorted.length / itemsPerPage));
+    
+    // Reset to first page when filter or sort changes
+    setCurrentPage(1);
+  }, [pendingUsers, selectedFilter, selectedSort, itemsPerPage]);
+
+  // Get current users for pagination
+  const getCurrentUsers = () => {
+    const indexOfLastUser = currentPage * itemsPerPage;
+    const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+    return sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
+  };
+
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedUsers(pendingUsers.map((user) => user.id));
+      setSelectedUsers(getCurrentUsers().map((user) => user.id));
     } else {
       setSelectedUsers([]);
     }
@@ -34,10 +100,17 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     }
   };
 
-  const handleRowClick = (user) => {
-    // console.log(user)
+  const handleViewUser = (user) => {
     setViewUser(user);
     setShowViewPending(true);
+  };
+
+  const handleAccept = (user) => {
+    onAccept(user);
+  };
+
+  const handleReject = (user) => {
+    onReject(user);
   };
 
   const handleActionClick = (action, user, e) => {
@@ -47,12 +120,127 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     setIsActionModalOpen(true);
   };
 
-  const handleAcceptUser = (user) => {
-    console.log(`User accepted:`, user);
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
-  const handleRejectUser = (user) => {
-    console.log(`User rejected:`, user);
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(parseInt(e.target.value));
+  };
+
+  // Generate pagination buttons
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    
+    // Previous button
+    buttons.push(
+      <button 
+        key="prev" 
+        className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
+    );
+    
+    // Page buttons
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // First page
+    if (startPage > 1) {
+      buttons.push(
+        <button 
+          key="first" 
+          className="px-3 py-1 text-sm"
+          onClick={() => handlePageChange(1)}
+        >
+          1
+        </button>
+      );
+      
+      if (startPage > 2) {
+        buttons.push(
+          <span key="ellipsis1" className="text-sm">...</span>
+        );
+      }
+    }
+    
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button 
+          key={i} 
+          className={`px-3 py-1 text-sm ${currentPage === i ? 'bg-[#0A5438] text-white rounded' : ''}`}
+          onClick={() => handlePageChange(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+    
+    // Last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        buttons.push(
+          <span key="ellipsis2" className="text-sm">...</span>
+        );
+      }
+      
+      buttons.push(
+        <button 
+          key="last" 
+          className="px-3 py-1 text-sm"
+          onClick={() => handlePageChange(totalPages)}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+    
+    // Next button
+    buttons.push(
+      <button 
+        key="next" 
+        className="p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    );
+    
+    return buttons;
   };
 
   return (
@@ -90,20 +278,47 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
                   onClick={() => {
-                    setSelectedFilter("Fee completed");
+                    setSelectedFilter("All");
                     setShowFilterDropdown(false);
                   }}
                 >
-                  New Applications
+                  All
                 </button>
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
                   onClick={() => {
-                    setSelectedFilter("Complete supporter status");
+                    setSelectedFilter("Fee completed");
                     setShowFilterDropdown(false);
                   }}
                 >
-                  Declined Applications
+                  Fee completed
+                </button>
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedFilter("Fee pending");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  Fee pending
+                </button>
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedFilter("Supporters complete");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  Supporters complete
+                </button>
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedFilter("Supporters incomplete");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  Supporters incomplete
                 </button>
               </div>
             </div>
@@ -142,20 +357,38 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
                   onClick={() => {
-                    setSelectedSort("Date");
+                    setSelectedSort("Date (Newest)");
                     setShowSortDropdown(false);
                   }}
                 >
-                  Date
+                  Date (Newest)
                 </button>
                 <button
                   className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
                   onClick={() => {
-                    setSelectedSort("Alphabet");
+                    setSelectedSort("Date (Oldest)");
                     setShowSortDropdown(false);
                   }}
                 >
-                  Alphabet
+                  Date (Oldest)
+                </button>
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedSort("Name (A-Z)");
+                    setShowSortDropdown(false);
+                  }}
+                >
+                  Name (A-Z)
+                </button>
+                <button
+                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
+                  onClick={() => {
+                    setSelectedSort("Name (Z-A)");
+                    setShowSortDropdown(false);
+                  }}
+                >
+                  Name (Z-A)
                 </button>
               </div>
             </div>
@@ -195,11 +428,11 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
             </tr>
           </thead>
           <tbody>
-            {pendingUsers.map((user) => (
+            {getCurrentUsers().map((user) => (
               <tr
                 key={user.id}
                 className="border-b last:border-b-0 hover:bg-gray-50"
-                onClick={() => handleRowClick(user)}
+                onClick={() => handleViewUser(user)}
               >
                 <td className="px-6 py-4">
                   <input
@@ -237,13 +470,13 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                       className="p-1 text-green-600 hover:text-green-700"
                       onClick={(e) => handleActionClick("accept", user, e)}
                     >
-                      <BsCheckCircleFill size={24} />
+                      <FaCheck />
                     </button>
                     <button
                       className="p-1 text-red-600 hover:text-red-700"
                       onClick={(e) => handleActionClick("reject", user, e)}
                     >
-                      <BsXCircleFill size={24} />
+                      <FaTimes />
                     </button>
                     <button className="p-1 text-gray-400 hover:text-gray-500">
                       <BsThreeDotsVertical size={20} />
@@ -257,51 +490,18 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
         <div className="px-6 py-4 border-t flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Show result:</span>
-            <select className="border rounded px-2 py-1 text-sm">
-              <option>6</option>
-              <option>12</option>
-              <option>24</option>
+            <select 
+              className="border rounded px-2 py-1 text-sm"
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+            >
+              <option value={6}>6</option>
+              <option value={12}>12</option>
+              <option value={24}>24</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-500 hover:text-gray-700">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button className="px-3 py-1 text-sm">1</button>
-            <button className="px-3 py-1 text-sm bg-[#0A5438] text-white rounded">
-              2
-            </button>
-            <button className="px-3 py-1 text-sm">3</button>
-            <button className="px-3 py-1 text-sm">4</button>
-            <span className="text-sm">...</span>
-            <button className="px-3 py-1 text-sm">20</button>
-            <button className="p-2 text-gray-500 hover:text-gray-700">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+            {renderPaginationButtons()}
           </div>
         </div>
         <Modal
@@ -355,9 +555,9 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               <button
                 onClick={() => {
                   if (selectedAction === "accept") {
-                    handleAcceptUser(selectedActionUser);
+                    handleAccept(selectedActionUser);
                   } else {
-                    handleRejectUser(selectedActionUser);
+                    handleReject(selectedActionUser);
                   }
                   setIsActionModalOpen(false);
                 }}
