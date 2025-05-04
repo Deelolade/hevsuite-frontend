@@ -3,15 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo_white.png";
 import image from "../../../assets/image.jpg";
 import { BsTelephone } from "react-icons/bs";
+import toast from "react-hot-toast";
+import authService from "../../../services/authService";
 
 const PhoneVerification = () => {
   const [phone, setPhone] = useState("");
   const navigate = useNavigate();
 
-  const handleVerify = () => {
-    navigate("/code-verification", { state: { type: "phone" } });
-  };
-
+  const handleVerify = async() => {
+    try {
+      await authService.setup2FA({ method: "phone", phone });
+      navigate("/code-verification", { state: { type: "phone" } });
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+    }
+  }
   return (
     <div className="min-h-screen md:grid md:grid-cols-2 relative">
       {/* Background Image - Visible on all screens */}

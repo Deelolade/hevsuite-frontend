@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
@@ -8,6 +8,18 @@ import toast from 'react-hot-toast';
 const CodeVerification = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [resendCooldown, setResendCooldown] = useState(0); 
+  const [isResending, setIsResending] = useState(false);
+  
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+  
+      return () => clearInterval(timer);
+    }
+  }, [resendCooldown]);
 
   const handleCodeChange = (index, value) => {
     if (value.length <= 1) {
@@ -24,7 +36,20 @@ const CodeVerification = () => {
       }
     }
   };
+  const handleResendCode = async () => {
+    if (resendCooldown > 0 || isResending) return;
 
+    setIsResending(true);
+    try {
+      await authService.resend2FACode();
+      setResendCooldown(30); 
+      toast.success(`New code sent!`);
+    } catch (error) {
+      toast.error(`Failed to resend code. Please try again later.`);
+    } finally {
+      setIsResending(false);
+    }
+  };
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       const prevInput = document.querySelector(
@@ -118,12 +143,19 @@ const CodeVerification = () => {
               </div>
 
               <div className='text-center'>
-                <p className='text-gray-600 mb-4 text-sm md:text-base'>
+              <p className='text-gray-600 mb-4 text-sm md:text-base'>
                   Didn't receive code?{' '}
-                  <button type='button' className='text-[#540A26] font-medium'>
-                    Resend
+                  <button
+                    type='button'
+                    className={`text-[#540A26] font-medium ${(resendCooldown > 0 || isResending) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleResendCode}
+                    disabled={resendCooldown > 0 || isResending}
+                  >
+                    {isResending ? 'Sending...' : 
+                     resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
                   </button>
                 </p>
+
                 <button
                   type='submit'
                   className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'

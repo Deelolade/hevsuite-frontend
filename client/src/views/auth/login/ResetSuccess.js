@@ -23,7 +23,7 @@ const ResetSuccess = () => {
 
         {/* Desktop Left Side Content */}
         <div className="hidden md:flex relative z-10 p-16 flex-col h-full">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center mt-auto">
             <div className="w-32 h-32 rounded-2xl mb-4">
               <img
                 src={logo}

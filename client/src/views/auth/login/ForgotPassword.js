@@ -2,15 +2,29 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo_white.png";
 import image from "../../../assets/image.jpg";
+import toast from "react-hot-toast";
+import authService from "../../../services/authService";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/reset-password");
-    // Add your reset password logic here
+    setIsLoading(true);
+    try {
+      const response = await authService.forgotPassword(emailOrPhone);
+
+      // Store the email/phone in session for the reset page
+      sessionStorage.setItem('resetIdentifier', emailOrPhone);
+      // toast.success(response.message);
+      navigate("/reset-password");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -29,7 +43,7 @@ const ForgotPassword = () => {
 
         {/* Desktop Left Side Content */}
         <div className="hidden md:flex relative z-10 p-16 flex-col h-full">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center mt-auto">
             <div className="w-32 h-32 rounded-2xl mb-4">
               <img
                 src={logo}
@@ -77,8 +91,8 @@ const ForgotPassword = () => {
                     type="text"
                     placeholder="Enter email address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={emailOrPhone}
+                    onChange={(e) => setEmailOrPhone(e.target.value)}
                   />
                   <span className="absolute left-4 top-1/2 -translate-y-1/2">
                     <svg
@@ -103,7 +117,9 @@ const ForgotPassword = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium"
+                disabled={isLoading}
+                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${isLoading ? 'opacity-50' : ''
+                  }`}
               >
                 Reset Password
               </button>
