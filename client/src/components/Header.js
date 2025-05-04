@@ -36,6 +36,7 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
+    window.location.reload();
   };
 
   return (

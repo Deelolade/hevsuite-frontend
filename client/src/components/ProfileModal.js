@@ -8,6 +8,8 @@ import Settings from "../views/account/settings/Settings";
 import Notification from "../views/account/notifications/Notification";
 import Referrals from "../views/account/referral/Referrals";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const ProfileModal = ({ onClose, forNotification }) => {
   const tabs = [
@@ -25,10 +27,12 @@ const ProfileModal = ({ onClose, forNotification }) => {
     forNotification.current ? tabs[5] : tabs[0]
   );
   const navigate = useNavigate();
+   const dispatch = useDispatch();
   const handleLogout = () => {
-    console.log("Logout functionality goes here");
+    dispatch(logout());
     navigate("/");
     if (onClose) onClose();
+    window.location.reload();
   };
 
   const containerRef = React.useRef(null);
