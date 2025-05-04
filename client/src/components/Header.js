@@ -6,17 +6,18 @@ import { BsBell } from 'react-icons/bs';
 import { BsTwitterX, BsInstagram } from 'react-icons/bs';
 import ProfileModal from './ProfileModal';
 import Modal from 'react-modal';
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProfile, logout } from "../features/auth/authSlice";
 const Header = () => {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [userEmail, setUserEmail] = useState('machoodsylter@gmail.com');
-  const [userName, setUserName] = useState({
-    first: 'First Name',
-    last: 'Surname',
-  });
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+     const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [showProfileModal, setShowProfileModal] = useState(false);
+      const { user, isLoading } = useSelector(
+        (state) => state.auth
+      );
+  const isLoggedIn = !!user;
+
 
   const notRef = React.useRef(false);
   useEffect(() => {
@@ -28,18 +29,13 @@ const Header = () => {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-      // TODO: Fetch user data here and update email and name
-    }
-  }, []);
+    dispatch(fetchProfile());
+
+  }, [dispatch]);
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-    window.location.reload();
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
@@ -87,8 +83,8 @@ const Header = () => {
                   }}
                 >
                   <img
-                    src={avatar}
-                    alt='Avatar'
+                    src={user.image || avatar}
+                    alt={user.image||'profile'}
                     className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
                   />
                   <span className='text-white'>Goodluck</span>
@@ -186,15 +182,15 @@ const Header = () => {
                 <>
                   <div className='mb-6  text-center'>
                     <img
-                      src={avatar}
-                      alt='Profile'
+                      src={user.image || avatar}
+                      alt={user.image||'profile'}
                       className='w-16 h-16 rounded-full mx-auto my-6'
                     />
                     <div className='text-white mb-3'>
-                      {userName.first} {userName.last}
+                      {user.forename} {user.surname}
                     </div>
                     <div className='text-gray-200 text-sm mb-6'>
-                      {userEmail}
+                      {user.primaryEmail}
                     </div>
                     <button
                       onClick={handleLogout}
