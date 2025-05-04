@@ -43,7 +43,15 @@ const RegisterStep5 = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    const validatePassword = (pass) => {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
+      return passwordRegex.test(pass);
+    };
+    // Validate passwords
+    if (!validatePassword(formData.password)) {
+      toast.error('One uppercase, lowercase and a minimum of 7 characters)');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
@@ -73,8 +81,8 @@ const RegisterStep5 = () => {
   
     try {
       await authService.register(formDataToSend); 
-      navigate("/register-6");
       toast.success("Registration successful! Check your email for verification.");
+      navigate("/register-6");
       dispatch(reset());
     } catch (error) {
       toast.error(error.message || "Registration failed.");
