@@ -2,25 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
-import authService from '../../../services/authService';
 
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState('email');
 
   const handleMethodSelection = async () => {
-    if (input === 'email') {
-      await Promise.all([
-        authService.setup2FA({ method: 'email' }),
-        authService.logout(),
-      ]);
-    } else {
-      await Promise.all([
-        authService.setup2FA({ method: 'phone' }),
-        authService.logout(),
-      ]);
-    }
-    navigate('/success');
+     // Redirect to the appropriate verification page
+     navigate(`/${input}-verification`)
   };
 
   return (

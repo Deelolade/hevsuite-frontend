@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider,Navigate, useLocation } from 'react-router-dom';
 
 import Landing from './views/landing/Landing';
 import Login from './views/auth/login/Login';
@@ -28,6 +28,7 @@ import HowItWorks from './views/how-it-works/HowItWorks';
 import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
 
 axios.defaults.withCredentials = true;
 
@@ -36,15 +37,17 @@ const isAuthenticated = () => {
   // return localStorage.getItem("user") !== null;
 };
 
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
-    window.location.href = '/login'; // Redirect to login if not authenticated
-    return null;
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const location = useLocation();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
   return children;
 };
-
 const router = createBrowserRouter([
   {
     path: '/',

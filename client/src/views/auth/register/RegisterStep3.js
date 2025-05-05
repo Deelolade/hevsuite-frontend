@@ -32,13 +32,64 @@ const RegisterStep3 = () => {
   );
 
   const [formData, setFormData] = useState({ ...data.step3 });
-
+  const [errors, setErrors] = useState({});
   const [countryId, setCountryId] = useState('');
   const [primaryPhoneCode, setPrimaryPhoneCode] = useState('');
   const [secondaryPhoneCode, setSecondaryPhoneCode] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+      // Validate required fields for step 3
+  const newErrors = {};
+  
+  if (!formData.addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
+  if (!formData.city) newErrors.city = "City is required";
+  if (!formData.country) newErrors.country = "Country is required";
+  if (!formData.postcode) {
+    newErrors.postcode = "Postcode is required";
+  } else if (!/^\d+$/.test(formData.postcode)) {
+    newErrors.postcode = "Postcode should contain only numbers";
+  }
+  if (!formData.state) newErrors.state = "State is required";
+  if (!formData.primaryPhone) {
+    newErrors.primaryPhone = "Primary phone is required";
+  } else if (!/^\d+$/.test(formData.primaryPhone)) {
+    newErrors.primaryPhone = "Phone number should contain only numbers";
+  }
+
+  if (formData.secondaryPhone && !/^\d+$/.test(formData.secondaryPhone)) {
+    newErrors.secondaryPhone = "Phone number should contain only numbers";
+  }
+  // Add this validation function
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+};
+
+// In your handleSubmit:
+if (!formData.primaryEmail) {
+  newErrors.primaryEmail = "Primary email is required";
+} else if (!validateEmail(formData.primaryEmail)) {
+  newErrors.primaryEmail = "Please enter a valid email address";
+}
+
+if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
+  newErrors.secondaryEmail = "Please enter a valid email address";
+}
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    // Scroll to first error
+    const firstError = Object.keys(newErrors)[0];
+    document.querySelector(`[name="${firstError}"]`)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+    return;
+  }
+
+  // Clear errors
+  setErrors({});
+
     dispatch(
       updateStepData({
         step: `step${currentStep}`,
@@ -134,7 +185,9 @@ const RegisterStep3 = () => {
             <input
               type='text'
               placeholder='Address Line 1'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                errors.addressLine1 ? 'border-red-500' : ''
+              }`}
               value={formData.addressLine1}
               onChange={(e) =>
                 setFormData({ ...formData, addressLine1: e.target.value })
@@ -150,7 +203,9 @@ const RegisterStep3 = () => {
             <input
               type='text'
               placeholder='Town/City'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                errors.city ? 'border-red-500' : ''
+              }`}
               value={formData.city}
               onChange={(e) =>
                 setFormData({ ...formData, city: e.target.value })
@@ -185,7 +240,7 @@ const RegisterStep3 = () => {
                 width: '100%',
                 padding: '8px',
                 borderRadius: '5px',
-                border: 'none',
+                border: errors.country ? '1px solid #EF4444' : 'none',
                 fontSize: '16px',
               }}
             />
@@ -198,7 +253,9 @@ const RegisterStep3 = () => {
             <input
               type='text'
               placeholder='Postcode/Zipcode'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                errors.postcode ? 'border-red-500' : ''
+              }`}
               value={formData.postcode}
               onChange={(e) =>
                 setFormData({ ...formData, postcode: e.target.value })
@@ -214,7 +271,9 @@ const RegisterStep3 = () => {
             <input
               type='email'
               placeholder='Enter email address'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                errors.primaryEmail ? 'border-red-500' : ''
+              }`}
               value={formData.primaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, primaryEmail: e.target.value })
@@ -230,7 +289,9 @@ const RegisterStep3 = () => {
             <input
               type='email'
               placeholder='Enter email address'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                errors.secondaryEmail ? 'border-red-500' : ''
+              }`}
               value={formData.secondaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, secondaryEmail: e.target.value })
@@ -255,7 +316,7 @@ const RegisterStep3 = () => {
                 width: '100%',
                 padding: '8px',
                 borderRadius: '5px',
-                border: 'none',
+                border: errors.state ? '1px solid #EF4444' : 'none',
                 fontSize: '16px',
               }}
             />
@@ -282,7 +343,9 @@ const RegisterStep3 = () => {
               <input
                 type='tel'
                 placeholder='Telephone'
-                className='col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                  errors.primaryPhone ? 'border-red-500' : ''
+                }`}
                 value={formData.primaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, primaryPhone: e.target.value })
@@ -313,7 +376,9 @@ const RegisterStep3 = () => {
               <input
                 type='tel'
                 placeholder='Mobile'
-                className='col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
+                  errors.secondaryPhone ? 'border-red-500' : ''
+                }`}
                 value={formData.secondaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, secondaryPhone: e.target.value })

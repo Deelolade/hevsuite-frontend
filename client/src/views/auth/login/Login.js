@@ -5,9 +5,14 @@ import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
 import authService from '../../../services/authService';
 import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../../../features/auth/authSlice';
 
 const Login = () => {
+  const dispatch=useDispatch()
   const navigate = useNavigate();
+  const { isLoading, isError, message } = useSelector((state) => state.auth);
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -18,14 +23,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await authService.loginUser(formData);
+      if (!formData.email || !formData.password) {
+        toast.error('Please enter both email and password');
+        return;
+      }
+      const response = await dispatch(login(formData)).unwrap();
+      // const response = await authService.loginUser(formData);
+      // console.log(response)
       if (response.message === '2FA required') {
         navigate('/code-verification');
       } else {
         navigate('/two-factor-auth');
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.message);
     }
   };
 
@@ -45,7 +56,7 @@ const Login = () => {
 
         {/* Desktop Left Side Content */}
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
-          <div className='flex flex-col items-center text-center'>
+          <div className='flex flex-col items-center text-center mt-auto'>
             <div className='w-32 h-32 rounded-2xl mb-4 bg-red'>
               <img
                 src={logo}
@@ -182,7 +193,12 @@ const Login = () => {
 
               <button
                 type='submit'
-                className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
+                disabled={isLoading}
+                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${
+                  isLoading
+                    ? 'cursor-not-allowed'
+                    : ''
+                }`}
               >
                 Login
               </button>

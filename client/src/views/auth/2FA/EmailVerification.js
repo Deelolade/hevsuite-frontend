@@ -3,13 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo_white.png";
 import image from "../../../assets/image.jpg";
 import { MdEmail } from "react-icons/md";
+import authService from "../../../services/authService";
+import toast from "react-hot-toast";
 
 const EmailVerification = () => {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
-  const handleVerify = () => {
-    navigate("/code-verification", { state: { type: "email" } });
+  const handleVerify = async() => {
+    try {
+      await authService.setup2FA({ method: "email", email });
+      navigate("/code-verification", { state: { type: "email" } });
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+    }
   };
 
   return (

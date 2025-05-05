@@ -28,6 +28,7 @@ const RegisterStep2 = () => {
   );
 
   const [formData, setFormData] = useState({ ...data.step2 });
+  const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
 
@@ -37,6 +38,25 @@ const RegisterStep2 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Check if the form is valid before proceeding
+    const newErrors = {};
+
+    if (!formData.title) newErrors.title = "Title is required";
+    if (!formData.forename) newErrors.forename = "Forename is required";
+    if (!formData.surname) newErrors.surname = "Surname is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.dob) newErrors.dob = "Date of birth is required";
+    if (!formData.nationality) newErrors.nationality = "Nationality is required";
+    if (!formData.relationshipStatus)
+      newErrors.relationshipStatus = "Relationship status is required";
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+  
+    // Clear errors
+    setErrors({});
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
     dispatch(nextStep());
     navigate('/register-3');
@@ -122,7 +142,7 @@ const RegisterStep2 = () => {
                 Title<span className='text-red-500'>*</span>
               </label>
               <select
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.title ? 'border-red-500' : ''}`}
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -147,7 +167,7 @@ const RegisterStep2 = () => {
               <input
                 type='text'
                 placeholder='Enter first name'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.forename ? 'border-red-500' : ''}`}                
                 value={formData.forename}
                 onChange={(e) =>
                   setFormData({ ...formData, forename: e.target.value })
@@ -162,7 +182,7 @@ const RegisterStep2 = () => {
               <input
                 type='text'
                 placeholder='Enter surname'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.surname ? 'border-red-500' : ''}`}
                 value={formData.surname}
                 onChange={(e) =>
                   setFormData({ ...formData, surname: e.target.value })
@@ -178,7 +198,8 @@ const RegisterStep2 = () => {
                 Gender<span className='text-red-500'>*</span>
               </label>
               <select
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+                name='gender'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.gender ? 'border-red-500' : ''}`}
                 value={formData.gender}
                 onChange={(e) =>
                   setFormData({ ...formData, gender: e.target.value })
@@ -196,7 +217,7 @@ const RegisterStep2 = () => {
               </label>
               <input
                 type='date'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.dob ? 'border-red-500' : ''}`}
                 value={formData.dob}
                 onChange={(e) =>
                   setFormData({ ...formData, dob: e.target.value })
@@ -211,6 +232,7 @@ const RegisterStep2 = () => {
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
                 Nationality<span className='text-red-500'>*</span>
               </label>
+              <div className={`${errors.nationality ? 'border border-red-500' : ''}`}>
               <CountrySelect
                 onChange={(country) =>
                   changeNationalityHandler(country, 'nationality')
@@ -228,6 +250,7 @@ const RegisterStep2 = () => {
                   fontSize: '16px',
                 }}
               />
+              </div>
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -261,7 +284,7 @@ const RegisterStep2 = () => {
               Relationship Status<span className='text-red-500'>*</span>
             </label>
             <select
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.relationshipStatus ? 'border-red-500' : ''}`}
               value={formData.relationshipStatus}
               onChange={(e) =>
                 setFormData({ ...formData, relationshipStatus: e.target.value })

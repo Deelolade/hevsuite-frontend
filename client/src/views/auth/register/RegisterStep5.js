@@ -40,34 +40,54 @@ const RegisterStep5 = () => {
     setFormData({ ...formData, [type]: file });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) return;
-
-    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    const validatePassword = (pass) => {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
+      return passwordRegex.test(pass);
+    };
+    // Validate passwords
+    if (!validatePassword(formData.password)) {
+      toast.error('One uppercase, lowercase and a minimum of 7 characters)');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
 
     const finalData = {
       ...data.step2,
       ...data.step3,
       ...data.step4,
-      proofOfId: formData.proofOfId,
-      picture: formData.picture,
       password: formData.password,
     };
-
+  
+    const formDataToSend = new FormData();
+  
+   
+    for (const key in finalData) {
+      formDataToSend.append(key, finalData[key]);
+    }
+  
+    // Append files (if they exist)
+    if (formData.picture) {
+      formDataToSend.append("profilePhoto", formData.picture);
+    }
+    if (formData.proofOfId) {
+      formDataToSend.append("idCardPhoto", formData.proofOfId); 
+    }
+  
     try {
-      await authService.register(finalData);
-      navigate('/register-6');
-      toast.success(
-        'User Registered Successfully. Please check email and verify to continue.'
-      );
+      await authService.register(formDataToSend); 
+      toast.success("Registration successful! Check your email for verification.");
+      navigate("/register-6");
       dispatch(reset());
     } catch (error) {
-      toast.error('Something went wrong. Please try again');
+      toast.error(error.message || "Registration failed.");
     }
   };
-
   return (
     <div className='min-h-screen flex flex-col'>
       <div className='relative text-white'>

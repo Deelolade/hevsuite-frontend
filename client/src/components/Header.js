@@ -1,106 +1,101 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/logo_white.png";
-import avatar from "../assets/user.avif";
-import { BsBell } from "react-icons/bs";
-import { BsTwitterX, BsInstagram } from "react-icons/bs";
-import ProfileModal from "./ProfileModal";
-import Modal from "react-modal";
-import { MdKeyboardArrowDown } from "react-icons/md";
-
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo_white.png';
+import avatar from '../assets/user.avif';
+import { BsBell } from 'react-icons/bs';
+import { BsTwitterX, BsInstagram } from 'react-icons/bs';
+import ProfileModal from './ProfileModal';
+import Modal from 'react-modal';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProfile, logout } from "../features/auth/authSlice";
 const Header = () => {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [userEmail, setUserEmail] = useState("machoodsylter@gmail.com");
-  const [userName, setUserName] = useState({
-    first: "First Name",
-    last: "Surname",
-  });
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+     const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [showProfileModal, setShowProfileModal] = useState(false);
+      const { user, isLoading } = useSelector(
+        (state) => state.auth
+      );
+  const isLoggedIn = !!user;
+
 
   const notRef = React.useRef(false);
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.classList.add("overflow-hidden");
+      document.body.classList.add('overflow-hidden');
     } else {
-      document.body.classList.remove("overflow-hidden");
+      document.body.classList.remove('overflow-hidden');
     }
   }, [isMenuOpen]);
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-      // TODO: Fetch user data here and update email and name
-    }
-  }, []);
+    dispatch(fetchProfile());
+
+  }, [dispatch]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    dispatch(logout());
     navigate("/");
     window.location.reload();
   };
 
   return (
-    <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40">
-      <nav className="container mx-auto px-4 sm:pl-8 py-6 flex justify-between items-center">
-        <Link to="/homepage" className="text-white text-3xl font-bold">
-          <img src={logo} alt="Logo" className="h-10 sm:h-12" />
+    <header className='absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40'>
+      <nav className='container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center'>
+        <Link to='/homepage' className='text-white text-3xl font-bold'>
+          <img src={logo} alt='Logo' className='h-10 sm:h-12' />
         </Link>
 
         {/* Mobile Menu Toggle */}
-        <div className="md:hidden">
+        <div className='md:hidden'>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white text-2xl focus:outline-none"
+            className='text-white text-2xl focus:outline-none'
           >
-            {isMenuOpen ? "×" : "☰"}
+            {isMenuOpen ? '×' : '☰'}
           </button>
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden max-w-[600px] w-full fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-0 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2  px-6 sm:px-1 md:px-6 rounded-l-3xl  pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
-          <Link to="/how-it-works">How it works</Link>
-          <Link to="/topics">Help centre</Link>
-          <Link to="/ask">Ask</Link>
+        <div className='hidden fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base'>
+          <Link to='/how-it-works'>How it works</Link>
+          <Link to='/topics'>Help centre</Link>
+          <Link to='/ask'>Ask</Link>
           {isLoggedIn ? (
             <>
-              <div className="flex items-center space-x-6">
+              <div className='flex items-center space-x-6'>
                 <div
-                  className="relative cursor-pointer"
+                  className='relative cursor-pointer'
                   onClick={() => {
                     notRef.current = true;
                     setShowProfileModal(true);
                   }}
                 >
-                  <BsBell className="w-6 h-6" />
-                  <span className="absolute -top-1 -left-1 w-4 h-4 text-[8px] bg-primary rounded-full flex items-center justify-center">
-                    9+
+                  <BsBell className='w-6 h-6' />
+                  <span className='absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center'>
+                    10+
                   </span>
                 </div>
                 <div
-                  className="flex items-center space-x-2 cursor-pointer"
+                  className='flex items-center space-x-2 cursor-pointer'
                   onClick={() => {
                     notRef.current = false;
                     setShowProfileModal(true);
                   }}
                 >
                   <img
-                    src={avatar}
-                    alt="Avatar"
-                    className="flex flex-row gap-2 w-12 h-12 rounded-full border-2 border-red-500 object-cover"
+                    src={user.image || avatar}
+                    alt={user.image||'profile'}
+                    className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
                   />
-                  <span className="text-[#FB0A0A] font-bold">Goodluck</span>
-                  <MdKeyboardArrowDown className="text-[20px]" />
+                  <span className='text-white'>Goodluck</span>
                 </div>
               </div>
             </>
           ) : (
             <Link
-              to="/login"
-              className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl"
+              to='/login'
+              className='px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl'
             >
               Login for members
             </Link>
@@ -110,56 +105,56 @@ const Header = () => {
         {/* Mobile Menu */}
         <div
           className={`${
-            isMenuOpen ? "block" : "hidden"
+            isMenuOpen ? 'block' : 'hidden'
           } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
         >
-          <div className="p-6 h-full flex flex-col overflow-auto">
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-2">
-                <img src={logo} alt="Logo" className="h-8" />
-                <span className="text-white text-xl">evsuite Club</span>
+          <div className='p-6 h-full flex flex-col overflow-auto'>
+            <div className='flex justify-between items-center mb-8'>
+              <div className='flex items-center gap-2'>
+                <img src={logo} alt='Logo' className='h-8' />
+                <span className='text-white text-xl'>evsuite Club</span>
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="text-2xl text-white"
+                className='text-2xl text-white'
               >
                 ×
               </button>
             </div>
 
             {/* Menu Items */}
-            <div className="flex-grow">
-              <div className="space-y-2">
+            <div className='flex-grow'>
+              <div className='space-y-2'>
                 <Link
-                  to="/homepage"
-                  className="block bg-black text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  to='/homepage'
+                  className='block bg-black text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
                 >
                   Home
                 </Link>
                 <Link
-                  to="/how-it-works"
-                  className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  to='/how-it-works'
+                  className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
                 >
                   How it Works
                 </Link>
                 {isLoggedIn && (
                   <Link
-                    to="/ask"
-                    className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                    to='/ask'
+                    className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
                   >
                     Ask
                   </Link>
                 )}
                 <Link
-                  to="/topics"
-                  className="block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  to='/topics'
+                  className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
                 >
                   Help Centre
                 </Link>
                 {isLoggedIn && (
                   <>
                     <div
-                      className="block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      className='block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
                       onClick={() => {
                         notRef.current = false;
                         setShowProfileModal(true);
@@ -167,13 +162,13 @@ const Header = () => {
                     >
                       My Account
                     </div>
-                    <div className="relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] cursor-pointer">
+                    <div className='relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] cursor-pointer'>
                       <Link
-                        to="/notifications"
-                        className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+                        to='/notifications'
+                        className='block text-white py-2 px-4 rounded-lg hover:bg-gray-700'
                       >
                         Notification
-                        <span className="absoulte left-2 ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        <span className='ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full'>
                           10+
                         </span>
                       </Link>
@@ -183,24 +178,24 @@ const Header = () => {
               </div>
             </div>
 
-            <div className="mt-auto">
+            <div className='mt-auto'>
               {isLoggedIn ? (
                 <>
-                  <div className="mb-6  text-center">
+                  <div className='mb-6  text-center'>
                     <img
-                      src={avatar}
-                      alt="Profile"
-                      className="w-16 h-16 rounded-full mx-auto my-6"
+                      src={user.image || avatar}
+                      alt={user.image||'profile'}
+                      className='w-16 h-16 rounded-full mx-auto my-6'
                     />
-                    <div className="text-white mb-3">
-                      {userName.first} {userName.last}
+                    <div className='text-white mb-3'>
+                      {user.forename} {user.surname}
                     </div>
-                    <div className="text-gray-200 text-sm mb-6">
-                      {userEmail}
+                    <div className='text-gray-200 text-sm mb-6'>
+                      {user.primaryEmail}
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-sm bg-pink-100 text-black py-2 rounded-lg"
+                      className='w-full text-sm bg-pink-100 text-black py-2 rounded-lg'
                     >
                       Logout
                     </button>
@@ -208,17 +203,17 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <div className="space-y-3 mb-6">
+                  <div className='space-y-3 mb-6'>
                     <Link
-                      to="/login"
-                      className="block w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white text-center py-3 rounded-lg"
+                      to='/login'
+                      className='block w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white text-center py-3 rounded-lg'
                     >
                       Members Login
                     </Link>
-                    <div className="text-center text-white my-2">Or</div>
+                    <div className='text-center text-white my-2'>Or</div>
                     <Link
-                      to="/register"
-                      className="block w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white text-center py-3 rounded-lg"
+                      to='/register'
+                      className='block w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white text-center py-3 rounded-lg'
                     >
                       Become a Member
                     </Link>
@@ -226,23 +221,23 @@ const Header = () => {
                 </>
               )}
 
-              <div className="border-t border-gray-700 pt-4">
-                <div className="flex justify-start gap-6 mb-4">
-                  <a href="#" className="text-white text-xl">
+              <div className='border-t border-gray-700 pt-4'>
+                <div className='flex justify-start gap-6 mb-4'>
+                  <a href='#' className='text-white text-xl'>
                     <BsTwitterX />
                   </a>
-                  <a href="#" className="text-white text-xl">
+                  <a href='#' className='text-white text-xl'>
                     <BsInstagram />
                   </a>
-                  <p className="text-white text-lg">Follow us</p>
+                  <p className='text-white text-lg'>Follow us</p>
                 </div>
-                <div className="flex justify-start text-sm text-white ">
-                  <Link to="/terms" className="mr-8">
+                <div className='flex justify-start text-sm text-white '>
+                  <Link to='/terms' className='mr-8'>
                     Policies
                   </Link>
-                  <Link to="/club">HH Club & Founder</Link>
+                  <Link to='/club'>HH Club & Founder</Link>
                 </div>
-                <div className=" text-xs text-white mt-2">
+                <div className=' text-xs text-white mt-2'>
                   2024 Hazer Group (Trading as HH Club)
                 </div>
               </div>
@@ -254,21 +249,21 @@ const Header = () => {
         <Modal
           isOpen={true}
           onRequestClose={() => setShowProfileModal(false)}
-          contentLabel="Profile Modal"
+          contentLabel='Profile Modal'
           style={{
             overlay: {
-              position: "fixed",
+              position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
               zIndex: 1000,
             },
             content: {
-              backgroundColor: "transparent",
-              border: "none",
-              padding: "0",
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: '0',
             },
           }}
         >
