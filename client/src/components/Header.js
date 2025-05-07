@@ -8,6 +8,7 @@ import ProfileModal from './ProfileModal';
 import Modal from 'react-modal';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
+import { persistor } from '../store/store';
 const Header = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -33,10 +34,11 @@ const Header = () => {
 
   }, [dispatch]);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async() => {
+   dispatch(logout()).then(() => {
+    persistor.purge(); // safely purge after logout completes
+  });
     navigate("/");
-    window.location.reload();
   };
 
   return (
@@ -79,13 +81,12 @@ const Header = () => {
                 <div
                   className='flex items-center space-x-2 cursor-pointer'
                   onClick={() => {
-                    notRef.current = false;
                     setShowProfileModal(true);
                   }}
                 >
                   <img
-                    src={user.image || avatar}
-                    alt={user.image||'profile'}
+                    src={user.profilePhoto || avatar}
+                    alt={user.profilePhoto||'profile'}
                     className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
                   />
                   <span className='text-white'>Goodluck</span>
@@ -281,7 +282,7 @@ const Header = () => {
           `}</style>
 
           <ProfileModal
-            forNotification={notRef}
+            forNotification={notRef.current ? notRef : null}
             onClose={() => setShowProfileModal(false)}
           />
         </Modal>

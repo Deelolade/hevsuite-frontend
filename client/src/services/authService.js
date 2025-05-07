@@ -130,7 +130,9 @@ const resend2FACode = async () => {
 }
 const logout = async () => {
   try {
-    const response = await axios.post(API_URL + 'logout');
+    const response = await axios.post(API_URL + 'logout',{
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     throw new Error(
@@ -141,9 +143,26 @@ const logout = async () => {
   }
 
 };
+// Register user
+const updateProfile = async (userData) => {
+  try{
+  const response = await axios.put(API_URL + 'update', userData ,{
+    withCredentials: true,
+  });
+  return response.data;
+}catch (error) {
+
+  throw new Error(
+    error.response?.data?.message || 
+    error.message || 
+    'Registration failed'
+  );
+}
+};
 
 const authService = {
   register,
+  updateProfile,
   pendingRegLogin,
   loginUser,
   setup2FA,

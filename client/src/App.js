@@ -32,10 +32,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 axios.defaults.withCredentials = true;
 
-const isAuthenticated = () => {
-  return localStorage.getItem('user') === null;
-  // return localStorage.getItem("user") !== null;
-};
 
 
 // Protected Route Component

@@ -6,7 +6,7 @@ import image from '../../../assets/image.jpg';
 import authService from '../../../services/authService';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../../../features/auth/authSlice';
+import { fetchProfile, login } from '../../../features/auth/authSlice';
 
 const Login = () => {
   const dispatch=useDispatch()
@@ -35,8 +35,10 @@ const Login = () => {
       } else {
         navigate('/two-factor-auth');
       }
+      await dispatch(fetchProfile());
     } catch (error) {
-      toast.error(error.message);
+      // toast.error(error.message);
+      console.log(error.message);
     }
   };
 

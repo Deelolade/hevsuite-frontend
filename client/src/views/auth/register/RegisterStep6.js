@@ -341,7 +341,7 @@ const RegisterStep6 = () => {
             <button
               onClick={async () => {
                 try {
-                  await referralService.sendReferrals(selectedMembers);
+                  await referralService.sendReferralsRequest(selectedMembers);
                   toast.success('Referral requests sent successfully!');
 
                   // Refetch updated referral data

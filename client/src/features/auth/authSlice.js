@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService';
 import userService from '../../services/userService';
+import toast from 'react-hot-toast';
 
 const initialState = {
   user: null,
@@ -39,7 +40,20 @@ export const fetchProfile = createAsyncThunk(
     }
   }
 );
-
+// update user profile
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (userData, thunkAPI) => {
+    try {
+      const updatedUser = await authService.updateProfile(userData);
+      return updatedUser; 
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Failed to update profile'
+      );
+    }
+  }
+);
 
 export const logout = createAsyncThunk(
   'auth/logout',
@@ -74,6 +88,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+        toast.error(state.message);
       })
       .addCase(fetchProfile.pending, (state) => {
         state.isLoading = true;
@@ -86,11 +101,30 @@ const authSlice = createSlice({
       .addCase(fetchProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
+        state.isAuthenticated = false;
         state.message = action.payload;
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
+      })
+      .addCase(logout.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload; // Update the user in state
+        toast.success('Profile updated successfully!');
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(state.message);
       });
   },
 });

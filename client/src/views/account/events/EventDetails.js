@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BsBell,
   BsChevronLeft,
@@ -13,21 +13,28 @@ import eventimg from "../../../assets/event.png";
 import mastercard from "../../../assets/Mastercard.png";
 import paypal from "../../../assets/PayPal.png";
 import stripe from "../../../assets/Stripe.png"
+import { fetchAttendingMembers } from "../../../features/eventSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
 
-const EventDetailsModal = ({ event, onClose, eventType }) => {
+const EventDetailsModal = ({ event, onClose, eventType, events }) => {
+
+  const dispatch = useDispatch();
+
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [modalPage, setModalPage] = useState(1);
+  const { attendingMembers, membersLoading } = useSelector((state) => state.events);
 
-  const attendees = [
-    { name: "Anna Ivanovic", date: "2nd Dec., 2025", image: avatar },
-    { name: "Benson Jackson", date: "2nd Dec., 2025", image: avatar },
-    { name: "Beryl Ama", date: "2nd Dec., 2025", image: avatar },
-    { name: "Jack Phil", date: "2nd Dec., 2025", image: avatar },
-    { name: "Matt Hardy", date: "2nd Dec., 2025", image: avatar },
-    { name: "Michael Jackinson", date: "2nd Dec., 2025", image: avatar },
-  ];
+  // Get attendees for the current event
+  const attendees = attendingMembers[event._id] || [];
+  useEffect(() => {
+    // Only fetch if we haven't already loaded members for this event
+    if (!attendingMembers[event._id]) {
+      dispatch(fetchAttendingMembers(event._id));
+    }
+  }, [dispatch, event._id, attendingMembers]);
 
   const attendeesPerPage = 4;
   const totalModalPages = Math.ceil(attendees.length / attendeesPerPage);
@@ -43,45 +50,8 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
 
-  const events = [
-    {
-      id: 1,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: party,
-    },
-    {
-      id: 2,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: eventimg,
-    },
-    {
-      id: 3,
-      title: "The Adventurer",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: party,
-    },
-    {
-      id: 4,
-      title: "Battle for NBA Cup",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: eventimg,
-    },
-    {
-      id: 5,
-      title: "The Bout for Lions",
-      date: "2nd January, 2025",
-      time: "10:00pm",
-      image: party,
-    },
-  ];
-  const [currentEventIndex, setCurrentEventIndex] = useState(
-    events.findIndex((eventx) => eventx.title === event.title)
+   const [currentEventIndex, setCurrentEventIndex] = useState(
+    events.findIndex((eventx) => eventx.name === event.name)
   );
 
   const handleNext = () => {
@@ -113,7 +83,7 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
             <div className="relative h-full overflow-y-auto">
               <img
                 src={currentEvent.image}
-                alt={currentEvent.title}
+                alt={currentEvent.name}
                 className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
@@ -136,22 +106,24 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
-                <div className="text-5xl font-bold text-white mb-4">50£</div>
+                <div className="text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
                 <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
-                  Members Only
+                  {currentEvent.audienceType === "members" ? "Members Only" : currentEvent.audienceType === "vip" ? "VIP Only" : "Open to All"}
                 </div>
                 <div className="flex items-center gap-6 text-white mb-4">
                   <div className="flex items-center gap-2">
                     <BsCalendar />
-                    <span>2nd January, 2025</span>
+                    <span>{formatDateWithSuffix(currentEvent.time)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MdAccessTime />
-                    <span>10:00pm</span>
+                    <span>{formatTime(currentEvent.time)}</span>
                   </div>
                 </div>
                 <p className="text-white/70 text-sm mb-6">
-                  Note: You can only buy one ticket
+                  {currentEvent.numberOfTicket === 1
+                    ? "Note: You can only buy one ticket"
+                    : `Note: You can buy up to ${currentEvent.numberOfTicket} tickets`}
                 </p>
                 <button
                   // onClick={() => setShowPaymentModal(true)}
@@ -173,31 +145,28 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
             <div className="border-b">
               <div className="flex">
                 <button
-                  className={`px-8 py-4 ${
-                    activeTab === "description"
-                      ? "bg-[#540A26] text-white"
-                      : "bg-white text-black"
-                  }`}
+                  className={`px-8 py-4 ${activeTab === "description"
+                    ? "bg-[#540A26] text-white"
+                    : "bg-white text-black"
+                    }`}
                   onClick={() => setActiveTab("description")}
                 >
                   Event Description
                 </button>
                 <button
-                  className={`px-8 py-4 ${
-                    activeTab === "location"
-                      ? "bg-[#540A26] text-white"
-                      : "bg-white text-black"
-                  }`}
+                  className={`px-8 py-4 ${activeTab === "location"
+                    ? "bg-[#540A26] text-white"
+                    : "bg-white text-black"
+                    }`}
                   onClick={() => setActiveTab("location")}
                 >
                   Location
                 </button>
                 <button
-                  className={`px-8 py-4 ${
-                    activeTab === "members"
-                      ? "bg-[#540A26] text-white"
-                      : "bg-white text-black"
-                  }`}
+                  className={`px-8 py-4 ${activeTab === "members"
+                    ? "bg-[#540A26] text-white"
+                    : "bg-white text-black"
+                    }`}
                   onClick={() => setActiveTab("members")}
                 >
                   Attending Members
@@ -209,17 +178,13 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
               {activeTab === "description" && (
                 <div>
                   <h2 className="text-[40px] font-bold mb-4 text-black font-primary">
-                    {currentEvent.title}
+                    {currentEvent.name}
                   </h2>
                   <h3 className="text-xl mb-4 text-black font-primary font-semibold">
                     The Party of the Year! 🎵
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Get ready to let loose, dance, and create unforgettable
-                    memories, a night filled with excitement, laughter, and good
-                    vibes! Whether you're here to groove on the dance floor,
-                    enjoy delicious food and drinks, or just soak in the party
-                    atmosphere, we've got it all covered.
+                    {currentEvent.description}
                   </p>
                   <h3 className="text-xl font-semibold mb-4 text-black">
                     🎵 What to Expect
@@ -259,11 +224,19 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                   {/* <h1>hello</h1> */}
                   <div>
                     <div id="google-maps-canvas" className="h-full">
-                      <iframe
+                      {/* <iframe
                         className="md:h-[500px] w-full"
                         frameborder="0"
                         src="https://www.google.com/maps/embed/v1/place?q=uk+london,+brixton+brockwell+park&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                      /> */}
+                      <iframe
+                        className="md:h-[500px] w-full"
+                        frameBorder="0"
+                        src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${currentEvent.location?.coordinates?.lat},${currentEvent.location?.coordinates?.lng}&zoom=15`}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
                       />
+
                     </div>
                   </div>
                 </div>
@@ -274,15 +247,15 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                   {paginatedAttendees.map((attendee, index) => (
                     <div key={index} className="flex items-center gap-4">
                       <img
-                        src={attendee.image}
-                        alt={attendee.name}
+                        src={attendee.profilePhoto}
+                        alt={`${attendee.forename} ${attendee.lastname}`}
                         className="w-12 h-12 rounded-full"
                       />
                       <div>
                         <h3 className="font-semibold text-black">
-                          {attendee.name}
+                        {`${attendee.forename} ${attendee.surname}`}
                         </h3>
-                        <p className="text-gray-600">{attendee.date}</p>
+                        <p className="text-gray-600">{formatDateWithSuffix(attendee.createdAt)}</p>
                       </div>
                     </div>
                   ))}
@@ -301,11 +274,10 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
                       {Array.from({ length: totalModalPages }, (_, index) => (
                         <div
                           key={index}
-                          className={`w-2 h-2 rounded-full ${
-                            modalPage === index + 1
-                              ? "bg-[#540A26]"
-                              : "bg-gray-200"
-                          }`}
+                          className={`w-2 h-2 rounded-full ${modalPage === index + 1
+                            ? "bg-[#540A26]"
+                            : "bg-gray-200"
+                            }`}
                         ></div>
                       ))}
                     </div>

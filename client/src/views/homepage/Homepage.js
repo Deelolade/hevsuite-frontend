@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import headerBg from '../../assets/header-bg.jpg';
 import event from '../../assets/event.png';
@@ -15,7 +15,10 @@ import 'swiper/css/pagination';
 import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
 import './forced.css';
 import EventDetailsModal from '../account/events/EventDetails';
-
+import { fetchNonExpiredNews } from '../../features/newsSlice';
+import { fetchEvents } from '../../features/eventSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { formatDateWithSuffix, formatTime } from '../../utils/formatDate';
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -25,82 +28,42 @@ const Homepage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const events = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: party,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: party,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-    {
-      id: 5,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: party,
-    },
-    {
-      id: 6,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-  ];
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const newsItems = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event,
-    },
-  ];
+
+  useEffect(() => {
+    dispatch(fetchNonExpiredNews());
+    dispatch(fetchEvents());
+  }, [dispatch]);
+
+  const { newsItems, loading, error } = useSelector((state) => state.news);
+  const { events, loading: eventsLoading, error: eventsError } = useSelector((state) => state.events);
+  const navigate = useNavigate();
+  // Add this function to filter events by date
+  const filterEvents = () => {
+    if (!events) return [];
+
+    return events
+    .filter(event => {
+      if (selectedAudience && event.audienceType !== selectedAudience) return false;
+      if (selectedCountry && event.country !== selectedCountry) return false;
+      if (selectedCity && event.city !== selectedCity) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.time);
+      const dateB = new Date(b.time);
+      return selectedDate === 'newest'
+        ? dateB - dateA
+        : selectedDate === 'oldest'
+        ? dateA - dateB
+        : 0;
+    });
+  };
+
+  // Get filtered events
+  const filteredEvents = filterEvents();
+
 
   const handlePrevSlide = () => {
     setActiveSlide((prev) => (prev === 0 ? events.length - 1 : prev - 1));
@@ -118,14 +81,12 @@ const Homepage = () => {
           <img
             src={headerBg}
             alt='background'
-            className={`w-full ${
-              showFilters ? 'h-[120vh]' : 'h-screen'
-            } object-cover`}
+            className={`w-full ${showFilters ? 'h-[120vh]' : 'h-screen'
+              } object-cover`}
           />
           <div
-            className={`absolute inset-0 bg-black/50 ${
-              showFilters ? 'h-[120vh]' : 'h-screen'
-            }`}
+            className={`absolute inset-0 bg-black/50 ${showFilters ? 'h-[120vh]' : 'h-screen'
+              }`}
           />
         </div>
         <div className='relative z-10'>
@@ -142,11 +103,10 @@ const Homepage = () => {
                 </button>
 
                 <div
-                  className={`w-full md:flex items-center gap-2 md:gap-4 ${
-                    showFilters
+                  className={`w-full md:flex items-center gap-2 md:gap-4 ${showFilters
                       ? 'flex flex-col md:flex-row'
                       : 'hidden md:flex md:flex-row'
-                  }`}
+                    }`}
                 >
                   <div className='relative w-full md:w-auto'>
                     <MdPerson className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
@@ -187,6 +147,7 @@ const Homepage = () => {
                         Kenya
                       </option>
                     </select>
+
                   </div>
 
                   <div className='relative w-full md:w-auto mt-2 md:mt-0'>
@@ -271,54 +232,68 @@ const Homepage = () => {
                   }}
                   className='w-[80%]'
                 >
-                  {events.map((event, idx) => (
-                    <SwiperSlide key={event.id}>
-                      <div
-                        onClick={() => setSelectedEvent(event)}
-                        // className={`transition-all duration-300 ${
-                        //   activeSlide === idx ? "scale-110 opacity-100" : "scale-90 opacity-70"
-                        // }`}
-                        className={`relative cursor-pointer bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] 
-                      ${
-                        activeSlide === idx
-                          ? ' opacity-100 md:h-[400px]  h-[400px]'
-                          : ' opacity-70 scale-90 md:h-[400px] h-[400px]'
-                      }`}
-                      >
-                        <img
-                          src={event.image}
-                          alt={event.title}
-                          className='w-full h-full  object-cover bg-cover bg-center '
-                        />
-                        <div className='absolute bottom-0 left-0 right-0 p-4 '>
-                          <h3 className='text-xl font-semibold'>
-                            {event.title}
-                          </h3>
-                          <div className='flex items-center gap-4 mt-2 text-sm'>
-                            <div className='flex items-center gap-1'>
-                              <BsCalendar className='w-4 h-4' />
-                              <span>{event.date}</span>
-                            </div>
-                            <div className='flex items-center gap-1'>
-                              <MdAccessTime className='w-4 h-4' />
-                              <span>{event.time}</span>
+                  {eventsLoading ? (
+                    <div className="text-center py-10">Loading events...</div>
+                  ) : eventsError ? (
+                    <div className="text-center text-red-500 py-10">
+                      Failed to load events. Please try again.
+                    </div>
+                  ) : filteredEvents && filteredEvents.length > 0 ? (
+                    filteredEvents.map((event, idx) => (
+                      <SwiperSlide key={event.id}>
+                        <div
+                          onClick={() => setSelectedEvent(event)}
+                          // className={`transition-all duration-300 ${
+                          //   activeSlide === idx ? "scale-110 opacity-100" : "scale-90 opacity-70"
+                          // }`}
+                          className={`relative cursor-pointer bg-black rounded-2xl overflow-hidden transition-all duration-300 w-[300px] 
+                      ${activeSlide === idx
+                              ? ' opacity-100 md:h-[400px]  h-[400px]'
+                              : ' opacity-70 scale-90 md:h-[400px] h-[400px]'
+                            }`}
+                        >
+                          <img
+                            src={event.image}
+                            alt={event.name}
+                            className='w-full h-full  object-cover bg-cover bg-center '
+                          />
+                          <div className='absolute bottom-0 left-0 right-0 p-4 '>
+                            <h3 className='text-xl font-semibold'>
+                              {event.name}
+                            </h3>
+                            <div className='flex items-center gap-4 mt-2 text-sm'>
+                              <div className='flex items-center gap-1'>
+                                <BsCalendar className='w-4 h-4' />
+                                <span>{formatDateWithSuffix(event.time)}</span>
+                              </div>
+                              <div className='flex items-center gap-1'>
+                                <MdAccessTime className='w-4 h-4' />
+                                <span>{formatTime(event.time)}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
+                      </SwiperSlide>
+                    ))) : (
+                    <div className="text-center py-10">
+                      {selectedCountry || selectedCity || selectedAudience || selectedDate
+                        ? "No events match your filters"
+                        : "No events available"}
+                    </div>
+                  )}
                 </Swiper>
               </div>
+              {events?.length > 0 && (
 
-              <div className='text-center md:text-right mt-20 md:mt-4 px-4'>
-                <Link
-                  to='/events'
-                  className='text-white border p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm'
-                >
-                  View All
-                </Link>
-              </div>
+                <div className='text-center md:text-right mt-20 md:mt-4 px-4'>
+                  <Link
+                    to='/events'
+                    className='text-white border p-2 px-4 rounded-lg border-gray-400 hover:text-white transition-colors text-sm'
+                  >
+                    View All
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -330,38 +305,47 @@ const Homepage = () => {
           <h2 className='text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 font-secondary text-gradient_r'>
             Newsroom
           </h2>
-          <div className='flex w-[90vw] md:w-full md:overflow-hidden overflow-auto md:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-            {newsItems.map((item) => (
-              <div
-                key={item.id}
-                className='relative cursor-pointer group'
-                onClick={() => navigate('/news-detail')}
-              >
-                <div className='relative w-80 md:w-92 h-80 md:h-80 rounded-2xl overflow-hidden'>
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className='w-full h-full object-cover bg-cover bg-center bg-current'
-                  />
-                  <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black text-white'>
-                    <h3 className='text-lg md:text-xl font-semibold'>
-                      {item.title}
-                    </h3>
-                    <div className='flex items-center justify-between gap-5 mt-2 text-xs md:text-sm'>
-                      <div className='flex items-center gap-2'>
-                        <BsCalendar className='w-3 h-3 md:w-4 md:h-4' />
-                        <span>{item.date}</span>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <MdAccessTime className='w-3 h-3 md:w-4 md:h-4' />
-                        <span>{item.time}</span>
+          {loading ? (
+            <p className="text-center text-lg text-gray-600">Loading news...</p>
+          ) : error ? (
+            <p className="text-center text-red-500">Error: {error}</p>
+          ) : newsItems.length === 0 ? (
+            <p className="text-center text-gray-500">No news available.</p>
+          ) : (
+            <div className='flex w-[90vw] md:w-full md:overflow-hidden overflow-auto md:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+              {newsItems.map((item) => (
+                <div
+                  key={item.id}
+                  className='relative cursor-pointer group'
+                  onClick={() => navigate('/news-detail')}
+                >
+                  <div className='relative w-80 md:w-92 h-80 md:h-80 rounded-2xl overflow-hidden'>
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className='w-full h-full object-cover bg-cover bg-center bg-current'
+                    />
+                    <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black text-white'>
+                      <h3 className='text-lg md:text-xl font-semibold'>
+                        {item.title}
+                      </h3>
+                      <div className='flex items-center justify-between gap-5 mt-2 text-xs md:text-sm'>
+                        <div className='flex items-center gap-2'>
+                          <BsCalendar className='w-3 h-3 md:w-4 md:h-4' />
+                          <span>{formatDateWithSuffix(item.expireDate)}</span>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          <MdAccessTime className='w-3 h-3 md:w-4 md:h-4' />
+                          <span>{formatTime(item.expireDate)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
+          }
           <div className='text-center mt-6 md:mt-8'>
             <button
               onClick={() => navigate('/events')}
@@ -376,6 +360,7 @@ const Homepage = () => {
         <EventDetailsModal
           event={selectedEvent}
           eventType={'Home'}
+          events={events}
           onClose={() => setSelectedEvent(null)}
         />
       )}

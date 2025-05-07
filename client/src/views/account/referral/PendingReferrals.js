@@ -2,6 +2,7 @@ import React from "react";
 import ReferralItem from "./ReferralItem";
 
 const PendingReferrals = ({ referrals }) => {
+  console.log(referrals);
   return (
     <div className="space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2">
       {referrals.length > 0 ? (

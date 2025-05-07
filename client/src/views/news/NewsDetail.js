@@ -57,7 +57,7 @@ const NewsDetail = () => {
     if (!selectedNews) {
       navigate('/news'); // Redirect if no news selected (e.g. on refresh)
     }
-    if (selectedNews._id) {
+    if (selectedNews?._id) {
       fetch(`${process.env.REACT_APP_API_BASE_URL}/api/news/${selectedNews._id}/increment-reads`, {
         method: 'PUT',
       });
