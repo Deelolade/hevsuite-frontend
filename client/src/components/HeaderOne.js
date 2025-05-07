@@ -8,6 +8,7 @@ import ProfileModal from "./ProfileModal";
 import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
+import { persistor } from '../store/store';
 const HeaderOne = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -31,10 +32,11 @@ const HeaderOne = () => {
 
   }, [dispatch]);
   
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout =async () => {
+   dispatch(logout()).then(() => {
+    persistor.purge(); // safely purge after logout completes
+  });
     navigate("/");
-    window.location.reload();
   };
 
   return (
@@ -73,8 +75,8 @@ const HeaderOne = () => {
                   onClick={() => setShowProfileModal(true)}
                 >
                   <img
-                    src={user.image||avatar}
-                    alt={user.image||'profile'}
+                    src={user.profilePhoto||avatar}
+                    alt={user.profilePhoto||'profile'}
                     className="w-12 h-12 rounded-full border-2 border-red-500"
                   />
                   <span className="text-white">Goodluck</span>

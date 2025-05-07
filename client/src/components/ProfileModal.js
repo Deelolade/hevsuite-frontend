@@ -24,12 +24,12 @@ const ProfileModal = ({ onClose, forNotification }) => {
   ];
 
   const [activeTab, setActiveTab] = useState(
-    forNotification.current ? tabs[5] : tabs[0]
+    forNotification && forNotification.current ? tabs[5] : tabs[0]
   );
   const navigate = useNavigate();
    const dispatch = useDispatch();
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async() => {
+    await dispatch(logout());
     navigate("/");
     if (onClose) onClose();
     window.location.reload();

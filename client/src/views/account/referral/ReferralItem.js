@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import Modal from "react-modal";
+import referralService from "../../../services/referralService";
+import toast from "react-hot-toast";
 
 const ReferralItem = ({ referral, activeTab }) => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -24,7 +26,7 @@ const ReferralItem = ({ referral, activeTab }) => {
         </div>
         {activeTab === "Successful Referrals" ? (
           <div className="bg-white text-black shadow-lg font-primary rounded-lg px-4 sm:px-12 py-1.5 sm:py-2 text-sm sm:text-base text-center">
-            {referral.relationship}
+            {referral.relationship || "N/A"}
           </div>
         ) : activeTab === "Pending Referrals" ? (
           <button
@@ -75,9 +77,17 @@ const ReferralItem = ({ referral, activeTab }) => {
               No, Keep it
             </button>
             <button
-              onClick={() => {
+              onClick={async() => {
                 // Add cancel logic here
+                try {
+                  await referralService.updateReferralStatus({ referredUserId: referral.userId,
+                    status: "cancelled"})
+                } catch (error) {
+                  toast.error(error.message || "referral cancel failed")
+                }finally{
+
                 setIsCancelModalOpen(false);
+                }
               }}
               className="px-4 sm:px-6 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg text-xs sm:text-sm"
             >

@@ -164,7 +164,7 @@ const News = () => {
                 setActiveIndex(swiper.realIndex);
               }}
             >
-              {newsItems.map((item) => (
+              {newsItems?.map((item) => (
                 <SwiperSlide key={item.id}>
                   <div
                      onClick={() => {

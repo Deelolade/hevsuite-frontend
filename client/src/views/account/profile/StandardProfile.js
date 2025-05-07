@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BsCalendar,
   BsPencil,
@@ -12,6 +12,10 @@ import mastercard from "../../../assets/Mastercard.png";
 import SupportRequestsView from "./SupportRequestsView";
 import Swal from "sweetalert2";
 import { showModal } from "../../../components/FireModal";
+import { useDispatch, useSelector } from "react-redux";
+import referralService from "../../../services/referralService";
+import toast from "react-hot-toast";
+import { updateProfile } from "../../../features/auth/authSlice";
 
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
@@ -20,6 +24,8 @@ const StandardProfile = () => {
     occupation: true,
     referrals: true,
   });
+  const { user, isLoading } = useSelector((state) => state.auth);
+  const dispatch=useDispatch()
 
   const [isEditing, setIsEditing] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -28,33 +34,32 @@ const StandardProfile = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [personalInfo, setPersonalInfo] = useState({
-    title: "Mrs",
-    forename: "Andrew",
-    surname: "Andrew",
-    gender: "Female",
-    dob: "23 Jan, 2025",
-    relationshipStatus: "Married",
-    nationality: "Ethiopian",
-    additionalNationality: "British",
+    title: user?.title || "",
+    forename: user?.forename || "",
+    surname: user?.surname || "",
+    gender: user?.gender || "",
+    dob: user?.dob ? new Date(user.dob).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : "",
+    relationshipStatus: user?.relationshipStatus || "",
+    nationality: user?.nationality || "",
+    additionalNationality: user?.additionalNationality || "",
   });
 
   const [contactDetails, setContactDetails] = useState({
-    addressLine1: "Andrew",
-    townCity: "Andrew",
-    country: "Andrew",
-    postcodeZipcode: "Andrew",
-    primaryEmail: "Andrew",
-    secondaryEmail: "Andrew",
-    primaryPhone: "Andrew",
-    secondaryPhone: "Andrew",
-    state: "Andrew",
+    addressLine1: user?.addressLine1 || "",
+    townCity: user?.city || "",
+    country: user?.country || "",
+    postcodeZipcode: user?.postcode || "",
+    primaryEmail: user?.primaryEmail || "",
+    secondaryEmail: user?.secondaryEmail || "",
+    primaryPhone: user?.primaryPhone || "",
+    secondaryPhone: user?.secondaryPhone || "",
+    state: user?.address?.state || "",
   });
 
   const [occupationInfo, setOccupationInfo] = useState({
-    employmentStatus: "Employed",
-    memberOfClub: "No",
-    preferredSocialMedia: "LinkedIn",
-    secondaryPhone: "Andrew",
+    employmentStatus: user?.employmentStatus || "",
+    memberOfClub: user?.memberOfClub || "",
+    preferredSocialMedia: user?.preferredSocialMedia || "",
   });
 
   const [cardRequest, setCardRequest] = useState({
@@ -91,17 +96,27 @@ const StandardProfile = () => {
     });
   };
 
-  const handleSave = () => {
-    console.log("Saving profile data:", {
+  const handleSave = async() => {
+    // updating user profile data
+    const updatedData = {
       personalInfo,
       contactDetails,
       occupationInfo,
-    });
-    alert("Profile updated successfully!");
+    }
+    const resultAction = await dispatch(updateProfile(updatedData));
+    
+    if (updateProfile.fulfilled.match(resultAction)) {
+      // Success - no need to do anything extra as Redux will update state
+      setIsEditing(false);
+    } else {
+      throw new Error(resultAction.payload || 'Update failed');
+    }
+
     setIsEditing(false);
   };
 
   const handleRequestCard = () => {
+
     console.log(cardRequest);
     setShowPaymentModal(true);
   };
@@ -181,14 +196,14 @@ const StandardProfile = () => {
           )}
           <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
             <img
-              src={avatar}
+              src={user?.profilePhoto || avatar}
               alt="Profile"
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
             />
             <div className="flex-1">
               <h2 className="text-xl font-semibold">Good luck</h2>
               <p className="text-gray-600 mb-1">Standard Member/12345678</p>
-              <p className="text-gray-500">goodlucks@gmail.com</p>
+              <p className="text-gray-500">{user?.primaryEmail}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -199,9 +214,8 @@ const StandardProfile = () => {
               </button>
 
               <button
-                className={`px-4 sm:px-6 py-1.5 sm:py-2 ${
-                  isEditing ? "bg-green-600" : "bg-[#540A26]"
-                } text-white rounded-lg`}
+                className={`px-4 sm:px-6 py-1.5 sm:py-2 ${isEditing ? "bg-green-600" : "bg-[#540A26]"
+                  } text-white rounded-lg`}
                 onClick={isEditing ? handleSave : () => setIsEditing(true)}
               >
                 {isEditing ? "Save" : "Edit"}
@@ -232,9 +246,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("title", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -246,9 +259,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("forename", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -260,9 +272,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("surname", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -274,9 +285,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("gender", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -288,9 +298,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("dob", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -307,9 +316,8 @@ const StandardProfile = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -321,9 +329,8 @@ const StandardProfile = () => {
                       handlePersonalInfoChange("nationality", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -340,9 +347,8 @@ const StandardProfile = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
               </div>
@@ -376,9 +382,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("addressLine1", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -390,9 +395,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("townCity", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -404,9 +408,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("country", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -423,9 +426,8 @@ const StandardProfile = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -437,9 +439,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("primaryEmail", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -454,9 +455,8 @@ const StandardProfile = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -468,9 +468,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("primaryPhone", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -485,9 +484,8 @@ const StandardProfile = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
                 <div>
@@ -499,9 +497,8 @@ const StandardProfile = () => {
                       handleContactDetailsChange("state", e.target.value)
                     }
                     disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${
-                      isEditing ? "bg-white" : "bg-gray-50"
-                    } rounded-lg border border-gray-200`}
+                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                      } rounded-lg border border-gray-200`}
                   />
                 </div>
               </div>
@@ -537,9 +534,8 @@ const StandardProfile = () => {
                         )
                       }
                       disabled={!isEditing}
-                      className={`w-full px-3 py-2 ${
-                        isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
                     />
                   </div>
                   <div>
@@ -556,9 +552,8 @@ const StandardProfile = () => {
                         )
                       }
                       disabled={!isEditing}
-                      className={`w-full px-3 py-2 ${
-                        isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
                     />
                   </div>
                   <div>
@@ -575,9 +570,8 @@ const StandardProfile = () => {
                         )
                       }
                       disabled={!isEditing}
-                      className={`w-full px-3 py-2 ${
-                        isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
                     />
                   </div>
                   <div>
@@ -594,9 +588,8 @@ const StandardProfile = () => {
                         )
                       }
                       disabled={!isEditing}
-                      className={`w-full px-3 py-2 ${
-                        isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
                     />
                   </div>
                 </div>
@@ -630,24 +623,11 @@ const StandardProfile = () => {
 
             {openSections.referrals && (
               <div className="mt-4 space-y-3">
-                {[1, 2, 3].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col sm:flex-row items-center justify-between border-b pb-2"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={avatar}
-                        alt="Referral"
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <span>Andrew Bojangles</span>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      Approved on Jan 22, 2023
-                    </span>
-                  </div>
-                ))}
+                {user?.referredBy?.length > 0 ? (
+                  <ReferralsList referredBy={user.referredBy} />
+                ) : (
+                  <p className="text-gray-500">No referrals found</p>
+                )}
               </div>
             )}
           </div>
@@ -662,24 +642,40 @@ const StandardProfile = () => {
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    checked
+                    checked={user?.is2FAEnabled && user?.twoFAMethod === 'email'}
                     className="w-4 h-4 accent-[#540A26]"
                     readOnly
                   />
-                  <span>goodlucks@gmail.com</span>
+                  <span>{user?.twoFAEmail || user?.primaryEmail || 'No email set'}</span>
                 </div>
-                <span className="text-gray-500 text-sm">1 month ago</span>
+                <span className="text-gray-500 text-sm">
+                  {user?.is2FAEnabled && user?.twoFAMethod === 'email' ?
+                    `Enabled ${user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric'
+                    }) : 'recently'}` :
+                    'Not enabled'}
+
+                </span>
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
+                    checked={user?.is2FAEnabled && user?.twoFAMethod === 'phone'}
                     className="w-4 h-4 accent-[#540A26]"
                     readOnly
                   />
-                  <span>+251988049229</span>
+                  <span>{`+${user?.primaryPhone}` || 'No phone set'}</span>
                 </div>
-                <span className="text-gray-500 text-sm">1 month ago</span>
+                <span className="text-gray-500 text-sm">
+                  {user?.is2FAEnabled && user?.twoFAMethod === 'phone' ?
+                    `Enabled ${user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric'
+                    }) : 'recently'}` :
+                    'Not enabled'}
+                </span>
               </div>
             </div>
           </div>
@@ -696,9 +692,8 @@ const StandardProfile = () => {
                       type="text"
                       value={cardRequest.fullName}
                       disabled={!isEditingFullName}
-                      className={`w-full px-4 py-3 ${
-                        isEditing ? "bg-[#f9f9f9]" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
+                      className={`w-full px-4 py-3 ${isEditing ? "bg-[#f9f9f9]" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
                       onChange={(e) =>
                         setCardRequest({
                           ...cardRequest,
@@ -813,7 +808,7 @@ const StandardProfile = () => {
                               title: "Success",
                               text: "Profile Updated Successfully!",
                               confirmText: "Ok",
-                              onConfirm: () => {},
+                              onConfirm: () => { },
                             });
                             setIsEditingFullName(false);
                           }}
@@ -901,6 +896,81 @@ const StandardProfile = () => {
         </>
       )}
     </div>
+  );
+};
+
+
+const ReferralsList = ({ referredBy }) => {
+  const [referrals, setReferrals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReferrals = async () => {
+      try {
+        // Extract user IDs from referredBy array
+
+        const referralIds = referredBy
+        .filter(ref => ref.status === 'approved')
+        .map(ref => ref.userId);
+
+        if (referralIds.length > 0) {
+          // Fetch referral user details
+          const referralUsers = await referralService.fetchReferralbyIds(referralIds);
+
+          // Combine with referral data
+          const combinedData = referredBy.map((ref, index) => ({
+            ...ref,
+            user: referralUsers[index],
+          }));
+
+          setReferrals(combinedData);
+        }
+      } catch (error) {
+        console.error('Error fetching referrals:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReferrals();
+  }, [referredBy]);
+
+  if (loading) {
+    return <p className="text-gray-500">Loading referrals...</p>;
+  }
+
+  return (
+    <>
+      {referrals.map((referral, index) => (
+        <div
+          key={index}
+          className="flex flex-col sm:flex-row items-center justify-between border-b pb-2"
+        >
+          <div className="flex items-center gap-3">
+            <img
+              src={referral.user?.profilePhoto || avatar}
+              alt="Referral"
+              className="w-8 h-8 rounded-full"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = avatar;
+              }}
+            />
+            <span>
+              {referral.user?.name || ''}
+            </span>
+          </div>
+          <span className="text-sm text-gray-500">
+            {referral.status === 'approved' ? 'Approved' : 'Pending'} on{' '}
+            {new Date(referral.referDate || referral.createdAt).toLocaleDateString('en-US', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            })}
+          </span>
+        </div>
+      ))}
+    </>
   );
 };
 
