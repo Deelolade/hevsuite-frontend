@@ -27,6 +27,7 @@
 import React from "react";
 import Swal from "sweetalert2";
 import { showModal } from "../../../../../../components/FireModal";
+import { formatDateWithSuffix } from "../../../../../../utils/formatDate";
 
 const AcceptedListArchived = (ask) => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 text-[#444444]">
@@ -43,18 +44,18 @@ const AcceptedListArchived = (ask) => (
     </div>
     <div className="flex justify-between gap-2 sm:gap-4 items-center">
       <img
-        src={ask.image}
-        alt={ask.name}
+        src={ask?.createdbyImage}
+        alt={ask.createdByName}
         className="w-8 h-8 sm:w-12 sm:h-12 rounded-full"
       />
       <div className="min-w-0">
         <h4 className="font-medium font-primary text-sm sm:text-base truncate">
-          {ask.name}
+          {ask.createdByName}
         </h4>
-        <p className="text-xs sm:text-sm text-gray-600">{ask.date}</p>
+        <p className="text-xs sm:text-sm text-gray-600">{formatDateWithSuffix(ask.createdAt)}</p>
       </div>
     </div>
-    <div
+    {/* <div
       onClick={() =>
         showModal({
           title: "Mark Delivered?",
@@ -66,7 +67,7 @@ const AcceptedListArchived = (ask) => (
       className="px-3 cursor-pointer sm:px-4 py-1 sm:py-2 border border-[#0E5B31] text-[#0E5B31] rounded-lg text-xs sm:text-sm whitespace-nowrap"
     >
       Delivered
-    </div>
+    </div> */}
   </div>
 );
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import Modal from 'react-modal';
 import { IoClose } from 'react-icons/io5';
@@ -8,7 +8,20 @@ import Footer from '../../components/Footer';
 import { BiErrorCircle, BiMinus } from 'react-icons/bi';
 import { AiOutlineSend } from 'react-icons/ai';
 import avatar from '../../assets/user.avif';
-
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchOpenAsks,
+  createAsk,
+  claimAsk,
+  abandonAsk,
+  reportAsk,
+  chat,
+  setCurrentAsk,
+  reset
+} from '../../features/askSlice';
+import { formatDateWithSuffix } from '../../utils/formatDate';
+import { FaSpinner } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
@@ -21,6 +34,17 @@ const Ask = () => {
   const [messages, setMessages] = useState({});
   const [newMessage, setNewMessage] = useState('');
 
+  const dispatch = useDispatch();
+  const { asks, currentAsk, loading, error, message } = useSelector((state) => state.ask);
+  const { user: currentUser } = useSelector((state) => state.auth);
+  // Fetch asks on component mount
+  useEffect(() => {
+    dispatch(fetchOpenAsks());
+    return () => {
+      dispatch(reset());
+    };
+  }, [dispatch]);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -28,6 +52,89 @@ const Ask = () => {
     agreeToGuidelines: false,
   });
 
+  // Transform Redux ask data to message format
+  useEffect(() => {
+    if (selectedRequest) {
+      const askFromRedux = asks.find(a => a._id === selectedRequest.id) || currentAsk;
+      if (askFromRedux?.chat) {
+        // In your message transformation effect
+        setMessages(prev => ({
+          ...prev,
+          [selectedRequest.id]: askFromRedux.chat.map(msg => ({
+            text: msg.message,
+            time: new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isUser: currentUser && msg.sender?.toString() === currentUser._id?.toString()
+          }))
+        }));
+      }
+    }
+  }, [selectedRequest, asks, currentAsk]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedRequest || !currentUser) return;
+    
+    try {
+      // Create a temporary optimistic message
+      const tempMessage = {
+        sender: currentUser._id,
+        message: newMessage,
+        sentAt: new Date().toISOString(),
+        isOptimistic: true
+      };
+  
+      // Update local state immediately for instant feedback
+      setMessages(prev => ({
+        ...prev,
+        [selectedRequest.id]: [
+          ...(prev[selectedRequest.id] || []),
+          {
+            text: newMessage,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isUser: true,
+            isOptimistic: true
+          }
+        ]
+      }));
+  
+      // Dispatch the chat action and wait for it to complete
+      const resultAction = await dispatch(chat({
+        askId: selectedRequest._id,
+        message: newMessage
+      }));
+  
+      if (chat.fulfilled.match(resultAction)) {
+        // Success - clear the input field
+        setNewMessage('');
+        
+        // Update the messages with the actual server response
+        const newServerMessage = resultAction.payload;
+        setMessages(prev => ({
+          ...prev,
+          [selectedRequest._id]: [
+            ...((prev[selectedRequest._id] || []).filter(msg => !msg.isOptimistic)),
+            {
+              text: newServerMessage.message,
+              time: new Date(newServerMessage.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isUser: currentUser._id?.toString() === newServerMessage.sender?.toString()
+            }
+          ]
+        }));
+      } else {
+        // If the action was rejected, throw to catch block
+        throw new Error(resultAction.payload || 'Failed to send message');
+      }
+    } catch (error) {
+      // Rollback optimistic update on error
+      setMessages(prev => ({
+        ...prev,
+        [selectedRequest._id]: (prev[selectedRequest._id] || []).filter(
+          msg => !msg.isOptimistic
+        )
+      }));
+      console.error('Failed to send message:', error);
+      toast.error(error.message || 'Failed to send message'); 
+    }
+  };
   const modalStyles = {
     content: {
       top: '50%',
@@ -107,8 +214,6 @@ const Ask = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const requestsPerPage = 6;
-  const totalPages = Math.ceil(18 / requestsPerPage);
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -116,25 +221,48 @@ const Ask = () => {
     }
   };
 
-  const requests = Array(18)
-    .fill()
-    .map((_, index) => ({
-      id: index + 1,
-      title: 'Request for Event Volunteers',
-      description:
-        'Looking for volunteers to assist at the annual charity event this weekend.',
-      createdBy: 'John Daniel',
-      date: '21 January, 2025',
-      tags: ['#Urgent', '#Open'],
-    }));
-
-  const handleSubmit = (e) => {
+  // create ask handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add submission logic here
-    setIsModalOpen(false);
+    try {
+      await dispatch(createAsk(formData)).unwrap();
+      setIsModalOpen(false);
+      setFormData({
+        title: '',
+        description: '',
+        deadline: '',
+        agreeToGuidelines: false,
+      });
+    } catch (error) {
+      console.error('Failed to create ask:', error);
+    }
   };
+  // Handle claim ask
+  const handleClaimAsk = async (askId) => {
+    try {
+      await dispatch(claimAsk(askId));
+      const selected = asks.find(ask => ask.id === askId);
+      dispatch(setCurrentAsk(selected));
+      setIsChatModalOpen(true);
+    } catch (error) {
+      console.error('Failed to claim ask:', error);
+    }
+  };
+   // Handle claim ask
+   const handleAbandonAsk = async (askId) => {
+    try {
+      await dispatch(abandonAsk(askId));
+      const selected = asks.find(ask => ask.id === askId);
+      dispatch(setCurrentAsk(selected));
+    } catch (error) {
+      console.error('Failed to claim ask:', error);
+    }
+  };
+  // Update pagination to use real data
+  const requestsPerPage = 6;
+  const totalPages = Math.ceil(18 / requestsPerPage);
 
-  const paginatedRequests = requests.slice(
+  const paginatedRequests = asks?.slice(
     (currentPage - 1) * requestsPerPage,
     currentPage * requestsPerPage
   );
@@ -177,7 +305,7 @@ const Ask = () => {
 
         {/* Requests Grid */}
         <div className='px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-0'>
-          {paginatedRequests.map((request) => (
+          {paginatedRequests?.map((request) => (
             <div
               key={request.id}
               className='bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-xl'
@@ -203,29 +331,35 @@ const Ask = () => {
               <div className='space-y-1 md:space-y-2'>
                 <div className='flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600'>
                   <span>Created By:</span>
-                  <span className='text-[#979797]'> {request.createdBy}</span>
+                  <span className='text-[#979797]'> {request.createdByName}</span>
                 </div>
                 <div className='flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600'>
                   <span>Date:</span>
-                  <span className='text-[#979797]'>{request.date}</span>
+                  <span className='text-[#979797]'>{formatDateWithSuffix(request.createdAt)}</span>
                 </div>
               </div>
               <div className='flex flex-wrap items-center gap-2 md:gap-4 mt-3 md:mt-4'>
                 <div className='flex flex-wrap gap-1 md:gap-2'>
-                  {request.tags.map((tag, tagIndex) => (
+                  {request.isUrgent &&
                     <span
-                      key={tagIndex}
                       className='px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2'
                     >
-                      {tag}
+                      #Urgent
                     </span>
-                  ))}
+                  }
+                  {request.status == 'open' &&
+                    <span
+                      className='px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2'
+                    >
+                      #Open
+                    </span>
+                  }
                 </div>
                 <button
                   className='ml-auto px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm'
                   onClick={() => {
                     setSelectedRequest(request);
-                    setIsChatModalOpen(true);
+                    handleClaimAsk(request._id);
                   }}
                 >
                   Claim Ask
@@ -252,9 +386,8 @@ const Ask = () => {
           {[...Array(totalPages)].map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full ${
-                currentPage === index + 1 ? 'bg-[#540A26]' : 'bg-gray-300'
-              } hover:bg-[#540A26]/70 transition-colors`}
+              className={`w-2 h-2 rounded-full ${currentPage === index + 1 ? 'bg-[#540A26]' : 'bg-gray-300'
+                } hover:bg-[#540A26]/70 transition-colors`}
               onClick={() => handlePageChange(index + 1)}
               aria-label={`Page ${index + 1}`}
             ></button>
@@ -380,7 +513,7 @@ const Ask = () => {
           >
             <div className='text-white flex justify-evenly text-sm'>
               <h3 className='font-medium'>
-                {selectedRequest?.createdBy || 'User'}
+                {selectedRequest?.createdByName || 'User'}
               </h3>
               <span className='text-xs flex items-center gap-1'>
                 <span className='w-2 h-2 bg-green-400 rounded-full'></span>
@@ -394,12 +527,12 @@ const Ask = () => {
               <div className='flex items-center gap-3'>
                 <img
                   src={avatar}
-                  alt={selectedRequest?.createdBy || 'User'}
+                  alt={selectedRequest?.createdByName || 'User'}
                   className='w-10 h-10 rounded-full object-cover'
                 />
                 <div className='text-white'>
                   <h3 className='font-medium'>
-                    {selectedRequest?.createdBy || 'User'}
+                    {selectedRequest?.createdByName || 'User'}
                   </h3>
                   <span className='text-sm flex items-center gap-1'>
                     <span className='w-2 h-2 bg-green-400 rounded-full'></span>
@@ -430,16 +563,14 @@ const Ask = () => {
               {(messages[selectedRequest?.id] || []).map((message, index) => (
                 <div
                   key={index}
-                  className={`flex ${
-                    message.isUser ? 'justify-end' : 'justify-start'
-                  } mb-4`}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'
+                    } mb-4`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-2xl ${
-                      message.isUser
+                    className={`max-w-[80%] p-3 rounded-2xl ${message.isUser
                         ? 'bg-gray-100 text-black'
                         : 'bg-[#0A5440] text-white'
-                    }`}
+                      }`}
                   >
                     <p>{message.text}</p>
                     <span className='text-xs mt-1 block text-right'>
@@ -465,24 +596,19 @@ const Ask = () => {
                     className='w-full pr-12 pl-4 py-3 bg-gray-100 rounded-full'
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    disabled={loading}
                   />
                   <button
                     className='absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]'
-                    onClick={() => {
-                      if (newMessage.trim()) {
-                        const updatedMessages = {
-                          ...messages,
-                          [selectedRequest.id]: [
-                            ...(messages[selectedRequest.id] || []),
-                            { text: newMessage, time: '7:20', isUser: true },
-                          ],
-                        };
-                        setMessages(updatedMessages);
-                        setNewMessage('');
-                      }
-                    }}
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || loading}
                   >
-                    <AiOutlineSend size={24} />
+                    {loading ? (
+                      <FaSpinner size={20} />
+                    ) : (
+                      <AiOutlineSend size={24} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -529,18 +655,26 @@ const Ask = () => {
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
+              required
               className='w-full px-4 py-3 bg-gray-100 rounded-lg pr-6'
             >
-              <option value=''>Sexual Content</option>
-              <option value='harassment'>Inappropriate Content</option>
-              <option value='mislead'>Misleading Information</option>
-              <option value='spam'>Spamming</option>
+              <option value=''>select</option>
+              <option value='Sexual Content'>Sexual Content</option>
+              <option value='Inappropriate Content'>Inappropriate Content</option>
+              <option value='Misleading Information'>Misleading Information</option>
+              <option value='Spamming'>Spamming</option>
             </select>
           </div>
-
           <button
             onClick={() => {
-              // Handle report logic here
+              // Handle report logic 
+              if (reportType) {
+                dispatch(reportAsk({ askId: selectedRequest._id, reason: reportType }));
+                toast.success('Report submitted successfully!');
+              } else {
+                toast.error('Please select a report type.');
+              }
+              setReportType('');
               setShowReportModal(false);
             }}
             className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg'
@@ -586,12 +720,7 @@ const Ask = () => {
           </p>
           <button
             onClick={() => {
-              // Handle abandon logic here
-              setMessages((prevMessages) => {
-                const updatedMessages = { ...prevMessages };
-                delete updatedMessages[selectedRequest.id];
-                return updatedMessages;
-              });
+              handleAbandonAsk(selectedRequest._id);
               setShowAbandonModal(false);
               setIsChatModalOpen(false);
             }}

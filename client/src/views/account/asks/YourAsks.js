@@ -1,78 +1,135 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AskCard from "./components/AskCard";
 import NavigationTabs from "./components/NavigationTabs";
 import Pagination from "./components/Pagination";
 import avatar from "../../../assets/user.avif";
 import { BsCheckLg } from "react-icons/bs";
 import ViewToggle from "./components/ViewToggle";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAcceptedAsks, fetchCurrentUserAsks } from "../../../features/askSlice";
 
 const YourAsks = () => {
   const [view, setView] = useState("list");
   const [activeTab, setActiveTab] = useState("Your Asks");
   const [filter, setFilter] = useState("Current");
 
-  const asks = [
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-      delivered: true,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-    {
-      title: "Event Volunteer",
-      description: "We Need volunteer too.....",
-      name: "Anna Ivanovic",
-      date: "2nd Dec., 2025",
-      image: avatar,
-    },
-  ];
+  const dispatch = useDispatch();
+  const { acceptedAsks, currentAsks } = useSelector((state) => state.ask);
 
-  const acceptedAsks = Array(7).fill({
-    title: "Event Volunteer",
-    description: "We Need volunteer too...",
-    name: "Anna Ivanovic",
-    date: "2nd Dec., 2025",
-    image: avatar,
-  });
+    // Fetch data when component mounts 
+    useEffect(() => {
+      if (activeTab === "Your Asks") {
+        dispatch(fetchCurrentUserAsks());
+      } else {
+        dispatch(fetchAcceptedAsks());
+      }
+    }, [dispatch,activeTab]);
 
+  // const asks = [
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //     delivered: true,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  //   {
+  //     title: "Event Volunteer",
+  //     description: "We Need volunteer too.....",
+  //     name: "Anna Ivanovic",
+  //     date: "2nd Dec., 2025",
+  //     image: avatar,
+  //   },
+  // ];
+
+  
+  // const acceptedAsks = Array(7).fill({
+  //   title: "Event Volunteer",
+  //   description: "We Need volunteer too...",
+  //   name: "Anna Ivanovic",
+  //   date: "2nd Dec., 2025",
+  //   image: avatar,
+  // });
+  const getFilteredAsks = () => {
+
+    const currentDate = new Date();
+    if (activeTab === "Your Asks") {
+      // For "Your Asks" tab
+      const asksToFilter = currentAsks || [];
+      if (filter === "Current") {
+        return asksToFilter.filter(ask => 
+          (ask.status === "open" || ask.status === "claimed")
+        );
+      } else {
+        // For archived asks in "Your Asks" tab
+        return asksToFilter.filter(ask => 
+          ask.status === "delivered"
+        );
+      }
+    } else {
+      // For "Accepted Asks" tab
+      const asksToFilter= acceptedAsks || [];
+      if (filter === "Current") {
+        return asksToFilter.filter(ask => 
+          ask.status === "claimed"
+        );
+      } else {
+        // For archived asks in "Accepted Asks" tab
+        return asksToFilter.filter(ask => 
+          ask.status === "delivered"
+        );
+      }
+    }
+  };
+  
   const renderContent = () => {
+
+    const asksToDisplay = getFilteredAsks();
+    console.log(asksToDisplay)
+    if (asksToDisplay.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          No {filter.toLowerCase()} {activeTab === "Your Asks" ? "created" : "accepted"} asks found
+        </div>
+      );
+    }
+  
     if (activeTab === "Your Asks") {
       if (filter === "Current") {
         return (
@@ -83,13 +140,14 @@ const YourAsks = () => {
                 : "space-y-2 sm:space-y-3"
             }
           >
-            {asks.map((ask, index) => (
+            {asksToDisplay.map((ask, index) => (
               <AskCard
                 key={index}
                 ask={ask}
                 view={view}
                 activeTab={activeTab}
                 filter={filter}
+                dispatch={dispatch}
               />
             ))}
           </div>
@@ -103,13 +161,14 @@ const YourAsks = () => {
                 : "space-y-2 sm:space-y-3"
             }
           >
-            {asks.map((ask, index) => (
+            {asksToDisplay.map((ask, index) => (
               <AskCard
                 key={index}
                 ask={ask}
                 view={view}
                 activeTab={activeTab}
                 filter={filter}
+                dispatch={dispatch}
               />
             ))}
           </div>
@@ -125,13 +184,14 @@ const YourAsks = () => {
                 : "space-y-2 sm:space-y-3"
             }
           >
-            {asks.map((acceptedAsks, index) => (
+            {asksToDisplay.map((acceptedAsks, index) => (
               <AskCard
                 key={index}
                 ask={acceptedAsks}
                 view={view}
                 activeTab={activeTab}
                 filter={filter}
+                dispatch={dispatch}
               />
             ))}
           </div>
@@ -145,13 +205,14 @@ const YourAsks = () => {
                 : "space-y-2 sm:space-y-3"
             }
           >
-            {asks.map((acceptedAsks, index) => (
+            {asksToDisplay.map((acceptedAsks, index) => (
               <AskCard
                 key={index}
                 ask={acceptedAsks}
                 view={view}
                 activeTab={activeTab}
                 filter={filter}
+                dispatch={dispatch}
               />
             ))}
           </div>
