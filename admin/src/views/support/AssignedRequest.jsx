@@ -186,19 +186,19 @@ const AssignedRequest = () => {
                         <>
                           <button
                             className="p-1 text-green-600 hover:text-green-700"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setIsApproveModalOpen(true);
-                            }}
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setIsApproveModalOpen(true);
+                              }}
                           >
                             <BsCheckCircleFill size={24} />
                           </button>
                           <button
                             className="p-1 text-red-600 hover:text-red-700"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setIsDeclineModalOpen(true);
-                            }}
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setIsDeclineModalOpen(true);
+                              }}
                           >
                             <BsXCircleFill size={24} />
                           </button>
@@ -344,7 +344,7 @@ const AssignedRequest = () => {
                   alt="Evidence 1"
                   className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
                 />
-                <button
+                    <button
                   className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
                   onClick={() => {
                     setShowPreviewModal(true);
@@ -352,7 +352,7 @@ const AssignedRequest = () => {
                   }}
                 >
                   Preview
-                </button>
+                    </button>
               </div>
               <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
                 <img
@@ -360,7 +360,7 @@ const AssignedRequest = () => {
                   alt="Evidence 2"
                   className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
                 />
-                <button
+                    <button
                   className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
                   onClick={() => {
                     setShowPreviewModal(true);
@@ -368,9 +368,9 @@ const AssignedRequest = () => {
                   }}
                 >
                   Preview
-                </button>
-              </div>
-            </div>
+                    </button>
+                  </div>
+                </div>
 
             {showPreviewModal && (
               <div
@@ -680,4 +680,4 @@ const AssignedRequest = () => {
   );
 };
 
-export default AssignedRequest;
+export default AssignedRequest; 

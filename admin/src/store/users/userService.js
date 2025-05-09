@@ -167,6 +167,18 @@ export const requestNewVerification = async (userId) => {
 };
 
 
+export const getAdminUsers = async () => {
+  const token = getAuthToken();
+  const response = await axios.get(`${base_url}/api/user/admin-users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+
 const userService = {
   pendingUsers,
   inviteUser,
@@ -180,6 +192,7 @@ const userService = {
   updateUserStatus,
   resetUserPassword,
   requestNewVerification,
+  getAdminUsers,
 };
 
 export default userService;

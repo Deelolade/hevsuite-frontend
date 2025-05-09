@@ -1,66 +1,59 @@
 import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Get auth token
 const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
+  const user = JSON.parse(localStorage.getItem("user"));
+  return user?.token;
 };
 
-const getAllNews = async ({ status, filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/all-news?status=${status}&filter=${filter}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
-
-const createNews = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/create-news`, data, {
+// Get all news
+const getAllNews = async () => {
+  const response = await axios.get(`${API_URL}/newsroom/admin`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-    withCredentials: true,
   });
   return response.data;
 };
 
-const editNews = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.put(
-    `${base_url}/admin/edit-news/${data.id}`,
-    data.data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
+// Create news
+const createNews = async (formData) => {
+  const response = await axios.post(`${API_URL}/newsroom`, formData, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
+// Update news
+const updateNews = async (id, formData) => {
+  const response = await axios.put(`${API_URL}/newsroom/${id}`, formData, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+// Delete news
 const deleteNews = async (id) => {
-  const token = getAuthToken();
-  const response = await axios.delete(`${base_url}/admin/delete-news/${id}`, {
+  const response = await axios.delete(`${API_URL}/newsroom/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-    withCredentials: true,
   });
-  return response.data;
+  return { id }; // Return the ID of the deleted news
 };
 
 const newsService = {
   getAllNews,
   createNews,
-  editNews,
+  updateNews,
   deleteNews,
 };
 

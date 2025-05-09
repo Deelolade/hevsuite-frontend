@@ -1,222 +1,232 @@
-import React, { useState, useRef } from "react";
-import Modal from "react-modal";
-import { BiChevronDown, BiSearch } from "react-icons/bi";
-import CancelCardModal from "../../components/modals/cards/CancelCardModal";
-import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal";
-import BulkCancelModal from "../../components/modals/cards/BulkCancelModal";
-import { FiDownload } from "react-icons/fi";
-import "../layout/forced.css"
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+"use client"
 
-Modal.setAppElement("#root");
+import { useState, useRef, useEffect } from "react"
+import Modal from "react-modal"
+import { BiChevronDown, BiSearch } from "react-icons/bi"
+import CancelCardModal from "../../components/modals/cards/CancelCardModal"
+import IssueNewCardModal from "../../components/modals/cards/IssueNewCardModal"
+import BulkCancelModal from "../../components/modals/cards/BulkCancelModal"
+import { FiDownload } from "react-icons/fi"
+import "../layout/forced.css"
+import * as XLSX from "xlsx"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import { useDispatch, useSelector } from "react-redux"
+import { getNewMembers } from "../../store/cards/cardSlice"
+
+Modal.setAppElement("#root")
 
 const CardsIssued = () => {
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
-  const exportMenuRef = useRef(null);
+  const dispatch = useDispatch()
+  const { new_members, isLoading } = useSelector((state) => state.cards)
 
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [receiverEmail, setReceiverEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState("new");
-  const [selectedCardId, setSelectedCardId] = useState(null);
-  //   const [selectedCards, setSelectedCards] = useState([]);
-  const [expandedAddresses, setExpandedAddresses] = useState([]);
-  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
+  const exportMenuRef = useRef(null)
 
-  // Add this state near other state declarations
-  const [selectedCards, setSelectedCards] = useState([]);
-  const [isBulkCancelModalOpen, setIsBulkCancelModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [expandedAddresses, setExpandedAddresses] = useState([])
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false)
+  const [selectedCards, setSelectedCards] = useState([])
+  const [selectedCard, setSelectedCard] = useState(null)
+  const [isBulkCancelModalOpen, setIsBulkCancelModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [cardTypeFilter, setCardTypeFilter] = useState("All")
+  const [statusFilter, setStatusFilter] = useState("All")
+
+  useEffect(() => {
+    // For CardsIssued, we only want to show approved cards
+    dispatch(
+      getNewMembers({
+        search: searchTerm,
+        status: "all", // We'll filter locally
+        filter: "all",
+      }),
+    )
+  }, [dispatch, searchTerm])
+
+  // Filter to only show approved cards
+  const issuedCards = new_members.filter((card) => card.approvedByAdmin)
+
+  // Apply additional filters
+  const filteredCards = issuedCards.filter((card) => {
+    // Filter by card type
+    if (cardTypeFilter !== "All" && card.cardType !== cardTypeFilter) {
+      return false
+    }
+
+    // Filter by status
+    if (statusFilter === "Active" && card.isBanned) {
+      return false
+    }
+    if (statusFilter === "Not Activated" && !card.isBanned) {
+      return false
+    }
+    if (statusFilter === "Cancelled" && !card.isBanned) {
+      return false
+    }
+
+    // Search by name or ID
+    if (
+      searchTerm &&
+      !card.userId?.forename?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !card.userId?.surname?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !card._id.includes(searchTerm)
+    ) {
+      return false
+    }
+
+    return true
+  })
+
+  const toggleAddress = (cardId) => {
+    setExpandedAddresses((prev) => (prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId]))
+    console.log(expandedAddresses)
+  }
+
+
+  const handleIssueNewCard = (data) => {
+    console.log("Issuing new card:", data)
+    setIsIssueModalOpen(false)
+  }
+
+  const handleCancelCard = (card) => {
+    setSelectedCard(card)
+    setIsCancelModalOpen(true)
+  }
+
   const handleExport = (format) => {
     const cardsToExport =
-      selectedCards.length > 0
-        ? cards.filter((card) => selectedCards.includes(card.id))
-        : cards;
+      selectedCards.length > 0 ? filteredCards.filter((card) => selectedCards.includes(card._id)) : filteredCards
 
-    if (cardsToExport.length === 0) return alert("No data to export");
+    if (cardsToExport.length === 0) return alert("No data to export")
 
     switch (format) {
       case "pdf": {
-        const doc = new jsPDF();
-        doc.text("Member Cards", 14, 10);
+        const doc = new jsPDF()
+        doc.text("Issued Cards", 14, 10)
 
-        const tableColumn = [
-          "Name",
-          "Member ID",
-          "Status",
-          "Address",
-          "Town",
-          "Country",
-          "Postcode",
-        ];
+        const tableColumn = ["Name", "Member ID", "Status", "Card Type", "Address", "Town", "Country", "Postcode"]
         const tableRows = cardsToExport.map((card) => [
-          card.name,
-          card.memberId,
-          card.status,
-          card.address.line1,
-          card.address.town,
-          card.address.country,
-          card.address.postcode,
-        ]);
+          `${card.userId?.forename || ""} ${card.userId?.surname || ""}`,
+          card._id.substring(0, 8),
+          card.isBanned ? "Cancelled" : "Active",
+          card.cardType,
+          card.deliveryAddress?.line1 || "",
+          card.deliveryAddress?.town || "",
+          card.deliveryAddress?.country || "",
+          card.deliveryAddress?.postcode || "",
+          console.log(card)
+        ])
 
         autoTable(doc, {
           head: [tableColumn],
           body: tableRows,
           startY: 20,
           headStyles: { fillColor: "#900C3F" },
-        });
+        })
 
-        doc.save("issued_cards.pdf");
-        break;
+        doc.save("issued_cards.pdf")
+        break
       }
 
       case "csv": {
-        const headers = [
-          "Name",
-          "Member ID",
-          "Status",
-          "Address",
-          "Town",
-          "Country",
-          "Postcode",
-        ];
+        const headers = ["Name", "Member ID", "Status", "Card Type", "Address", "Town", "Country", "Postcode"]
         const csvContent = [
           headers.join(","),
           ...cardsToExport.map((card) =>
             [
-              card.name,
-              card.memberId,
-              card.status,
-              card.address.line1,
-              card.address.town,
-              card.address.country,
-              card.address.postcode,
-            ].join(",")
+              `${card.userId?.forename || ""} ${card.userId?.surname || ""}`,
+              card._id.substring(0, 8),
+              card.isBanned ? "Cancelled" : "Active",
+              card.cardType,
+              card.deliveryAddress?.line1 || "",
+              card.deliveryAddress?.town || "",
+              card.deliveryAddress?.country || "",
+              card.deliveryAddress?.postcode || "",
+              console.log(card)
+            ].join(","),
           ),
-        ].join("\n");
+        ].join("\n")
 
-        const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "issued_cards.csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        break;
+        const blob = new Blob([csvContent], { type: "text/csv" })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = "issued_cards.csv"
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        break
       }
 
       case "excel": {
         const worksheet = XLSX.utils.json_to_sheet(
           cardsToExport.map((card) => ({
-            Name: card.name,
-            "Member ID": card.memberId,
-            Status: card.status,
-            "Address Line 1": card.address.line1,
-            Town: card.address.town,
-            Country: card.address.country,
-            Postcode: card.address.postcode,
-          }))
-        );
+            Name: `${card.userId?.forename || ""} ${card.userId?.surname || ""}`,
+            "Member ID": card._id.substring(0, 8),
+            Status: card.isBanned ? "Cancelled" : "Active",
+            "Card Type": card.cardType,
+            "Address Line 1": card.deliveryAddress?.line1 || "",
+            Town: card.deliveryAddress?.town || "",
+            Country: card.deliveryAddress?.country || "",
+            Postcode: card.deliveryAddress?.postcode || "",
+          })),
+        )
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
-        XLSX.writeFile(workbook, "issued_cards.xlsx");
-        break;
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Issued Cards")
+        XLSX.writeFile(workbook, "issued_cards.xlsx")
+        break
       }
 
       default:
-        return;
+        return
     }
 
-    setIsExportMenuOpen(false);
-  };
-  const toggleAddress = (cardId) => {
-    setExpandedAddresses((prev) =>
-      prev.includes(cardId)
-        ? prev.filter((id) => id !== cardId)
-        : [...prev, cardId]
-    );
-  };
+    setIsExportMenuOpen(false)
+  }
 
-  const handleIssueNewCard = (data) => {
-    console.log("Issuing new card:", data);
-    setIsIssueModalOpen(false);
-  };
+  const handleClickOutside = (event) => {
+    if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+      setIsExportMenuOpen(false)
+    }
+  }
 
-  const cards = [
-    {
-      id: 1,
-      name: "Anna Ivanovic",
-      memberId: "12345678",
-      status: "Pending",
-      address: {
-        line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
-      },
-    },
-    {
-      id: 2,
-      name: "Anna Ivanovic",
-      memberId: "12345678",
-      status: "Not Activated",
-      address: {
-        line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
-      },
-    },
-    {
-      id: 3,
-      name: "Anna Ivanovic",
-      memberId: "12345678",
-      status: "Active",
-      address: {
-        line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
-      },
-    },
-    {
-      id: 4,
-      name: "Anna Ivanovic",
-      memberId: "12345678",
-      status: "Cancelled",
-      address: {
-        line1: "Andrew",
-        town: "Andrew",
-        country: "Andrew",
-        postcode: "Andrew",
-      },
-    },
-    // Add 8 more similar objects for the grid
-  ];
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
   return (
-    <div className="md:p-6 space-y-6">
+    <div className="md:p-6 space-y-6  max-h-[400px] overflow-y-auto">
       {/* Stats and Controls */}
-      <div className="flex ">
-        <div className="flex flex-col md:flex-row items-center gap-4 justify-between  md:w-full overflow-x-auto">
+      <div className="flex  ">
+        <div className="flex flex-col md:flex-row items-center gap-4 justify-between md:w-full overflow-x-auto">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <h2 className="text-3xl font-semibold">10,000</h2>
+            <h2 className="text-3xl font-semibold">{filteredCards.length}</h2>
             <div className="flex flex-row gap-4 overflow-hidden">
-              <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-                <option>All</option>
-                <option>Members</option>
-                <option>VIP Members</option>
+              <select
+                value={cardTypeFilter}
+                onChange={(e) => setCardTypeFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]"
+              >
+                <option value="All">All</option>
+                <option value="Standard">Standard Members</option>
+                <option value="VIP">VIP Members</option>
               </select>
-              <select className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]">
-                <option>All</option>
-                <option>Active</option>
-                <option>Not Activated</option>
-                <option>Cancelled</option>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg text-gray-600 min-w-[120px]"
+              >
+                <option value="All">All</option>
+                <option value="Active">Active</option>
+                <option value="Not Activated">Not Activated</option>
+                <option value="Cancelled">Cancelled</option>
               </select>
             </div>
           </div>
@@ -227,11 +237,7 @@ const CardsIssued = () => {
             >
               <FiDownload />
               Export {selectedCards.length > 0 ? selectedCards.length : ""}
-              <BiChevronDown
-                className={`transition-transform ${
-                  isExportMenuOpen ? "rotate-180" : ""
-                }`}
-              />
+              <BiChevronDown className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
             </button>
 
             {isExportMenuOpen && (
@@ -241,11 +247,7 @@ const CardsIssued = () => {
                   onClick={() => handleExport("pdf")}
                 >
                   <span className="text-red-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
                       <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
                     </svg>
@@ -257,11 +259,7 @@ const CardsIssued = () => {
                   onClick={() => handleExport("csv")}
                 >
                   <span className="text-green-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
@@ -276,11 +274,7 @@ const CardsIssued = () => {
                   onClick={() => handleExport("excel")}
                 >
                   <span className="text-blue-500">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
@@ -302,6 +296,8 @@ const CardsIssued = () => {
           <input
             type="text"
             placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border rounded-lg"
           />
         </div>
@@ -315,7 +311,7 @@ const CardsIssued = () => {
           <button
             onClick={() => {
               if (selectedCards.length > 0) {
-                setIsBulkCancelModalOpen(true);
+                setIsBulkCancelModalOpen(true)
               }
             }}
             className={`px-4 py-2 bg-[#FB0A0A] text-white rounded-lg ${
@@ -329,166 +325,153 @@ const CardsIssued = () => {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
-        {/* <div className="grid grid-cols-1 gap-6 mt-6 items-start"> */}
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            className="bg-white rounded-xl p-4 shadow-sm self-start relative"
-          >
-            <div className="absolute top-4 right-4 z-10">
-              <input
-                type="checkbox"
-                checked={selectedCards.includes(card.id)}
-                onChange={() => {
-                  setSelectedCards((prev) =>
-                    prev.includes(card.id)
-                      ? prev.filter((id) => id !== card.id)
-                      : [...prev, card.id]
-                  );
-                }}
-                className="w-4 h-4 -z-10 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-            </div>
-            <div className="flex items-start gap-4">
-              {/* QR Code on left */}
-              <div className="bg-gray-100 p-2 rounded-lg shrink-0">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${card.id}`}
-                  alt="QR Code"
-                  className="w-24 h-24"
-                />
-              </div>
-
-              {/* Card details on right */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-medium text-sm">{card.name}</h3>
-                    <p className="text-xs text-gray-500">
-                      Member/{card.memberId}
-                    </p>
-                  </div>
-                  <button className="text-gray-400">
-                    <svg
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                  </button>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
+          {filteredCards.length > 0 ? (
+            filteredCards.map((card) => (
+              <div key={card._id} className="bg-white rounded-xl p-4 shadow-sm self-start relative">
+                <div className="absolute top-4 right-4 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedCards.includes(card._id)}
+                    onChange={() => {
+                      setSelectedCards((prev) =>
+                        prev.includes(card._id) ? prev.filter((id) => id !== card._id) : [...prev, card._id],
+                      )
+                    }}
+                    className="w-4 h-4 -z-10 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Delivery Address</span>
-                    <button
-                      onClick={() => toggleAddress(card.id)}
-                      className="text-gray-400"
-                    >
-                      <svg
-                        className={`w-4 h-4 transform transition-transform ${
-                          expandedAddresses.includes(card.id)
-                            ? "rotate-180"
-                            : ""
-                        }`}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
+                <div className="flex items-start gap-4">
+                  {/* QR Code on left */}
+                  <div className="bg-gray-100 p-2 rounded-lg shrink-0">
+                    <img
+                      src={card.qrCode || `http://localhost:5000/api/club-cards/qr-code/61d0fe4f5311236168a109de`}
+                      alt="QR Code"
+                      className="w-24 h-24"
+                    />
                   </div>
 
-                  {expandedAddresses.includes(card.id) && (
-                    <div className="space-y-2 pt-2">
+                  {/* Card details on right */}
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-3">
                       <div>
-                        <label className="text-sm text-gray-600 font-primary block mb-1">
-                          Address Line1<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={card.address.line1}
-                          className="w-full px-3 py-1.5 text-sm text-gray font-primary border  rounded-lg"
-                          readOnly
-                        />
+                        <h3 className="font-medium text-sm">{`${card.userId?.forename || ""} ${card.userId?.surname || ""}`}</h3>
+                        <p className="text-xs text-gray-500">Member/{card._id.substring(0, 8)}</p>
                       </div>
-                      <div>
-                        <label className="text-sm  text-gray-600 font-primary block mb-1">
-                          Town/City<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={card.address.town}
-                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
-                          readOnly
-                        />
+                      <button className="text-gray-400">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Delivery Address</span>
+                        <button onClick={() => toggleAddress(card._id)} className="text-gray-400">
+                          <svg
+                            className={`w-4 h-4 transform transition-transform ${
+                              expandedAddresses.includes(card._id) ? "rotate-180" : ""
+                            }`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
                       </div>
-                      <div>
-                        <label className="text-sm text-gray-600 font-primary block mb-1">
-                          Country<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={card.address.country}
-                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
-                          readOnly
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-600 font-primary block mb-1">
-                          Postcode/Zipcode
-                        </label>
-                        <input
-                          type="text"
-                          value={card.address.postcode}
-                          className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
-                          readOnly
-                        />
+
+                      {expandedAddresses.includes(card._id) && (
+                        <div className="space-y-2 pt-2">
+                          <div>
+
+                          {/* Debug: {JSON.stringify(card.addressLine1 || 'No address data')} */}
+                            <label className="text-sm text-gray-600 font-primary block mb-1">
+                              Address Line1<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={card?.addressLine1 || ""}
+                              className="w-full px-3 py-1.5 text-sm text-gray font-primary border rounded-lg"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-gray-600 font-primary block mb-1">
+                              Town/City<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={card?.town || ""}
+                              className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-gray-600 font-primary block mb-1">
+                              Country<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={card?.country || ""}
+                              className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-gray-600 font-primary block mb-1">Postcode/Zipcode</label>
+                            <input
+                              type="text"
+                              value={card?.postcode || ""}
+                              className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
+                              readOnly
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Status</span>
+                        <span
+                          className={`text-xs px-5 py-0.5 rounded-lg ${
+                            card.isBanned
+                              ? "bg-tertiary text-white"
+                              : card.approvedByAdmin
+                                ? "bg-green-500 text-white"
+                                : card.status === "Not Activated"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          {card.isBanned ? "Cancelled" : card.approvedByAdmin ? "Active" : "Pending"}
+                        </span>
                       </div>
                     </div>
-                  )}
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Status</span>
-                    <span
-                      className={`text-xs px-5 py-0.5 rounded-lg ${
-                        card.status === "Cancelled"
-                          ? "bg-tertiary text-white"
-                          : card.status === "Active"
-                          ? "bg-green-500 text-white"
-                          : card.status === "Not Activated"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {card.status}
-                    </span>
+
+                    {!card.isBanned && (
+                      <button
+                        className="w-full py-2 bg-red-500 text-white text-sm rounded-lg mt-4 hover:bg-red-600 transition-colors"
+                        onClick={() => handleCancelCard(card)}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {card.status !== "Cancelled" && (
-                  <button
-                    className="w-full py-2 bg-red-500 text-white text-sm rounded-lg mt-4 hover:bg-red-600 transition-colors"
-                    onClick={() => {
-                      setSelectedCardId(card.id);
-                      setIsCancelModalOpen(true);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
               </div>
+            ))
+          ) : (
+            <div className="col-span-1 md:col-span-3 text-center py-10">
+              <p className="text-gray-500">No cards found matching your criteria</p>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
 
       <Modal
         isOpen={isCancelModalOpen}
@@ -496,19 +479,18 @@ const CardsIssued = () => {
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] superZ md:w-[450px]"
         overlayClassName="fixed inset-0 superZ bg-black/50"
       >
-        <CancelCardModal onClose={setIsCancelModalOpen} />
+        <CancelCardModal onClose={setIsCancelModalOpen} selectedCard={selectedCard} />
       </Modal>
+
       <Modal
         isOpen={isIssueModalOpen}
         onRequestClose={() => setIsIssueModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] superZ md:w-[450px]"
         overlayClassName="fixed inset-0 superZ bg-black/50"
       >
-        <IssueNewCardModal
-          onClose={setIsIssueModalOpen}
-          onConfirm={handleIssueNewCard}
-        />
+        <IssueNewCardModal onClose={setIsIssueModalOpen} />
       </Modal>
+
       <Modal
         isOpen={isBulkCancelModalOpen}
         onRequestClose={() => setIsBulkCancelModalOpen(false)}
@@ -518,10 +500,11 @@ const CardsIssued = () => {
         <BulkCancelModal
           onClose={setIsBulkCancelModalOpen}
           selectedCount={selectedCards.length}
+          selectedCards={selectedCards}
         />
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default CardsIssued;
+export default CardsIssued

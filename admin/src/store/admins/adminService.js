@@ -10,7 +10,7 @@ const getAuthToken = () => {
 const getAllAdmins = async () => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/all-admins`,
+    `${base_url}/api/user/all-admins`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

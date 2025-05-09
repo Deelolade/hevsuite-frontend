@@ -31,7 +31,6 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventLocation, setEventLocation] = useState('');
-  // const { dashboardStats, isLoading: statsLoading } = useSelector((state) => state.statistics);
   const { dashboardStats = {}, isLoading: statsLoading = false } = useSelector((state) => state.statistics || {});
   const [eventTime, setEventTime] = useState(
     new Date().toISOString().split('T')[0]

@@ -15,7 +15,7 @@ const Finance = () => {
     switch (activeTab) {
       case "processors":
         return <Payment />;
-      case "history":
+      case "transactions":
         return <History />;
       case "pricing":
         return <Pricing />;
@@ -33,7 +33,9 @@ const Finance = () => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+              className="w-full px-8 py-2.5 rounded-full border border-gray-400 focus:outline-none text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
@@ -44,7 +46,7 @@ const Finance = () => {
           <button
             className={`py-4 px-1 ${
               activeTab === "processors"
-                ? "border-b-4 border-primary "
+                ? "border-b-4 border-primary text-primary"
                 : "text-[#737374]"
             }`}
             onClick={() => setActiveTab("processors")}
@@ -53,11 +55,11 @@ const Finance = () => {
           </button>
           <button
             className={`py-4 px-1 ${
-              activeTab === "history"
+              activeTab === "transactions"
                 ? "border-b-4 border-primary text-primary"
                 : "text-[#737374]"
             }`}
-            onClick={() => setActiveTab("history")}
+            onClick={() => setActiveTab("transactions")}
           >
             Transaction History
           </button>

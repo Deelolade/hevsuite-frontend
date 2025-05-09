@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import newsService from "./newsService";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const initialState = {
   news: [],
@@ -10,129 +10,132 @@ const initialState = {
   message: "",
 };
 
+// Get all news
 export const getAllNews = createAsyncThunk(
-  "news/get-all-news",
-  async (data, thunkAPI) => {
+  "news/getAll",
+  async (_, thunkAPI) => {
     try {
-      return await newsService.getAllNews(data);
+      return await newsService.getAllNews();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
+// Create news
 export const createNews = createAsyncThunk(
-  "news/create-news",
-  async (data, thunkAPI) => {
+  "news/create",
+  async (formData, thunkAPI) => {
     try {
-      return await newsService.createNews(data);
+      return await newsService.createNews(formData);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
-export const editNews = createAsyncThunk(
-  "news/edit-news",
-  async (data, thunkAPI) => {
+// Update news
+export const updateNews = createAsyncThunk(
+  "news/update",
+  async ({ id, formData }, thunkAPI) => {
     try {
-      return await newsService.editNews(data);
+      return await newsService.updateNews(id, formData);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
+// Delete news
 export const deleteNews = createAsyncThunk(
-  "news/delete-news",
+  "news/delete",
   async (id, thunkAPI) => {
     try {
       return await newsService.deleteNews(id);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
-export const newsSlice = createSlice({
+const newsSlice = createSlice({
   name: "news",
   initialState,
-  reducers: {},
+  reducers: {
+    reset: (state) => initialState,
+  },
   extraReducers: (builder) => {
     builder
+      // Get all news
       .addCase(getAllNews.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getAllNews.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "success";
         state.news = action.payload;
       })
       .addCase(getAllNews.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error;
+        state.message = action.payload;
       })
+      // Create news
       .addCase(createNews.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(createNews.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "News created successfully";
-        state.news = [...state.news, action.payload];
-        toast.success(state.message);
+        state.news.push(action.payload);
+        toast.success("News created successfully");
       })
       .addCase(createNews.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error.message;
-        toast.error(state.message);
+        state.message = action.payload;
+        toast.error(action.payload);
       })
-      .addCase(editNews.pending, (state) => {
+      // Update news
+      .addCase(updateNews.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(editNews.fulfilled, (state, action) => {
+      .addCase(updateNews.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "News updated successfully";
-        state.news = state.news.map((item) =>
-          item._id === action.payload._id ? action.payload : item
+        state.news = state.news.map((news) =>
+          news._id === action.payload._id ? action.payload : news
         );
-        toast.success(state.message);
+        toast.success("News updated successfully");
       })
-      .addCase(editNews.rejected, (state, action) => {
+      .addCase(updateNews.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error.message;
-        toast.error(state.message);
+        state.message = action.payload;
+        toast.error(action.payload);
       })
+      // Delete news
       .addCase(deleteNews.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(deleteNews.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.isError = false;
-        state.message = "News deleted successfully";
-        state.news = state.news.filter((item) => item._id !== action.payload.id);
-        toast.success(state.message);
+        state.news = state.news.filter((news) => news._id !== action.payload.id);
+        toast.success("News deleted successfully");
       })
       .addCase(deleteNews.rejected, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = false;
         state.isError = true;
-        state.message = action.error.message;
-        toast.error(state.message);
+        state.message = action.payload;
+        toast.error(action.payload);
       });
-  },
+  }, 
 });
 
+export const { reset } = newsSlice.actions;
 export default newsSlice.reducer;

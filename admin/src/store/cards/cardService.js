@@ -1,67 +1,161 @@
-import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
-const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
-};
+import axios from "axios"
+import { base_url } from "../../constants/axiosConfig"
 
-const getNewMembers = async ({ search, status, filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/new-members?status=${status}&filter=${filter}&search=${search}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
+const getAuthToken = () => {
+  const adminData = localStorage.getItem("admin")
+  const admin = adminData ? JSON.parse(adminData) : null
+  return admin?.token || ""
+}
+
+const getNewMembers = async ({ search = "", status = "all", filter = "all" }) => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/admin/new-members?status=${status}&filter=${filter}&search=${search}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
+
+const getUsers = async (search = "") => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/admin/users?search=${search}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
+
+const getUserDetails = async (userId) => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/admin/users/${userId}/details`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
 
 const postCards = async (data) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
   const response = await axios.post(`${base_url}/admin/post-cards`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const issueCard = async (data) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
   const response = await axios.post(`${base_url}/admin/issue-cards`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const cancelCard = async (data) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
   const response = await axios.put(
     `${base_url}/admin/cancel-card/${data.id}`,
-    data.data,
+    { reason: data.reason },
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       withCredentials: true,
-    }
-  );
-  return response.data;
-};
+    },
+  )
+  return response.data
+}
+
+const bulkCancelCards = async (data) => {
+  const token = getAuthToken()
+  const response = await axios.post(
+    `${base_url}/admin/bulk-cancel`,
+    { cardIds: data.cardIds, reason: data.reason },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    },
+  )
+  return response.data
+}
+
+const approveCard = async (cardId) => {
+  const token = getAuthToken()
+  const response = await axios.put(
+    `${base_url}/admin/approve/${cardId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    },
+  )
+  return response.data
+}
+
+const getCardStatus = async (cardId) => {
+  const response = await axios.get(`${base_url}/card-status/${cardId}`)
+  return response.data
+}
+
+const getCardQRCode = async (cardId) => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/admin/qr-code/${cardId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
+
+const regenerateQRCode = async (cardId) => {
+  const token = getAuthToken()
+  const response = await axios.post(
+    `${base_url}/admin/regenerate-qr/${cardId}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    },
+  )
+  return response.data
+}
+
+const verifyQRCode = async (qrData) => {
+  const response = await axios.post(`${base_url}/verify-qr`, { qrData })
+  return response.data
+}
 
 const cardService = {
   getNewMembers,
+  getUsers,
+  getUserDetails,
   postCards,
   issueCard,
   cancelCard,
-};
+  bulkCancelCards,
+  approveCard,
+  getCardStatus,
+  getCardQRCode,
+  regenerateQRCode,
+  verifyQRCode,
+}
 
-export default cardService;
+export default cardService

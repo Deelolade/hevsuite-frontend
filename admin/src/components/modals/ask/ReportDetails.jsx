@@ -1,81 +1,64 @@
-import React from "react";
-import { BsCalendar } from "react-icons/bs";
+"use client"
 
-const ReportDetails = ({
-  setIsBanModalOpen,
-  setOpenDetails,
-  selectedReport,
-}) => {
+const ReportDetails = ({ setOpenDetails, setIsBanModalOpen, selectedReport }) => {
+  if (!selectedReport) return null
+
+  const handleBanUser = () => {
+    setIsBanModalOpen(true)
+    setOpenDetails(false)
+  }
+
   return (
-    <div>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Ask Details</h2>
-          <button
-            onClick={() => setOpenDetails(false)}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            ✕
-          </button>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Report Details</h2>
+        <button onClick={() => setOpenDetails(false)} className="text-gray-500 hover:text-gray-700">
+          <x size={20} />
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Ask Title</h3>
+          <p className="mt-1">{selectedReport.ask?.title || "N/A"}</p>
         </div>
 
-        {selectedReport && (
-          <div className="space-y-6">
-            {/* User Info */}
-            <div className="flex items-center gap-3">
-              <img
-                src={selectedReport.user.avatar}
-                alt={selectedReport.user.name}
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <h3 className="font-medium">{selectedReport.user.name}</h3>
-                <p className="text-sm text-gray-500">
-                  andrewbojangles@gmail.com
-                </p>
-              </div>
-            </div>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Report Type</h3>
+          <p className="mt-1">{selectedReport.reason}</p>
+        </div>
 
-            {/* Ask Details */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm mb-1">Ask Title</label>
-                <div className="px-4 py-2 border rounded-lg bg-gray-50">
-                  {selectedReport.title}
-                </div>
-              </div>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Reported By</h3>
+          <p className="mt-1">{`${selectedReport.reportedBy?.forename || ""} ${selectedReport.reportedBy?.surname || ""}`}</p>
+        </div>
 
-              <div>
-                <label className="block text-sm mb-1">Descriptions</label>
-                <div className="px-4 py-2 border rounded-lg bg-gray-50 min-h-[80px]">
-                  Looking for volunteers to assist at the annual || charity
-                  event this weekend.
-                </div>
-              </div>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Reported At</h3>
+          <p className="mt-1">{new Date(selectedReport.reportedAt).toLocaleString()}</p>
+        </div>
 
-              <div>
-                <label className="block text-sm mb-1">Deadline</label>
-                <div className="px-4 py-2 border rounded-lg bg-gray-50 flex justify-between items-center">
-                  <span>23 January, 2025!</span>
-                  <BsCalendar className="text-gray-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Action Button */}
-            <div className="flex justify-end pt-4">
-              <button
-                className="px-6 py-2 bg-primary text-white rounded-lg"
-                onClick={() => setIsBanModalOpen(true)}
-              >
-                Ban Ask
-              </button>
-            </div>
+        {selectedReport.description && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Description</h3>
+            <p className="mt-1">{selectedReport.description}</p>
           </div>
         )}
       </div>
-    </div>
-  );
-};
 
-export default ReportDetails;
+      <div className="mt-6 flex justify-between">
+        <button onClick={handleBanUser} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          Ban User
+        </button>
+        <button
+          onClick={() => setOpenDetails(false)}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default ReportDetails

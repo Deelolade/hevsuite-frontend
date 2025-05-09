@@ -1,199 +1,267 @@
-import React, { useState } from "react";
-import { BiChevronDown } from "react-icons/bi";
-import avatar from "../../assets/user.avif";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import {
+  fetchTransactions,
+  updateStatus,
+} from '../../store/transactions/transactionSlice';
+import LoadingSpinner from '../../components/Spinner';
+import { format } from 'date-fns';
 
 const History = () => {
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [currentPage, setCurrentPage] = useState(2);
-  const [rowsPerPage, setRowsPerPage] = useState(6);
-  const [expandedRows, setExpandedRows] = useState([]);
+  const dispatch = useDispatch();
+  const {
+    transactions,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    totalTransactions,
+  } = useSelector((state) => state.transactions);
 
-  const toggleRow = (id) => {
-    setExpandedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    purpose: 'all',
+    dateRange: 'all',
+  });
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch transactions when filters or pagination changes
+  useEffect(() => {
+    dispatch(
+      fetchTransactions({
+        page: currentPage,
+        limit: 10,
+        ...filters,
+        search: debouncedSearchTerm,
+      })
     );
+  }, [dispatch, filters, debouncedSearchTerm, currentPage]);
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
   };
 
-  const transactions = [
-    {
-      id: 1,
-      user: {
-        name: "Andrew Bojangles",
-        avatar: avatar,
-      },
-      paymentType: "Membership Fee",
-      amount: "£120.00",
-      date: "23 January, 2025",
-      event: {
-        title: "The bout to lions",
-        date: "23 January, 2025",
-        time: "10:00pm",
-        price: "£120.00",
-      },
-    },
-    // Duplicate this object 7 more times for the list
-  ];
-
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedRows(transactions.map((t) => t.id));
-    } else {
-      setSelectedRows([]);
+  // Handle status update
+  const handleStatusUpdate = async (transactionId, newStatus) => {
+    try {
+      await dispatch(updateStatus({ transactionId, status: newStatus })).unwrap();
+      toast.success('Transaction status updated successfully');
+    } catch (error) {
+      toast.error(error.message || 'Failed to update transaction status');
     }
   };
 
-  const handleSelectRow = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
+  // Format currency
+  const formatCurrency = (amount, currency = 'GBP') => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
   };
 
+  // Get status badge color
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      succeeded: 'bg-green-100 text-green-800',
+      failed: 'bg-red-100 text-red-800',
+      refunded: 'bg-blue-100 text-blue-800',
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
-    <div className="space-y-6 ">
-      <div className="flex justify-end">
-        <button className="px-4 py-2 bg-primary text-white rounded-lg items-center gap-2 flex-end mr-12">
-          + Export 1
-        </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-medium">Transaction History</h2>
       </div>
-      <div className="md:w-full w-[90vw] overflow-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b text-gray-600">
-              <th className="py-4 px-4 text-left">
-                <input
-                  type="checkbox"
-                  onChange={handleSelectAll}
-                  className="rounded border-gray-300"
-                />
+
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Status
+          </label>
+          <select
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="succeeded">Succeeded</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Purpose
+          </label>
+          <select
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            value={filters.purpose}
+            onChange={(e) => handleFilterChange('purpose', e.target.value)}
+          >
+            <option value="all">All Purposes</option>
+            <option value="membership">Membership</option>
+            <option value="non-engagement">Non-engagement</option>
+            <option value="new-club-card">New Club Card</option>
+            <option value="event">Event</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date Range
+          </label>
+          <select
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            value={filters.dateRange}
+            onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Search
+          </label>
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Transactions Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Transaction ID
               </th>
-              <th className="py-4 text-left">User</th>
-              <th className="py-4 text-left">Payment Type</th>
-              <th className="py-4 text-left">Amount Paid</th>
-              <th className="py-4 text-left">Transaction Date</th>
-              <th className="py-4 text-left">Action</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Purpose
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Provider
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {transactions.map((transaction) => (
-              <React.Fragment key={transaction.id}>
-                <tr className="border-b">
-                  <td className="py-4 px-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.includes(transaction.id)}
-                      onChange={() => handleSelectRow(transaction.id)}
-                      className="rounded border-gray-300"
-                    />
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={transaction.user.avatar}
-                        alt={transaction.user.name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
-                        {transaction.user.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">
-                      {transaction.paymentType}
-                    </p>
-                  </td>
-                  <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">{transaction.amount}</p>
-                  </td>
-                  <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">{transaction.date}</p>
-                  </td>
-
-                  <td className="py-4">
-                    <button
-                      className="p-2 hover:bg-gray-100 rounded-lg"
-                      onClick={() => toggleRow(transaction.id)}
-                    >
-                      <BiChevronDown
-                        size={20}
-                        className={`transform transition-transform ${
-                          expandedRows.includes(transaction.id)
-                            ? "rotate-180"
-                            : ""
-                        }`}
-                      />
-                    </button>
-                  </td>
-                </tr>
-                {expandedRows.includes(transaction.id) && (
-                  <tr className="bg-gray-50">
-                    <td colSpan="6" className="p-4">
-                      <div className="grid grid-cols-4 gap-4">
-                        <div>
-                          <label className="text-sm text-gray-500">
-                            Event Title
-                          </label>
-                          <p>{transaction.event.title}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-500">Date</label>
-                          <p>{transaction.event.date}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-500">Time</label>
-                          <p>{transaction.event.time}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm text-gray-500">Price</label>
-                          <p>{transaction.event.price}</p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
+              <tr key={transaction._id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {transaction.sessionId}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {format(new Date(transaction.createdAt), 'dd/MM/yyyy HH:mm')}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatCurrency(transaction.amount, transaction.currency)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {transaction.purpose}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                      transaction.status
+                    )}`}
+                  >
+                    {transaction.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {transaction.provider}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <select
+                    className="px-2 py-1 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    value={transaction.status}
+                    onChange={(e) =>
+                      handleStatusUpdate(transaction._id, e.target.value)
+                    }
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="succeeded">Succeeded</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between w-[90vw] overflow-auto md:w-full items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-500">Show result:</span>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => setRowsPerPage(Number(e.target.value))}
-            className="border rounded-lg px-2 py-1"
-          >
-            <option value={6}>6</option>
-            <option value={12}>12</option>
-            <option value={24}>24</option>
-          </select>
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-700">
+          Showing {transactions.length} of {totalTransactions} transactions
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 text-gray-400">←</button>
-          <button className="w-8 h-8 flex items-center justify-center">
-            1
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            onClick={() => dispatch(fetchTransactions({ page: currentPage - 1 }))}
+            disabled={currentPage === 1}
+          >
+            Previous
           </button>
-          <button className="w-8 h-8 flex items-center justify-center bg-green-800 text-white rounded-lg">
-            2
+          <span className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            onClick={() => dispatch(fetchTransactions({ page: currentPage + 1 }))}
+            disabled={currentPage === totalPages}
+          >
+            Next
           </button>
-          <button className="w-8 h-8 flex items-center justify-center">
-            3
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center">
-            4
-          </button>
-          <span>...</span>
-          <button className="w-8 h-8 flex items-center justify-center">
-            20
-          </button>
-          <button className="p-2 text-gray-400">→</button>
         </div>
       </div>
     </div>
   );
 };
 
-export default History;
+export default History; 
