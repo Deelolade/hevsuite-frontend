@@ -35,7 +35,6 @@ const Login = () => {
       } else {
         navigate('/two-factor-auth');
       }
-      await dispatch(fetchProfile());
     } catch (error) {
       // toast.error(error.message);
       console.log(error.message);

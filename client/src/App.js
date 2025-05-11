@@ -29,6 +29,8 @@ import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from './features/auth/authSlice';
+import { useEffect, useReducer } from 'react';
 
 axios.defaults.withCredentials = true;
 
@@ -36,10 +38,35 @@ axios.defaults.withCredentials = true;
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+const { isAuthenticated, user } = useSelector((state) => state.auth);
+const location = useLocation();
+
+if (!isAuthenticated ) {
+  return <Navigate to="/login" state={{ from: location }} replace />;
+}
+
+// Check membership status if user exists
+if (user && user.membershipStatus && user.membershipStatus !== 'accepted') {
+  return <Navigate to="/register-6" state={{ from: location }} replace />;
+}
+
+return children;
+};
+// Add this new component
+const LoginRedirect = ({ children }) => {
+  const { isAuthenticated ,user} = useSelector((state) => state.auth);
   const location = useLocation();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+
+  if (isAuthenticated) {
+    // Redirect to homepage or wherever you want logged-in users to go
+    if (user && user.membershipStatus && user.membershipStatus == 'accepted'&& user.approvedByAdmin) {
+      return <Navigate to="/homepage" state={{ from: location }} replace />;
+    }else if(user && user.membershipStatus && user.membershipStatus == 'accepted'&&user.joinfeestatus=='pending'){
+      return <Navigate to="/register-7" state={{ from: location }} replace />;
+    }
+    else if(user && user.membershipStatus && user.membershipStatus == 'pending'){
+    return <Navigate to="/register-6" state={{ from: location }} replace />;
+    }
   }
 
   return children;
@@ -57,7 +84,11 @@ const router = createBrowserRouter([
     path: '/news-detail',
     element: <NewsDetail />,
   },
-  { path: 'login', element: <Login /> },
+  { path: 'login',element: (
+    <LoginRedirect>
+      <Login />
+    </LoginRedirect>
+  )  },
   { path: 'forgot-password', element: <ForgotPassword /> },
   { path: 'reset-password', element: <ResetPassword /> },
   { path: 'reset-success', element: <ResetSuccess /> },
@@ -148,6 +179,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const dispatch = useDispatch();
+  const { isAuthenticated} = useSelector((state) => state.auth);
+  useEffect(() => {
+    if(isAuthenticated){
+    dispatch(fetchProfile());
+    }
+  }, [dispatch,isAuthenticated]);
   return <RouterProvider router={router} />;
 }
 

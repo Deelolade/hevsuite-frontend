@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
+import { fetchProfile } from '../../../features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState('email');
-
+  const dispatch=useDispatch()
+    const { user } = useSelector((state) => state.auth);
   const handleMethodSelection = async () => {
-     // Redirect to the appropriate verification page
-     navigate(`/${input}-verification`)
+    // Redirect to the appropriate verification page
+    navigate(`/${input}-verification`)
   };
 
   return (
@@ -110,8 +113,21 @@ const TwoFactorAuth = () => {
               </button>
               <div
                 className='w-full flex items-center justify-center hover:underline cursor-pointer text-sm'
-                onClick={() => {
-                  navigate('/homepage');
+                // onClick={() => {
+                //   navigate('/homepage');
+                // }}
+                onClick={async () => {
+                  await dispatch(fetchProfile()).unwrap();
+                  if (!user) {
+                    navigate('/login');
+                  } else if (user.membershipStatus === 'accepted' && user.approvedByAdmin) {
+                    navigate('/homepage');
+                  } else if (user.membershipStatus === 'accepted' && !user.approvedByAdmin) {
+                    navigate('/register-7');
+                  }
+                  else {
+                    navigate('/register-6'); // Or your membership registration page
+                  }
                 }}
               >
                 Skip for now

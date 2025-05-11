@@ -6,6 +6,7 @@ import authReducer from '../features/auth/authSlice';
 import newsReducer from '../features/newsSlice';
 import eventReducer from '../features/eventSlice';
 import askReducer from '../features/askSlice'
+import notificationReducer from '../features/notificationSlice';
 // Persist configuration for the register slice
 const registerPersistConfig = {
   key: 'register',
@@ -29,7 +30,8 @@ export const store = configureStore({
     auth: persistedAuthReducer,        // Persisted auth slice
     news: newsReducer,
     events: eventReducer,
-    ask:askReducer
+    ask:askReducer,
+    notifications: notificationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

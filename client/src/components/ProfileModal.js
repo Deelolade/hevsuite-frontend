@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AccountProfile from "../views/account/profile/AccountProfile";
 import YourEvents from "../views/account/events/YourEvents";
 import SupportRequest from "../views/account/support/SupportRequest";
@@ -9,30 +9,63 @@ import Notification from "../views/account/notifications/Notification";
 import Referrals from "../views/account/referral/Referrals";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
-import { useDispatch } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { persistor } from '../store/store';
 const ProfileModal = ({ onClose, forNotification }) => {
+  const { user } = useSelector((state) => state.auth);
+    const [accessDenied, setAccessDenied] = useState(false);
+    const [requiredPayment, setRequiredPayment] = useState(false);
+      const navigate = useNavigate();
+   const dispatch = useDispatch();
+
+    // Check access rights when component mounts or user changes
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user.membershipStatus !== "accepted") {
+      setAccessDenied(true);
+
+    }
+    if (user.membershipStatus !== "accepted"&& !user.approvedByAdmin) {
+     setRequiredPayment(true);
+
+    }
+  }, [user, navigate]);
+  // const tabs = [
+  //   "Account Profile",
+  //   "Your Events",
+  //   "Referrals",
+  //   "Support Join Request",
+  //   "Your Asks",
+  //   "Notifications",
+  //   "Activity Log",
+  //   "Settings",
+  // ];
   const tabs = [
-    "Account Profile",
-    "Your Events",
-    "Referrals",
-    "Support Join Request",
-    "Your Asks",
-    "Notifications",
-    "Activity Log",
-    "Settings",
-  ];
+  "Account Profile",
+  ...(user?.approvedByAdmin ? ["Your Events"] : []),
+  "Referrals",
+  ...(user?.approvedByAdmin ? ["Support Join Request"] : []),
+  ...(user?.approvedByAdmin ? ["Your Asks"] : []),
+  "Notifications",
+  "Activity Log",
+  "Settings"
+];
 
   const [activeTab, setActiveTab] = useState(
     forNotification && forNotification.current ? tabs[5] : tabs[0]
   );
-  const navigate = useNavigate();
-   const dispatch = useDispatch();
+
+
   const handleLogout = async() => {
-    await dispatch(logout());
-    navigate("/");
-    if (onClose) onClose();
-    window.location.reload();
+     dispatch(logout()).then(() => {
+          persistor.purge(); 
+        });
+     navigate("/");
+     window.location.reload()
   };
 
   const containerRef = React.useRef(null);
@@ -59,6 +92,76 @@ const ProfileModal = ({ onClose, forNotification }) => {
   const handleMouseUp = () => {
     isDragging = false;
   };
+  if (accessDenied) {
+    return (
+      <div className="relative bg-transparent rounded-3xl overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-transparent relative">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={onClose}
+              className="text-4xl sm:text-2xl font-light text-white hover:text-gray-500 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-4 md:p-6 space-y-4 text-black bg-white rounded-t-3xl overflow-y-auto h-[650px] md:h-[520px] flex flex-col items-center justify-center">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-red-600 mb-4">Access Restricted</h3>
+            <p className="text-gray-700 mb-6">
+              {user?.membershipStatus === "pending"
+                ? "Your membership is still pending approval. Please complete your registration."
+                : "You don't have permission to access this content."}
+            </p>
+            {user?.membershipStatus !== "accepted" && (
+              <button
+                onClick={() => navigate("/register-6")}
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                Complete Registration
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (requiredPayment) {
+    return (
+      <div className="relative bg-transparent rounded-3xl overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-transparent relative">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={onClose}
+              className="text-4xl sm:text-2xl font-light text-white hover:text-gray-500 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-4 md:p-6 space-y-4 text-black bg-white rounded-t-3xl overflow-y-auto h-[650px] md:h-[520px] flex flex-col items-center justify-center">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-red-600 mb-4">Access Restricted</h3>
+            <p className="text-gray-700 mb-6">
+              {user?.membershipStatus === "accepted"&& !user.approvedByAdmin
+                ? "Your membership is still pending approval. Please complete your registration."
+                : "You don't have permission to access this content."}
+            </p>
+            {(user?.membershipStatus === "accepted"&& !user.approvedByAdmin) && (
+              <button
+                onClick={() => navigate("/register-7")}
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              >
+                Complete Payment
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative bg-transparent rounded-3xl overflow-hidden">
       <div className="p-4 md:p-6 border-b border-transparent relative">

@@ -9,14 +9,16 @@ import Modal from 'react-modal';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
 import { persistor } from '../store/store';
+import { fetchNotifications } from '../features/notificationSlice';
 const Header = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-     const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const [showProfileModal, setShowProfileModal] = useState(false);
-      const { user, isLoading } = useSelector(
-        (state) => state.auth
-      );
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const { user, isLoading } = useSelector(
+    (state) => state.auth
+  );
+  const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
 
 
@@ -28,16 +30,17 @@ const Header = () => {
       document.body.classList.remove('overflow-hidden');
     }
   }, [isMenuOpen]);
-
   useEffect(() => {
-    dispatch(fetchProfile());
+    if (user?._id) {
+      dispatch(fetchNotifications(user._id));
+    }
+  }, [dispatch, isLoggedIn]);
 
-  }, [dispatch]);
 
-  const handleLogout = async() => {
-   dispatch(logout()).then(() => {
-    persistor.purge(); // safely purge after logout completes
-  });
+  const handleLogout = async () => {
+    dispatch(logout()).then(() => {
+      persistor.purge(); // safely purge after logout completes
+    });
     navigate("/");
   };
 
@@ -74,19 +77,25 @@ const Header = () => {
                   }}
                 >
                   <BsBell className='w-6 h-6' />
-                  <span className='absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center'>
+                  {/* <span className='absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center'>
                     10+
-                  </span>
+                  </span> */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </div>
                 <div
                   className='flex items-center space-x-2 cursor-pointer'
                   onClick={() => {
+                    notRef.current = false;
                     setShowProfileModal(true);
                   }}
                 >
                   <img
                     src={user.profilePhoto || avatar}
-                    alt={user.profilePhoto||'profile'}
+                    alt={user.profilePhoto || 'profile'}
                     className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
                   />
                   <span className='text-white'>Goodluck</span>
@@ -105,9 +114,8 @@ const Header = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`${
-            isMenuOpen ? 'block' : 'hidden'
-          } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
+          className={`${isMenuOpen ? 'block' : 'hidden'
+            } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
         >
           <div className='p-6 h-full flex flex-col overflow-auto'>
             <div className='flex justify-between items-center mb-8'>
@@ -163,16 +171,22 @@ const Header = () => {
                     >
                       My Account
                     </div>
-                    <div className='relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] cursor-pointer'>
-                      <Link
-                        to='/notifications'
-                        className='block text-white py-2 px-4 rounded-lg hover:bg-gray-700'
+                    <div className="relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] cursor-pointer">
+                      <div
+                        onClick={() => {
+                          notRef.current = true;
+                          setShowProfileModal(true);
+                        }}
+                        className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
                       >
                         Notification
-                        <span className='ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full'>
-                          10+
-                        </span>
-                      </Link>
+                        {unreadCount > 0 && (
+                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            10+
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -185,7 +199,7 @@ const Header = () => {
                   <div className='mb-6  text-center'>
                     <img
                       src={user.image || avatar}
-                      alt={user.image||'profile'}
+                      alt={user.image || 'profile'}
                       className='w-16 h-16 rounded-full mx-auto my-6'
                     />
                     <div className='text-white mb-3'>
@@ -281,10 +295,10 @@ const Header = () => {
             }
           `}</style>
 
-          <ProfileModal
-            forNotification={notRef.current ? notRef : null}
-            onClose={() => setShowProfileModal(false)}
-          />
+            <ProfileModal
+              forNotification={notRef.current ? notRef : null}
+              onClose={() => setShowProfileModal(false)}
+            />
         </Modal>
       )}
     </header>

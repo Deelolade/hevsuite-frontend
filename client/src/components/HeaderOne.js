@@ -18,7 +18,9 @@ const HeaderOne = () => {
   const { user, isLoading } = useSelector(
     (state) => state.auth
   );
+  const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
+  const notRef = React.useRef(false);
   useEffect(() => {
     if (isMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -27,15 +29,12 @@ const HeaderOne = () => {
     }
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    dispatch(fetchProfile());
 
-  }, [dispatch]);
-  
-  const handleLogout =async () => {
-   dispatch(logout()).then(() => {
-    persistor.purge(); // safely purge after logout completes
-  });
+
+  const handleLogout = async () => {
+    dispatch(logout()).then(() => {
+      persistor.purge(); // safely purge after logout completes
+    });
     navigate("/");
   };
 
@@ -64,19 +63,36 @@ const HeaderOne = () => {
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
-                <div className="relative">
+                {/* <div className="relative">
                   <BsBell className="w-6 h-6" />
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
                     10+
                   </span>
+                </div> */}
+                <div
+                  className='relative cursor-pointer'
+                  onClick={() => {
+                    notRef.current = true;
+                    setShowProfileModal(true);
+                  }}
+                >
+                  <BsBell className='w-6 h-6' />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </div>
                 <div
                   className="flex items-center space-x-2 cursor-pointer"
-                  onClick={() => setShowProfileModal(true)}
+                  onClick={() => {
+                    notRef.current = false;
+                    setShowProfileModal(true);
+                  }}
                 >
                   <img
-                    src={user.profilePhoto||avatar}
-                    alt={user.profilePhoto||'profile'}
+                    src={user.profilePhoto || avatar}
+                    alt={user.profilePhoto || 'profile'}
                     className="w-12 h-12 rounded-full border-2 border-red-500"
                   />
                   <span className="text-white">Goodluck</span>
@@ -95,9 +111,8 @@ const HeaderOne = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`${
-            isMenuOpen ? "block" : "hidden"
-          } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
+          className={`${isMenuOpen ? "block" : "hidden"
+            } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
         >
           <div className="p-6 h-full flex flex-col overflow-auto">
             <div className="flex justify-between items-center mb-8">
@@ -147,21 +162,28 @@ const HeaderOne = () => {
                     <div
                       className="block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
                       onClick={() => {
+                        notRef.current = false;
                         setShowProfileModal(true);
                       }}
                     >
                       My Account
                     </div>
                     <div className="relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
-                      <Link
-                        to="/notifications"
+                      <div
+                        onClick={() => {
+                          notRef.current = true;
+                          setShowProfileModal(true);
+                        }}
                         className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
                       >
                         Notification
-                        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                          10+
-                        </span>
-                      </Link>
+                        {unreadCount > 0 && (
+                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            10+
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -173,8 +195,8 @@ const HeaderOne = () => {
                 <>
                   <div className="mb-6  text-center">
                     <img
-                      src={user.image||avatar}
-                      alt={user.image||'profile'}
+                      src={user.image || avatar}
+                      alt={user.image || 'profile'}
                       className="w-16 h-16 rounded-full mx-auto mb-3"
                     />
                     <div className="text-white mb-1">
@@ -269,8 +291,10 @@ const HeaderOne = () => {
               scrollbar-width: none; /* Firefox */
             }
           `}</style>
-
-          <ProfileModal onClose={() => setShowProfileModal(false)} />
+          <ProfileModal
+            forNotification={notRef.current ? notRef : null}
+            onClose={() => setShowProfileModal(false)}
+          />
         </Modal>
       )}
     </header>
