@@ -36,14 +36,10 @@ const pendingRegLogin = async (email) => {
 const loginUser = async (userData) => {
   try {
     const response = await axios.post(API_URL + 'login', userData);
+    console.log(response)
     return response.data;
-    
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || 
-      error.message || 
-      'Login failed'
-    );
+    throw error
   }
 };
 
@@ -143,21 +139,26 @@ const logout = async () => {
   }
 
 };
-// Register user
-const updateProfile = async (userData) => {
-  try{
-  const response = await axios.put(API_URL + 'update', userData ,{
-    withCredentials: true,
-  });
-  return response.data;
-}catch (error) {
-
-  throw new Error(
-    error.response?.data?.message || 
-    error.message || 
-    'Registration failed'
-  );
-}
+// update profile
+const updateProfile = async (userData, confirmPassword) => {
+  try {
+    const response = await axios.put(API_URL + 'update', 
+      {
+        updates: userData,
+        confirmPassword
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Profile update failed'
+    );
+  }
 };
 
 const authService = {

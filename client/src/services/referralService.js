@@ -10,18 +10,26 @@ const checkReferral = async () => {
   });
   return response.data;
 };
-const sendReferralsRequest = async (referredUserIds) => {
+const sendReferralsRequest = async (referringUserIds) => {
   try{
-  const response = await axios.post(API_URL + 'referrals/requestsend',{referredUserIds} ,{
+  const response = await axios.post(API_URL + 'referrals/requestsend',{referringUserIds} ,{
     withCredentials: true,
   });
-  return response.data;
+  // return response.data;
+   return {
+      success: true,
+      data: response.data,
+    };
 }catch (error) {
-    throw new Error(
-      error.response?.data?.message || 
-      error.message || 
-      'Referral sending failed'
-    );
+  return {
+      success: false,
+      error: error.response?.data?.message || error.message,
+    };
+    // throw new Error(
+    //   error.response?.data?.message || 
+    //   error.message || 
+    //   'Referral sending failed'
+    // );
   }
 };
 const fetchAllUsersBasicInfo = async () => {
@@ -102,6 +110,23 @@ const updateReferralStatus= async ({referredUserId,status}) => {
   }
 
 }
+const cancelReferrals= async ({referredUserId}) => { 
+  try{
+    const response = await axios.put(`${API_URL}referrals/cancel`,{referredUserId},{
+      withCredentials: true,
+    });
+    return response.data.users;
+  }catch (error) {
+  
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Fetching referrals failed'
+    );
+  }
+
+}
+
 const referralService = {
   fetchReferralbyIds,
   checkReferral,
@@ -109,7 +134,8 @@ const referralService = {
   sendReferrals,
   fetchAllUsersBasicInfo,
   declineReferral,
-  updateReferralStatus
+  updateReferralStatus,
+  cancelReferrals,
 };
 
 export default referralService;
