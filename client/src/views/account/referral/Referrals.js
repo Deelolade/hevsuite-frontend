@@ -242,7 +242,6 @@ const Referrals = () => {
         const successfulIds = successfulRefs.map(ref => ref.userId);
         const pendingIds = pendingRefs.map(ref => ref.userId);
         const cancelledIds = cancelledRefs.map(ref => ref.userId);
-        console.log(successfulIds, pendingIds, cancelledIds);
         // Fetch user details in parallel
         const [successfulUsers, pendingUsers, cancelledUsers] = await Promise.all([
           successfulIds.length > 0 ? referralService.fetchReferralbyIds(successfulIds) : Promise.resolve([]),
@@ -408,13 +407,13 @@ setReferralsData({
         </div>
         <div className="bg-white rounded-lg shadow-sm p-2 sm:p-4">
           {activeTab === "Successful Referrals" && (
-            <SuccessfulReferrals referrals={getCurrentReferrals()} />
+            <SuccessfulReferrals referrals={getCurrentReferrals()}  setReferralsData={setReferralsData} />
           )}
           {activeTab === "Pending Referrals" && (
-            <PendingReferrals referrals={getCurrentReferrals()} />
+            <PendingReferrals referrals={getCurrentReferrals()}   setReferralsData={setReferralsData} />
           )}
           {activeTab === "Cancelled Referrals" && (
-            <CancelledReferrals referrals={getCurrentReferrals()} />
+            <CancelledReferrals referrals={getCurrentReferrals() } setReferralsData={setReferralsData}/>
           )}
         </div>
         </>

@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { BsCheckLg, BsX } from "react-icons/bs";
 import Modal from "react-modal";
-
+import { formatDateWithSuffix } from "../../../../utils/formatDate"
+import supportRequestService from "../../../../services/supportJoinRequestService";
+import toast from "react-hot-toast";
 const RequestCard = ({
   request,
   view,
   index,
-  selectedRequests,
+  isSelected,
   handleSelect,
+  setRequests
 }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
@@ -52,7 +55,7 @@ const RequestCard = ({
               <h3 className="font-medium text-base sm:text-lg">
                 {request.name}
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600">{request.date}</p>
+              <p className="text-xs sm:text-sm text-gray-600">{formatDateWithSuffix(request.referDate)}</p>
             </div>
           </div>
           <p className="text-sm sm:text-base text-gray-600">
@@ -69,13 +72,34 @@ const RequestCard = ({
             Cancel
           </button>
           <button
-            onClick={() => {
-              // Add accept/decline logic here
-              onClose();
+            onClick={async () => {
+              try {
+                const response = await supportRequestService.processSupportDecision({
+                  requestId: request.userId,
+                  decision: type == "accept" ? "approve" : "decline", // "accept" or "decline"
+                });
+
+                if (response.success) {
+                  toast.success(`${type}ed successfully`)
+                  const res = await supportRequestService.fetchSupportRequestsForDecision();
+                  if (res.success) {
+                    setRequests(res.data.assignedSupportRequests || []);
+                  }
+
+                } else {
+                  toast.error(response.error || `Failed to ${type}ed `)
+                  console.error("Failed:", response.error || "Unknown error");
+                }
+              } catch (err) {
+
+                console.error("Request error:", err.message);
+              } finally {
+                onClose();
+              }
             }}
-            className={`px-4 sm:px-6 py-1.5 sm:py-2 text-white rounded-lg text-xs sm:text-sm ${
-              type === "accept" ? "bg-[#0E5B31]" : "bg-red-500"
-            }`}
+
+            className={`px-4 sm:px-6 py-1.5 sm:py-2 text-white rounded-lg text-xs sm:text-sm ${type === "accept" ? "bg-[#0E5B31]" : "bg-red-500"
+              }`}
           >
             {type === "accept" ? "Accept" : "Decline"}
           </button>
@@ -91,8 +115,11 @@ const RequestCard = ({
           <input
             type="checkbox"
             className="absolute left-3 sm:left-4 top-3 sm:top-4 w-4 h-4 sm:w-5 sm:h-5"
-            checked={selectedRequests.includes(index)}
-            onChange={() => handleSelect(index)}
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleSelect(request.userId); // Use userId here
+            }}
           />
           <div className="flex flex-col items-center">
             <img
@@ -104,7 +131,7 @@ const RequestCard = ({
               {request.name}
             </h3>
             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-              {request.date}
+              {formatDateWithSuffix(request.referDate)}
             </p>
             <div className="flex gap-2 w-full">
               <button
@@ -143,8 +170,11 @@ const RequestCard = ({
         <input
           type="checkbox"
           className="w-4 h-4 sm:w-5 sm:h-5"
-          checked={selectedRequests.includes(index)}
-          onChange={() => handleSelect(index)}
+          checked={isSelected}
+           onChange={(e) => {
+              e.stopPropagation();
+              handleSelect(request.userId); // Use userId here
+            }}
         />
         <img
           src={request.image}
@@ -155,7 +185,7 @@ const RequestCard = ({
           <h3 className="font-medium text-sm sm:text-base truncate">
             {request.name}
           </h3>
-          <p className="text-xs sm:text-sm text-gray-600">{request.date}</p>
+          <p className="text-xs sm:text-sm text-gray-600">{formatDateWithSuffix(request.referDate)}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
           <button

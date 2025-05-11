@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../features/auth/authSlice";
+import { requestClubCard } from "../../../services/clubCardService";
 
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
@@ -25,7 +26,7 @@ const StandardProfile = () => {
     referrals: true,
   });
   const { user, isLoading } = useSelector((state) => state.auth);
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
 
   const [isEditing, setIsEditing] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -96,30 +97,74 @@ const StandardProfile = () => {
     });
   };
 
-  const handleSave = async() => {
-    // updating user profile data
-    const updatedData = {
-      personalInfo,
-      contactDetails,
-      occupationInfo,
-    }
-    const resultAction = await dispatch(updateProfile(updatedData));
-    
-    if (updateProfile.fulfilled.match(resultAction)) {
-      // Success - no need to do anything extra as Redux will update state
-      setIsEditing(false);
-    } else {
-      throw new Error(resultAction.payload || 'Update failed');
-    }
+  const handleSave = async () => {
+    try {
+      const formData = {
+        personalInfo,
+        contactDetails,
+        occupationInfo,
+      }
+      // Get confirmPassword from user input
+      const confirmPassword = await Swal.fire({
+        title: 'Confirm Password',
+        input: 'password',
+        inputLabel: 'Please enter your current password to confirm changes',
+        inputPlaceholder: 'Enter your password',
+        showCancelButton: true,
+        confirmButtonColor: '#540A26',
+        cancelButtonColor: '#6c757d',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to enter your password!';
+          }
+        }
+      });
 
-    setIsEditing(false);
+      if (confirmPassword.isConfirmed) {
+        const resultAction = await dispatch(updateProfile({
+          userData: formData,
+          confirmPassword: confirmPassword.value
+        }));
+
+        if (updateProfile.fulfilled.match(resultAction)) {
+          toast.success('Profile updated successfully');
+          setIsEditing(false);
+        } else {
+          throw new Error(resultAction.payload || 'Update failed');
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.error('Update error:', error);
+    }
   };
 
-  const handleRequestCard = () => {
+  const handleRequestCard = async () => {
+    try {
+      const userId = user?._id;
+      const isReplacement = cardRequest.disableCurrent === 'Yes';
 
-    console.log(cardRequest);
-    setShowPaymentModal(true);
+      const result = await requestClubCard({ userId, isReplacement });
+      if (result.success) {
+        toast.success("Your club card request has been submitted.")
+      }
+
+      // Optionally clear form or update UI
+      setCardRequest({
+        fullName: '',
+        cardType: 'Standard',
+        disableCurrent: 'No',
+      });
+      setIsEditingFullName(false);
+    } catch (error) {
+      showModal({
+        title: 'Error',
+        text: error.message || 'Failed to request club card.',
+        confirmText: 'Try Again',
+      });
+    }
   };
+
 
   const PaymentMethodModal = ({ onClose }) => {
     const paymentMethods = [
@@ -239,17 +284,22 @@ const StandardProfile = () => {
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block mb-1 text-sm">Title*</label>
-                  <input
-                    type="text"
+                  <select
                     value={personalInfo.title}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("title", e.target.value)
-                    }
+                    onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
                     disabled={!isEditing}
                     className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
                       } rounded-lg border border-gray-200`}
-                  />
+                  >
+                    <option value="">Select title</option>
+                    <option value="Mr">Mr</option>
+                    <option value="Mrs">Mrs</option>
+                    <option value="Miss">Miss</option>
+                    <option value="Ms">Ms</option>
+                    <option value="Dr">Dr</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm">Forename*</label>
                   <input
@@ -278,47 +328,60 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Gender*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.gender}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("gender", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+                    <select
+                      value={personalInfo.gender}
+                      onChange={(e) => handlePersonalInfoChange("gender", e.target.value)}
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  ) : (<div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                    {personalInfo.gender}
+                  </div>)}
+
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Date of birth*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.dob}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("dob", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={personalInfo.dob}
+                      onChange={(e) => handlePersonalInfoChange("dob", e.target.value)}
+                      className="w-full px-3 py-2 bg-white rounded-lg border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.dob}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block mb-1 text-sm">
-                    Relationship Status*
-                  </label>
-                  <input
-                    type="text"
-                    value={personalInfo.relationshipStatus}
-                    onChange={(e) =>
-                      handlePersonalInfoChange(
-                        "relationshipStatus",
-                        e.target.value
-                      )
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  <label className="block mb-1 text-sm">Relationship Status*</label>
+                  {isEditing ? (
+                    <select
+                      value={personalInfo.relationshipStatus}
+                      onChange={(e) => handlePersonalInfoChange("relationshipStatus", e.target.value)}
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
+                    >
+                      <option value="">Select status</option>
+                      <option value="Single">Single</option>
+                      <option value="Married">Married</option>
+                      <option value="Divorced">Divorced</option>
+                      <option value="Widowed">Widowed</option>
+                    </select>
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.relationshipStatus}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Nationality*</label>
@@ -521,22 +584,26 @@ const StandardProfile = () => {
               <div className="mt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="block mb-1 text-sm">
-                      Employment Status*
-                    </label>
-                    <input
-                      type="text"
-                      value={occupationInfo.employmentStatus}
-                      onChange={(e) =>
-                        handleOccupationInfoChange(
-                          "employmentStatus",
-                          e.target.value
-                        )
-                      }
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                        } rounded-lg border border-gray-200`}
-                    />
+                    <label className="block mb-1 text-sm">Employment Status*</label>
+                    {isEditing ? (
+                      <select
+                        value={occupationInfo.employmentStatus}
+                        onChange={(e) => handleOccupationInfoChange("employmentStatus", e.target.value)}
+                        disabled={!isEditing}
+                        className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                          } rounded-lg border border-gray-200`}
+                      >
+                        <option value="">Select status</option>
+                        <option value="Employed">Employed</option>
+                        <option value="Self-employed">Self-employed</option>
+                        <option value="Retired">Retired</option>
+                        <option value="Student">Student</option>
+                      </select>
+                    ) : (
+                      <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                        {occupationInfo.employmentStatus}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block mb-1 text-sm">
@@ -560,19 +627,25 @@ const StandardProfile = () => {
                     <label className="block mb-1 text-sm">
                       Prefered Social Media*
                     </label>
-                    <input
-                      type="text"
+                    {isEditing ? (<select
                       value={occupationInfo.preferredSocialMedia}
-                      onChange={(e) =>
-                        handleOccupationInfoChange(
-                          "preferredSocialMedia",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleOccupationInfoChange("preferredSocialMedia", e.target.value)}
                       disabled={!isEditing}
                       className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
                         } rounded-lg border border-gray-200`}
-                    />
+                    >
+                      <option value="">Select platform</option>
+                      <option value="Facebook">Facebook</option>
+                      <option value="Instagram">Instagram</option>
+                      <option value="Twitter">Twitter</option>
+                      <option value="LinkedIn">LinkedIn</option>
+                    </select>) : (
+                      <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                        {occupationInfo.preferredSocialMedia}
+                      </div>
+                    )}
+
+
                   </div>
                   <div>
                     <label className="block mb-1 text-sm">
@@ -596,11 +669,15 @@ const StandardProfile = () => {
 
                 <h4 className="font-medium mb-3">Your Interests</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4">
-                  {interests.map((interest, index) => (
-                    <div key={index} className="flex items-center">
-                      <span className="text-sm">{interest}</span>
-                    </div>
-                  ))}
+                  {user?.userInterests?.length > 0 ? (
+                    user.userInterests.map((interest, index) => (
+                      <div key={index} className="flex items-center">
+                        <span className="text-sm">{interest}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className=" text-sm col-span-full">No interests selected</p>
+                  )}
                 </div>
               </div>
             )}
@@ -910,20 +987,21 @@ const ReferralsList = ({ referredBy }) => {
         // Extract user IDs from referredBy array
 
         const referralIds = referredBy
-        .filter(ref => ref.status === 'approved')
-        .map(ref => ref.userId);
+          .filter(ref => ref.status === 'approved')
+          .map(ref => ref.userId);
 
         if (referralIds.length > 0) {
           // Fetch referral user details
           const referralUsers = await referralService.fetchReferralbyIds(referralIds);
 
-          // Combine with referral data
-          const combinedData = referredBy.map((ref, index) => ({
+          const approvedReferrals = referredBy
+          .filter(ref => ref.status === 'approved')
+          .map((ref, index) => ({
             ...ref,
-            user: referralUsers[index],
+            user: referralUsers[index], // Now indexes match since we filtered both arrays
           }));
 
-          setReferrals(combinedData);
+          setReferrals(approvedReferrals);
         }
       } catch (error) {
         console.error('Error fetching referrals:', error);
@@ -934,7 +1012,7 @@ const ReferralsList = ({ referredBy }) => {
 
     fetchReferrals();
   }, [referredBy]);
-
+console.log(referrals)
   if (loading) {
     return <p className="text-gray-500">Loading referrals...</p>;
   }

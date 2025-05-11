@@ -1,17 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { BsFilter } from "react-icons/bs";
 import Modal from "react-modal";
-
+import {formatDateWithSuffix, formatTime} from '../../../utils/formatDate';
+import activityService from "../../../services/activityService";
+import toast from "react-hot-toast";
 Modal.setAppElement("#root");
 
 const ActivityItem = ({ activity, onRemove }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
   const handleRemove = () => {
     setShowConfirmModal(true);
   };
-
+  const confirmRemove = async () => {
+    setIsDeleting(true);
+    try {
+      await onRemove(activity._id); // Use _id instead of id for MongoDB
+      setShowConfirmModal(false);
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   return (
     <>
       <div className="flex items-start sm:items-center justify-between bg-white rounded-lg p-3 sm:p-4 shadow-md sm:shadow-lg">
@@ -61,10 +73,8 @@ const ActivityItem = ({ activity, onRemove }) => {
             Cancel
           </button>
           <button
-            onClick={() => {
-              onRemove(activity.id);
-              setShowConfirmModal(false);
-            }}
+            onClick={confirmRemove}
+            disabled={isDeleting}
             className="px-4 py-2 bg-red-600 text-white rounded-lg"
           >
             Remove
@@ -77,7 +87,6 @@ const ActivityItem = ({ activity, onRemove }) => {
 
 const FilterModal = ({ isOpen, onClose, onApply, currentFilter }) => {
   const [filter, setFilter] = useState(currentFilter);
-
   return (
     <Modal
       isOpen={isOpen}
@@ -165,67 +174,109 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilter }) => {
 };
 
 const Activities = () => {
-  const [activities, setActivities] = useState([
-    {
-      id: 1,
-      title: "You logged in from a new device (Windows 10, Chrome)",
-      timestamp: "17th January, 2023 by 8:20 PM",
-      type: "login",
-    },
-    {
-      id: 2,
-      title: "You changed your password successfully",
-      timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "security",
-    },
-    {
-      id: 3,
-      title: "You updated your email address to hello.member@club.com",
-      timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "security",
-    },
-    {
-      id: 4,
-      title:
-        "Support join request for Jane Doe accepted (Device: MacBook Pro, Safari)",
-      timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "support",
-    },
-    {
-      id: 5,
-      title: "you declined support join request for Sam Smith",
-      timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "support",
-    },
-    {
-      id: 6,
-      title: "You logged out (iPhone 13, Safari)",
-      timestamp: "29thDecember, 2024 by 12:09pm",
-      type: "login",
-    },
-  ]);
+
+
+  // const [activities, setActivities] = useState([
+  //   {
+  //     id: 1,
+  //     title: "You logged in from a new device (Windows 10, Chrome)",
+  //     timestamp: "17th January, 2023 by 8:20 PM",
+  //     type: "login",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "You changed your password successfully",
+  //     timestamp: "29thDecember, 2024 by 12:09pm",
+  //     type: "security",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "You updated your email address to hello.member@club.com",
+  //     timestamp: "29thDecember, 2024 by 12:09pm",
+  //     type: "security",
+  //   },
+  //   {
+  //     id: 4,
+  //     title:
+  //       "Support join request for Jane Doe accepted (Device: MacBook Pro, Safari)",
+  //     timestamp: "29thDecember, 2024 by 12:09pm",
+  //     type: "support",
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "you declined support join request for Sam Smith",
+  //     timestamp: "29thDecember, 2024 by 12:09pm",
+  //     type: "support",
+  //   },
+  //   {
+  //     id: 6,
+  //     title: "You logged out (iPhone 13, Safari)",
+  //     timestamp: "29thDecember, 2024 by 12:09pm",
+  //     type: "login",
+  //   },
+  // ]);
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [currentFilter, setCurrentFilter] = useState("all");
 
-  const handleRemoveActivity = (id) => {
-    setActivities(activities.filter((activity) => activity.id !== id));
-  };
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const { success, data, error } = await activityService.getUserActivities();
+        if (success) {
+          setActivities(data.activities);
+        } else {
+          setError(error || "Failed to load activities");
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleClearAll = () => {
-    setActivities([]);
-    setShowClearAllModal(false);
+    fetchActivities();
+  }, []);
+  const handleRemoveActivity = async (activityId) => {
+    try {
+      const { success } = await activityService.deleteActivity(activityId);
+      if (success) {
+        setActivities(activities.filter((activity) => activity._id !== activityId));
+        toast.success("Activity has been deleted successfully")
+      }
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      toast.error(error.message)
+    }
   };
-
+  const handleClearAll = async () => {
+    try {
+      const { success } = await activityService.clearUserActivities();
+      if (success) {
+        setActivities([]);
+        setShowClearAllModal(false);
+        toast.success("All activities have been cleared successfully")
+      }
+    } catch (error) {
+      console.error("Error clearing activities:", error);
+      toast.error(error.message)
+    }
+  };
   const handleFilter = (filter) => {
     setCurrentFilter(filter);
   };
 
   const getFilteredActivities = () => {
     if (currentFilter === "all") return activities;
-    return activities.filter((activity) => activity.type === currentFilter);
+    return activities.filter((activity) => activity.action === currentFilter);
   };
+  if (loading) {
+    return <div className="p-4 text-center">Loading activities...</div>;
+  }
 
   return (
     <div className="p-2 sm:p-4">
@@ -251,13 +302,26 @@ const Activities = () => {
       </div>
 
       <div className="space-y-2 sm:space-y-3">
-        {getFilteredActivities().map((activity) => (
+        {/* {getFilteredActivities().map((activity) => (
           <ActivityItem
             key={activity.id}
             activity={activity}
             onRemove={handleRemoveActivity}
           />
-        ))}
+        ))} */}
+        {getFilteredActivities().map((activity) => (
+            <ActivityItem
+              key={activity._id}
+              activity={{
+                ...activity,
+                title: `${activity.details}(${activities.userAgent})`, // Helper function to format title
+                timestamp: `${formatDateWithSuffix(activity.timestamp)} by ${formatTime(activity.timestamp)}`, // Format date
+                type: activity.action // Map action to type
+              }}
+              onRemove={handleRemoveActivity}
+            />
+          ))}
+
       </div>
 
       {/* Filter Modal */}
