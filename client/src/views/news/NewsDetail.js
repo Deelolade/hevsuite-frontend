@@ -9,47 +9,25 @@ import image_card from '../../assets/image.jpg';
 import Footer from '../../components/Footer';
 import HeaderOne from '../../components/HeaderOne';
 import Header from '../../components/Header';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import {formatDateWithSuffix,formatTime} from "../../utils/formatDate";
+import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
+import { setSelectedNews } from '../../features/newsSlice';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+import 'swiper/css';
+
 const NewsDetail = () => {
-  // const relatedNews = [
-  //   {
-  //     id: 1,
-  //     title: 'The Bout for Lions',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Battle for NBA Cup',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'The Adventurer',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: 'Battle for NBA Cup',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  // ];
   const allNewsItems = useSelector((state) => state.news.newsItems);
   const selectedNews = useSelector((state) => state.news.selectedNews);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Filter out the selectedNews from allNewsItems to get relatedNews
-  const relatedNews = allNewsItems.filter(news => news.id !== selectedNews?.id);
+  const relatedNews = allNewsItems.filter(news => news._id !== selectedNews?._id);
+
 
 
   useEffect(() => {
@@ -80,11 +58,24 @@ const NewsDetail = () => {
           <span>back</span>
         </Link>
         <div className='relative inset-0 bg-black/50'>
-          <img
-            src={image_card}
-            alt=''
-            className='w-full md:h-[70vh] h-[50vh] object-cover brightness-50'
-          />
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            pagination={{ clickable: true }}
+            className="w-full h-[50vh] md:h-[70vh]"
+          >
+            {(selectedNews.images.length > 0 ? selectedNews.images : [image_card]).map((img, index) => (
+              <SwiperSlide key={index}>
+                <img
+                  src={img}
+                  alt={`Slide ${index}`}
+                  className='w-full h-full object-cover brightness-50 '
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
           {/* <video
             autoPlay
             muted
@@ -109,7 +100,7 @@ const NewsDetail = () => {
       <section className='container mx-auto px-4 md:px-12 py-16'>
         <div>
           <h1 className='text-3xl md:text-4xl font-semibold mb-4 font-primary text-gradient_r'>
-          {selectedNews.title}
+            {selectedNews.title}
           </h1>
           <div className='flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 mb-8'>
             <div className='flex items-center gap-2'>
@@ -143,14 +134,16 @@ const NewsDetail = () => {
                 {relatedNews.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() =>
-                      window.scrollTo({ top: 50, behavior: 'smooth' })
-                    }
+                    onClick={() => {
+                      // dispatch action to set selected news
+                      dispatch(setSelectedNews(item));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     className='relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] w-[300px] flex-shrink-0'
                   >
                     <div
                       className='relative h-96 sm:h-64 rounded-2xl bg-cover bg-current bg-center'
-                      style={{ backgroundImage: `url(${item.image})` }}
+                      style={{ backgroundImage: `url(${item.images[0]})` }}
                     >
                       {/* Gradient Overlay */}
                       <div className='absolute bottom-0 left-0 right-0 p-4 sm:p-3 !z-50 '>

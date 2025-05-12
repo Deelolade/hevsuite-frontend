@@ -101,7 +101,7 @@ const Terms = () => {
         <Header className="absolute top-0 left-0 w-full z-50" />
         <div className="flex">
           {/* Left Side - Dark Background with Content */}
-          <div className="w-1/2 fixed top-0 left-0 h-screen">
+          <div className="w-1/2 sticky top-0 left-0 h-screen">
             <div className="absolute inset-0 z-0">
               <img
                 src={bg_image}
@@ -127,7 +127,7 @@ const Terms = () => {
                 )}
                 {activeTab === "Terms of Use" && (
                   <div className="terms-content">
-                    <p className="text-red-500" id="termsofuse">
+                    <p className="text-secondary" id="termsofuse">
                       1. Content on this SITE
                     </p>
                     <p>2. Links to Other Websites</p>
@@ -137,7 +137,7 @@ const Terms = () => {
                 )}
                 {activeTab === "Cookies Policy" && (
                   <div className="terms-content">
-                    <p className="text-red-500" id="cookiespolicy">
+                    <p className="text-secondary" id="cookiespolicy">
                       1. Cookies: what they are and How to remove them?
                     </p>
                     <p>2. What are in a cookie?</p>
@@ -148,7 +148,7 @@ const Terms = () => {
           </div>
 
           {/* Right Side - White Background with Content */}
-          <div className="w-1/2 ml-[50%] min-h-screen p-12 lg:p-16 xl:p-20 sm:mt-12">
+          <div className="w-1/2 min-h-screen p-12 lg:p-16 xl:p-20 sm:mt-12">
             <h1 className="text-3xl lg:text-4xl xl:text-5xl font-semibold mb-6">
               Policies
             </h1>
@@ -184,12 +184,13 @@ const Terms = () => {
 
             {/* Content */}
             <div className="pr-8">
-              {activeTab === "Terms of Policy" && <TermsOfPolicy />}
-              {activeTab === "Terms of Use" && <TermsOfUse />}
-              {activeTab === "Cookies Policy" && <CookiePolicy />}
+              {activeTab === "Terms of Policy" && <TermsOfPolicy searchQuery={searchQuery}/>}
+              {activeTab === "Terms of Use" && <TermsOfUse searchQuery={searchQuery}/>}
+              {activeTab === "Cookies Policy" && <CookiePolicy searchQuery={searchQuery} />}
             </div>
           </div>
         </div>
+        <Footer/>
       </div>
     </div>
   );

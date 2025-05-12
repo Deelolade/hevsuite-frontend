@@ -110,7 +110,7 @@ const HowItWorks = () => {
               <img
                 src={email_camp}
                 alt="FAQ"
-                className="w-6 h-6 sm:w-8 sm:h-8"
+                className="w-10 h-10 sm:w-16 sm:h-16"
               />
             </div>
             <div className="sm:max-w-md">
@@ -124,7 +124,7 @@ const HowItWorks = () => {
           </div>
           {/* Right Button */}
           <button
-            className="px-4 py-2 sm:px-6 sm:py-3 bg-white text-[#540A26] rounded-3xl mt-4 sm:mt-0"
+            className="px-4 py-2 sm:px-6 sm:py-3 bg-[#540A26] text-white rounded-3xl mt-4 sm:mt-0"
             onClick={() => navigate("/topics")}
           >
             Check our FAQs
