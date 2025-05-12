@@ -17,7 +17,7 @@ import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../features/auth/authSlice";
 import { requestClubCard } from "../../../services/clubCardService";
-
+import { CountrySelect, StateSelect } from 'react-country-state-city';
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
     personalInfo: true,
@@ -33,7 +33,7 @@ const StandardProfile = () => {
   const [showRequestView, setShowRequestView] = useState(false);
   const [isEditingFullName, setIsEditingFullName] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-
+  const [countryId, setCountryId] = useState('');
   const [personalInfo, setPersonalInfo] = useState({
     title: user?.title || "",
     forename: user?.forename || "",
@@ -54,7 +54,7 @@ const StandardProfile = () => {
     secondaryEmail: user?.secondaryEmail || "",
     primaryPhone: user?.primaryPhone || "",
     secondaryPhone: user?.secondaryPhone || "",
-    state: user?.address?.state || "",
+    state: user?.state || "",
   });
 
   const [occupationInfo, setOccupationInfo] = useState({
@@ -96,7 +96,9 @@ const StandardProfile = () => {
       [field]: value,
     });
   };
-
+  const changeNationalityHandler = (country, key) => {
+    setPersonalInfo((prev) => ({ ...prev, [key]: country.name }));
+  };
   const handleSave = async () => {
     try {
       const formData = {
@@ -111,11 +113,39 @@ const StandardProfile = () => {
         inputLabel: 'Please enter your current password to confirm changes',
         inputPlaceholder: 'Enter your password',
         showCancelButton: true,
+        confirmButtonText: 'Confirm', // Custom text
+        cancelButtonText: 'Cancel', // Custom text
         confirmButtonColor: '#540A26',
         cancelButtonColor: '#6c757d',
+        customClass: {
+          confirmButton: 'swal-confirm-button', // Optional custom class
+          cancelButton: 'swal-cancel-button' // Optional custom class
+        },
         inputValidator: (value) => {
           if (!value) {
             return 'You need to enter your password!';
+          }
+        },
+        buttonsStyling: false, // Disable default styling
+        willOpen: () => {
+          // Apply inline styles when modal opens
+          const confirmBtn = document.querySelector('.custom-confirm-button');
+          const cancelBtn = document.querySelector('.custom-cancel-button');
+
+          if (confirmBtn) {
+            confirmBtn.style.backgroundColor = '#540A26';
+            confirmBtn.style.color = 'white';
+            confirmBtn.style.border = 'none';
+            confirmBtn.style.padding = '8px 24px';
+            confirmBtn.style.margin = '0 5px';
+          }
+
+          if (cancelBtn) {
+            cancelBtn.style.backgroundColor = '#6c757d';
+            cancelBtn.style.color = 'white';
+            cancelBtn.style.border = 'none';
+            cancelBtn.style.padding = '8px 24px';
+            cancelBtn.style.margin = '0 5px';
           }
         }
       });
@@ -246,7 +276,7 @@ const StandardProfile = () => {
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
             />
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">Good luck</h2>
+              <h2 className="text-xl font-semibold">{user?.forename} {user?.surname}</h2>
               <p className="text-gray-600 mb-1">Standard Member/12345678</p>
               <p className="text-gray-500">{user?.primaryEmail}</p>
             </div>
@@ -385,34 +415,55 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Nationality*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.nationality}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("nationality", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => changeNationalityHandler(country, "nationality")}
+                      onTextChange={() =>
+                        setPersonalInfo(prev => ({ ...prev, nationality: '' }))
+                      }
+                      defaultValue={personalInfo.nationality}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.nationality}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block mb-1 text-sm">
-                    Additional Nationality*
-                  </label>
-                  <input
-                    type="text"
-                    value={personalInfo.additionalNationality}
-                    onChange={(e) =>
-                      handlePersonalInfoChange(
-                        "additionalNationality",
-                        e.target.value
-                      )
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  <label className="block mb-1 text-sm">Additional Nationality*</label>
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => changeNationalityHandler(country, "additionalNationality")}
+                      onTextChange={() =>
+                        setPersonalInfo(prev => ({ ...prev, additionalNationality: '' }))
+                      }
+                      defaultValue={personalInfo.additionalNationality}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.additionalNationality}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -464,16 +515,33 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Country*</label>
-                  <input
-                    type="text"
-                    value={contactDetails.country}
-                    onChange={(e) =>
-                      handleContactDetailsChange("country", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => {
+                        handleContactDetailsChange("country", country.name);
+                        setCountryId(country.id);
+                        handleContactDetailsChange("state", "");
+                      }}
+                      onTextChange={() =>
+                        setContactDetails(prev => ({ ...prev, country: '' }))
+                      }
+                      defaultValue={contactDetails.country}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {contactDetails.country}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">
@@ -553,16 +621,32 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">State*</label>
-                  <input
-                    type="text"
-                    value={contactDetails.state}
-                    onChange={(e) =>
-                      handleContactDetailsChange("state", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <StateSelect
+                      countryid={countryId}
+                      placeHolder='Select State'
+                      onChange={(state) => {
+                        handleContactDetailsChange("state", state.name);
+                      }}
+                      onTextChange={() =>
+                        setContactDetails(prev => ({ ...prev, state: '' }))
+                      }
+                      defaultValue={contactDetails.state}
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {contactDetails.state}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -995,11 +1079,11 @@ const ReferralsList = ({ referredBy }) => {
           const referralUsers = await referralService.fetchReferralbyIds(referralIds);
 
           const approvedReferrals = referredBy
-          .filter(ref => ref.status === 'approved')
-          .map((ref, index) => ({
-            ...ref,
-            user: referralUsers[index], // Now indexes match since we filtered both arrays
-          }));
+            .filter(ref => ref.status === 'approved')
+            .map((ref, index) => ({
+              ...ref,
+              user: referralUsers[index], // Now indexes match since we filtered both arrays
+            }));
 
           setReferrals(approvedReferrals);
         }
@@ -1012,7 +1096,7 @@ const ReferralsList = ({ referredBy }) => {
 
     fetchReferrals();
   }, [referredBy]);
-console.log(referrals)
+  console.log(referrals)
   if (loading) {
     return <p className="text-gray-500">Loading referrals...</p>;
   }

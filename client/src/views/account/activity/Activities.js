@@ -314,7 +314,7 @@ const Activities = () => {
               key={activity._id}
               activity={{
                 ...activity,
-                title: `${activity.details}(${activities.userAgent})`, // Helper function to format title
+                title: `${activity.details}(${activity.userAgent})`, // Helper function to format title
                 timestamp: `${formatDateWithSuffix(activity.timestamp)} by ${formatTime(activity.timestamp)}`, // Format date
                 type: activity.action // Map action to type
               }}
