@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import avatar from "../../../assets/party2.jpg";
+import { useDispatch, useSelector } from 'react-redux';
 import AttendingEvents from "./AttendingEvents";
 import InvitedEvents from "./InvitedEvents";
 import PastEvents from "./PastEvents";
 import SavedEvents from "./SavedEvents";
+import { fetchAllEventTypes, fetchAttendingMembers } from "../../../features/eventSlice";
 
 const NavigationTabs = ({ activeTab, setActiveTab, eventTabs }) => {
   return (
@@ -50,6 +51,7 @@ const Pagination = () => {
 };
 
 const YourEvents = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("Attending Events");
   const eventTabs = [
     "Attending Events",
@@ -58,44 +60,56 @@ const YourEvents = () => {
     "Saved Events",
   ];
 
-  const attendingEvents = Array(8).fill({
-    title: "Board Members Meeting",
-    date: "2nd January, 2025",
-    time: "10:00am",
-    image: avatar,
-  });
+  // Get events from Redux store
+  const {
+    attendingEvents,
+    invitedEvents,
+    pastEvents,
+    attendingMembers,
+    savedEvents,
+    loading,
+    membersLoading,
+    error
+  } = useSelector((state) => state.events);
+ console.log("attendingEvents", attendingEvents);
+  console.log("invitedEvents", invitedEvents);
+  console.log("pastEvents", pastEvents);
+  console.log("saved",savedEvents)
+  // Fetch all events on component mount
+  useEffect(() => {
+    dispatch(fetchAllEventTypes());
+  }, [dispatch]);
 
-  const invitedEvents = Array(8).fill({
-    title: "Board Members Meeting",
-    date: "2nd January, 2025",
-    time: "10:00am",
-    image: avatar,
-  });
-
-  const pastEvents = Array(8).fill({
-    title: "Board Members Meeting",
-    date: "2nd January, 2025",
-    time: "10:00am",
-    image: avatar,
-  });
-
-  const savedEvents = Array(8).fill({
-    title: "Board Members Meeting",
-    date: "2nd January, 2025",
-    time: "10:00am",
-    image: avatar,
-  });
+  // Handler for fetching attending members
+  const handleFetchMembers = (eventId) => {
+    dispatch(fetchAttendingMembers(eventId));
+  };
 
   const renderActiveTab = () => {
+    if (loading) {
+      return <div className="text-center py-8">Loading events...</div>;
+    }
+
+    if (error) {
+      return <div className="text-center text-red-500 py-8">Error: {error}</div>;
+    }
+
     switch (activeTab) {
       case "Attending Events":
-        return <AttendingEvents events={attendingEvents} />;
+        return (
+          <AttendingEvents 
+            events={attendingEvents} 
+            onFetchMembers={handleFetchMembers}
+            membersData={attendingMembers}
+            membersLoading={membersLoading}
+          />
+        );
       case "Invited Events":
         return <InvitedEvents events={invitedEvents} />;
       case "Past Events":
         return <PastEvents events={pastEvents} />;
       case "Saved Events":
-        return <SavedEvents events={savedEvents} />;
+        return <SavedEvents events={savedEvents} />; // You can implement saved events later
       default:
         return null;
     }
