@@ -143,7 +143,7 @@ const Landing = () => {
                       <div
                         onClick={() => {
                           dispatch(setSelectedNews(item));
-                          navigate("/news-detail")
+                            navigate(`/news-detail/${item._id}`);
                         }}
                         className="relative cursor-pointer group overflow-hidden rounded-2xl shadow-md flex-shrink-0"
                       >
@@ -209,7 +209,7 @@ const Landing = () => {
             <div className="text-center mt-8">
               <Link
                 to="news"
-                className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-primary text-white rounded-lg font-secondary text-xl md:text-lg sm:text-base"
+                className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-secondary text-xl md:text-lg sm:text-base"
               >
                 View all
               </Link>

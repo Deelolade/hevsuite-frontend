@@ -92,7 +92,7 @@ const News = () => {
 
           </h1>
           <Link
-            to='/news-detail'
+              to={`/news-detail/${spotlightNews?._id}`}
             onClick={() => dispatch(setSelectedNews(spotlightNews))}
             className='px-3 py-1.5 lg:px-8 lg:py-3 sm:px-6 sm:py-2 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary font-semibold text-lg sm:text-lg'
           >
@@ -140,10 +140,15 @@ const News = () => {
                 .map((item) => (
                   <SwiperSlide key={item._id}>
                     <div
-                      onClick={() => {
+                      // onClick={() => {
+                      //   dispatch(setSelectedNews(item));
+                      //   navigate('/news-detail');
+                      // }}
+                      onClick={() =>{
                         dispatch(setSelectedNews(item));
-                        navigate('/news-detail');
-                      }}
+                        navigate(`/news-detail/${item._id}`)
+                      } }
+                
                       className='relative group cursor-pointer overflow-hidden rounded-2xl shadow-md flex-shrink-0'
                     >
                       <div

@@ -20,6 +20,20 @@ const fetchVisibleTopics = async () => {
     };
   }
 };
+const fetchVisibleTopicById = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}topics/visible/${id}`);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message,
+    };
+  }
+};
 const fetchFAQs= async () => {
     try {
       const response = await axios.get(`${API_URL}faqs/visible`);
@@ -39,6 +53,7 @@ const fetchFAQs= async () => {
 
 const topicsService= {
     fetchVisibleTopics,
+    fetchVisibleTopicById,
     fetchFAQs
 };
 

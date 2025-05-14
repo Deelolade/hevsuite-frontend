@@ -87,9 +87,9 @@ const Terms = () => {
 
           {/* Content */}
           <div>
-            {activeTab === "Terms of Policy" && <TermsOfPolicy />}
-            {activeTab === "Terms of Use" && <TermsOfUse />}
-            {activeTab === "Cookies Policy" && <CookiePolicy />}
+            {activeTab === "Terms of Policy" && <TermsOfPolicy searchQuery={searchQuery} />}
+            {activeTab === "Terms of Use" && <TermsOfUse  searchQuery={searchQuery}/>}
+            {activeTab === "Cookies Policy" && <CookiePolicy searchQuery={searchQuery}/>}
           </div>
         </div>
 

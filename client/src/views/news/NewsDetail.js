@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { BsCalendar } from 'react-icons/bs';
 import { MdAccessTime } from 'react-icons/md';
 import { IoArrowBack } from 'react-icons/io5';
@@ -13,28 +13,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
-import { setSelectedNews } from '../../features/newsSlice';
+import { fetchNewsById, setSelectedNews } from '../../features/newsSlice';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 
 const NewsDetail = () => {
-  const allNewsItems = useSelector((state) => state.news.newsItems);
-  const selectedNews = useSelector((state) => state.news.selectedNews);
+  const { newsItems: allNewsItems, selectedNews, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const { id } = useParams();
   // Filter out the selectedNews from allNewsItems to get relatedNews
   const relatedNews = allNewsItems.filter(news => news._id !== selectedNews?._id);
 
 
-
+useEffect(() => {
+  if (!selectedNews || selectedNews._id !== id) {
+    dispatch(fetchNewsById(id));
+  }
+}, [id, selectedNews, dispatch]);
   useEffect(() => {
 
-    if (!selectedNews) {
-      navigate('/news'); // Redirect if no news selected (e.g. on refresh)
-    }
     if (selectedNews?._id) {
       fetch(`${process.env.REACT_APP_API_BASE_URL}/api/news/${selectedNews._id}/increment-reads`, {
         method: 'PUT',
@@ -43,6 +43,13 @@ const NewsDetail = () => {
   }, [selectedNews, navigate]);
 
   if (!selectedNews) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
+        Loading...
+      </div>
+    );
+  }
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -133,10 +140,10 @@ const NewsDetail = () => {
               <div className='flex justify-between gap-4 sm:gap-6 min-w-max'>
                 {relatedNews.map((item) => (
                   <div
-                    key={item.id}
+                    key={item._id}
                     onClick={() => {
-                      // dispatch action to set selected news
-                      dispatch(setSelectedNews(item));
+                       dispatch(setSelectedNews(item));
+                    navigate(`/news-detail/${item._id}`);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className='relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] w-[300px] flex-shrink-0'

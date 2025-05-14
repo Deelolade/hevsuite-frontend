@@ -73,7 +73,8 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   return (
     <div className="fixed inset-0 z-50  superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white h-[90vh]  rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+      <div className="bg-white h-full sm:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-y-auto">
+
         <div className="flex flex-col md:flex-row md:h-full">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -85,24 +86,24 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
               />
               <span>{eventType}</span>
             </div>
-            <div className="relative h-full overflow-y-auto">
+            <div className="relative h-auto sm:h-full overflow-y-auto">
               <img
                 src={currentEvent.image}
                 alt={currentEvent.name}
-                className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
+                className="w-full md:h-full min-h-[25rem] object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
                 <button
                   onClick={handlePrev}
-                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  className="w-8 sm:w-12 cursor-pointer z-50 h-8 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
                 >
-                  <BsChevronLeft className="text-white text-xl" />
+                  <BsChevronLeft className="text-white text-sm sm:text-xl" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  className="w-8 sm:w-12 cursor-pointer z-50 h-8 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
                 >
-                  <BsChevronRight className="text-white text-xl" />
+                  <BsChevronRight className="text-white text-sm sm:text-xl" />
                 </button>
               </div>
               <div className="absolute top-6 right-6">
@@ -111,30 +112,15 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                 </button> */}
                 <button
                   onClick={async () => {
-                    // if (isSaved) {
-                    //   dispatch(removeSavedEvent(event._id))
-                    //     .unwrap()
-                    //     .then(() => toast.success('Removed from saved!'))
-                    //     .catch(err => toast.error(err.message));
-                    // } else {
-                    //   dispatch(saveEvent(event._id))
-                    //     .unwrap()
-                    //     .then(() => toast.success('Event saved!'))
-                    //     .catch(err => toast.error(err.message));
-                    // }
                     try {
                       if (isSaved) {
                         await dispatch(removeSavedEvent(event._id)).unwrap();
                         toast.success('Removed from saved!');
                       } else {
-                        // Optimistic update
-                        // setIsSaved(true);
                         await dispatch(saveEvent(event._id)).unwrap();
                         toast.success('Event saved!');
                       }
                     } catch (err) {
-                      // Revert on error
-                      // setIsSaved(!isSaved);
                       console.log(err)
                       toast.error(err || 'Something went wrong');
                     }
@@ -151,7 +137,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
-                <div className="text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
+                <div className="text-2xl sm:text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
                 <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
                   {currentEvent.audienceType === "members" ? "Members Only" : currentEvent.audienceType === "vip" ? "VIP Only" : "Open to All"}
                 </div>
@@ -172,7 +158,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                 </p>
                 <button
                   onClick={() => setShowPaymentModal(true)}
-                  className="w-full opacity-70 py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                  className="w-full opacity-70 py-2 sm:py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-base sm:text-lg font-medium"
                 >
                   Attend
                 </button>
@@ -222,7 +208,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
             <div className="p-8">
               {activeTab === "description" && (
                 <div>
-                  <h2 className="text-[40px] font-bold mb-4 text-black font-primary">
+                  <h2 className=" text-[30px] sm:text-[40px] font-bold mb-4 text-black font-primary">
                     {currentEvent.name}
                   </h2>
                   <h3 className="text-xl mb-4 text-black font-primary font-semibold">

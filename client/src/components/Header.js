@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo_white.png';
 import avatar from '../assets/user.avif';
-import { BsBell } from 'react-icons/bs';
 import { BsTwitterX, BsInstagram } from 'react-icons/bs';
 import ProfileModal from './ProfileModal';
 import Modal from 'react-modal';
@@ -10,6 +9,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
 import { persistor } from '../store/store';
 import { fetchNotifications } from '../features/notificationSlice';
+import {
+  BsFillHouseDoorFill,
+  BsQuestionCircle,
+  BsPerson,
+  BsChatFill,
+  BsBell
+} from 'react-icons/bs';
+import { PiCirclesThreeDuotone } from "react-icons/pi";
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -115,7 +122,12 @@ const Header = () => {
         {/* Mobile Menu */}
         <div
           className={`${isMenuOpen ? 'block' : 'hidden'
-            } md:hidden fixed inset-0  bg-black bg-opacity-40  backdrop-blur-md z-100`}
+            } md:hidden fixed inset-0 z-100`}
+            style={{
+    backdropFilter: 'blur(124px)',
+    boxShadow: '0px 4px 54px 0px #00003033',
+    background: 'linear-gradient(163.72deg, rgba(255, 255, 255, 0.21) 3.23%, rgba(255, 255, 255, 0.18) 106.2%)'
+  }}
         >
           <div className='p-6 h-full flex flex-col overflow-auto'>
             <div className='flex justify-between items-center mb-8'>
@@ -132,74 +144,80 @@ const Header = () => {
             </div>
 
             {/* Menu Items */}
-            <div className='flex-grow'>
-              <div className='space-y-2'>
-                <Link
-                  to='/homepage'
-                  className='block bg-black text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
-                >
-                  Home
-                </Link>
-                <Link
-                  to='/how-it-works'
-                  className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
-                >
-                  How it Works
-                </Link>
-                {isLoggedIn && (
-                  <Link
-                    to='/ask'
-                    className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
-                  >
-                    Ask
-                  </Link>
-                )}
-                <Link
-                  to='/topics'
-                  className='block text-white bg-black text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
-                >
-                  Help Centre
-                </Link>
-                {isLoggedIn && (
-                  <>
-                    <div
-                      className='block bg-black text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]'
-                      onClick={() => {
-                        notRef.current = false;
-                        setShowProfileModal(true);
-                      }}
-                    >
-                      My Account
-                    </div>
-                    <div className="relative bg-black text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] cursor-pointer">
-                      <div
-                        onClick={() => {
-                          notRef.current = true;
-                          setShowProfileModal(true);
-                        }}
-                        className="block text-white py-2 px-4 rounded-lg hover:bg-gray-700"
-                      >
-                        Notification
-                        {unreadCount > 0 && (
-                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            10+
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                          </span>
-                        )}
+                      <div className="flex-grow">
+                        <div className="space-y-2">
+                          <Link
+                            to="/"
+                            className="flex text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                          >
+                            <BsFillHouseDoorFill className="text-xl mr-2" />
+                            <span>Home</span>
+                          </Link>
+                          <Link
+                            to="/how-it-works"
+                            className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                          >
+                            <PiCirclesThreeDuotone className="text-xl mr-2" />
+                            <span>How it Works</span>
+                          </Link>
+                          {isLoggedIn && (
+                            <Link
+                              to="/ask"
+                              className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                            >
+                              <BsChatFill className="text-xl mr-2" />
+                              <span>Ask</span>
+                            </Link>
+                          )}
+                          <Link
+                            to="/topics"
+                            className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                          >
+                            <BsQuestionCircle className="text-xl mr-2" />
+                            <span>Help Centre</span>
+                          </Link>
+                          {isLoggedIn && (
+                            <>
+                              <div
+                                className="flex text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                                onClick={() => {
+                                  notRef.current = false;
+                                  setShowProfileModal(true);
+                                }}
+                              >
+                                <BsPerson className="text-xl mr-2" />
+                                <span>My Account</span>
+                              </div>
+                              <div className="relative  text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                                <div
+                                  onClick={() => {
+                                    notRef.current = true;
+                                    setShowProfileModal(true);
+                                  }}
+                                  className="flex text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+                                >
+                                  <BsBell className="text-xl mr-2" />
+                                  <span>Notification</span>
+                                  {unreadCount > 0 && (
+                                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                      10+
+                                      {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
 
             <div className='mt-auto'>
               {isLoggedIn ? (
                 <>
                   <div className='mb-6  text-center'>
                     <img
-                      src={user.image || avatar}
-                      alt={user.image || 'profile'}
+                      src={user?.profilePhoto || avatar}
+                      alt={user?.name || 'profile'}
                       className='w-16 h-16 rounded-full mx-auto my-6'
                     />
                     <div className='text-white mb-3'>

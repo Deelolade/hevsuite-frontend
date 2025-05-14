@@ -6,6 +6,7 @@ import bg_image from "../../assets/header-bg.jpg";
 import logo from "../../assets/logo_white.png";
 import { BsChevronCompactDown, BsChevronCompactUp } from "react-icons/bs";
 import Footer from "../../components/Footer";
+import topicsService from "../../services/topicsService";
 
 const TopicDetails = () => {
   const [expandedQuestion, setExpandedQuestion] = useState(1);
@@ -16,7 +17,7 @@ const TopicDetails = () => {
 
   const location = useLocation();
   const { id } = useParams();
-
+        console.log(id,location.state)
   useEffect(() => {
     const fetchTopic = async () => {
       try {
@@ -25,10 +26,13 @@ const TopicDetails = () => {
         if (location.state?.topic) {
           setTopic(location.state.topic);
         } else {
-          // If not, fetch it from the API
-          // const response = await topicsService.getTopicById(id);
-          // setTopic(response.data);
-          console.log("need to fetch")
+            const response = await topicsService.fetchVisibleTopicById(id);
+        if (response.success) {
+          console.log(response.data)
+          setTopic(response.data);
+        } else {
+          setError(response.error);
+        }
         }
         
         setLoading(false);
@@ -41,6 +45,7 @@ const TopicDetails = () => {
 
     fetchTopic();
   }, [id, location.state]);
+  console.log(topic)
     if (loading) {
     return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>;
   }
@@ -152,14 +157,14 @@ const questions = topic.QAs.filter(qa =>
 
         {/* Questions */}
         <div className="space-y-4">
-          {questions?.map((item) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden">
+          {questions?.map((item,index) => (
+            <div key={item._id} className="border rounded-lg overflow-hidden">
               {/* Question Toggle Button */}
               <button
                 className="w-full flex items-center justify-between p-4 sm:p-6 text-left"
                 onClick={() =>
                   setExpandedQuestion(
-                    expandedQuestion === item.id ? null : item.id
+                    expandedQuestion === item._id ? null : item._id
                   )
                 }
               >
@@ -167,14 +172,14 @@ const questions = topic.QAs.filter(qa =>
                   <span
                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white text-xs sm:text-sm`}
                   >
-                    {item.id}
+                    {index+1}
                   </span>
                   <span className="font-semibold font-primary text-base sm:text-lg">
                     {item.question}
                   </span>
                 </div>
-                <span className="text-xl sm:text-2xl">
-                  {expandedQuestion === item.id ? (
+                <span className="text-base sm:text-2xl">
+                  {expandedQuestion === item._id ? (
                     <BsChevronCompactUp />
                   ) : (
                     <BsChevronCompactDown />
@@ -183,7 +188,7 @@ const questions = topic.QAs.filter(qa =>
               </button>
 
               {/* Answer Section */}
-              {expandedQuestion === item.id && (
+              {expandedQuestion === item._id && (
                 <div className="px-6 pb-6">
                   <div className="ml-12 max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
                     <p className="text-gray-600 font-primary leading-relaxed text-sm sm:text-base">

@@ -269,16 +269,16 @@ const StandardProfile = () => {
           {showPaymentModal && (
             <PaymentMethodModal onClose={() => setShowPaymentModal(false)} />
           )}
-          <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+          <div className="flex items-start gap-4 mb-6">
             <img
               src={user?.profilePhoto || avatar}
               alt="Profile"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
+              className="w-12 h-12 sm:w-20 sm:h-20 rounded-full object-cover"
             />
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">{user?.forename} {user?.surname}</h2>
-              <p className="text-gray-600 mb-1">Standard Member/12345678</p>
-              <p className="text-gray-500">{user?.primaryEmail}</p>
+              <h2 className="text-sm sm:text-xl font-semibold">{user?.forename} {user?.surname}</h2>
+              <p className="text-xs sm:text-base text-gray-600 mb-1">Standard Member/12345678</p>
+              <p className="text-xs sm:text-base text-gray-500">{user?.primaryEmail}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -289,7 +289,7 @@ const StandardProfile = () => {
               </button>
 
               <button
-                className={`px-4 sm:px-6 py-1.5 sm:py-2 ${isEditing ? "bg-green-600" : "bg-[#540A26]"
+                className={`px-2 text-sm sm:text-base sm:px-6 py-1.5 sm:py-2 ${isEditing ? "bg-green-600" : "bg-[#540A26]"
                   } text-white rounded-lg`}
                 onClick={isEditing ? handleSave : () => setIsEditing(true)}
               >
@@ -963,7 +963,7 @@ const StandardProfile = () => {
                     <div className="md:col-span-2 mt-6 flex-1">
                       <div className="flex justify-end gap-3">
                         <button
-                          className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
+                          className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
                           onClick={() => {
                             showModal({
                               title: "Success",
@@ -977,7 +977,7 @@ const StandardProfile = () => {
                           Save
                         </button>
                         <button
-                          className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
+                          className="text-sm sm:text-base px-2 sm:px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
                           onClick={handleRequestCard}
                         >
                           Request New Club Card

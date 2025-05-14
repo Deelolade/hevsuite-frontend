@@ -194,7 +194,7 @@ const ProfileModal = ({ onClose, forNotification }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm rounded-lg whitespace-nowrap w-[165px] transition-colors border border-transparent ${
+                className={`px-2  py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap  w-auto sm:w-[165px] transition-colors border border-transparent ${
                   activeTab === tab
                     ? "bg-[#540A26] text-white"
                     : "hover:bg-gray-100 text-gray-700 bg-white"
