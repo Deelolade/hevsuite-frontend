@@ -126,7 +126,7 @@ const resend2FACode = async () => {
 }
 const logout = async () => {
   try {
-    const response = await axios.post(API_URL + 'logout',{
+    const response = await axios.post(API_URL + 'logout',null,{
       withCredentials: true,
     });
     return response.data;

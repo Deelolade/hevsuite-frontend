@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { persistor } from '../store/store';
+import toast from "react-hot-toast";
 const ProfileModal = ({ onClose, forNotification }) => {
   const { user } = useSelector((state) => state.auth);
     const [accessDenied, setAccessDenied] = useState(false);
@@ -60,13 +61,17 @@ const ProfileModal = ({ onClose, forNotification }) => {
   );
 
 
-  const handleLogout = async() => {
-     dispatch(logout()).then(() => {
-          persistor.purge(); 
-        });
-     navigate("/");
-     window.location.reload()
-  };
+const handleLogout = async () => {
+  try {
+    await dispatch(logout()).unwrap(); // unwrap to catch error
+    await persistor.purge();           // clear redux-persist storage
+    navigate('/');
+    window.location.reload();
+  } catch (error) {
+    toast.error("Logout failed. Please try again.");
+    console.error('Logout failed:', error);
+  }
+};
 
   const containerRef = React.useRef(null);
   let isDragging = false;
