@@ -46,7 +46,7 @@ const RegisterStep4 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const newErrors = {};
 
     // Validate required fields
@@ -68,7 +68,7 @@ const RegisterStep4 = () => {
       return;
     }
     // Clear errors
-  setErrors({});
+    setErrors({});
 
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
     dispatch(nextStep());
@@ -106,11 +106,10 @@ const RegisterStep4 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 4
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 4
                       ? 'bg-[#0A5440]'
                       : 'bg-white border-2 border-gray-300'
-                  }`}
+                    }`}
                 >
                   {index < 3 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -126,9 +125,8 @@ const RegisterStep4 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 3 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 3 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -154,9 +152,8 @@ const RegisterStep4 = () => {
               Employment Status<span className='text-red-500'>*</span>
             </label>
             <select
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${
-                errors.employmentStatus ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.employmentStatus ? 'border-red-500' : ''
+                }`}
               value={formData.employmentStatus}
               onChange={(e) =>
                 setFormData({ ...formData, employmentStatus: e.target.value })
@@ -170,7 +167,20 @@ const RegisterStep4 = () => {
               <option value='student'>Student</option>
             </select>
           </div>
-
+          <div>
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
+              Bussiness Name / Organization / Institution
+            </label>
+            <input
+              type='text'
+              placeholder='Enter your bussiness or organization or institution'
+              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              value={formData.businessName || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, businessName: e.target.value })
+              }
+            />
+          </div>
           <div>
             <h3 className='text-lg md:text-xl font-medium text-center mb-2 md:mb-4'>
               Your Interest
@@ -220,9 +230,8 @@ const RegisterStep4 = () => {
               <span className='text-red-500'>*</span>
             </label>
             <select
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${
-                errors.preferredSocialMedia ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.preferredSocialMedia ? 'border-red-500' : ''
+                }`}
               value={formData.preferredSocialMedia}
               onChange={(e) =>
                 setFormData({

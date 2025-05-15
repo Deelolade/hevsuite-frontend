@@ -7,6 +7,7 @@ import newsReducer from '../features/newsSlice';
 import eventReducer from '../features/eventSlice';
 import askReducer from '../features/askSlice'
 import notificationReducer from '../features/notificationSlice';
+import landingPageReducer from '../features/landingPageSlice';
 // Persist configuration for the register slice
 const registerPersistConfig = {
   key: 'register',
@@ -32,6 +33,7 @@ export const store = configureStore({
     events: eventReducer,
     ask:askReducer,
     notifications: notificationReducer,
+    landingPage:landingPageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

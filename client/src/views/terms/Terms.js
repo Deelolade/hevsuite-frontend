@@ -116,7 +116,7 @@ const Terms = () => {
               </h2>
               <div className="content">
                 {activeTab === "Terms of Policy" && (
-                  <div className="terms-content">
+                  <div className="terms-content text-xl md:text-3xl">
                     <p className="text-secondary" id="termsofpolicy">
                       1. What is this privacy Policy For?
                     </p>
@@ -126,7 +126,7 @@ const Terms = () => {
                   </div>
                 )}
                 {activeTab === "Terms of Use" && (
-                  <div className="terms-content">
+                  <div className="terms-content text-xl md:text-3xl">
                     <p className="text-secondary" id="termsofuse">
                       1. Content on this SITE
                     </p>
@@ -136,7 +136,7 @@ const Terms = () => {
                   </div>
                 )}
                 {activeTab === "Cookies Policy" && (
-                  <div className="terms-content">
+                  <div className="terms-content text-xl md:text-3xl">
                     <p className="text-secondary" id="cookiespolicy">
                       1. Cookies: what they are and How to remove them?
                     </p>
@@ -171,7 +171,7 @@ const Terms = () => {
                 <button
                   key={tab}
                   onClick={() => handleTabClick(tab)}
-                  className={`px-4 md:px-4 md:text-sm py-1.5 md:py-2 rounded-3xl transition-colors ${
+                  className={`px-4 md:px-4 md:text-lg py-1.5 md:py-2 rounded-3xl transition-colors ${
                     activeTab === tab
                       ? "bg-[#540A26] text-white"
                       : "border border-[#540A26] text-[#540A26]"

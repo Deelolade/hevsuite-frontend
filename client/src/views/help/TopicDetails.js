@@ -191,7 +191,7 @@ const questions = topic.QAs.filter(qa =>
               {expandedQuestion === item._id && (
                 <div className="px-6 pb-6">
                   <div className="ml-12 max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
-                    <p className="text-gray-600 font-primary leading-relaxed text-sm sm:text-base">
+                    <p className="text-quatr font-primary leading-relaxed text-sm sm:text-base">
                       {item.answer}
                     </p>
                   </div>

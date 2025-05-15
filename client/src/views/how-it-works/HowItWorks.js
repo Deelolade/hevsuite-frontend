@@ -79,11 +79,11 @@ const HowItWorks = () => {
           {steps.map((step) => (
             <div
               key={step.number}
-              className="text-center bg-white shadow-md rounded-lg p-6 sm:p-8"
+              className="text-center rounded-lg p-6 sm:p-8"
             >
               {/* Step Number */}
               <div
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#540A26] flex items-center justify-center mx-auto mb-4"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-[3px] border-[#540A26] flex items-center justify-center mx-auto mb-4"
                 style={{ fontSize: "1rem", transition: "transform 0.3s ease" }}
               >
                 <span className="text-xl sm:text-2xl">{step.number}</span>
@@ -102,7 +102,7 @@ const HowItWorks = () => {
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-gradient-to-r from-[#540A26] to-[#1F4F46] py-8 px-4 sm:py-12 sm:px-8 max-w-4xl rounded-2xl mx-auto mb-8 mt-12">
+      <div className="max-w-6xl bg-gradient-to-r from-[#540A26] to-[#1F4F46] py-8 px-4 sm:py-12 sm:px-8 rounded-3xl mx-auto mb-8 mt-12">
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between">
           {/* Left Content */}
           <div className="flex flex-col sm:flex-row items-center sm:gap-6">
@@ -114,7 +114,7 @@ const HowItWorks = () => {
               />
             </div>
             <div className="sm:max-w-md">
-              <h3 className="text-lg sm:text-2xl font-medium text-white mb-2">
+              <h3 className="text-lg sm:text-3xl font-medium text-white mb-2">
                 Have Question in mind?
               </h3>
               <p className="text-sm sm:text-base text-white/80">

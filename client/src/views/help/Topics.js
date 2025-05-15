@@ -157,7 +157,7 @@ useEffect(() => {
                   <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">
                     {topic.title}
                   </h3>
-                  <p className="text-gray-600 text-xs md:text-sm">
+                  <p className="text-quatr text-xs md:text-sm">
                     {topic.description}
                   </p>
                 </div>
@@ -168,7 +168,7 @@ useEffect(() => {
           {/* Navigation Dots */}
           <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               style={{
@@ -190,7 +190,7 @@ useEffect(() => {
             ))}
 
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               style={{
@@ -225,7 +225,7 @@ useEffect(() => {
                     {faq.question}
                   </h3>
                   <p
-                    className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
+                    className="text-quatr text-sm md:text-base leading-relaxed mb-2 md:mb-3"
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,

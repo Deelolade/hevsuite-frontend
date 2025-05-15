@@ -92,7 +92,7 @@ const Register = () => {
           Membership
         </h1>
 
-        <div className='space-y-4 md:space-y-6 text-gray-600'>
+        <div className='space-y-4 md:space-y-6 text-quatr'>
           <p className='text-center text-sm md:text-base'>
             Please note that all sections must be completed in order for this
             application to be submitted to the Committee. Any application
@@ -100,16 +100,16 @@ const Register = () => {
             be considered.
           </p>
 
-          <p className='text-center text-sm md:text-base mb-4 md:mb-8'>
+          <p className='text-center text-sm md:text-base mb-4 md:mb-8 text-quatr'>
             In order to apply for membership you will need to include:
           </p>
 
           <div className='space-y-6 md:space-y-8'>
             <div>
-              <h2 className='font-medium text-black mb-2 text-sm md:text-base'>
+              <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
                 1. Clear Recent Headshot
               </h2>
-              <p className='text-sm md:text-base'>
+              <p className='text-sm md:text-base text-quatr'>
                 Please upload a recent head and shoulders picture of yourself.
                 This will be used for security purposes to verify your identity
                 upon your arrival to the Club. Therefore, please ensure the
@@ -119,10 +119,10 @@ const Register = () => {
             </div>
             <hr />
             <div>
-              <h2 className='font-medium text-black mb-2 text-sm md:text-base'>
+              <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
                 2. Proof of ID
               </h2>
-              <p className='text-sm md:text-base'>
+              <p className='text-sm md:text-base text-quatr'>
                 (e.g. Drivers License, Passport or ID card). Applicants must be
                 over 18 years of age.
               </p>
@@ -130,10 +130,10 @@ const Register = () => {
             <hr />
 
             <div>
-              <h2 className='font-medium text-black mb-2 text-sm md:text-base'>
+              <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
                 3. Referrals
               </h2>
-              <p className='text-sm md:text-base'>
+              <p className='text-sm md:text-base text-quatr'>
                 A referral who is currently a Hevsuite Club Member is mandatory
                 for this application. All potential members should be aware that
                 we do not accept membership applications through third parties
@@ -144,10 +144,10 @@ const Register = () => {
             <hr />
 
             <div>
-              <h2 className='font-medium text-black mb-2 text-sm md:text-base'>
+              <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
                 4. Payment
               </h2>
-              <p className='text-sm md:text-base'>
+              <p className='text-sm md:text-base text-quatr'>
                 To finalise your application, we kindly ask you to fill out both
                 a Direct Debit mandate and your credit/debit card details which
                 will be used to take payment for joining and non-engagement (see
@@ -157,7 +157,7 @@ const Register = () => {
             </div>
 
             <div>
-              <p className='font-semibold'>
+              <p className=' text-black'>
                 PS - Non-engagement fee is paid ONLY for not attending any
                 occasion every 28 days.
               </p>

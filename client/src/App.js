@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider,Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 
 import Landing from './views/landing/Landing';
 import Login from './views/auth/login/Login';
@@ -38,34 +38,34 @@ axios.defaults.withCredentials = true;
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-const { isAuthenticated, user } = useSelector((state) => state.auth);
-const location = useLocation();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const location = useLocation();
 
-if (!isAuthenticated ) {
-  return <Navigate to="/login" state={{ from: location }} replace />;
-}
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-// Check membership status if user exists
-if (user && user.membershipStatus && user.membershipStatus !== 'accepted') {
-  return <Navigate to="/register-6" state={{ from: location }} replace />;
-}
+  // Check membership status if user exists
+  if (user && user.membershipStatus && user.membershipStatus !== 'accepted') {
+    return <Navigate to="/register-6" state={{ from: location }} replace />;
+  }
 
-return children;
+  return children;
 };
 // Add this new component
 const LoginRedirect = ({ children }) => {
-  const { isAuthenticated ,user} = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const location = useLocation();
 
   if (isAuthenticated) {
     // Redirect to homepage or wherever you want logged-in users to go
-    if (user && user.membershipStatus && user.membershipStatus == 'accepted'&& user.approvedByAdmin) {
+    if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.approvedByAdmin) {
       return <Navigate to="/homepage" state={{ from: location }} replace />;
-    }else if(user && user.membershipStatus && user.membershipStatus == 'accepted'&&user.joinfeestatus=='pending'){
+    } else if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.joinfeestatus == 'pending') {
       return <Navigate to="/register-7" state={{ from: location }} replace />;
     }
-    else if(user && user.membershipStatus && user.membershipStatus == 'pending'){
-    return <Navigate to="/register-6" state={{ from: location }} replace />;
+    else if (user && user.membershipStatus && user.membershipStatus == 'pending') {
+      return <Navigate to="/register-6" state={{ from: location }} replace />;
     }
   }
 
@@ -84,11 +84,13 @@ const router = createBrowserRouter([
     path: '/news-detail/:id',
     element: <NewsDetail />,
   },
-  { path: 'login',element: (
-    <LoginRedirect>
-      <Login />
-    </LoginRedirect>
-  )  },
+  {
+    path: 'login', element: (
+      <LoginRedirect>
+        <Login />
+      </LoginRedirect>
+    )
+  },
   { path: 'forgot-password', element: <ForgotPassword /> },
   { path: 'reset-password', element: <ResetPassword /> },
   { path: 'reset-success', element: <ResetSuccess /> },
@@ -108,6 +110,22 @@ const router = createBrowserRouter([
   {
     path: '/success',
     element: <Success />,
+  },
+  {
+    path: 'topics',
+    element: <Topics />,
+  },
+  {
+    path: 'topic-details/:id',
+    element: <TopicDetails />,
+  },
+  {
+    path: 'terms',
+    element: <Terms />,
+  },
+  {
+    path: 'how-it-works',
+    element: <HowItWorks />,
   },
   {
     path: '/register',
@@ -158,34 +176,18 @@ const router = createBrowserRouter([
         path: 'ask',
         element: <Ask />,
       },
-      {
-        path: 'topics',
-        element: <Topics />,
-      },
-      {
-        path: 'topic-details/:id',
-        element: <TopicDetails />,
-      },
-      {
-        path: 'terms',
-        element: <Terms />,
-      },
-      {
-        path: 'how-it-works',
-        element: <HowItWorks />,
-      },
     ],
   },
 ]);
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated} = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   useEffect(() => {
-    if(isAuthenticated){
-    dispatch(fetchProfile());
+    if (isAuthenticated) {
+      dispatch(fetchProfile());
     }
-  }, [dispatch,isAuthenticated]);
+  }, [dispatch, isAuthenticated]);
   return <RouterProvider router={router} />;
 }
 

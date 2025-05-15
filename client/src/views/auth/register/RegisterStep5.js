@@ -43,6 +43,37 @@ const RegisterStep5 = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  // Validate required image fields
+
+  if (!formData.proofOfId) {
+    toast.error("Proof of ID is required.");
+    return;
+  }
+  if (!formData.picture) {
+    toast.error("Profile picture is required.");
+    return;
+  }
+
+  // Validate file types and sizes
+  const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+
+  const checkFile = (file, label) => {
+    if (!allowedImageTypes.includes(file.type)) {
+      toast.error(`${label} must be a JPEG, PNG, or WEBP image.`);
+      return false;
+    }
+    if (file.size > maxSizeInBytes) {
+      toast.error(`${label} must be smaller than 5MB.`);
+      return false;
+    }
+    return true;
+  };
+
+  if (!checkFile(formData.proofOfId, "Proof of ID")) return;
+  if (!checkFile(formData.picture, "Profile picture")) return;
+
+
     const validatePassword = (pass) => {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
       return passwordRegex.test(pass);
@@ -162,7 +193,7 @@ const RegisterStep5 = () => {
           {/* Upload Proof of ID */}
           <div className='bg-white rounded-lg p-4 md:p-8 text-center'>
             <h3 className='text-lg md:text-xl font-medium mb-1 md:mb-2'>
-              Upload Proof of ID
+              Upload Proof of ID<span className='text-red-500'>*</span>
             </h3>
             <p className='text-gray-600 mb-4 md:mb-6 text-sm md:text-base'>
               Please upload a clear photo of your proof of ID e.g. Driving
@@ -219,7 +250,7 @@ const RegisterStep5 = () => {
           {/* Upload Picture */}
           <div className='bg-white rounded-lg p-4 md:p-8 text-center'>
             <h3 className='text-lg md:text-xl font-medium mb-1 md:mb-2'>
-              Upload Picture
+              Upload Picture<span className='text-red-500'>*</span>
             </h3>
             <p className='text-gray-600 mb-4 md:mb-6 text-sm md:text-base'>
               Please upload a clear photo of a recent headshot of yourself.

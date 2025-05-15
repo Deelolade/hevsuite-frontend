@@ -24,7 +24,7 @@ const NotificationItem = ({ notification, onRemove }) => {
       <div className="flex items-start sm:items-center justify-between bg-white rounded-lg p-3 sm:p-4 shadow-md sm:shadow-lg">
         <div className="flex-1 pr-2">
           <p className="font-medium text-black text-sm sm:text-base line-clamp-2 sm:line-clamp-1">
-            {notification.title}
+            {notification.message}
           </p>
           <p className="text-xs sm:text-sm text-gray-600">
             {notification.timestamp}

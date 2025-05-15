@@ -10,6 +10,7 @@ import {
   CountrySelect,
   StateSelect,
   PhonecodeSelect,
+  Country,
 } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
 import { useSelector, useDispatch } from 'react-redux';
@@ -39,56 +40,62 @@ const RegisterStep3 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-      // Validate required fields for step 3
-  const newErrors = {};
-  
-  if (!formData.addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
-  if (!formData.city) newErrors.city = "City is required";
-  if (!formData.country) newErrors.country = "Country is required";
-  if (!formData.postcode) {
-    newErrors.postcode = "Postcode is required";
-  } else if (!/^\d+$/.test(formData.postcode)) {
-    newErrors.postcode = "Postcode should contain only numbers";
-  }
-  if (!formData.state) newErrors.state = "State is required";
-  if (!formData.primaryPhone) {
-    newErrors.primaryPhone = "Primary phone is required";
-  } else if (!/^\d+$/.test(formData.primaryPhone)) {
-    newErrors.primaryPhone = "Phone number should contain only numbers";
-  }
+    // Validate required fields for step 3
+    const newErrors = {};
 
-  if (formData.secondaryPhone && !/^\d+$/.test(formData.secondaryPhone)) {
-    newErrors.secondaryPhone = "Phone number should contain only numbers";
-  }
-  // Add this validation function
-const validateEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-};
+    if (!formData.addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.country) newErrors.country = "Country is required";
+    if (!formData.postcode) {
+      newErrors.postcode = "Postcode is required";
+    } else if (formData.country === 'United Kingdom') {
+      // UK postcode validation (allows standard UK format)
+      if (!/^[A-Za-z]{1,2}\d{1,2}[A-Za-z]?\s?\d[A-Za-z]{2}$/i.test(formData.postcode)) {
+        newErrors.postcode = "Please enter a valid UK postcode (e.g. SW1A 1AA)";
+      }
+    } else {
+      // Default numeric validation for other countries
+      if (!/^\d+$/.test(formData.postcode)) {
+        newErrors.postcode = "Postcode should contain only numbers";
+      }
+    }
+    if (!formData.primaryPhone) {
+      newErrors.primaryPhone = "Primary phone is required";
+    } else if (!/^\d+$/.test(formData.primaryPhone)) {
+      newErrors.primaryPhone = "Phone number should contain only numbers";
+    }
 
-// In your handleSubmit:
-if (!formData.primaryEmail) {
-  newErrors.primaryEmail = "Primary email is required";
-} else if (!validateEmail(formData.primaryEmail)) {
-  newErrors.primaryEmail = "Please enter a valid email address";
-}
+    if (formData.secondaryPhone && !/^\d+$/.test(formData.secondaryPhone)) {
+      newErrors.secondaryPhone = "Phone number should contain only numbers";
+    }
+    // Enhanced email validation function
+    const validateEmail = (email) => {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(String(email).toLowerCase());
+    };
+    // In your handleSubmit:
+    if (!formData.primaryEmail) {
+      newErrors.primaryEmail = "Primary email is required";
+    } else if (!validateEmail(formData.primaryEmail)) {
+      newErrors.primaryEmail = "Please enter a valid email address";
+    }
 
-if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
-  newErrors.secondaryEmail = "Please enter a valid email address";
-}
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    // Scroll to first error
-    const firstError = Object.keys(newErrors)[0];
-    document.querySelector(`[name="${firstError}"]`)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center'
-    });
-    return;
-  }
+    if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
+      newErrors.secondaryEmail = "Please enter a valid email address";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to first error
+      const firstError = Object.keys(newErrors)[0];
+      document.querySelector(`[name="${firstError}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
 
-  // Clear errors
-  setErrors({});
+    // Clear errors
+    setErrors({});
 
     dispatch(
       updateStepData({
@@ -135,11 +142,10 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 3
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 3
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
+                    }`}
                 >
                   {index < 2 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -155,9 +161,8 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 2 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 2 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -185,15 +190,17 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
             <input
               type='text'
               placeholder='Address Line 1'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                errors.addressLine1 ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.addressLine1 ? 'border-red-500' : ''
+                }`}
               value={formData.addressLine1}
               onChange={(e) =>
                 setFormData({ ...formData, addressLine1: e.target.value })
               }
               required
             />
+            {errors.addressLine1 && (
+              <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>
+            )}
           </div>
 
           <div>
@@ -203,15 +210,17 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
             <input
               type='text'
               placeholder='Town/City'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                errors.city ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.city ? 'border-red-500' : ''
+                }`}
               value={formData.city}
               onChange={(e) =>
                 setFormData({ ...formData, city: e.target.value })
               }
               required
             />
+            {errors.city && (
+              <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+            )}
           </div>
 
           <div>
@@ -225,6 +234,7 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
                   country: country.name,
                 }));
                 setCountryId(country.id);
+                setPrimaryPhoneCode(country.phone_code);
               }}
               onTextChange={() => {
                 setFormData((prev) => ({
@@ -244,24 +254,63 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
                 fontSize: '16px',
               }}
             />
+            {errors.country && (
+              <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+            )}
           </div>
 
-          <div>
+          {/* <div>
             <label className='block mb-1 md:mb-2 text-sm md:text-base'>
               Postcode/Zipcode<span className='text-red-500'>*</span>
             </label>
             <input
               type='text'
               placeholder='Postcode/Zipcode'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                errors.postcode ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.postcode ? 'border-red-500' : ''
+                }`}
               value={formData.postcode}
               onChange={(e) =>
                 setFormData({ ...formData, postcode: e.target.value })
               }
               required
             />
+            {errors.postcode && (
+              <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>
+            )}
+          </div> */}
+          <div>
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
+              Postcode/Zipcode<span className='text-red-500'>*</span>
+            </label>
+
+            {formData.country === 'United Kingdom' && (
+              <p className="text-gray-500 text-xs mb-1">
+                Please enter your full UK postcode (e.g. SW1A 1AA)
+              </p>
+            )}
+
+            <input
+              type='text'
+              placeholder={
+                formData.country === 'United Kingdom'
+                  ? 'Enter UK postcode (e.g. SW1A 1AA)'
+                  : 'Enter postcode/zipcode'
+              }
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.postcode ? 'border-red-500' : ''
+                }`}
+              value={formData.postcode}
+              onChange={(e) => {
+                setFormData({ ...formData, postcode: e.target.value });
+                // Clear error when user starts typing
+                if (errors.postcode) {
+                  setErrors({ ...errors, postcode: '' });
+                }
+              }}
+              required
+            />
+            {errors.postcode && (
+              <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>
+            )}
           </div>
 
           <div>
@@ -271,15 +320,17 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
             <input
               type='email'
               placeholder='Enter email address'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                errors.primaryEmail ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.primaryEmail ? 'border-red-500' : ''
+                }`}
               value={formData.primaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, primaryEmail: e.target.value })
               }
               required
             />
+            {errors.primaryEmail && (
+              <p className="text-red-500 text-xs mt-1">{errors.primaryEmail}</p>
+            )}
           </div>
 
           <div>
@@ -289,9 +340,8 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
             <input
               type='email'
               placeholder='Enter email address'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                errors.secondaryEmail ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.secondaryEmail ? 'border-red-500' : ''
+                }`}
               value={formData.secondaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, secondaryEmail: e.target.value })
@@ -301,7 +351,7 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
 
           <div>
             <label className='block mb-1 md:mb-2 text-sm md:text-base'>
-              State<span className='text-red-500'>*</span>
+              State
             </label>
             <StateSelect
               countryid={countryId}
@@ -343,15 +393,17 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
               <input
                 type='tel'
                 placeholder='Telephone'
-                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                  errors.primaryPhone ? 'border-red-500' : ''
-                }`}
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.primaryPhone ? 'border-red-500' : ''
+                  }`}
                 value={formData.primaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, primaryPhone: e.target.value })
                 }
                 required
               />
+              {errors.primaryPhone && (
+                <p className="text-red-500 text-xs mt-1 col-span-3">{errors.primaryPhone}</p>
+              )}
             </div>
           </div>
 
@@ -376,9 +428,8 @@ if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
               <input
                 type='tel'
                 placeholder='Mobile'
-                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${
-                  errors.secondaryPhone ? 'border-red-500' : ''
-                }`}
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.secondaryPhone ? 'border-red-500' : ''
+                  }`}
                 value={formData.secondaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, secondaryPhone: e.target.value })

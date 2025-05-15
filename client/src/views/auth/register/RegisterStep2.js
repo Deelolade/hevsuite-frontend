@@ -45,7 +45,23 @@ const RegisterStep2 = () => {
     if (!formData.forename) newErrors.forename = "Forename is required";
     if (!formData.surname) newErrors.surname = "Surname is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dob) newErrors.dob = "Date of birth is required";
+    if (!formData.dob) {
+    newErrors.dob = "Date of birth is required";
+  } else {
+    // ✅ Age validation
+    const birthDate = new Date(formData.dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+
+    const isBirthdayPassed = monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0);
+    const actualAge = isBirthdayPassed ? age : age - 1;
+
+    if (actualAge < 18) {
+      newErrors.dob = "You must be at least 18 years old.";
+    }
+  }
     if (!formData.nationality) newErrors.nationality = "Nationality is required";
     if (!formData.relationshipStatus)
       newErrors.relationshipStatus = "Relationship status is required";
@@ -156,6 +172,7 @@ const RegisterStep2 = () => {
                 <option value='Ms'>Ms</option>
                 <option value='Dr'>Dr</option>
               </select>
+              {errors.title ? <p className="text-red-500 text-xs mt-1">{errors.title}</p> :<></>}
             </div>
           </div>
 
@@ -174,6 +191,7 @@ const RegisterStep2 = () => {
                 }
                 required
               />
+               {errors.forename && <p className="text-red-500 text-xs mt-1">{errors.forename}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -189,6 +207,7 @@ const RegisterStep2 = () => {
                 }
                 required
               />
+               {errors.surname && <p className="text-red-500 text-xs mt-1">{errors.surname}</p>}
             </div>
           </div>
 
@@ -210,6 +229,7 @@ const RegisterStep2 = () => {
                 <option value='male'>Male</option>
                 <option value='female'>Female</option>
               </select>
+              {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -224,6 +244,7 @@ const RegisterStep2 = () => {
                 }
                 required
               />
+               {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
             </div>
           </div>
 
@@ -251,6 +272,7 @@ const RegisterStep2 = () => {
                 }}
               />
               </div>
+               {errors.nationality && <p className="text-red-500 text-xs mt-1">{errors.nationality}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -297,6 +319,9 @@ const RegisterStep2 = () => {
               <option value='divorced'>Divorced</option>
               <option value='widowed'>Widowed</option>
             </select>
+            {errors.relationshipStatus && (
+              <p className="text-red-500 text-xs mt-1">{errors.relationshipStatus}</p>
+            )}
           </div>
         </form>
 
@@ -321,7 +346,7 @@ const RegisterStep2 = () => {
             </Link>
             <Link
               to='/register'
-              className='text-gray-600 font-medium text-sm md:text-base'
+              className='text-quatr font-medium text-sm md:text-base'
               onClick={() => {
                 dispatch(prevStep());
               }}

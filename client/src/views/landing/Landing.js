@@ -14,6 +14,7 @@ import "swiper/css";
 import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { Autoplay } from "swiper/modules";
+import { fetchLandingPageData } from "../../features/landingPageSlice";
 const Landing = () => {
   const dispatch = useDispatch();
 
@@ -21,6 +22,17 @@ const Landing = () => {
     dispatch(fetchNonExpiredNews());
   }, [dispatch]);
 
+const { 
+  landingPages, 
+  loading: landingLoading, 
+  error: landingError 
+} = useSelector((state) => state.landingPage);
+  useEffect(() => {
+    dispatch(fetchLandingPageData());
+  }, [dispatch]);
+  useEffect(() => {
+    console.log('Landing pages data:', landingPages);
+  }, [landingPages]);
   const { newsItems, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
   const swiperRef = useRef(null); // Create a reference for the Swiper instance
@@ -45,7 +57,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative z-0 h-screen">
         <div className="absolute inset-0 bg-black/50">
-          {landingPageNews?.images?.length > 0 ? (
+          {landingPages.length > 0 ? (
             <Swiper
               loop={true}
               spaceBetween={50}
@@ -61,10 +73,10 @@ const Landing = () => {
               }}
               ref={swiperRef}
             >
-              {landingPageNews.images.map((image, index) => (
+              {landingPages?.map((page, index) => (
                 <SwiperSlide key={index}>
                   <img
-                    src={image}
+                    src={page.image}
                     alt={`Image ${index}`}
                     className='w-full h-[100vh] -z-10 object-cover brightness-50'
                   />
@@ -84,7 +96,7 @@ const Landing = () => {
         </div>
         <div className="absolute z-50 inset-0 flex flex-col items-center justify-end mb-20 text-white px-4">
           <h1 className="text-2xl lg:text-6xl md:text-5xl sm:text-2xl font-primary font-bold mb-8 text-center">
-            {landingPageNews?.title || 'The Kings Halloween Event Celebration Party'}
+             The Kings Halloween Event Celebration Party
           </h1>
           <Link
             to="/register"
@@ -93,7 +105,7 @@ const Landing = () => {
             Become a Member
           </Link>
           <div className="flex gap-2 mt-8">
-            {landingPageNews?.images?.map((_, index) => (
+            {landingPages?.map((_, index) => (
               <button
                 key={index}
                 className={`w-2 h-2 rounded-full ${index === 0 ? "bg-white" : "bg-white/50"
@@ -136,8 +148,7 @@ const Landing = () => {
                   setActiveIndex(swiper.realIndex);
                 }}
               >
-                {newsItems
-                  ?.filter((item) => item._id !== landingPageNews?._id)
+                { newsItems?.filter( item => item.isOnLandingPage)
                   .map((item) => (
                     <SwiperSlide key={item._id}>
                       <div

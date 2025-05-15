@@ -238,7 +238,7 @@ const eventSlice = createSlice({
   state.saveEventLoading = false;
   // Update based on the actual response structure
   if (action.payload.savedEvent && 
-      !state.savedEvents.some(e => e._id === action.payload.savedEvent.eventId)) {
+      !state.savedEvents.some(e => e._id === action.payload.eventId)) {
     state.savedEvents.push(action.payload.savedEvent);
   }
 })

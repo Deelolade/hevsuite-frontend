@@ -15,11 +15,11 @@ const highlight = (text, query) => {
 const TermsOfPolicy = ({ searchQuery }) => {
   return (
     <div className="max-w-4xl">
-      <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">
+      <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">
         {highlight("1. WHAT IS THIS PRIVACY POLICY IS FOR?", searchQuery)}
       </h2>
       <div className="space-y-4 md:space-y-6">
-        <p className="text-sm md:text-base text-gray-800 leading-relaxed">
+        <p className="text-base md:text-lg text-black leading-relaxed">
           {highlight(
             `This privacy policy ("Privacy Policy") applies to personal data that
           we collect from you as a user of this Site or as a membership
@@ -33,7 +33,7 @@ const TermsOfPolicy = ({ searchQuery }) => {
           used in this Privacy Policy means any information that relates to you
           from which you can be identified.`, searchQuery)}
         </p>
-        <p className="text-sm md:text-base text-gray-800">
+        <p className="text-base md:text-lg text-black">
           {highlight(
             `By using our Site or submitting your personal data you are taken to
           accept the terms of this Privacy Policy, so please read it carefully.`,
@@ -42,28 +42,28 @@ const TermsOfPolicy = ({ searchQuery }) => {
         </p>
       </div>
 
-      <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 mt-8 md:mt-10">
+      <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 mt-8 md:mt-10">
         {highlight("2. PERSONAL DATA WE COLLECT", searchQuery)}
       </h2>
-      <p className="text-sm md:text-base text-gray-800 mb-4">
+      <p className="text-base md:text-lg text-black mb-4">
         {highlight("We collect the following personal data about you:", searchQuery)}
       </p>
       <ul className="space-y-4 md:space-y-6 list-disc pl-5 md:pl-6">
-        <li className="text-sm md:text-base text-gray-800">
+        <li className="text-base md:text-lg text-black">
           <span className="font-medium">Membership Application:</span>{" "}
           {highlight(
             "The personal details you provide when submitting business address and phone number; gender and date of birth; country; a picture of yourself; information about your work and other information that you elect to provide to support your application.",
             searchQuery
           )}
         </li>
-        <li className="text-sm md:text-base text-gray-800">
+        <li className="text-base md:text-lg text-black">
           <span className="font-medium">Reservation Information:</span>{" "}
           {highlight(
             "Personal data collected in relation to reservations, such as your first and last name, email address, billing and payment information (for further details please also refer to the section below headed.",
             searchQuery
           )}
         </li>
-        <li className="text-sm md:text-base text-gray-800">
+        <li className="text-base md:text-lg text-black">
           <span className="font-medium">Log Data:</span>{" "}
           {highlight(
             `When you visit our
