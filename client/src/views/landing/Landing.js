@@ -2,53 +2,60 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
-import event_card from "../../assets/event.png";
 import image_card from "../../assets/image.jpg";
 import Footer from "../../components/Footer";
 import HeaderOne from "../../components/HeaderOne";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
-// import "swiper/swiper-bundle.min.css";
+import { Autoplay, Navigation,Pagination, A11y } from "swiper/modules";
+import "swiper/css/free-mode"; 
 import "swiper/css";
-// import Header from "../../components/Header";
 import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { Autoplay } from "swiper/modules";
 import { fetchLandingPageData } from "../../features/landingPageSlice";
-const Landing = () => {
-  const dispatch = useDispatch();
 
+
+  const Landing = () => {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const swiperRef = useRef(null);
+  const swiperRef2 = useRef(null);
+  const [activeBullet, setActiveBullet] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  
+  const { 
+    landingPages, 
+    loading: landingLoading, 
+    error: landingError 
+  } = useSelector((state) => state.landingPage);
+  
+  const { newsItems, loading, error } = useSelector((state) => state.news);
+  
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
-  }, [dispatch]);
-
-const { 
-  landingPages, 
-  loading: landingLoading, 
-  error: landingError 
-} = useSelector((state) => state.landingPage);
-  useEffect(() => {
     dispatch(fetchLandingPageData());
   }, [dispatch]);
-  useEffect(() => {
-    console.log('Landing pages data:', landingPages);
-  }, [landingPages]);
-  const { newsItems, loading, error } = useSelector((state) => state.news);
-  const navigate = useNavigate();
-  const swiperRef = useRef(null); // Create a reference for the Swiper instance
+
 
   const handleSlideChange = (index) => {
     if (swiperRef.current) {
-      swiperRef.current.swiper.slideTo(index); // Correctly accessing the swiper instance
+      swiperRef.current.swiper.slideTo(index);
     }
   };
 
-  const swiperRef2 = useRef(null); // Create a reference for the Swiper instance
+  const images = [image_card, image_card, image_card];
+  
+  const handleImageClick = (link) => {
+    if (link) {
+      if (link.startsWith('http')) {
+        window.open(link, '_blank');
+      } else {
+        navigate(link);
+      }
+    }
+  };
 
-  const images = [image_card, image_card, image_card]; // Replace with your image sources
-  const [activeBullet, setActiveBullet] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const landingPageNews = newsItems.find(item => item.isOnLandingPage)
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -56,13 +63,13 @@ const {
 
       {/* Hero Section */}
       <section className="relative z-0 h-screen">
-        <div className="absolute inset-0 bg-black/50">
+        <div className="absolute inset-0 ">
           {landingPages.length > 0 ? (
             <Swiper
               loop={true}
               spaceBetween={50}
               slidesPerView={1}
-              modules={[Autoplay]}
+              modules={[Autoplay, Navigation, Pagination, A11y]}
               autoplay={{ delay: 4000, disableOnInteraction: false }}
               onSlideChange={(swiper) => {
                 const buttons = document.querySelectorAll('.slider-button');
@@ -78,7 +85,8 @@ const {
                   <img
                     src={page.image}
                     alt={`Image ${index}`}
-                    className='w-full h-[100vh] -z-10 object-cover brightness-50'
+                    onClick={() => handleImageClick(page.link)}
+                    className='w-full h-[100vh]  object-cover brightness-50'
                   />
                 </SwiperSlide>
               ))}
@@ -94,17 +102,14 @@ const {
             </div>
           )}
         </div>
-        <div className="absolute z-50 inset-0 flex flex-col items-center justify-end mb-20 text-white px-4">
-          <h1 className="text-2xl lg:text-6xl md:text-5xl sm:text-2xl font-primary font-bold mb-8 text-center">
-             The Kings Halloween Event Celebration Party
-          </h1>
+        <div className="absolute z-50 inset-0 flex flex-col items-center justify-end mb-20 text-white px-4 pointer-events-none">
           <Link
             to="/register"
             className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary text-xl md:text-lg sm:text-base"
           >
             Become a Member
           </Link>
-          <div className="flex gap-2 mt-8">
+          <div className="flex gap-2 mt-8 pointer-events-auto">
             {landingPages?.map((_, index) => (
               <button
                 key={index}
