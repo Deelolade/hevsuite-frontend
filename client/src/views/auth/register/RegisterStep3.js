@@ -5,6 +5,7 @@ import Footer from '../../../components/Footer';
 import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
+import { validate, isGmail } from 'email-validator';
 import { showModal } from '../../../components/FireModal';
 import {
   CountrySelect,
@@ -76,7 +77,7 @@ const RegisterStep3 = () => {
     // In your handleSubmit:
     if (!formData.primaryEmail) {
       newErrors.primaryEmail = "Primary email is required";
-    } else if (!validateEmail(formData.primaryEmail)) {
+    } else if (!validate(formData.primaryEmail)) {
       newErrors.primaryEmail = "Please enter a valid email address";
     }
 
@@ -123,11 +124,13 @@ const RegisterStep3 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}

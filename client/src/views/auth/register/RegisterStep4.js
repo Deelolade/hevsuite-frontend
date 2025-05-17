@@ -87,11 +87,13 @@ const RegisterStep4 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -107,8 +109,8 @@ const RegisterStep4 = () => {
               <div className='relative'>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 4
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
                     }`}
                 >
                   {index < 3 ? (

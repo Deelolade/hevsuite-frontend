@@ -106,11 +106,13 @@ const RegisterStep6 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -162,7 +164,7 @@ const RegisterStep6 = () => {
       </div>
 
       {approval ? (
-        <RegisterApproval setApproval={setApproval} referrals={referrals} setReferrals={setReferrals} />
+        <RegisterApproval setApproval={setApproval} referrals={referrals} />
       ) : (
         <div className='container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow'>
           <h1 className='text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]'>
@@ -344,11 +346,17 @@ const RegisterStep6 = () => {
                 try {
                   const response = await referralService.sendReferralsRequest(selectedMembers);
                   console.log(response)
-                  if (response.success==true) {
-                    toast.success( 'Referral requests sent successfully!');
+                  if (response.success == true) {
+                    toast.success('Referral requests sent successfully!');
 
                     // Refetch updated referral data
-                    const referralResponse = await referralService.checkReferral();
+                    const [referralResponse, userResponse] = await Promise.all([
+                      referralService.checkReferral(),
+                      referralService.fetchAllUsersBasicInfo()
+                    ]);
+
+                    // Update state
+                    setMembers(userResponse.users);
                     setReferrals(referralResponse.referredBy);
 
                     setIsReferralModalOpen(false);

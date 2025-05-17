@@ -7,11 +7,10 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
-import toast from 'react-hot-toast';
-import referralService from '../../../services/referralService';
+
 import { useSelector } from 'react-redux';
 
-const RegisterApproval = ({ setApproval, referrals, setReferrals }) => {
+const RegisterApproval = ({ setApproval, referrals }) => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   React.useEffect(() => {
@@ -19,7 +18,7 @@ const RegisterApproval = ({ setApproval, referrals, setReferrals }) => {
   }, []);
 
   const allApproved = user?.membershipStatus === 'accepted'
-  
+
   return (
     <div className='min-h-screen flex flex-col'>
       {/* Main Content */}
@@ -70,31 +69,18 @@ const RegisterApproval = ({ setApproval, referrals, setReferrals }) => {
                     <span className='px-3 md:px-4 py-1 md:py-2 bg-[#0A5440] text-white rounded-lg text-xs md:text-base'>
                       Approved
                     </span>
+                  ) : referral.status === 'declined' ? (
+                    <>
+                      <span
+                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
+                      >
+                        Declined
+                      </span>
+                    </>
                   ) : (
                     <>
                       <span className='px-3 md:px-4 py-1 md:py-2 bg-white text-gray-500 border border-gray-200 rounded-lg text-xs md:text-base'>
                         Pending
-                      </span>
-                      <span
-                        onClick={() =>
-                          showModal({
-                            title: 'Decline Approval Request?',
-                            text: 'This action can not be undone!',
-                            confirmText: 'Yes',
-                            onConfirm: async () => {
-                              try {
-                                await referralService.declineReferral(referral.userId._id);
-                                setReferrals(prev => prev.filter(r => r._id !== referral._id));
-                                toast.success('Referral declined successfully');
-                              } catch (error) {
-                                toast.error(error.message);
-                              }
-                            },
-                          })
-                        }
-                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
-                      >
-                        Decline
                       </span>
                     </>
                   )}

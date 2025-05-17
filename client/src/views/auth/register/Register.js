@@ -8,7 +8,7 @@ import bg_image from '../../../assets/party3.jpg';
 import { useSelector, useDispatch } from 'react-redux';
 import { nextStep, updateStepData } from '../../../features/auth/registerSlice';
 import { reset } from '../../../features/auth/registerSlice';
-
+import { Link} from 'react-router-dom';
 const Register = () => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -34,11 +34,13 @@ const Register = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center w-full'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -53,11 +55,10 @@ const Register = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 1
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 1
                       ? 'bg-[#0A5440]'
                       : 'bg-white border-2 border-gray-300'
-                  }`}
+                    }`}
                 >
                   {index < 0 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -73,9 +74,8 @@ const Register = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 0 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 0 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -88,16 +88,16 @@ const Register = () => {
         className='container mx-auto sm:mx-12 lg:mx-28 md:24 px-4 py-8 md:py-12 max-w-3xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl flex-grow'
         style={{ margin: 'auto' }}
       >
-        <h1 className='text-2xl md:text-3xl font-medium text-center mb-6 md:mb-8 text-[#540A26]'>
+        <h1 className='sm:hidden text-2xl md:text-3xl font-medium text-center mb-6 md:mb-8 text-[#540A26]'>
           Membership
+        </h1>
+        <h1 className='hidden sm:block md:text-3xl font-medium text-center mb-6 md:mb-8 text-black'>
+          Membership Requirements
         </h1>
 
         <div className='space-y-4 md:space-y-6 text-quatr'>
           <p className='text-center text-sm md:text-base'>
-            Please note that all sections must be completed in order for this
-            application to be submitted to the Committee. Any application
-            missing information will be deemed incomplete and therefore not to
-            be considered.
+            Application fully subject to our Policies.
           </p>
 
           <p className='text-center text-sm md:text-base mb-4 md:mb-8 text-quatr'>
@@ -107,14 +107,10 @@ const Register = () => {
           <div className='space-y-6 md:space-y-8'>
             <div>
               <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
-                1. Clear Recent Headshot
+                1. Clear Recent Picture
               </h2>
               <p className='text-sm md:text-base text-quatr'>
-                Please upload a recent head and shoulders picture of yourself.
-                This will be used for security purposes to verify your identity
-                upon your arrival to the Club. Therefore, please ensure the
-                picture is representative of how you will appear when visiting
-                the Club.
+                Please upload a recent head and shoulders picture of yourself. This will be used for security purposes to verify your identity once your registration is successfully accepted by members of the Club.
               </p>
             </div>
             <hr />
@@ -123,22 +119,17 @@ const Register = () => {
                 2. Proof of ID
               </h2>
               <p className='text-sm md:text-base text-quatr'>
-                (e.g. Drivers License, Passport or ID card). Applicants must be
-                over 18 years of age.
+                (e.g. Drivers License, Passport or ID card).  Applicants must be over 18 years of age.
               </p>
             </div>
             <hr />
 
             <div>
               <h2 className='font-bold text-black mb-2 text-sm md:text-base'>
-                3. Referrals
+                3. Your Referrals
               </h2>
               <p className='text-sm md:text-base text-quatr'>
-                A referral who is currently a Hevsuite Club Member is mandatory
-                for this application. All potential members should be aware that
-                we do not accept membership applications through third parties
-                (including any agencies or concierges) or social media accounts.
-                The only way to apply for membership is via our website.
+                A referral who is currently a Hevsuite  Club Member is mandatory for this application. All potential members should be aware that we do not accept membership applications through third parties or social media accounts. The only way to apply for membership is via our website.
               </p>
             </div>
             <hr />
@@ -148,11 +139,7 @@ const Register = () => {
                 4. Payment
               </h2>
               <p className='text-sm md:text-base text-quatr'>
-                To finalise your application, we kindly ask you to fill out both
-                a Direct Debit mandate and your credit/debit card details which
-                will be used to take payment for joining and non-engagement (see
-                our support link for more). Payment only be taken after you’ve
-                successfully been accepted by our members.
+                To finalise your application, we kindly ask you to fill out both a Direct Debit mandate and your credit/debit card details which will be used to take payment for joining and non-engagement (see our support link for more). Payment only be taken after you’ve successfully been accepted by our members.
               </p>
             </div>
 
