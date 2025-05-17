@@ -59,6 +59,7 @@ const StandardProfile = () => {
 
   const [occupationInfo, setOccupationInfo] = useState({
     employmentStatus: user?.employmentStatus || "",
+    businessName: user?.businessName || "",
     memberOfClub: user?.memberOfClub || "",
     preferredSocialMedia: user?.preferredSocialMedia || "",
   });
@@ -688,6 +689,24 @@ const StandardProfile = () => {
                         {occupationInfo.employmentStatus}
                       </div>
                     )}
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-sm">
+                      Bussiness Name / Organization / Institution
+                    </label>
+                    <input
+                      type="text"
+                      value={occupationInfo.businessName}
+                      onChange={(e) =>
+                        handleOccupationInfoChange(
+                          " businessName",
+                          e.target.value
+                        )
+                      }
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
+                    />
                   </div>
                   <div>
                     <label className="block mb-1 text-sm">
