@@ -47,10 +47,9 @@ const HeaderOne = () => {
   return (
     <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40 ">
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
-        <Link to="/" className="text-white text-3xl font-bold">
-          <img src={logo} alt="Logo" className="h-10 sm:h-12" />
+        <Link to={user ? '/homepage' : '/'} className='text-white text-3xl font-bold'>
+          <img src={logo} alt='Logo' className='h-10 sm:h-12' />
         </Link>
-
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
           <button
@@ -98,10 +97,10 @@ const HeaderOne = () => {
                 >
                   <img
                     src={user.profilePhoto || avatar}
-                    alt={user.profilePhoto || 'profile'}
+                    alt={user.forename || 'profile'}
                     className="w-12 h-12 rounded-full border-2 border-red-500"
                   />
-                  <span className="text-white">Goodluck</span>
+                  <span className="text-white">{user.forename} {user.surname}</span>
                 </div>
               </div>
             </>
@@ -119,11 +118,11 @@ const HeaderOne = () => {
         <div
           className={`${isMenuOpen ? "block" : "hidden"
             } md:hidden fixed inset-0   z-100`}
-             style={{
-    backdropFilter: 'blur(124px)',
-    boxShadow: '0px 4px 54px 0px #00003033',
-    background: 'linear-gradient(163.72deg, rgba(255, 255, 255, 0.21) 3.23%, rgba(255, 255, 255, 0.18) 106.2%)'
-  }}
+          style={{
+            backdropFilter: 'blur(124px)',
+            boxShadow: '0px 4px 54px 0px #00003033',
+            background: 'linear-gradient(163.72deg, rgba(255, 255, 255, 0.21) 3.23%, rgba(255, 255, 255, 0.18) 106.2%)'
+          }}
         >
           <div className="p-6 h-full flex flex-col overflow-auto">
             <div className="flex justify-between items-center mb-8">

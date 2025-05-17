@@ -54,7 +54,7 @@ const Header = () => {
   return (
     <header className='absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40'>
       <nav className='container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center'>
-        <Link to='/homepage' className='text-white text-3xl font-bold'>
+        <Link to={user? '/homepage' : '/'} className='text-white text-3xl font-bold'>
           <img src={logo} alt='Logo' className='h-10 sm:h-12' />
         </Link>
 
@@ -102,10 +102,10 @@ const Header = () => {
                 >
                   <img
                     src={user.profilePhoto || avatar}
-                    alt={user.profilePhoto || 'profile'}
+                    alt={user.forename || 'profile'}
                     className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
                   />
-                  <span className='text-white'>Goodluck</span>
+                  <span className='text-white'>{user.forename} {user.surname}</span>
                 </div>
               </div>
             </>
