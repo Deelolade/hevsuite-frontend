@@ -82,6 +82,11 @@ useEffect(() => {
     (topic?.title?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
     (topic?.description?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
   );
+  // Filter faqs based on search query
+    const filteredFAQs = faqs?.filter(faq =>
+    (faq?.question?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
+    (faq?.answer?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
+  );
   
 
   // Update totalPages calculation
@@ -209,7 +214,7 @@ useEffect(() => {
             FAQs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {faqs?.map((faq, index) => (
+            {filteredFAQs?.map((faq, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 md:gap-6 border-b-0 pb-4 md:pb-6"
