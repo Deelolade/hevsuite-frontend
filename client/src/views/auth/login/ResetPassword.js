@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate} from 'react-router-dom';
+import { useNavigate, useLocation} from 'react-router-dom';
 import authService from "../../../services/authService";
 import toast from 'react-hot-toast';
 import logo from '../../../assets/logo_white.png';
@@ -9,7 +9,7 @@ import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+    const location = useLocation(); 
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: ''
@@ -24,49 +24,15 @@ const ResetPasswordPage = () => {
 
   // Get email from location state or session storage
   const emailOrPhone = sessionStorage.getItem('resetIdentifier');
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get('code');
+  const userId = searchParams.get('userId');
 
-  const handleCodeChange = (index, value) => {
-    if (/^\d*$/.test(value) && value.length <= 1) {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
 
-      if (value && index < 5) {
-        document.querySelector(`input[name="code-${index + 1}"]`)?.focus();
-      }
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      document.querySelector(`input[name="code-${index - 1}"]`)?.focus();
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (countdown > 0 || isResending) return;
-    
-    setIsResending(true);
-    try {
-      await authService.forgotPassword(emailOrPhone);
-      toast.success('New verification code sent');
-      setCountdown(30);
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsResending(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate code
-    const verificationCode = code.join('');
-    if (verificationCode.length !== 6) {
-      toast.error('Please enter the complete 6-digit code');
-      return;
-    }
     const validatePassword = (pass) => {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
       return passwordRegex.test(pass);
@@ -92,9 +58,9 @@ const ResetPasswordPage = () => {
 
     try {
       await authService.resetPassword(
-        emailOrPhone,
-        verificationCode,
-        passwordData.newPassword
+        code,
+        passwordData.newPassword,
+        userId
       );
       
       toast.success('Password reset successfully!');
@@ -102,8 +68,6 @@ const ResetPasswordPage = () => {
       navigate("/reset-success");
     } catch (error) {
       toast.error(error.message);
-      setCode(['', '', '', '', '', '']);
-      document.querySelector('input[name="code-0"]')?.focus();
     } finally {
       setIsLoading(false);
     }
@@ -159,46 +123,9 @@ const ResetPasswordPage = () => {
           <div className='bg-white max-w-md p-8 rounded-xl'>
             <div className='mb-6 md:mb-8 text-center'>
               <h2 className='text-2xl md:text-3xl font-medium mb-2'>Reset Password</h2>
-              <p className='text-gray-600'>
-                Enter the verification code sent to registered email or phone number
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} className='space-y-6'>
-              {/* Verification Code Input */}
-              <div>
-                <label className='block mb-2 text-gray-800'>Verification Code</label>
-                <div className='flex justify-center gap-2 md:gap-4'>
-                  {code.map((digit, index) => (
-                    <input
-                      key={index}
-                      type='text'
-                      inputMode='numeric'
-                      pattern='[0-9]*'
-                      name={`code-${index}`}
-                      maxLength={1}
-                      className='w-10 h-10 md:w-12 md:h-12 text-center text-xl md:text-2xl border border-gray-300 rounded-lg focus:border-[#540A26] focus:ring-1 focus:ring-[#540A26] outline-none'
-                      value={digit}
-                      onChange={(e) => handleCodeChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </div>
-                <p className='text-right mt-2 text-sm text-gray-500'>
-                  Didn't receive code?{' '}
-                  <button
-                    type='button'
-                    onClick={handleResendCode}
-                    disabled={countdown > 0 || isResending}
-                    className={`text-[#540A26] font-medium ${
-                      (countdown > 0 || isResending) ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {isResending ? 'Sending...' : `Resend ${countdown > 0 ? `(${countdown}s)` : ''}`}
-                  </button>
-                </p>
-              </div>
 
               {/* New Password */}
               <div>

@@ -72,9 +72,9 @@ const Success = () => {
                   await dispatch(fetchProfile()).unwrap();
                   if (!user) {
                     navigate('/login');
-                  } else if (user.membershipStatus === 'accepted'&& user.approvedByAdmin) {
+                  } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
                     navigate('/homepage');
-                  }else if(user.membershipStatus === 'accepted'&& !user.approvedByAdmin){
+                  }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
                     navigate('/register-7');
                   }
                    else {

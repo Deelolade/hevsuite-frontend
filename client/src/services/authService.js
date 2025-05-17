@@ -93,13 +93,12 @@ const forgotPassword = async (emailOrPhone) => {
 };
 
 // Reset Password - Confirm with code and new password
-const resetPassword = async (emailOrPhone, code, newPassword) => {
+const resetPassword = async ( code, newPassword,userId) => {
   try {
-    const isEmail = emailOrPhone.includes('@');
     const payload = {
-      [isEmail ? 'email' : 'phone']: emailOrPhone,
       code,
-      newPassword
+      newPassword,
+      userId
     };
     const response = await axios.post(`${API_URL}reset-password`, payload);
     return response.data;
