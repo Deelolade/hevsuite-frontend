@@ -13,6 +13,14 @@ import adminReducer from './admins/adminSlice';
 import adminProfileReducer from './adminProfile/adminProfileSlice';
 import helpReducer from './help/helpSlice';
 import cardReducer from "./cards/cardSlice"
+import permissionReducer from "./permission/permissionSlice"
+import activityReducer from "./activities/activitySlice"
+import settingReducer from "./setting/settingSlice"
+import socialMediaReducer from "./socialMedia/socialMediaSlice"
+import cmsReducer from "./cms/cmsSlice"
+import pageReducer from "./page/pageSlice";
+import notificationReducer from './notifications/notificationSlice';
+import financeReducer from './finance/financeSlice'
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +39,14 @@ export const store = configureStore({
     adminProfile: adminProfileReducer,
     help: helpReducer,
     cards: cardReducer,
+    permissions: permissionReducer,
+    activities: activityReducer,
+    settings: settingReducer,
+    socialMedia: socialMediaReducer,
+    cms: cmsReducer,
+    pages: pageReducer,
+    notifications: notificationReducer,
+    finance: financeReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

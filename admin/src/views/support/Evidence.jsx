@@ -10,8 +10,8 @@ import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
-import { 
-  getEvidenceRequests, 
+import {
+  getEvidenceRequests,
   updateEvidenceStatus,
   assignRequestToAdmin as assignRequest
 } from "../../store/evidence/evidenceSlice";
@@ -316,13 +316,14 @@ const Evidence = () => {
                   <td className="py-4">{index + 1}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-3">
+                      {/* Debug: {request.user.forename} */}
                       <img
-                        src={request.user?.avatar || avatar}
-                        alt={request.user?.name || 'User'}
+                        src={request.user?.profilePhoto || avatar}
+                        alt={request.user?.forename || 'User'}
                         className="w-8 h-8 rounded-full"
                       />
                       <span className="font-primary w-32 md:w-fit text-[#323C47]">
-                        {request.user?.name || 'Unknown User'}
+                        {`${request.user?.forename || ""} ${request.user?.surname || "Unknown User"}`}
                       </span>
                     </div>
                   </td>
@@ -341,7 +342,7 @@ const Evidence = () => {
                         : request.status === "Approved"
                           ? "text-green-500"
                           : "text-yellow-500"
-                      }`}
+                        }`}
                     >
                       {request.status}
                     </span>
@@ -352,19 +353,19 @@ const Evidence = () => {
                         <>
                           <button
                             className="p-1 text-green-600 hover:text-green-700"
-                              onClick={() => {
-                                setSelectedRequest(request);
+                            onClick={() => {
+                              setSelectedRequest(request);
                               setShowApproveModal(true);
-                              }}
+                            }}
                           >
                             <BsCheckCircleFill size={24} />
                           </button>
                           <button
                             className="p-1 text-red-600 hover:text-red-700"
-                              onClick={() => {
-                                setSelectedRequest(request);
+                            onClick={() => {
+                              setSelectedRequest(request);
                               setShowDeclineModal(true);
-                              }}
+                            }}
                           >
                             <BsXCircleFill size={24} />
                           </button>
@@ -404,7 +405,7 @@ const Evidence = () => {
             </tbody>
           </table>
         </div>
-          </div>
+      </div>
 
       {/* Detail Modal */}
       <Modal
@@ -430,18 +431,18 @@ const Evidence = () => {
             {/* User Info */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+              {/* src={selectedRequest.user?.profilePhoto || avatar}
+              alt={selectedRequest.user?.forename || 'User'} */}
                 <img
-                  src={selectedRequest?.user?.avatar || avatar}
-                  alt={selectedRequest?.user?.name || 'User'}
+                  src={selectedRequest?.user?.profilePhoto || avatar}
+                  alt={selectedRequest?.user?.forename || 'User'}
                   className="w-10 h-10 rounded-full"
                 />
                 <span className="font-medium text-[#323C47]">
-                  {selectedRequest?.user?.name || 'Unknown User'}
+                  {/* {selectedRequest.user?.forename} {selectedRequest.user?.surname}  */}
                 </span>
               </div>
-              <span className="text-gray-600">
-                {selectedRequest?.user?.primaryEmail || 'No Email'}
-              </span>
+              <br />
             </div>
 
             {/* Request Type */}
@@ -464,18 +465,18 @@ const Evidence = () => {
                   <img
                     src={image}
                     alt={`Evidence ${index + 1}`}
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
+                    className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                  />
+                  <button
+                    className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                    onClick={() => {
+                      setShowPreviewModal(true);
                       setSelectedPreviewImage(image);
-                  }}
-                >
-                  Preview
-                </button>
-              </div>
+                    }}
+                  >
+                    Preview
+                  </button>
+                </div>
               ))}
             </div>
 
@@ -711,7 +712,7 @@ const Evidence = () => {
               Cancel
             </button>
           </div>
-    </div>
+        </div>
       </Modal>
     </div >
   );

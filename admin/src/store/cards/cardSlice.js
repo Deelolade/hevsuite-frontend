@@ -183,9 +183,9 @@ export const cardSlice = createSlice({
         state.isLoading = false
         state.isSuccess = true
         state.message = action.payload.message
-        // Add the newly issued card to the state
-        if (action.payload.card) {
-          state.new_members.push(action.payload.card)
+        // Add all newly issued cards to the state
+        if (action.payload.cards && Array.isArray(action.payload.cards)) {
+          state.new_members = [...state.new_members, ...action.payload.cards]
         }
       })
       .addCase(issueNewCard.rejected, (state, action) => {

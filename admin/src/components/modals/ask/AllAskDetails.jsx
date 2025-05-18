@@ -1,74 +1,89 @@
-"use client"
+import React from "react";
+import { BsCalendar } from "react-icons/bs";
+import { format } from "date-fns";
 
 const AllAskDetails = ({ setOpenDetails, selectedAsk }) => {
-  if (!selectedAsk) return null
+  if (!selectedAsk) return null;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Ask Details</h2>
-        <button onClick={() => setOpenDetails(false)} className="text-gray-500 hover:text-gray-700">
-          <x size={20} />
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Title</h3>
-          <p className="mt-1">{selectedAsk.title}</p>
+    <div>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold font-secondary">Ask Details</h2>
+          <button
+            onClick={() => setOpenDetails(false)}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
         </div>
 
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Description</h3>
-          <p className="mt-1">{selectedAsk.description}</p>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Status</h3>
-          <p className="mt-1 capitalize">{selectedAsk.status}</p>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Created By</h3>
-          <p className="mt-1">{`${selectedAsk.createdBy?.forename || ""} ${selectedAsk.createdBy?.surname || ""}`}</p>
-        </div>
-
-        {selectedAsk.claimedBy && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Claimed By</h3>
-            <p className="mt-1">{`${selectedAsk.claimedBy?.forename || ""} ${selectedAsk.claimedBy?.surname || ""}`}</p>
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <img
+              src={selectedAsk.createdBy?.profilePhoto || "/placeholder-avatar.png"}
+              alt={`${selectedAsk.createdBy?.forename || ""} ${selectedAsk.createdBy?.surname || ""}`}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <div>
+              <h3 className="font-medium text-[#323C47]">
+              {`${selectedAsk.createdBy?.forename || ""} ${selectedAsk.createdBy?.surname || ""}`}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {selectedAsk.createdBy?.primaryEmail  || "No email provided"}
+              </p>
+            </div>
           </div>
-        )}
 
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Created At</h3>
-          <p className="mt-1">{new Date(selectedAsk.createdAt).toLocaleString()}</p>
+          {/* Ask Details */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1">Ask Title</label>
+              <div className="px-4 py-2 border rounded-lg bg-gray-50 text-quatr">
+                {selectedAsk.title}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Descriptions</label>
+              <div className="px-4 py-2 border rounded-lg bg-gray-50 min-h-[80px] text-quatr">
+                {selectedAsk.description || "No description provided"}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Status</label>
+              <div className="px-4 py-2 border rounded-lg bg-gray-50 text-quatr">
+                {selectedAsk.status || "current"}
+              </div>
+            </div>
+
+            {selectedAsk.deadline && (
+              <div>
+                <label className="block text-sm mb-1">Deadline</label>
+                <div className="px-4 py-2 border rounded-lg bg-gray-50 text-quatr flex justify-between items-center">
+                  <span>
+                    {format(new Date(selectedAsk.deadline), "dd MMMM, yyyy")}
+                  </span>
+                  <BsCalendar className="text-gray-400" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Button */}
+          <div className="flex justify-end pt-4">
+            <button
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+              onClick={() => setOpenDetails(false)}
+            >
+              Close
+            </button>
+          </div>
         </div>
-
-        {selectedAsk.deadline && (
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Deadline</h3>
-            <p className="mt-1">{new Date(selectedAsk.deadline).toLocaleString()}</p>
-          </div>
-        )}
-
-        {selectedAsk.isUrgent && (
-          <div className="mt-2">
-            <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Urgent</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={() => setOpenDetails(false)}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-        >
-          Close
-        </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AllAskDetails
+export default AllAskDetails;

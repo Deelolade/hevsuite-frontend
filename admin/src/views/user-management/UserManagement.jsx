@@ -17,6 +17,8 @@ import { format } from 'date-fns';
 
 Modal.setAppElement('#root');
 
+const ITEMS_PER_PAGE = 10;
+
 const UserManagement = () => {
   const dispatch = useDispatch();
   const {
@@ -24,7 +26,6 @@ const UserManagement = () => {
     isLoading,
     isError,
     message,
-    pagination,
     userEvents,
     userActivity,
     eventsPagination,
@@ -39,19 +40,30 @@ const UserManagement = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [role, setRole] = useState('member');
+  const [role, setRole] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('All');
   const [editingUser, setEditingUser] = useState(null);
   const [eventsPage, setEventsPage] = useState(1);
   const [activityPage, setActivityPage] = useState(1);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE);
+
+  // Fetch all users when component mounts or when search/role changes
+  useEffect(() => {
+    dispatch(memberUsers({ 
+      page: currentPage, 
+      search, 
+      role
+    }));
+  }, [dispatch, search, role, currentPage]);
 
   // Filter users based on status
   const filteredUsers = member_users?.filter(user => {
-    if (role && user.role !== role) return false;
     if (selectedFilter === 'All') return true;
     if (selectedFilter === 'Active') return !user.isBanned && !user.isRestricted;
     if (selectedFilter === 'Restricted') return user.isRestricted;
@@ -59,14 +71,14 @@ const UserManagement = () => {
     return true;
   });
 
-  // Fetch users when page, search, role, or filter changes
-  useEffect(() => {
-    dispatch(memberUsers({ page: pagination?.currentPage || 1, search, role }));
-  }, [dispatch, pagination?.currentPage, search, role]);
+  // Calculate pagination
+  const totalPages = Math.ceil((filteredUsers?.length || 0) / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers?.slice(startIndex, endIndex);
 
   useEffect(() => {
     if (expandedUser) {
-      // Fetch events and activity when a user is expanded
       dispatch(getUserEvents({ userId: expandedUser, page: eventsPage }));
       dispatch(getUserActivity({ userId: expandedUser, page: activityPage }));
     }
@@ -74,16 +86,17 @@ const UserManagement = () => {
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handleRoleFilter = (e) => {
-    setRole(e.target.value);
+    const selectedRole = e.target.value;
+    setRole(selectedRole);
+    setCurrentPage(1); // Reset to first page when changing filters
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= (pagination?.totalPages || 1)) {
-      dispatch(memberUsers({ page: newPage, search, role }));
-    }
+    setCurrentPage(newPage);
   };
 
   const handleEditClick = (userId) => {
@@ -112,11 +125,6 @@ const UserManagement = () => {
       if (editingUser.isBanned !== member_users.find(u => u._id === editingUser._id)?.isBanned) {
         await handleUpdateStatus(editingUser._id, editingUser.isBanned ? 'ban' : 'unban');
       }
-
-      // await dispatch(editUser({
-      //   id: editingUser._id,
-      //   data: editingUser
-      // })).unwrap();
 
       // Update the local state immediately
       const updatedUsers = member_users.map(user =>
@@ -191,7 +199,7 @@ const UserManagement = () => {
       }
 
       // Refresh the user list without showing additional notifications
-      dispatch(memberUsers({ page: pagination?.currentPage || 1, search, role }));
+      dispatch(memberUsers({ page: currentPage, search, role }));
     } catch (error) {
       toast.error(error.message || `Failed to ${action} user`);
     }
@@ -209,6 +217,123 @@ const UserManagement = () => {
     if (user.isBanned) return 'bg-red-100 text-red-800';
     if (user.isRestricted) return 'bg-yellow-100 text-yellow-800';
     return 'bg-green-100 text-green-800';
+  };
+
+  // Add confirmation modal component
+  const ConfirmModal = ({ isOpen, onClose, action, userId }) => {
+    const user = member_users?.find(u => u._id === userId);
+    const isRestricted = user?.isRestricted;
+    const isBanned = user?.isBanned;
+
+    const getModalContent = () => {
+      switch (action) {
+        case 'restrict':
+          return {
+            title: isRestricted ? 'Enable User' : 'Restrict User',
+            message: isRestricted 
+              ? 'Are you sure you want to enable this user? This will remove their restrictions and restore full access.'
+              : 'Are you sure you want to restrict this user? This will limit their access to certain features.',
+            confirmText: isRestricted ? 'Enable User' : 'Restrict User'
+          };
+        case 'ban':
+          return {
+            title: isBanned ? 'Unban User' : 'Ban User',
+            message: isBanned
+              ? 'Are you sure you want to unban this user? This will restore their access to the platform.'
+              : 'Are you sure you want to ban this user? This will completely block their access to the platform.',
+            confirmText: isBanned ? 'Unban User' : 'Ban User'
+          };
+        case 'resetPassword':
+          return {
+            title: 'Reset Password',
+            message: 'Are you sure you want to send password reset link to this user\'s? They will receive an email with instructions to set a new password.',
+            confirmText: 'Reset Password'
+          };
+        case 'requestVerification':
+          return {
+            title: 'Request New Verification',
+            message: 'Are you sure you want to send a new verification request to this user?',
+            confirmText: 'Send Request'
+          };
+        default:
+          return {
+            title: 'Confirm Action',
+            message: 'Are you sure you want to proceed with this action?',
+            confirmText: 'Confirm'
+          };
+      }
+    };
+
+    const content = getModalContent();
+
+    const handleConfirm = async () => {
+      try {
+        switch (action) {
+          case 'restrict':
+            await handleUpdateStatus(userId, isRestricted ? 'unrestrict' : 'restrict');
+            // Update local state
+            setEditingUser(prev => ({
+              ...prev,
+              isRestricted: !isRestricted
+            }));
+            break;
+          case 'ban':
+            await handleUpdateStatus(userId, isBanned ? 'unban' : 'ban');
+            // Update local state
+            setEditingUser(prev => ({
+              ...prev,
+              isBanned: !isBanned
+            }));
+            break;
+          case 'resetPassword':
+            await handleResetPassword(userId);
+            break;
+          case 'requestVerification':
+            await handleRequestVerification(userId);
+            break;
+        }
+        onClose();
+      } catch (error) {
+        toast.error(error.message || 'Failed to perform action');
+      }
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">{content.title}</h2>
+            <button onClick={onClose} className="text-gray-400">✕</button>
+          </div>
+          <p className="text-gray-600 mb-6">{content.message}</p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              className={`px-4 py-2 rounded-lg text-sm ${
+                action === 'ban' || action === 'restrict'
+                  ? isBanned || isRestricted
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                  : 'bg-primary hover:bg-primary/90'
+              } text-white`}
+            >
+              {content.confirmText}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
   };
 
   return (
@@ -241,9 +366,9 @@ const UserManagement = () => {
             onChange={handleRoleFilter}
             className='appearance-none px-6 py-2.5 pr-10 border rounded-lg text-gray-600 bg-white min-w-32 text-sm focus:outline-none cursor-pointer'
           >
-            <option value='member'>All Roles</option>
-            <option value='admin'>Admin</option>
-            <option value='superadmin'>Super Admin</option>
+            <option value=''>All Members</option>
+            <option value='Standard Member'>Standard Member</option>
+            <option value='vip'>VIP Member</option>
           </select>
           <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-3'>
             <svg
@@ -278,6 +403,7 @@ const UserManagement = () => {
                     onClick={() => {
                     setSelectedFilter(status);
                       setShowFilterDropdown(false);
+                      setCurrentPage(1); // Reset to first page when changing filters
                     }}
                   className={`block w-full text-left px-4 py-2 text-sm ${
                     selectedFilter === status
@@ -330,15 +456,15 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-              {filteredUsers && filteredUsers.length > 0 ? (
-                filteredUsers.map((user, index) => (
+              {currentUsers && currentUsers.length > 0 ? (
+                currentUsers.map((user, index) => (
               <React.Fragment key={user._id}>
                 <tr
                       className={`border-b ${expandedUser === user._id ? 'bg-gray-50' : 'hover:bg-gray-50'
                   }`}
                 >
                   <td className='px-6 py-4 text-sm text-gray-600'>
-                    {index + 1}
+                    {startIndex + index + 1}
                   </td>
                   <td className='px-6 py-4'>
                     <div className='flex items-center gap-3'>
@@ -353,7 +479,7 @@ const UserManagement = () => {
                     </div>
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-600'>
-                        {user._id.substring(0, 8)}
+                    ID#{user.membershipNumber || '00000000'}
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-600'>
                     {user.primaryEmail}
@@ -364,7 +490,7 @@ const UserManagement = () => {
                         </span>
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-600 capitalize'>
-                    {user.role}
+                    {user.roleName}
                   </td>
                   <td className='px-6 py-4'>
                         {expandedUser === user._id ? (
@@ -418,10 +544,11 @@ const UserManagement = () => {
                               type='checkbox'
                               className='w-5 h-5 rounded border-gray-300 text-primary'
                                   checked={editingUser?.isRestricted || false}
-                                  onChange={(e) => setEditingUser({
-                                    ...editingUser,
-                                    isRestricted: e.target.checked
-                                  })}
+                                  onChange={(e) => {
+                                    setConfirmAction('restrict');
+                                    setSelectedUserId(editingUser._id);
+                                    setShowConfirmModal(true);
+                                  }}
                             />
                             <span className='text-sm text-gray-500'>
                               Restrict User
@@ -432,10 +559,11 @@ const UserManagement = () => {
                               type='checkbox'
                               className='w-5 h-5 rounded border-gray-300 text-primary'
                                   checked={editingUser?.isBanned || false}
-                                  onChange={(e) => setEditingUser({
-                                    ...editingUser,
-                                    isBanned: e.target.checked
-                                  })}
+                                  onChange={(e) => {
+                                    setConfirmAction('ban');
+                                    setSelectedUserId(editingUser._id);
+                                    setShowConfirmModal(true);
+                                  }}
                             />
                             <span className='text-sm text-gray-500'>
                               Ban User
@@ -443,7 +571,11 @@ const UserManagement = () => {
                           </label>
 
                           <button
-                                onClick={() => handleResetPassword(user._id)}
+                                onClick={() => {
+                                  setConfirmAction('resetPassword');
+                                  setSelectedUserId(editingUser._id);
+                                  setShowConfirmModal(true);
+                                }}
                             className='flex items-center gap-3 py-2 px-4 rounded-lg bg-white hover:bg-gray-100 text-sm text-gray-500 border border-gray-200'
                           >
                                 <FaKey className="text-primary" />
@@ -451,7 +583,11 @@ const UserManagement = () => {
                           </button>
 
                           <button
-                                onClick={() => handleRequestVerification(user._id)}
+                                onClick={() => {
+                                  setConfirmAction('requestVerification');
+                                  setSelectedUserId(editingUser._id);
+                                  setShowConfirmModal(true);
+                                }}
                             className='flex items-center gap-3 py-2 px-4 rounded-lg bg-white hover:bg-gray-100 text-sm text-gray-500 border border-gray-200'
                           >
                                 <FaEnvelope className="text-primary" />
@@ -629,13 +765,15 @@ const UserManagement = () => {
         )}
       </div>
 
-        {/* Pagination - updated styles */}
-      {!isLoading && !isError && member_users && member_users.length > 0 && (
+        {/* Pagination */}
+      {!isLoading && !isError && filteredUsers && filteredUsers.length > 0 && (
         <div className="flex justify-center mt-4">
           <Pagination
-            currentPage={page}
+            currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
+            itemsPerPage={itemsPerPage}
+            setItemsPerPage={setItemsPerPage}
           />
         </div>
       )}
@@ -645,6 +783,45 @@ const UserManagement = () => {
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
       />
+
+      {/* Add the confirmation modal */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setConfirmAction(null);
+          setSelectedUserId(null);
+        }}
+        action={confirmAction}
+        userId={selectedUserId}
+      />
+
+      {/* Image Preview Modal */}
+      <Modal
+        isOpen={showModal}
+        onRequestClose={() => setShowModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[600px]"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Image Preview</h2>
+            <button 
+              onClick={() => setShowModal(false)} 
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="relative w-full h-[400px]">
+            <img
+              src={selectedImage}
+              alt="Preview"
+              className="w-full h-full object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      </Modal>
 
     </div>
   );

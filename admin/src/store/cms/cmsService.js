@@ -6,10 +6,22 @@ const getAuthToken = () => {
   return admin?.token || "";
 };
 
+const addNewCMS = async (data) => {
+  const token = getAuthToken();
+  const response = await axios.post(`${base_url}/api/cms/landing-pages`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data' // Important for file uploads
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
 const getAllCMS = async ({ status }) => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/all-cms?status=${status}`,
+    `${base_url}/api/cms/landing-pages?status=${status}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -23,7 +35,7 @@ const getAllCMS = async ({ status }) => {
 const editCMS = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/edit-cms/${data.id}`,
+    `${base_url}/api/cms/landing-pages/${data.id}`,
     data.data,
     {
       headers: {
@@ -38,7 +50,7 @@ const editCMS = async (data) => {
 const removeCMS = async (data) => {
   const token = getAuthToken();
   const response = await axios.delete(
-    `${base_url}/admin/remove-cms/${data.id}`,
+    `${base_url}/api/cms/landing-pages/${data.id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -52,7 +64,7 @@ const removeCMS = async (data) => {
 const changeVisiblity = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/change-visiblity/${data.id}`,
+    `${base_url}/api/cms/landing-pages/${data.id}`,
     data.data,
     {
       headers: {
@@ -64,24 +76,51 @@ const changeVisiblity = async (data) => {
   return response.data;
 };
 
-const getAllMenus = async ({ status }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/all-menus?status=${status}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
+// const getAllMenus = async ({ status }) => {
+//   const token = getAuthToken();
+//   const response = await axios.get(
+//     `${base_url}/api/cms/menus?status=${status}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//       withCredentials: true,
+//     }
+//   );
+//   return response.data;
+// };
+
+const getAllMenus = async ({ status = "active", search = "", page = 1, limit = 10, sortBy = "order", sortOrder = "asc" }) => {
+  const token = getAuthToken()
+  
+  // Build query string
+  const queryParams = new URLSearchParams({
+    status,
+    page: page.toString(),
+    limit: limit.toString(),
+    sortBy,
+    sortOrder
+  })
+  
+  // Add search if provided
+  if (search) {
+    queryParams.append("search", search)
+  }
+  
+  const response = await axios.get(`${base_url}/api/cms/menus?${queryParams.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  
+  return response.data
+}
 
 const editMenus = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/edit-menus/${data.id}`,
+    `${base_url}/api/cms/menus/${data.id}`,
     data.data,
     {
       headers: {
@@ -96,7 +135,7 @@ const editMenus = async (data) => {
 const removeMenus = async (data) => {
   const token = getAuthToken();
   const response = await axios.delete(
-    `${base_url}/admin/remove-menus/${data.id}`,
+    `${base_url}/api/cms/menus/${data.id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -107,10 +146,10 @@ const removeMenus = async (data) => {
   return response.data;
 };
 
-const changeMenuVisiblity = async (data) => {
+const changeMenuVisibility = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/menu-visiblity/${data.id}`,
+    `${base_url}/api/cms/menus/${data.id}`,
     data.data,
     {
       headers: {
@@ -124,7 +163,7 @@ const changeMenuVisiblity = async (data) => {
 
 const addNewMenu = async (data) => {
   const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/add-menus`, data, {
+  const response = await axios.post(`${base_url}/api/cms/menus`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -133,24 +172,66 @@ const addNewMenu = async (data) => {
   return response.data;
 };
 
-const getAllFooters = async ({ status }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/all-footers?status=${status}`,
-    {
+// Update menu order
+const updateMenuOrder = async (data) => {
+  try {
+    const token = getAuthToken()
+
+    if (!token) {
+      throw new Error("Authentication token not found")
+    }
+
+    console.log("Updating menu order:", data)
+    const response = await axios.put(`${base_url}/api/cms/menus/order`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       withCredentials: true,
-    }
-  );
-  return response.data;
-};
+    })
+
+    console.log("Update menu order response:", response.data)
+    return response.data
+  } catch (error) {
+    console.error("Error updating menu order:", error)
+    throw error.response?.data?.message || "Error updating menu order"
+  }
+}
+
+// Footer API calls
+// src/store/cms/cmsService.js
+
+// Update the getAllFooters function to handle the new response format
+const getAllFooters = async ({ status = "active", search = "", page = 1, limit = 10, sortBy = "order", sortOrder = "asc" }) => {
+  const token = getAuthToken()
+  
+  // Build query string
+  const queryParams = new URLSearchParams({
+    status,
+    page: page.toString(),
+    limit: limit.toString(),
+    sortBy,
+    sortOrder
+  })
+  
+  // Add search if provided
+  if (search) {
+    queryParams.append("search", search)
+  }
+  
+  const response = await axios.get(`${base_url}/api/cms/footer?${queryParams.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  
+  return response.data
+}
 
 const editFooter = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/edit-footer/${data.id}`,
+    `${base_url}/api/cms/footer/${data.id}`,
     data.data,
     {
       headers: {
@@ -165,7 +246,7 @@ const editFooter = async (data) => {
 const removeFooter = async (data) => {
   const token = getAuthToken();
   const response = await axios.delete(
-    `${base_url}/admin/remove-footer/${data.id}`,
+    `${base_url}/api/cms/footer/${data.id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -175,11 +256,12 @@ const removeFooter = async (data) => {
   );
   return response.data;
 };
-const changeFooterVisiblity = async (data) => {
+
+const changeFooterVisibility = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/footer-visiblity/${data.id}`,
-    data.data,
+    `${base_url}/api/cms/footer/${data.id}`,
+    { ...data.data },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -189,9 +271,10 @@ const changeFooterVisiblity = async (data) => {
   );
   return response.data;
 };
+
 const addNewFooter = async (data) => {
   const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/add-footer`, data, {
+  const response = await axios.post(`${base_url}/api/cms/footer`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -199,52 +282,97 @@ const addNewFooter = async (data) => {
   });
   return response.data;
 };
+
+const updateFooterOrder = async (data) => {
+  const token = getAuthToken();
+  const response = await axios.put(
+    `${base_url}/api/cms/footer/order`,
+    { orderedIds: data },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
+// Site Logos API calls
+// Site Logos API calls
+const getLogos = async () => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/api/cms/logos`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
 
 const uploadWebsiteLogo = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/website-logo`, data, {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append("logo", data)
+
+  const response = await axios.post(`${base_url}/api/cms/logos/website-logo`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const uploadAdminLogo = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/admin-logo`, data, {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append("logo", data)
+
+  const response = await axios.post(`${base_url}/api/cms/logos/admin-logo`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const uploadFavIcon = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/fav-icon`, data, {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append("logo", data)
+
+  const response = await axios.post(`${base_url}/api/cms/logos/fav-icon`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const uploadFooterIcon = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/footer-icon`, data, {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append("logo", data)
+
+  const response = await axios.post(`${base_url}/api/cms/logos/footer-icon`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const cmsService = {
+  addNewCMS,
   getAllCMS,
   editCMS,
   removeCMS,
@@ -252,13 +380,16 @@ const cmsService = {
   getAllMenus,
   editMenus,
   removeMenus,
-  changeMenuVisiblity,
+  changeMenuVisibility,
   addNewMenu,
+  updateMenuOrder,
   getAllFooters,
   editFooter,
   removeFooter,
-  changeFooterVisiblity,
+  changeFooterVisibility,
   addNewFooter,
+  updateFooterOrder,
+  getLogos,
   uploadWebsiteLogo,
   uploadAdminLogo,
   uploadFavIcon,

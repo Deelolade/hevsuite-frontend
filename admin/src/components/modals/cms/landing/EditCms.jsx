@@ -1,10 +1,54 @@
-import React, { useState } from "react";
-import { HiOutlineMail } from "react-icons/hi";
+import React, { useState, useEffect } from "react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
+import { useDispatch } from "react-redux";
+import { editCMS } from "../../../../store/cms/cmsSlice";
+import toast from "react-hot-toast";
 
-const EditCms = ({ setIsEditModalOpen, selectedItem }) => {
+const EditCms = ({ setIsEditModalOpen, selectedItem, refreshData }) => {
+  const dispatch = useDispatch();
   const [openInNewTab, setOpenInNewTab] = useState(false);
   const [editLink, setEditLink] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setEditLink(selectedItem.link || "");
+      setOpenInNewTab(selectedItem.openInNewTab || false);
+    }
+  }, [selectedItem]);
+
+  const handleSave = async () => {
+    if (!editLink) {
+      toast.error("Please enter a link");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      
+      const formData = new FormData();
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+      formData.append("link", editLink);
+      formData.append("openInNewTab", openInNewTab);
+
+      await dispatch(editCMS({
+        id: selectedItem._id,
+        data: formData
+      })).unwrap();
+
+      toast.success("Landing page updated successfully");
+      setIsEditModalOpen(false);
+      refreshData();
+    } catch (error) {
+      console.error("Error updating landing page:", error);
+      toast.error(error.message || "Failed to update landing page");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -14,6 +58,7 @@ const EditCms = ({ setIsEditModalOpen, selectedItem }) => {
           <button
             onClick={() => setIsEditModalOpen(false)}
             className="text-gray-400 hover:text-gray-600"
+            disabled={isLoading}
           >
             ✕
           </button>
@@ -22,35 +67,57 @@ const EditCms = ({ setIsEditModalOpen, selectedItem }) => {
         <div className="space-y-6">
           {/* Preview Image */}
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            {selectedItem && (
+            {selectedImage ? (
               <img
-                src={selectedItem.preview}
+                src={URL.createObjectURL(selectedImage)}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
+            ) : selectedItem?.image ? (
+              <img
+                src={selectedItem.image}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                No image selected
+              </div>
             )}
           </div>
 
-          {/* Upload Icon */}
+          {/* Upload Image */}
           <div className="flex justify-center">
-            <button className="text-primary">
+            <label className="cursor-pointer text-primary flex flex-col items-center">
               <AiOutlineCloudUpload size={24} />
-              <span className="text-sm">Click to Add icon</span>
-            </button>
+              <span className="text-sm">Click to change image</span>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setSelectedImage(e.target.files[0]);
+                  }
+                }}
+                disabled={isLoading}
+              />
+            </label>
           </div>
 
           {/* Link Input */}
           <div>
             <label className="block text-sm mb-2">
-              Available Link
-              <span className="text-red-500">*</span> Required
+              Link URL
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={editLink}
               onChange={(e) => setEditLink(e.target.value)}
-              placeholder="www.x.com/hermandai/profile!"
+              placeholder="https://example.com/path"
               className="w-full px-3 py-2 border rounded-lg text-sm"
+              disabled={isLoading}
             />
           </div>
 
@@ -62,9 +129,10 @@ const EditCms = ({ setIsEditModalOpen, selectedItem }) => {
               checked={openInNewTab}
               onChange={(e) => setOpenInNewTab(e.target.checked)}
               className="rounded border-gray-300 text-primary focus:ring-primary"
+              disabled={isLoading}
             />
             <label htmlFor="newTab" className="text-sm">
-              Open in a new Tab
+              Open in a new tab
             </label>
           </div>
 
@@ -73,23 +141,16 @@ const EditCms = ({ setIsEditModalOpen, selectedItem }) => {
             <button
               onClick={() => setIsEditModalOpen(false)}
               className="px-6 py-2 border rounded-lg text-sm"
+              disabled={isLoading}
             >
               Cancel
             </button>
-            {/* <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
-              >
-                Delete
-              </button> */}
             <button
-              onClick={() => {
-                // Handle save
-                setIsEditModalOpen(false);
-              }}
-              className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
+              onClick={handleSave}
+              className="px-6 py-2 bg-primary text-white rounded-lg text-sm disabled:opacity-50"
+              disabled={isLoading}
             >
-              Save
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

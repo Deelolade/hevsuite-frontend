@@ -1,104 +1,91 @@
 "use client"
 
-import { useState } from "react"
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
-import { useDispatch } from "react-redux"
-import { postCards } from "../../../store/cards/cardSlice"
+import React, { useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { toast } from "react-toastify"
+import { postCards, reset } from "../../../store/cards/cardSlice"
 
-const PostCard = ({ setIsPostModalOpen, selectedCards }) => {
+const PostCard = ({ onClose, selectedCards }) => {
   const [receiverEmail, setReceiverEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const dispatch = useDispatch()
+  const { isError, message } = useSelector((state) => state.cards)
 
-  const handleSend = () => {
-    if (!receiverEmail || !password || selectedCards.length === 0) {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!receiverEmail) {
+      toast.error("Please enter receiver's email")
       return
     }
 
-    setIsSubmitting(true)
+    if (!selectedCards || selectedCards.length === 0) {
+      toast.error("Please select at least one card")
+      return
+    }
 
-    // In a real app, you would verify the password first
-    dispatch(
-      postCards({
-        cardIds: selectedCards,
-        receiverEmail,
-      }),
-    )
-      .then(() => {
-        setIsSubmitting(false)
-        setIsPostModalOpen(false)
-      })
-      .catch(() => {
-        setIsSubmitting(false)
-      })
+    setIsLoading(true)
+
+    try {
+      await dispatch(postCards({ cardIds: selectedCards, receiverEmail })).unwrap()
+      toast.success("Cards posted successfully")
+      onClose()
+    } catch (error) {
+      toast.error(error || "Failed to post cards")
+    } finally {
+      setIsLoading(false)
+      dispatch(reset())
+    }
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Post Cards</h2>
-        <button onClick={() => setIsPostModalOpen(false)} className="text-gray-400">
-          ✕
-        </button>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm mb-2">Receiver's Email</label>
-          <input
-            type="email"
-            value={receiverEmail}
-            onChange={(e) => setReceiverEmail(e.target.value)}
-            placeholder="Enter email"
-            className="w-full px-3 py-2.5 border rounded-lg text-sm"
-            required
-          />
-        </div>
-
-        <p className="text-sm text-gray-600">
-          Are you sure you want to post {selectedCards.length} cards to be printed for selected accounts? The request is
-          irreversible.
-        </p>
-
-        <div>
-          <label className="block text-sm mb-2">Your Password</label>
-          <div className="relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-6">Post Selected Cards</h2>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Receiver's Email
+            </label>
             <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 border rounded-lg text-sm pr-10"
+              type="email"
+              value={receiverEmail}
+              onChange={(e) => setReceiverEmail(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              placeholder="Enter email address"
               required
             />
+          </div>
+
+          <div className="mb-6">
+            <p className="text-sm text-gray-600">
+              Selected Cards: {selectedCards.length}
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              A PDF containing card details will be sent to the specified email address.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              onClick={onClose}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={isLoading}
             >
-              {showPassword ? <AiOutlineEyeInvisible className="w-5 h-5" /> : <AiOutlineEye className="w-5 h-5" />}
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={isLoading}
+            >
+              {isLoading ? "Posting..." : "Post Cards"}
             </button>
           </div>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            onClick={() => setIsPostModalOpen(false)}
-            className="px-6 py-2 border rounded-lg text-sm"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSend}
-            className="px-6 py-2 bg-[#00B707] text-white rounded-lg text-sm"
-            disabled={!receiverEmail || !password || selectedCards.length === 0 || isSubmitting}
-          >
-            {isSubmitting ? "Processing..." : "Send"}
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   )

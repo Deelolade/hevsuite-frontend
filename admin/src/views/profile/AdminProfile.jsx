@@ -15,6 +15,7 @@ const AdminProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState({
     fullName: '',
@@ -24,6 +25,7 @@ const AdminProfile = () => {
     twoFactorPreference: 'email',
     avatar: avatar,
   });
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -35,7 +37,7 @@ const AdminProfile = () => {
           role: response.user.role,
           password: '',
           twoFactorPreference: response.user.twoFactorPreference,
-          avatar: avatar,
+          avatar: response.user.profilePhoto,
         });
       } catch (error) {
         console.log(error);
@@ -46,10 +48,10 @@ const AdminProfile = () => {
   }, []);
 
   const supportStats = [
-    { title: 'Total Requests', count: '1349' },
-    { title: 'Pending Requests', count: '32' },
-    { title: 'Completed Requests', count: '1280' },
-    { title: 'Assigned Requests', count: '1280' },
+    { title: 'Total Requests', count: '0' },
+    { title: 'Pending Requests', count: '0' },
+    { title: 'Completed Requests', count: '0' },
+    { title: 'Assigned Requests', count: '0' },
   ];
 
   const handleEditSave = () => {
@@ -61,43 +63,58 @@ const AdminProfile = () => {
   };
 
   const handleConfirmSave = async () => {
-    const parts = profileData.fullName.trim().split(' ');
-    let firstName;
-    let lastName;
-    if (parts.length > 1) {
-      firstName = parts[0];
-      lastName = parts.slice(1).join(' ');
-    } else {
-      firstName = parts[0];
-      lastName = '';
-    }
+    setIsLoading(true);
+    try {
+      const parts = profileData.fullName.trim().split(' ');
+      let firstName = parts[0];
+      let lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
 
-    const data = {
-      updates: {
+      let formData = new FormData();
+      
+      // Add profile data
+      const updates = {
         forename: firstName,
         surname: lastName,
         primaryEmail: profileData.email,
         role: profileData.role,
-        twoFAMethod: profileData.twoFactorPreference,
-      },
-      confirmPassword: confirmPassword,
-    };
+        twoFAMethod: profileData.twoFactorPreference
+      };
 
-    if (profileData.password.length > 1) {
-      data.updates.new_password = profileData.password;
-    }
+      // Only include password if it's been changed
+      if (profileData.password && profileData.password.trim() !== '') {
+        updates.new_password = profileData.password.trim();
+      }
 
-    try {
-      const response = await authService.updateProfile(data);
-      console.log(response);
-      window.location.reload();
+      formData.append('updates', JSON.stringify(updates));
+      formData.append('confirmPassword', confirmPassword);
+
+      // Add profile photo if selected
+      if (selectedImage) {
+        formData.append('profilePhoto', selectedImage);
+      }
+
+      const response = await authService.updateProfile(formData);
+      
+      if (response.user) {
+        if (response.user.profilePhoto) {
+          setProfileData(prev => ({
+            ...prev,
+            avatar: response.user.profilePhoto
+          }));
+        }
+        toast.success('Profile updated successfully');
+        window.location.reload();
+      }
+
+      setIsConfirmModalOpen(false);
+      setIsEditMode(false);
+      setConfirmPassword('');
     } catch (error) {
-      toast.error('Invalid Password');
+      toast.error(error.message || 'Failed to update profile');
+    } finally {
+      setIsLoading(false);
     }
-    setIsConfirmModalOpen(false);
-    setIsEditMode(false);
-    setConfirmPassword('');
-  };
+  }
 
   const handleInputChange = (field, value) => {
     setProfileData((prev) => ({
@@ -109,10 +126,15 @@ const AdminProfile = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileData((prev) => ({
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+      setSelectedImage(file);
+      const previewUrl = URL.createObjectURL(file);
+      setProfileData(prev => ({
         ...prev,
-        avatar: imageUrl,
+        avatar: previewUrl
       }));
     }
   };
@@ -143,10 +165,11 @@ const AdminProfile = () => {
             </div>
             <input
               type='file'
-              id='avatarInput'
+              id='avatarInput' 
               accept='image/*'
               className='hidden'
               onChange={handleAvatarChange}
+              disabled={!isEditMode}
             />
             <label
               htmlFor='avatarInput'
@@ -286,7 +309,7 @@ const AdminProfile = () => {
               <span>Support Request</span>
             </div>
             <div className='flex items-center gap-2'>
-              <span className='text-red-500'>32+</span>
+              <span className='text-red-500'>0</span>
               <svg
                 className={`w-4 h-4 text-gray-400 transform transition-transform ${
                   isDropdownOpen ? 'rotate-180' : ''
@@ -396,11 +419,20 @@ const AdminProfile = () => {
                 Cancel
               </button>
               <button
-                onClick={handleConfirmSave}
-                className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'
-              >
-                Update
-              </button>
+            onClick={handleConfirmSave}
+            disabled={isLoading}
+            className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Updating...
+              </>
+            ) : 'Update'}
+          </button>
             </div>
           </div>
         </div>

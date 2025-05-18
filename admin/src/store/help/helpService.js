@@ -58,7 +58,7 @@ const editTopic = async (data) => {
 
 const deleteTopic = async (id) => {
   const token = getAuthToken();
-  const response = await axios.delete(`${base_url}/api/admin/delete-topic/${id}`, {
+  const response = await axios.delete(`${base_url}/api/admin/topic/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -85,7 +85,7 @@ const topicVisibility = async (data) => {
 const archiveTopic = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/api/admin/archive-topic/${data.id}`,
+    `${base_url}/api/admin/topic/${data.id}`,
     data.data,
     {
       headers: {
@@ -119,8 +119,12 @@ export const createQA = async (data) => {
 const editQA = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/api/admin/edit-QA/${data.id}`,
-    data.data,
+    `${base_url}/api/admin/qa/${data.id}`,
+    {
+      question: data.data.question,
+      answer: data.data.answer,
+      visibility: data.data.visibility
+    },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -131,14 +135,17 @@ const editQA = async (data) => {
   return response.data;
 };
 
-const deleteQA = async (id) => {
+const deleteQA = async (data) => {
   const token = getAuthToken();
-  const response = await axios.delete(`${base_url}/api/admin/delete-QA/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-  });
+  const response = await axios.delete(
+    `${base_url}/api/admin/topic/${data.topicId}/qas/${data.qaId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
   return response.data;
 };
 

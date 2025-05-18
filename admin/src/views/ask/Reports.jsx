@@ -77,6 +77,7 @@ const Reports = () => {
                     <td className="py-4 px-6 text-gray-600">{report.reason}</td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
+                        {/* Debug: {report} */}
                         <img
                           src={report.reportedBy?.profilePhoto || "/placeholder-avatar.png"}
                           alt={`${report.reportedBy?.forename || ""} ${report.reportedBy?.surname || ""}`}

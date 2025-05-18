@@ -25,9 +25,9 @@ export const getProcessors = createAsyncThunk(
 // Update payment processor
 export const updateProcessor = createAsyncThunk(
   'payment/updateProcessor',
-  async (processorData, thunkAPI) => {
+  async (formData, thunkAPI) => {
     try {
-      return await updatePaymentMethod(processorData);
+      return await updatePaymentMethod(formData);
     } catch (error) {
       const message = error.response?.data?.message || error.message;
       return thunkAPI.rejectWithValue(message);
@@ -38,9 +38,9 @@ export const updateProcessor = createAsyncThunk(
 // Add new payment processor
 export const addProcessor = createAsyncThunk(
   'payment/addProcessor',
-  async (processorData, thunkAPI) => {
+  async (formData, thunkAPI) => {
     try {
-      return await addPaymentMethod(processorData);
+      return await addPaymentMethod(formData);
     } catch (error) {
       const message = error.response?.data?.message || error.message;
       return thunkAPI.rejectWithValue(message);
@@ -113,7 +113,7 @@ export const paymentSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.processors = state.processors.map((processor) =>
-          processor.id === action.payload.id ? action.payload : processor
+          processor.provider === action.payload.provider ? action.payload : processor
         );
       })
       .addCase(updateProcessor.rejected, (state, action) => {

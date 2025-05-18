@@ -53,10 +53,10 @@ const transactionSlice = createSlice({
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = action.payload.transactions;
+        state.transactions = action.payload.data; // Changed from action.payload.transactions
         state.currentPage = action.payload.currentPage;
         state.totalPages = action.payload.totalPages;
-        state.totalTransactions = action.payload.totalTransactions;
+        state.totalTransactions = action.payload.totalItems; // Changed from action.payload.totalTransactions
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.loading = false;

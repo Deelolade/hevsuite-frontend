@@ -4,3 +4,4 @@
 /client/build
 **/build
 text.txt
+/admin/.env

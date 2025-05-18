@@ -39,24 +39,7 @@ const Profile = () => {
   }, []);
 
   const notifications = [
-    {
-      id: 1,
-      title: 'New Event Added',
-      time: '2 hours ago',
-      isRead: false,
-    },
-    {
-      id: 2,
-      title: 'Profile Updated',
-      time: '5 hours ago',
-      isRead: true,
-    },
-    {
-      id: 3,
-      title: 'New Message Received',
-      time: '1 day ago',
-      isRead: true,
-    },
+
   ];
 
   const handleLogout = async () => {
@@ -77,7 +60,7 @@ const Profile = () => {
         >
           <BsBell className='text-2xl text-gray-600' />
           <span className='absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-600 rounded-full p-2 text-center flex items-center justify-center text-white text-[10px]'>
-            3
+            0
           </span>
         </button>
 
@@ -87,6 +70,9 @@ const Profile = () => {
               <h3 className='font-semibold'>Notifications</h3>
             </div>
             <div className='max-h-[400px] overflow-y-auto'>
+            <div className='p-4 text-center text-gray-500'>
+                  No notifications
+                </div>
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
@@ -110,9 +96,9 @@ const Profile = () => {
               ))}
             </div>
             <div className='px-4 py-2 border-t flex w-full justify-end  border-gray-100'>
-              <button className='text-sm bg-primary rounded-lg w-fit text-white hover:underline px-6 py-2 text-center'>
+              {/* <button className='text-sm bg-primary rounded-lg w-fit text-white hover:underline px-6 py-2 text-center'>
                 Clear
-              </button>
+              </button> */}
             </div>
           </div>
         )}
@@ -133,8 +119,8 @@ const Profile = () => {
             </p>
           </div>
           <img
-            src={avatar}
-            alt='profile'
+            src={profileData.profilePhoto}
+            alt={avatar}
             className='w-10 h-10 rounded-full object-cover'
           />
           <BsChevronDown className='text-gray-400' />

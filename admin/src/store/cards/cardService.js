@@ -40,14 +40,29 @@ const getUserDetails = async (userId) => {
   return response.data
 }
 
+const API_URL = "/api/club-cards"
+
+// Post cards
 const postCards = async (data) => {
-  const token = getAuthToken()
-  const response = await axios.post(`${base_url}/admin/post-cards`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-  })
+  const response = await axios.post(API_URL + "/post", data)
+  return response.data
+}
+
+// Activate card
+const activateCard = async (data) => {
+  const response = await axios.post(API_URL + "/activate", data)
+  return response.data
+}
+
+// Deactivate card
+const deactivateCard = async (data) => {
+  const response = await axios.post(API_URL + "/deactivate", data)
+  return response.data
+}
+
+// Log suspicious activity
+const logSuspiciousActivity = async (data) => {
+  const response = await axios.post(API_URL + "/log-suspicious", data)
   return response.data
 }
 
@@ -148,6 +163,9 @@ const cardService = {
   getUsers,
   getUserDetails,
   postCards,
+  activateCard,
+  deactivateCard,
+  logSuspiciousActivity,
   issueCard,
   cancelCard,
   bulkCancelCards,

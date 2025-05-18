@@ -9,6 +9,7 @@ const initialState = {
   isError: false,
   isLoading: false,
   message: "",
+  pagination: {},
 };
 
 export const getAllHelps = createAsyncThunk(
@@ -101,9 +102,9 @@ export const editQA = createAsyncThunk(
 
 export const deleteQA = createAsyncThunk(
   "help/delete-qa",
-  async (id, thunkAPI) => {
+  async (data, thunkAPI) => {
     try {
-      return await helpService.deleteQA(id);
+      return await helpService.deleteQA(data);
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -419,7 +420,8 @@ export const helpSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.message = "success";
-        state.faqs = action.payload;
+        state.faqs = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getAllFAQs.rejected, (state, action) => {
         state.isLoading = false;

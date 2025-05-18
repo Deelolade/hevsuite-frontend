@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BiSearch } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPendingRegistrations, updateUserMembershipStatus } from "../../store/users/userSlice";
@@ -11,6 +11,17 @@ import user from "../../assets/user.avif";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 
+const filterOptions = [
+  { label: "New Applications", value: "new" },
+  { label: "Declined Applications", value: "declined" },
+];
+const sortOptions = [
+  { label: "Date (Newest)", value: "date-newest" },
+  { label: "Date (Oldest)", value: "date-oldest" },
+  { label: "Name (A-Z)", value: "name-az" },
+  { label: "Name (Z-A)", value: "name-za" },
+];
+
 const Pending = () => {
   const dispatch = useDispatch();
   const { pendingRegistrations, isLoading, pagination } = useSelector((state) => state.user);
@@ -19,10 +30,41 @@ const Pending = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [selectedFilter, setSelectedFilter] = useState(filterOptions[0].value);
+  const [selectedSort, setSelectedSort] = useState(sortOptions[0].value);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const filterDropdownRef = useRef(null);
+  const sortDropdownRef = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchPendingRegistrations({ page: currentPage, limit }));
-  }, [dispatch, currentPage, limit]);
+    function handleClickOutside(event) {
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(event.target) &&
+        sortDropdownRef.current &&
+        !sortDropdownRef.current.contains(event.target)
+      ) {
+        setShowFilterDropdown(false);
+        setShowSortDropdown(false);
+      }
+    }
+    if (showFilterDropdown || showSortDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFilterDropdown, showSortDropdown]);
+
+  useEffect(() => {
+    dispatch(fetchPendingRegistrations({
+      page: currentPage,
+      limit,
+      filter: selectedFilter,
+      sortBy: selectedSort,
+    }));
+  }, [dispatch, currentPage, limit, selectedFilter, selectedSort]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -43,6 +85,9 @@ const Pending = () => {
     const searchTerm = searchQuery.toLowerCase();
     return fullName.includes(searchTerm) || email.includes(searchTerm);
   });
+
+  // Debug: Log the order of users as received from the backend
+  console.log('pendingRegistrations order:', pendingRegistrations?.map(u => `${u.forename} ${u.surname} <${u.primaryEmail}>`));
 
   const handleAcceptUser = async (user) => {
     try {
@@ -82,10 +127,9 @@ const Pending = () => {
   const formattedUsers = filteredUsers?.map((user) => ({
     id: user._id,
     name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
-    registrationId: `ID#${user._id ? user._id.slice(-8) : '00000000'}`,
+    registrationId: `ID#${user.membershipNumber || '00000000'}`,
     email: user.primaryEmail || 'No email provided',
-    supportersStatus: "2/3", // This might need to be calculated based on actual data
-    joinFeeStatus: user.joinFeeStatus || "Pending",
+    supportersStatus: `${user.referredBy?.filter(ref => ref.status === 'approved').length || 0}/3`,
     avatar: user.profilePhoto || avatar,
     idCard: user.idCardPhoto || idcards,
     photo: user.profilePhoto || avatar,
@@ -186,6 +230,16 @@ const Pending = () => {
           setViewUser={setViewUser}
             onAccept={handleAcceptUser}
             onReject={handleRejectUser}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
+            selectedSort={selectedSort}
+            setSelectedSort={setSelectedSort}
+            showFilterDropdown={showFilterDropdown}
+            setShowFilterDropdown={setShowFilterDropdown}
+            showSortDropdown={showSortDropdown}
+            setShowSortDropdown={setShowSortDropdown}
+            filterOptions={filterOptions}
+            sortOptions={sortOptions}
           />
           
           {/* Pagination */}

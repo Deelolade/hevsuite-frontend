@@ -16,9 +16,9 @@ const PreviewCms = ({ setIsPreviewModalOpen, selectedItem }) => {
       <div className="space-y-6">
         {/* Preview Image */}
         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-          {selectedItem && (
+          {selectedItem?.image && (
             <img
-              src={selectedItem.preview}
+              src={selectedItem.image}
               alt="Preview"
               className="w-full h-full object-cover"
             />
@@ -28,13 +28,26 @@ const PreviewCms = ({ setIsPreviewModalOpen, selectedItem }) => {
         {/* Details */}
         <div className="space-y-4">
           <div>
+            <label className="block text-sm text-gray-600 mb-1">Link</label>
+            <div className="text-sm text-blue-500 break-all">
+              <a 
+                href={selectedItem?.link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                {selectedItem?.link}
+              </a>
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm text-gray-600 mb-1">Status</label>
             <div
               className={`text-sm ${
-                selectedItem?.isVisible ? "text-green-600" : "text-red-500"
+                selectedItem?.visibility ? "text-green-600" : "text-red-500"
               }`}
             >
-              {selectedItem?.isVisible ? "Visible" : "Hidden"}
+              {selectedItem?.visibility ? "Visible" : "Hidden"}
             </div>
           </div>
 
@@ -42,7 +55,9 @@ const PreviewCms = ({ setIsPreviewModalOpen, selectedItem }) => {
             <label className="block text-sm text-gray-600 mb-1">
               Last Modified
             </label>
-            <div className="text-sm">{selectedItem?.lastModified}</div>
+            <div className="text-sm">
+              {selectedItem?.updatedAt && new Date(selectedItem.updatedAt).toLocaleString()}
+            </div>
           </div>
         </div>
 

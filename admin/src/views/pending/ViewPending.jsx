@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Modal from 'react-modal';
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 
+Modal.setAppElement('#root');
+
 const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
   const [activeTab, setActiveTab] = useState("personal");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   if (!viewUser) return null;
 
@@ -34,14 +39,14 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
       {/* Header with back button and user info */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-        <button
-          onClick={() => setShowViewPending(false)}
+          <button
+            onClick={() => setShowViewPending(false)}
             className="p-2 hover:bg-gray-100 rounded-full"
-        >
+          >
             <IoArrowBack className="text-2xl" />
-        </button>
+          </button>
           <h2 className="text-2xl font-semibold">View Pending Registration</h2>
-      </div>
+        </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
@@ -49,21 +54,21 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
               src={viewUser.profilePhoto || avatar}
               alt="Profile"
               className="w-12 h-12 rounded-full object-cover"
-          />
-          <div>
+            />
+            <div>
               <h3 className="font-medium">{`${viewUser.forename} ${viewUser.surname}`}</h3>
               <p className="text-sm text-gray-500">{viewUser.primaryEmail}</p>
+            </div>
           </div>
-        </div>
 
           <div className="flex items-center gap-2">
-              <button
+            <button
               onClick={handleReject}
               className="p-2 text-red-500 hover:bg-red-50 rounded-full"
             >
               <FaTimes size={18} />
-              </button>
-              <button
+            </button>
+            <button
               onClick={handleAccept}
               className="p-2 text-green-500 hover:bg-green-50 rounded-full"
             >
@@ -71,7 +76,7 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
             </button>
             <button className="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
               <BsThreeDotsVertical size={18} />
-              </button>
+            </button>
           </div>
         </div>
       </div>
@@ -129,27 +134,27 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                   <div>
                     <label className="text-sm text-gray-500">Title</label>
                     <p className="font-medium">{viewUser.title || "Not provided"}</p>
-        </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
 
-            <div>
+                    <div>
                       <label className="text-sm text-gray-500">Forename</label>
                       <p className="font-medium">{viewUser.forename || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Surname</label>
                       <p className="font-medium">{viewUser.surname || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Email</label>
                       <p className="font-medium">{viewUser.primaryEmail || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Phone</label>
                       <p className="font-medium">{viewUser.primaryPhone || "Not provided"}</p>
                     </div>
-            </div>
-            <div>
+                  </div>
+                  <div>
                     <label className="text-sm text-gray-500">Relationship Status</label>
                     <p className="font-medium">{viewUser.relationshipStatus || "Not provided"}</p>
                   </div>
@@ -157,8 +162,8 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                     <div>
                       <label className="text-sm text-gray-500">Nationality</label>
                       <p className="font-medium">{viewUser.nationality || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Additional Nationality</label>
                       <p className="font-medium">{viewUser.additionalNationality || "Not provided"}</p>
                     </div>
@@ -167,8 +172,8 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                     <div>
                       <label className="text-sm text-gray-500">Date of Birth</label>
                       <p className="font-medium">{formatDate(viewUser.dateOfBirth)}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Gender</label>
                       <p className="font-medium">{viewUser.gender || "Not provided"}</p>
                     </div>
@@ -184,8 +189,8 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                   <div>
                     <label className="text-sm text-gray-500">Occupation</label>
                     <p className="font-medium">{viewUser.occupation || "Not provided"}</p>
-            </div>
-            <div>
+                  </div>
+                  <div>
                     <label className="text-sm text-gray-500">Interests</label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {viewUser.interests && viewUser.interests.length > 0 ? (
@@ -216,29 +221,29 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                 <h3 className="text-lg font-semibold mb-4">Address</h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-            <div>
+                    <div>
                       <label className="text-sm text-gray-500">Address Line 1</label>
                       <p className="font-medium">{viewUser.addressLine1 || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Town/City</label>
                       <p className="font-medium">{viewUser.city || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Country</label>
                       <p className="font-medium">{viewUser.country || "Not provided"}</p>
-            </div>
-            <div>
+                    </div>
+                    <div>
                       <label className="text-sm text-gray-500">Postcode/Zipcode</label>
                       <p className="font-medium">{viewUser.postcode || "Not provided"}</p>
-            </div>
-            </div>
-            <div>
+                    </div>
+                  </div>
+                  <div>
                     <label className="text-sm text-gray-500">State</label>
                     <p className="font-medium">{viewUser.state || "Not provided"}</p>
-            </div>
-            </div>
-            </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -251,30 +256,42 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-sm text-gray-500 block mb-2">Profile Photo</label>
-                  <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                  <div className="relative group">
                     <img
                       src={viewUser.profilePhoto || avatar}
                       alt="Profile"
-                      className="w-40 h-40 object-cover rounded-lg mb-2"
+                      className="w-full h-48 object-cover rounded-lg"
                     />
-                    <button className="text-sm text-[#0A5438] hover:underline">
-                      View Full Size
-          </button>
-        </div>
-              </div>
-              <div>
+                    <button
+                      onClick={() => {
+                        setSelectedImage(viewUser.profilePhoto || avatar);
+                        setShowModal(true);
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                    >
+                      <span className="text-white text-sm font-medium">Preview</span>
+                    </button>
+                  </div>
+                </div>
+                <div>
                   <label className="text-sm text-gray-500 block mb-2">ID Card</label>
-                  <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                  <div className="relative group">
                     <img
                       src={viewUser.idCardPhoto || idcards}
                       alt="ID Card"
-                      className="w-full h-40 object-cover rounded-lg mb-2"
+                      className="w-full h-48 object-cover rounded-lg"
                     />
-                    <button className="text-sm text-[#0A5438] hover:underline">
-                      View Full Size
+                    <button
+                      onClick={() => {
+                        setSelectedImage(viewUser.idCardPhoto || idcards);
+                        setShowModal(true);
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                    >
+                      <span className="text-white text-sm font-medium">Preview</span>
                     </button>
-              </div>
-              </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -286,48 +303,50 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
               <h3 className="text-lg font-semibold mb-4">Registration Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-              <div>
+                  <div>
                     <label className="text-sm text-gray-500">Join Fee Status</label>
                     <div className="mt-1">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${viewUser.joinFeeStatus === "Paid"
                         ? "bg-green-100 text-green-800"
                         : "bg-yellow-100 text-yellow-800"
                         }`}>
-                        {viewUser.joinFeeStatus === "Paid" ? "Paid" : "Pending"}
+                        {viewUser.joinFeeStatus === "paid" ? "Paid" : "Pending"}
                       </span>
                     </div>
-              </div>
-              <div>
+                  </div>
+                  <div>
                     <label className="text-sm text-gray-500">Supporters Status</label>
                     <div className="mt-1">
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
                           className="bg-[#0A5438] h-2.5 rounded-full"
-                          style={{ width: '66%' }}
+                          style={{ width: `${(viewUser.referredBy?.filter(ref => ref.status === 'approved').length / 3) * 100}%` }}
                         ></div>
-              </div>
-                      <p className="text-sm text-gray-500 mt-1">2 out of 3 supporters</p>
-              </div>
-            </div>
-      </div>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0} out of 3 supporters
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm text-gray-500">Registration Date</label>
                     <p className="font-medium">{formatDate(viewUser.createdAt)}</p>
-        </div>
+                  </div>
                   <div>
                     <label className="text-sm text-gray-500">Registration ID</label>
-                    <p className="font-medium">ID#{viewUser._id ? viewUser._id.slice(-8) : "00000000"}</p>
-              </div>
+                    <p className="font-medium">ID#{viewUser.membershipNumber || "00000000"}</p>
+                  </div>
                   <div>
-                    <label className="text-sm text-gray-500">Current Status</label>
+                    <label className="text-sm text-gray-500">Membership Status</label>
                     <div className="mt-1">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                        Pending Review
+                      {viewUser.membershipStatus}
                       </span>
-            </div>
-              </div>
-            </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -351,6 +370,33 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
           <span>Accept</span>
         </button>
       </div>
+
+      {/* Image Preview Modal */}
+      <Modal
+        isOpen={showModal}
+        onRequestClose={() => setShowModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[600px]"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Image Preview</h2>
+            <button 
+              onClick={() => setShowModal(false)} 
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="relative w-full h-[400px]">
+            <img
+              src={selectedImage}
+              alt="Preview"
+              className="w-full h-full object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

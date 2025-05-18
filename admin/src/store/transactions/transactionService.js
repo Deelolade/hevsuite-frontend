@@ -6,7 +6,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}`;
 // Get all transactions with pagination and filters
 export const getTransactions = async (page = 1, limit = 10, filters = {}) => {
   try {
-    const response = await axios.get(`${API_URL}/transactions`, {
+    const response = await axios.get(`${API_URL}/api/transactions`, {
       params: {
         page,
         limit,
@@ -24,7 +24,7 @@ export const getTransactions = async (page = 1, limit = 10, filters = {}) => {
 export const updateTransactionStatus = async (transactionId, status) => {
   try {
     const response = await axios.patch(
-      `${API_URL}/transactions/${transactionId}/status`,
+      `${API_URL}/api/transactions/${transactionId}/status`,
       { status },
       { withCredentials: true }
     );

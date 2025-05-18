@@ -6,30 +6,11 @@ const getAuthToken = () => {
   return admin?.token || '';
 };
 
-const pendingUsers = async ({ page, limit, search, sortBy, filter }) => {
+// Get all users with pagination and filtering
+export const getAllUsers = async ({ page = 1, limit = 10, search = '', role = '' }) => {
   const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/api/admin/pending?page=${page}&limit=${limit}&sortBy=${sortBy}&filter=${filter}&search=${search}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
-
-export const memberUsers = async (page = 1, search = '', role = '') => {
-  const response = await axios.get(`${base_url}/api/user/users`, {
-    params: { page, limit: 6, search, role },
-  });
-  return response.data;
-};
-
-const inviteUser = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/api/admin/invite-users`, data, {
+  const response = await axios.get(`${base_url}/user/users`, {
+    params: { page, limit, search, role },
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -38,32 +19,95 @@ const inviteUser = async (data) => {
   return response.data;
 };
 
-export const editUser = async ({ id, data }) => {
+
+export const memberUsers = async (page = 1, search = '', role = 'member', membershipStatus ='accepted') => {
+  const response = await axios.get(`${base_url}/api/user/users`, {
+    params: { page, search, role, membershipStatus },
+  });
+  return response.data;
+};
+
+// Get pending users
+export const getPendingUsers = async ({ page = 1, limit = '', search = '', sortBy = 'createdAt', filter = 'all' }) => {
   const token = getAuthToken();
-  const response = await axios.put(
-    `${base_url}/api/user/${id}`,
-    data,
-    {
+  const response = await axios.get(`${base_url}/api/user/pending`, {
+    params: { page, limit, search, sortBy, filter },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+
+
+// Create new user
+export const createUser = async (userData) => {
+  const token = getAuthToken();
+  const response = await axios.post(`${base_url}/api/user`, userData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// Update user
+export const updateUser = async (userId, userData) => {
+  const token = getAuthToken();
+  const response = await axios.put(`${base_url}/api/user/${userId}`, userData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// Delete user
+export const deleteUser = async (userId) => {
+  const token = getAuthToken();
+  const response = await axios.delete(`${base_url}/api/user/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       withCredentials: true,
-    }
-  );
+  });
   return response.data;
 };
 
-const userSearch = async (query) => {
-  const response = await axios.get(
-    `${base_url}/api/user/users/search?q=${encodeURIComponent(query)}`
-  );
+// Approve user membership
+export const approveUserMembership = async (userId) => {
+  const token = getAuthToken();
+  const response = await axios.put(`${base_url}/api/user/approve-membership/${userId}`, {}, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
   return response.data;
 };
 
-export const getPendingRegistrations = async ({ page = 1, limit = 10 } = {}) => {
+// Search users
+export const searchUsers = async (query) => {
+  const token = getAuthToken();
+  const response = await axios.get(`${base_url}/api/user/search`, {
+    params: { query },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// Get pending registrations
+export const getPendingRegistrations = async ({ page = 1, limit = 10, filter = '', sortBy = '' } = {}) => {
   const token = getAuthToken();
   const response = await axios.get(`${base_url}/api/user/pending-registrations`, {
-    params: { page, limit },
+    params: { page, limit, filter, sortBy },
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -88,11 +132,12 @@ export const updateMembershipStatus = async (userId, status) => {
   return response.data;
 };
 
-// Get user events
-export const getUserEvents = async (userId, page = 1) => {
+// Invite user
+export const inviteUser = async (email) => {
   const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/api/user/${userId}/events?page=${page}`,
+  const response = await axios.post(
+    `${base_url}/api/user/invite`,
+    { email },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -103,27 +148,12 @@ export const getUserEvents = async (userId, page = 1) => {
   return response.data;
 };
 
-// Get user activity
-export const getUserActivity = async (userId, page = 1) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/api/user/${userId}/activity?page=${page}`,
-    {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    withCredentials: true,
-    }
-  );
-  return response.data;
-};
-
-// Update user status (restrict/ban)
-export const updateUserStatus = async (userId, status) => {
+// Edit user
+export const editUser = async ({ id, data }) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/api/user/status/${userId}`,
-    { status }, // status can be 'restrict', 'unrestrict', 'ban', or 'unban'
+    `${base_url}/api/user/${id}`,
+    data,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -166,7 +196,53 @@ export const requestNewVerification = async (userId) => {
   return response.data;
 };
 
+// Update user status (restrict/ban)
+export const updateUserStatus = async (userId, status) => {
+  const token = getAuthToken();
+  const response = await axios.put(
+    `${base_url}/api/user/status/${userId}`,
+    { status }, // status can be 'restrict', 'unrestrict', 'ban', or 'unban'
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
 
+// Get user events
+export const getUserEvents = async (userId, page = 1) => {
+  const token = getAuthToken();
+  const response = await axios.get(
+    `${base_url}/api/user/${userId}/events?page=${page}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
+// Get user activity
+export const getUserActivity = async (userId, page = 1) => {
+  const token = getAuthToken();
+  const response = await axios.get(
+    `${base_url}/api/user/${userId}/activity?page=${page}`,
+    {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
+// Get admin users
 export const getAdminUsers = async () => {
   const token = getAuthToken();
   const response = await axios.get(`${base_url}/api/user/admin-users`, {
@@ -178,21 +254,41 @@ export const getAdminUsers = async () => {
   return response.data;
 };
 
+// Assign request to admin
+export const assignRequestToAdmin = async (requestId, adminId) => {
+  const token = getAuthToken();
+  const response = await axios.put(
+    `${base_url}/api/support-requests/${requestId}/api/assign`,
+    { adminId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
 
 const userService = {
-  pendingUsers,
-  inviteUser,
+  getAllUsers,
   memberUsers,
-  editUser,
-  userSearch,
+  getPendingUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  approveUserMembership,
+  searchUsers,
   getPendingRegistrations,
   updateMembershipStatus,
-  getUserEvents,
-  getUserActivity,
-  updateUserStatus,
+  inviteUser,
+  editUser,
   resetUserPassword,
   requestNewVerification,
+  updateUserStatus,
+  getUserEvents,
+  getUserActivity,
   getAdminUsers,
+  assignRequestToAdmin,
 };
 
 export default userService;

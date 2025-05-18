@@ -13,9 +13,9 @@ const initialState = {
 // Get all news
 export const getAllNews = createAsyncThunk(
   "news/getAll",
-  async (_, thunkAPI) => {
+  async (params = {}, thunkAPI) => {
     try {
-      return await newsService.getAllNews();
+      return await newsService.getAllNews(params);
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
       return thunkAPI.rejectWithValue(message);
@@ -39,9 +39,9 @@ export const createNews = createAsyncThunk(
 // Update news
 export const updateNews = createAsyncThunk(
   "news/update",
-  async ({ id, formData }, thunkAPI) => {
+  async ({ id, newsData }, thunkAPI) => {
     try {
-      return await newsService.updateNews(id, formData);
+      return await newsService.updateNews(id, newsData);
     } catch (error) {
       const message = error.response?.data?.message || error.message || error.toString();
       return thunkAPI.rejectWithValue(message);

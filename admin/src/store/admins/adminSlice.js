@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/user`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/user`;
 
 // Get all admin users
 export const getAllAdmins = createAsyncThunk(
@@ -20,6 +20,7 @@ export const getAllAdmins = createAsyncThunk(
         forename: admin.forename || '',
         surname: admin.surname || '',
         primaryEmail: admin.primaryEmail,
+        profilePhoto: admin.profilePhoto,
         role: admin.role || 'admin',
         roleName: admin.roleName || 'Administrator',
         membershipStatus: admin.membershipStatus || 'active',

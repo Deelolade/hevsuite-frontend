@@ -80,7 +80,7 @@ const ScanQRCode = () => {
                     <h3 className="font-medium mb-4">Card Information</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-gray-500">Card ID:</div>
-                      <div>{scanResult.data.cardId.substring(0, 8)}</div>
+                      <div>ID#{scanResult.data.membershipNumber || "00000000"}</div>
 
                       <div className="text-gray-500">Card Type:</div>
                       <div className="capitalize">{cardDetails.cardType || scanResult.data.cardType}</div>

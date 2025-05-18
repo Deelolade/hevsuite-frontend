@@ -1,267 +1,262 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
-import {
-  fetchTransactions,
-  updateStatus,
-} from '../../store/transactions/transactionSlice';
-import LoadingSpinner from '../../components/Spinner';
-import { format } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { BiChevronDown } from "react-icons/bi";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTransactions, updateStatus } from "../../store/transactions/transactionSlice"
+import avatar from "../../assets/user.avif";
 
 const History = () => {
   const dispatch = useDispatch();
   const {
-    transactions,
-    loading,
-    error,
+    transactions = [],
     currentPage,
     totalPages,
-    totalTransactions,
+    totalItems,
+    loading,
+    error,
   } = useSelector((state) => state.transactions);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    status: 'all',
-    purpose: 'all',
-    dateRange: 'all',
-  });
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [localCurrentPage, setLocalCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [expandedRows, setExpandedRows] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
-  // Debounce search term
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
+    dispatch(fetchTransactions({ 
+      page: localCurrentPage, 
+      limit: rowsPerPage,
+      search: searchQuery,
+      filter: statusFilter
+    }));
+  }, [dispatch, localCurrentPage, rowsPerPage, searchQuery, statusFilter]);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Fetch transactions when filters or pagination changes
-  useEffect(() => {
-    dispatch(
-      fetchTransactions({
-        page: currentPage,
-        limit: 10,
-        ...filters,
-        search: debouncedSearchTerm,
-      })
+  const toggleRow = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
-  }, [dispatch, filters, debouncedSearchTerm, currentPage]);
-
-  // Handle filter changes
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({ ...prev, [filterType]: value }));
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (transactionId, newStatus) => {
-    try {
-      await dispatch(updateStatus({ transactionId, status: newStatus })).unwrap();
-      toast.success('Transaction status updated successfully');
-    } catch (error) {
-      toast.error(error.message || 'Failed to update transaction status');
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedRows(transactions.map((t) => t._id));
+    } else {
+      setSelectedRows([]);
     }
   };
 
-  // Format currency
-  const formatCurrency = (amount, currency = 'GBP') => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
+  const handleSelectRow = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
   };
 
-  // Get status badge color
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      succeeded: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      refunded: 'bg-blue-100 text-blue-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+  const handleStatusUpdate = (transactionId, status) => {
+    dispatch(updateStatus({ transactionId, status }));
   };
 
-  if (loading) {
-    return <LoadingSpinner />;
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setLocalCurrentPage(newPage);
+    }
+  };
+
+  if (loading && !transactions.length) {
+    return <div className="text-center py-8">Loading transactions...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-medium">Transaction History</h2>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status
-          </label>
-          <select
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="succeeded">Succeeded</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Purpose
-          </label>
-          <select
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            value={filters.purpose}
-            onChange={(e) => handleFilterChange('purpose', e.target.value)}
-          >
-            <option value="all">All Purposes</option>
-            <option value="membership">Membership</option>
-            <option value="non-engagement">Non-engagement</option>
-            <option value="new-club-card">New Club Card</option>
-            <option value="event">Event</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Date Range
-          </label>
-          <select
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            value={filters.dateRange}
-            onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Search
-          </label>
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <div className="flex-1">
           <input
             type="text"
             placeholder="Search transactions..."
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border rounded-lg px-4 py-2 w-full"
           />
+        </div>
+        <div className="flex gap-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border rounded-lg px-4 py-2"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="succeeded">Completed</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
+          <button className="px-4 py-2 bg-primary text-white rounded-lg">
+            + Export {selectedRows.length}
+          </button>
         </div>
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Transaction ID
+      <div className="md:w-full w-[90vw] overflow-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b text-gray-600">
+              <th className="py-4 px-4 text-left">
+                <input
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  checked={selectedRows.length === transactions.length && transactions.length > 0}
+                  className="rounded border-gray-300"
+                />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Purpose
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Provider
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
+              <th className="py-4 text-left">User</th>
+              <th className="py-4 text-left">Payment Type</th>
+              <th className="py-4 text-left">Amount Paid</th>
+              <th className="py-4 text-left">Transaction Date</th>
+              <th className="py-4 text-left">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {transactions.map((transaction) => (
-              <tr key={transaction._id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {transaction.sessionId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {format(new Date(transaction.createdAt), 'dd/MM/yyyy HH:mm')}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatCurrency(transaction.amount, transaction.currency)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction.purpose}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                      transaction.status
-                    )}`}
-                  >
-                    {transaction.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {transaction.provider}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <select
-                    className="px-2 py-1 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    value={transaction.status}
-                    onChange={(e) =>
-                      handleStatusUpdate(transaction._id, e.target.value)
-                    }
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="succeeded">Succeeded</option>
-                    <option value="failed">Failed</option>
-                    <option value="refunded">Refunded</option>
-                  </select>
-                </td>
-              </tr>
+              <React.Fragment key={transaction._id}>
+                <tr className="border-b">
+                  <td className="py-4 px-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(transaction._id)}
+                      onChange={() => handleSelectRow(transaction._id)}
+                      className="rounded border-gray-300"
+                    />
+                  </td>
+                  <td className="py-4 flex items-center gap-3">
+                    <img
+                      src={transaction.userId?.avatar || avatar}
+                      alt={transaction.userId?.forename || 'User'}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <span>{transaction.userId?.forename} {transaction.userId?.surname}</span>
+                  </td>
+                  <td className="py-4 capitalize">{transaction.paymentType}</td>
+                  <td className="py-4">
+                    {transaction.currency} {transaction.amount?.toFixed(2)}
+                  </td>
+                  <td className="py-4">
+                    {new Date(transaction.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </td>
+                  <td className="py-4">
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded-lg"
+                      onClick={() => toggleRow(transaction._id)}
+                    >
+                      <BiChevronDown
+                        size={20}
+                        className={`transform transition-transform ${
+                          expandedRows.includes(transaction._id) ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </td>
+                </tr>
+                {expandedRows.includes(transaction._id) && (
+                  <tr className="bg-gray-50">
+                    <td colSpan="8" className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm text-gray-500">Event Title</label>
+                          <p>{transaction.eventId?.title || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Date</label>
+                          <p>{transaction.eventId?.date ? new Date(transaction.eventId.date).toLocaleDateString('en-GB') : 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Time</label>
+                          <p>{transaction.eventId?.time || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-500">Price</label>
+                          <p>{transaction.eventId?.price ? `${transaction.currency} ${transaction.eventId.price.toFixed(2)}` : transaction.metadata?.price ? `${transaction.currency} ${transaction.metadata.price.toFixed(2)}` : 'N/A'}</p>
+                        </div>
+                        {transaction.metadata && Object.entries(transaction.metadata).map(([key, value]) => (
+                          <div key={key}>
+                            <label className="text-sm text-gray-500 capitalize">{key}</label>
+                            <p>{JSON.stringify(value)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-700">
-          Showing {transactions.length} of {totalTransactions} transactions
+      {transactions.length > 0 && (
+        <div className="flex justify-between items-center">
+          <div className="text-gray-500">
+            Showing {(localCurrentPage - 1) * rowsPerPage + 1} to{' '}
+            {Math.min(localCurrentPage * rowsPerPage, totalItems)} of {totalItems} transactions
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 disabled:text-gray-300"
+              onClick={() => handlePageChange(localCurrentPage - 1)}
+              disabled={localCurrentPage === 1}
+            >
+              ←
+            </button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (localCurrentPage <= 3) {
+                pageNum = i + 1;
+              } else if (localCurrentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = localCurrentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  className={`w-8 h-8 flex items-center justify-center ${
+                    localCurrentPage === pageNum ? 'bg-primary text-white rounded-lg' : ''
+                  }`}
+                  onClick={() => handlePageChange(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            {totalPages > 5 && localCurrentPage < totalPages - 2 && <span>...</span>}
+            {totalPages > 5 && localCurrentPage < totalPages - 2 && (
+              <button
+                className="w-8 h-8 flex items-center justify-center"
+                onClick={() => handlePageChange(totalPages)}
+              >
+                {totalPages}
+              </button>
+            )}
+            <button
+              className="p-2 disabled:text-gray-300"
+              onClick={() => handlePageChange(localCurrentPage + 1)}
+              disabled={localCurrentPage === totalPages}
+            >
+              →
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
-            onClick={() => dispatch(fetchTransactions({ page: currentPage - 1 }))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50"
-            onClick={() => dispatch(fetchTransactions({ page: currentPage + 1 }))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
-export default History; 
+export default History;

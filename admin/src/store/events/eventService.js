@@ -8,10 +8,10 @@ const getAuthToken = () => {
 };
 
 // Get all events with filtering
-export const getAllEvents = async ({ status = 'all', filter = 'all' }) => {
+export const getAllEvents = async ({ status = 'all', filter = 'all', sort = 'all' }) => {
   const token = getAuthToken();
   const response = await axios.get(`${base_url}/api/events/admin`, {
-    params: { status, filter },
+    params: { status, filter, sort },
     headers: {
       Authorization: `Bearer ${token}`,
     },

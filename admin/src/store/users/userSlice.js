@@ -22,6 +22,7 @@ const initialState = {
   activityPagination: null,
 };
 
+
 // Get member users
 export const memberUsers = createAsyncThunk(
   "users/member-users",
@@ -123,9 +124,9 @@ export const updateUserStatus = createAsyncThunk(
 // Get pending registrations
 export const fetchPendingRegistrations = createAsyncThunk(
   'users/get-pending-registrations',
-  async ({ page = 1, limit = 10 } = {}, thunkAPI) => {
+  async ({ page = 1, limit = '', filter = '', sortBy = '' } = {}, thunkAPI) => {
     try {
-      return await userService.getPendingRegistrations({ page, limit });
+      return await userService.getPendingRegistrations({ page, limit, filter, sortBy });
     } catch (error) {
       const message = error.response?.data?.message || error.message || 'Failed to fetch pending registrations';
       toast.error(message);
@@ -211,6 +212,8 @@ export const assignRequestToAdmin = createAsyncThunk(
   }
 );
 
+
+
 export const userSlice = createSlice({
   name: "users",
   initialState,
@@ -241,7 +244,7 @@ export const userSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
-      
+
       // Pending Users
       .addCase(pendingUsers.pending, (state) => {
         state.isLoading = true;
@@ -319,7 +322,7 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.isError = false;
-        state.message = "Password reset successful";
+        state.message = "Password reset link Sent Successful";
         toast.success(state.message);
       })
       .addCase(resetUserPassword.rejected, (state, action) => {

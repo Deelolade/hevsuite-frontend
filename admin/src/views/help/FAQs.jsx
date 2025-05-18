@@ -14,9 +14,10 @@ import {
 
 const FAQs = () => {
   const dispatch = useDispatch();
-  const { faqs = [], isLoading, isError, message } = useSelector((state) => state.help || {});
+  const { faqs = [], isLoading, isError, message, pagination } = useSelector((state) => state.help || {});
   
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
@@ -29,15 +30,63 @@ const FAQs = () => {
     visibility: true
   });
 
+  // Debounce search query
   useEffect(() => {
-    dispatch(getAllFAQs({ page: currentPage, limit: 10, search: searchQuery }));
-  }, [dispatch, currentPage, searchQuery]);
+    const timer = setTimeout(() => {
+      dispatch(getAllFAQs({ 
+        page: currentPage, 
+        limit: itemsPerPage, 
+        search: searchQuery 
+      }));
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [dispatch, currentPage, searchQuery, itemsPerPage]);
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (e) => {
+    const newLimit = parseInt(e.target.value);
+    setItemsPerPage(newLimit);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    if (!pagination?.pages) return [];
+    
+    const totalPages = pagination.pages;
+    const currentPage = pagination.page;
+    const pages = [];
+    
+    // Always show first page
+    pages.push(1);
+    
+    // Calculate range around current page
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    
+    // Add ellipsis if needed
+    if (start > 2) pages.push("...");
+    
+    // Add pages around current page
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // Add ellipsis if needed
+    if (end < totalPages - 1) pages.push("...");
+    
+    // Always show last page if there is more than one page
+    if (totalPages > 1) pages.push(totalPages);
+    
+    return pages;
+  };
 
   const handleVisibility = async (id, currentVisibility) => {
     try {
       await dispatch(editFAQs({ id, data: { visibility: !currentVisibility } }));
       toast.success("FAQ visibility updated");
-      dispatch(getAllFAQs({ page: currentPage, limit: 10 }));
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
     } catch (error) {
       toast.error("Error updating FAQ visibility");
     }
@@ -54,7 +103,7 @@ const FAQs = () => {
         answer: "",
         visibility: true
       });
-      dispatch(getAllFAQs({ page: currentPage, limit: 10 }));
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
     } catch (error) {
       toast.error("Error creating FAQ");
     }
@@ -67,7 +116,7 @@ const FAQs = () => {
       toast.success("FAQ updated successfully");
       setIsEditModalOpen(false);
       setSelectedFAQ(null);
-      dispatch(getAllFAQs({ page: currentPage, limit: 10 }));
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
     } catch (error) {
       toast.error("Error updating FAQ");
     }
@@ -79,7 +128,7 @@ const FAQs = () => {
       toast.success("FAQ deleted successfully");
       setIsDeleteFAQOpen(false);
       setSelectedFAQ(null);
-      dispatch(getAllFAQs({ page: currentPage, limit: 10 }));
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
     } catch (error) {
       toast.error("Error deleting FAQ");
     }
@@ -93,7 +142,7 @@ const FAQs = () => {
           <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search questions or answers..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -182,10 +231,14 @@ const FAQs = () => {
       <div className="flex items-center justify-between">
         <div>
           Show result:
-          <select className="ml-2 px-2 py-1 border rounded">
-            <option>10</option>
-            <option>20</option>
-            <option>50</option>
+          <select 
+            className="ml-2 px-2 py-1 border rounded"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
@@ -208,13 +261,13 @@ const FAQs = () => {
               />
             </svg>
           </button>
-          {[1, 2, 3, 4, "...", 20].map((page, index) => (
+          {generatePaginationNumbers().map((page, index) => (
             <button
               key={index}
               className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                 currentPage === page
-                  ? "bg-green-800 text-white"
-                  : "text-gray-600"
+                  ? "bg-primary text-white"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
               onClick={() => typeof page === 'number' && setCurrentPage(page)}
               disabled={page === "..."}
@@ -225,7 +278,7 @@ const FAQs = () => {
           <button 
             className="p-1 text-gray-400"
             onClick={() => setCurrentPage(prev => prev + 1)}
-            disabled={currentPage === 20}
+            disabled={currentPage === pagination?.pages}
           >
             <svg
               className="w-5 h-5"

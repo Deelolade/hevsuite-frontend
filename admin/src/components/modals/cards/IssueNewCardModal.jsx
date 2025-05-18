@@ -31,14 +31,14 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
 
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleCardIssued = () => {
-    setRefreshKey(prev => prev + 1); // This will force re-render
-    dispatch(getNewMembers({ // Explicitly refetch data
-      search: searchTerm,
-      status: "all",
-      filter: "all",
-    }));
-  };
+  // const handleCardIssued = () => {
+  //   setRefreshKey(prev => prev + 1); // This will force re-render
+  //   dispatch(getNewMembers({ // Explicitly refetch data
+  //     search: searchTerm,
+  //     status: "all",
+  //     filter: "all",
+  //   }));
+  // };
 
   // Filter users based on search term
   const filteredUsers = users.filter(
@@ -134,14 +134,23 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
 
     dispatch(issueNewCard(cardData))
       .unwrap()
-      .then(() => {
+      .then((response) => {
+        // Refresh the cards list
+        // dispatch(getNewMembers({
+        //   search: "",
+        //   status: "all",
+        //   filter: "all",
+        // }))
         onClose()
-        if (onCardIssued) {
-          onCardIssued(newCard); // Call the callback with the new card
+        if (onCardIssued && response.cards && response.cards.length > 0) {
+          onCardIssued(response.cards[0])
         }
       })
       .catch((error) => {
         setFormErrors({ submit: error.toString() })
+        setIsSubmitting(false)
+      })
+      .finally(() => {
         setIsSubmitting(false)
       })
   }
@@ -155,7 +164,7 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
   }
 
   return (
-    <div className="p-6 max-h-[500px] overflow-y-auto max-h-full">
+    <div className="p-6 max-h-[500px] overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Issue New Card</h2>
         <button onClick={() => onClose()} className="text-gray-500 hover:text-gray-700">

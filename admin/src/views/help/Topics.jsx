@@ -15,6 +15,7 @@ import {
   deleteTopic,
   createTopic,
   archiveTopic,
+  editQA
 } from "../../store/help/helpSlice";
 
 const Topics = () => {
@@ -34,15 +35,47 @@ const Topics = () => {
   const [isArchiveTopicOpen, setIsArchiveTopicOpen] = useState(false);
   const [isDeleteQAModalOpen, setIsDeleteQAModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [topicFilter, setTopicFilter] = useState("active");
+
+  const filteredTopics = helps.filter(topic => {
+    let statusMatch = false;
+    switch (topicFilter) {
+      case "active":
+        statusMatch = !topic.archived && !topic.deleted;
+        break;
+      case "archived":
+        statusMatch = topic.archived && !topic.deleted;
+        break;
+      case "deleted":
+        statusMatch = topic.deleted;
+        break;
+      default:
+        statusMatch = true;
+    }
+
+    if (searchQuery.trim() === '') {
+      return statusMatch;
+    }
+
+    const searchLower = searchQuery.toLowerCase();
+    const titleMatch = topic.title.toLowerCase().includes(searchLower);
+    const descriptionMatch = topic.description?.toLowerCase().includes(searchLower);
+    const qaMatch = topic.QAs?.some(qa => 
+      qa.question.toLowerCase().includes(searchLower) || 
+      qa.answer.toLowerCase().includes(searchLower)
+    );
+
+    return statusMatch && (titleMatch || descriptionMatch || qaMatch);
+  });
 
   useEffect(() => {
     dispatch(getAllHelps()).then(() => {
-      if (helps.length > 0 && !activeTopic) {
-        setActiveTopic(helps[0]._id);
-        setSelectedTopic(helps[0]);
+      if (filteredTopics.length > 0 && !activeTopic) {
+        setActiveTopic(filteredTopics[0]._id);
+        setSelectedTopic(filteredTopics[0]);
       }
     });
-  }, [dispatch]);
+  }, [dispatch, topicFilter, searchQuery]);
 
   const [newTopic, setNewTopic] = useState({
     title: '',
@@ -76,7 +109,8 @@ const Topics = () => {
 
   const handleQuestionVisibility = async (id, currentVisibility) => {
     try {
-      await dispatch(editFAQs({ id, data: { visibility: !currentVisibility } }));
+      await dispatch(editQA({ id, data: { visibility: !currentVisibility } }));
+      dispatch(getAllHelps());
       toast.success("QA visibility updated");
     } catch (error) {
       toast.error("Error updating QA visibility");
@@ -99,10 +133,11 @@ const Topics = () => {
   const handleEditQA = async (e) => {
     e.preventDefault();
     try {
-      await dispatch(editFAQs({ id: selectedQA._id, data: selectedQA }));
+      await dispatch(editQA({ id: selectedQA._id, data: selectedQA }));
       toast.success("QA updated successfully");
       setIsEditQAModalOpen(false);
       setSelectedQA(null);
+      dispatch(getAllHelps());
     } catch (error) {
       toast.error("Error updating QA");
     }
@@ -110,10 +145,14 @@ const Topics = () => {
 
   const handleDeleteQA = async () => {
     try {
-      await dispatch(deleteQA(selectedQA._id));
+      await dispatch(deleteQA({
+        topicId: activeTopic,
+        qaId: selectedQA._id
+      }));
       toast.success("QA deleted successfully");
       setIsDeleteQAModalOpen(false);
       setSelectedQA(null);
+      dispatch(getAllHelps());
     } catch (error) {
       toast.error("Error deleting QA");
     }
@@ -133,23 +172,33 @@ const Topics = () => {
 
   const handleDeleteTopic = async () => {
     try {
-      await dispatch(deleteTopic(selectedTopic._id));
-      toast.success("Topic deleted successfully");
+      const isCurrentlyDeleted = selectedTopic.deleted;
+      await dispatch(editTopic({ 
+        id: selectedTopic._id, 
+        data: { deleted: !isCurrentlyDeleted } 
+      }));
+      toast.success(isCurrentlyDeleted ? "Topic restored successfully" : "Topic deleted successfully");
       setIsDeleteTopicOpen(false);
       setSelectedTopic(null);
+      dispatch(getAllHelps());
     } catch (error) {
-      toast.error("Error deleting topic");
+      toast.error("Error updating topic status");
     }
   };
 
   const handleArchiveTopic = async () => {
     try {
-      await dispatch(editTopic({ id: selectedTopic._id, data: { archived: true } }));
-      toast.success("Topic archived successfully");
+      const isCurrentlyArchived = selectedTopic.archived;
+      await dispatch(editTopic({ 
+        id: selectedTopic._id, 
+        data: { archived: !isCurrentlyArchived } 
+      }));
+      toast.success(isCurrentlyArchived ? "Topic restored successfully" : "Topic archived successfully");
       setIsArchiveTopicOpen(false);
       setSelectedTopic(null);
+      dispatch(getAllHelps());
     } catch (error) {
-      toast.error("Error archiving topic");
+      toast.error("Error updating topic status");
     }
   };
 
@@ -167,10 +216,14 @@ const Topics = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select className="px-4 py-2 border bg-gray-200 rounded-lg min-w-[200px]">
-          <option>All Topics</option>
-          <option>Archived</option>
-          <option>Deleted</option>
+        <select 
+          className="px-4 py-2 border bg-gray-200 rounded-lg min-w-[200px]"
+          value={topicFilter}
+          onChange={(e) => setTopicFilter(e.target.value)}
+        >
+          <option value="active">Active Topics</option>
+          <option value="archived">Archived Topics</option>
+          <option value="deleted">Deleted Topics</option>
         </select>
         <button
           className="px-6 py-2 bg-primary text-white font-secondary rounded-lg flex items-center gap-2"
@@ -183,11 +236,11 @@ const Topics = () => {
 
       {isLoading ? (
         <div className="text-center">Loading...</div>
-      ) : helps.length === 0 ? (
-        <div className="text-center">No topics found</div>
+      ) : filteredTopics.length === 0 ? (
+        <div className="text-center">No {topicFilter} topics found</div>
       ) : (
         <div className="md:grid md:grid-cols-4 w-[90vw] md:w-full overflow-auto flex gap-1">
-          {helps.map((topic) => (
+          {filteredTopics.map((topic) => (
             <div
               key={topic._id}
               className={`w-56 cursor-pointer ${activeTopic === topic._id
@@ -231,24 +284,24 @@ const Topics = () => {
                   </label>
                 </div>
                 <button
-                  className="w-44 py-2 bg-gray-200 rounded-lg"
+                  className={`w-44 py-2 ${topic.archived ? 'bg-primary text-white' : 'bg-gray-200'} rounded-lg`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedTopic(topic);
                     setIsArchiveTopicOpen(true);
                   }}
                 >
-                  Archive
+                  {topic.archived ? 'Unarchive' : 'Archive'}
                 </button>
                 <button
-                  className="w-44 py-2 bg-primary text-white rounded-lg"
+                  className={`w-44 py-2 ${topic.deleted ? 'bg-primary text-white' : 'bg-primary text-white'} rounded-lg`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedTopic(topic);
                     setIsDeleteTopicOpen(true);
                   }}
                 >
-                  Delete
+                  {topic.deleted ? 'Restore' : 'Delete'}
                 </button>
               </div>
             </div>
@@ -324,7 +377,7 @@ const Topics = () => {
               <div key={qa._id}>
                 <div className="border rounded-lg p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <span>{qa._id}</span>
+                    
                     <span>{qa.question}</span>
                   </div>
                   <div className="flex items-center gap-4">
@@ -643,7 +696,7 @@ const Topics = () => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Delete Topic</h2>
+            <h2 className="text-xl">{selectedTopic?.deleted ? 'Restore Topic' : 'Delete Topic'}</h2>
             <button
               onClick={() => setIsDeleteTopicOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -653,8 +706,9 @@ const Topics = () => {
           </div>
 
           <p className="text-gray-600 mb-6">
-            Are you sure you want to delete this topic? This action cannot be
-            undone.
+            {selectedTopic?.deleted 
+              ? 'Are you sure you want to restore this topic?'
+              : 'Are you sure you want to delete this topic? This action can be reversed later.'}
           </p>
 
           <div className="flex justify-end gap-3">
@@ -665,10 +719,10 @@ const Topics = () => {
               Cancel
             </button>
             <button
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              className={`px-6 py-2 ${selectedTopic?.deleted ? 'bg-primary' : 'bg-red-500'} text-white rounded-lg hover:${selectedTopic?.deleted ? 'bg-primary/90' : 'bg-red-600'}`}
               onClick={handleDeleteTopic}
             >
-              Delete
+              {selectedTopic?.deleted ? 'Restore' : 'Delete'}
             </button>
           </div>
         </div>
@@ -683,7 +737,7 @@ const Topics = () => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Archive Topic</h2>
+            <h2 className="text-xl">{selectedTopic?.archived ? 'Unarchive Topic' : 'Archive Topic'}</h2>
             <button
               onClick={() => setIsArchiveTopicOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -693,8 +747,9 @@ const Topics = () => {
           </div>
 
           <p className="text-gray-600 mb-6">
-            Are you sure you want to archive this topic? You can restore it
-            later.
+            {selectedTopic?.archived 
+              ? 'Are you sure you want to unarchive this topic?'
+              : 'Are you sure you want to archive this topic? This action can be reversed later.'}
           </p>
 
           <div className="flex justify-end gap-3">
@@ -708,7 +763,7 @@ const Topics = () => {
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
               onClick={handleArchiveTopic}
             >
-              Archive
+              {selectedTopic?.archived ? 'Unarchive' : 'Archive'}
             </button>
           </div>
         </div>

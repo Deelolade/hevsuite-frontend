@@ -1,6 +1,6 @@
 "use client"
 
-const Pagination = ({ currentPage, totalPages, setCurrentPage, itemsPerPage, setItemsPerPage }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, setItemsPerPage }) => {
   // Generate page numbers
   const getPageNumbers = () => {
     const pageNumbers = []
@@ -59,7 +59,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage, itemsPerPage, set
           value={itemsPerPage}
           onChange={(e) => {
             setItemsPerPage(Number(e.target.value))
-            setCurrentPage(1) // Reset to first page when changing items per page
+            onPageChange(1) // Reset to first page when changing items per page
           }}
         >
           <option value={6}>6</option>
@@ -71,7 +71,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage, itemsPerPage, set
       <div className="flex items-center gap-2">
         <button
           className={`p-1 ${currentPage === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
-          onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,7 +89,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage, itemsPerPage, set
                   ? "text-gray-600 cursor-default"
                   : "text-gray-600 hover:bg-gray-100"
             }`}
-            onClick={() => page !== "..." && setCurrentPage(page)}
+            onClick={() => page !== "..." && onPageChange(page)}
             disabled={page === "..."}
           >
             {page}
@@ -98,7 +98,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage, itemsPerPage, set
 
         <button
           className={`p-1 ${currentPage === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-600"}`}
-          onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+          onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/payment-methods`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/payment-methods`;
 
 // Get auth token from local storage
 const getAuthToken = () => {
@@ -25,19 +25,30 @@ export const updatePaymentMethod = async (processorData) => {
   const config = {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
+      // Only set Content-Type if not FormData
+      ...(!(processorData instanceof FormData) && { 'Content-Type': 'application/json' })
     },
   };
 
+  // Get provider from either FormData or regular object
+  const provider = processorData instanceof FormData 
+    ? processorData.get('provider')
+    : processorData.provider;
+
+  const data = processorData instanceof FormData 
+    ? processorData 
+    : processorData;
+
   const response = await axios.patch(
-    `${API_URL}/${processorData.provider}`,
-    processorData,
+    `${API_URL}/${provider}`,
+    data,
     config
   );
   return response.data.method;
 };
 
 // Add new payment method
-export const addPaymentMethod = async (processorData) => {
+export const addPaymentMethod = async (formData) => {
   const config = {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
@@ -45,10 +56,10 @@ export const addPaymentMethod = async (processorData) => {
     },
   };
 
-  const formData = new FormData();
-  Object.keys(processorData).forEach(key => {
-    formData.append(key, processorData[key]);
-  });
+  // const formData = new FormData();
+  // Object.keys(processorData).forEach(key => {
+  //   formData.append(key, processorData[key]);
+  // });
 
   const response = await axios.post(API_URL, formData, config);
   return response.data.method;

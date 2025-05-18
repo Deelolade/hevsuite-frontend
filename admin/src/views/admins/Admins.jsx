@@ -1,26 +1,28 @@
-import React, { useState } from "react";
-import { BiSearch } from "react-icons/bi";
-import AdminUsers from "./AdminUsers";
-import Permissions from "./Permissions";
-import Activities from "./Activities";
-import Profile from "../../components/Profile";
+"use client"
+
+import { useState } from "react"
+import { BiSearch } from "react-icons/bi"
+import AdminUsers from "./AdminUsers"
+import Permissions from "./Permissions"
+import Activities from "./Activities"
+import Profile from "../../components/Profile"
 
 const Admins = () => {
-  const [activeTab, setActiveTab] = useState("users");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("users")
+  const [searchQuery, setSearchQuery] = useState("")
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "users":
-        return <AdminUsers />;
+        return <AdminUsers />
       case "permissions":
-        return <Permissions />;
+        return <Permissions />
       case "activities":
-        return <Activities />;
+        return <Activities />
       default:
-        return <AdminUsers />;
+        return <AdminUsers />
     }
-  };
+  }
 
   return (
     <div className="space-y-6 md:p-6">
@@ -31,7 +33,9 @@ const Admins = () => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+              className="w-full px-8 py-2.5 rounded-full border border-gray-400 focus:outline-none text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
@@ -41,9 +45,7 @@ const Admins = () => {
         <div className="flex gap-8">
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
-              activeTab === "users"
-                ? "border-b-4 border-primary"
-                : "text-[#737374}"
+              activeTab === "users" ? "border-b-4 border-primary" : "text-[#737374}"
             }`}
             onClick={() => setActiveTab("users")}
           >
@@ -51,9 +53,7 @@ const Admins = () => {
           </button>
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
-              activeTab === "permissions"
-                ? "border-b-4 border-primary text-primary"
-                : "text-gray-500"
+              activeTab === "permissions" ? "border-b-4 border-primary text-primary" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("permissions")}
           >
@@ -61,9 +61,7 @@ const Admins = () => {
           </button>
           <button
             className={`py-4 px-1 flex items-center gap-2 ${
-              activeTab === "activities"
-                ? "border-b-4 border-primary text-primary"
-                : "text-gray-500"
+              activeTab === "activities" ? "border-b-4 border-primary text-primary" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("activities")}
           >
@@ -73,7 +71,7 @@ const Admins = () => {
       </div>
       {renderTabContent()}
     </div>
-  );
-};
+  )
+}
 
-export default Admins;
+export default Admins

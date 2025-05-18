@@ -65,7 +65,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
           <div className="flex items-start justify-between mb-3">
             <div>
               <h3 className="font-medium text-sm">{`${card.userId?.forename || ""} ${card.userId?.surname || ""}`}</h3>
-              <p className="text-xs text-gray-500">Member/{card._id.substring(0, 8)}</p>
+              <p className="text-xs text-gray-500">Member/ID#{card.userId?.membershipNumber || "00000000"}</p>
             </div>
             <button className="text-gray-400">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

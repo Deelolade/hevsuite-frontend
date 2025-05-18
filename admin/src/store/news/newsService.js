@@ -1,6 +1,6 @@
 import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { base_url } from '../../constants/axiosConfig';
+// const base_url = import.meta.env.VITE_base_url;
 
 // Get auth token
 const getAuthToken = () => {
@@ -9,8 +9,14 @@ const getAuthToken = () => {
 };
 
 // Get all news
-const getAllNews = async () => {
-  const response = await axios.get(`${API_URL}/newsroom/admin`, {
+const getAllNews = async (params = {}) => {
+  // Build query string from params
+  const query = new URLSearchParams();
+  if (params.filter) query.append('filter', params.filter);
+  if (params.sort) query.append('sort', params.sort);
+  // You can add pagination/search here if backend supports it
+  const url = `${base_url}/api/newsroom/admin${query.toString() ? `?${query.toString()}` : ''}`;
+  const response = await axios.get(url, {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
     },
@@ -20,7 +26,7 @@ const getAllNews = async () => {
 
 // Create news
 const createNews = async (formData) => {
-  const response = await axios.post(`${API_URL}/newsroom`, formData, {
+  const response = await axios.post(`${base_url}/api/newsroom`, formData, {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
       "Content-Type": "multipart/form-data",
@@ -30,8 +36,8 @@ const createNews = async (formData) => {
 };
 
 // Update news
-const updateNews = async (id, formData) => {
-  const response = await axios.put(`${API_URL}/newsroom/${id}`, formData, {
+const updateNews = async (id, newsData) => {
+  const response = await axios.put(`${base_url}/api/newsroom/${id}`, newsData, {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
       "Content-Type": "multipart/form-data",
@@ -42,7 +48,7 @@ const updateNews = async (id, formData) => {
 
 // Delete news
 const deleteNews = async (id) => {
-  const response = await axios.delete(`${API_URL}/newsroom/${id}`, {
+  const response = await axios.delete(`${base_url}/api/newsroom/${id}`, {
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
     },

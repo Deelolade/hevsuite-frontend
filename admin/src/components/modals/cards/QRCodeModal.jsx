@@ -86,6 +86,7 @@ const QRCodeModal = ({ onClose, selectedCard }) => {
         issuedDate: new Date(selectedCard.createdAt).toLocaleDateString(),
         expiryDate: selectedCard.expiryDate ? new Date(selectedCard.expiryDate).toLocaleDateString() : "N/A",
         status: selectedCard.isActive ? (selectedCard.isBanned ? "Cancelled" : "Active") : "Inactive",
+        membershipNumber: selectedCard.membershipNumber,
       }
     } catch (error) {
       console.error("Error parsing QR data:", error)
@@ -96,7 +97,7 @@ const QRCodeModal = ({ onClose, selectedCard }) => {
   const qrData = getQRData()
 
   return (
-    <div className="p-6 max-h-[600px] overflow-y-auto max-h-full">
+    <div className="p-6 max-h-[500px] overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Club Card QR Code</h2>
         <button onClick={() => onClose(false)} className="text-gray-400">
@@ -135,7 +136,7 @@ const QRCodeModal = ({ onClose, selectedCard }) => {
             <h3 className="font-medium mb-2">Card Information</h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="text-gray-500">Card ID:</div>
-              <div>{qrData.cardId.substring(0, 8)}</div>
+              <div>ID#{qrData.membershipNumber || "00000000"}</div>
               <div className="text-gray-500">Card Type:</div>
               <div className="capitalize">{qrData.cardType}</div>
               <div className="text-gray-500">Issued Date:</div>
