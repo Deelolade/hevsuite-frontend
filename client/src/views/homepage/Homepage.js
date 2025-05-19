@@ -44,21 +44,21 @@ const Homepage = () => {
     if (!events) return [];
 
     return events
-    .filter(event => {
-      if (selectedAudience && event.audienceType !== selectedAudience) return false;
-      if (selectedCountry && event.country !== selectedCountry) return false;
-      if (selectedCity && event.city !== selectedCity) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.time);
-      const dateB = new Date(b.time);
-      return selectedDate === 'newest'
-        ? dateB - dateA
-        : selectedDate === 'oldest'
-        ? dateA - dateB
-        : 0;
-    });
+      .filter(event => {
+        if (selectedAudience && event.audienceType !== selectedAudience) return false;
+        if (selectedCountry && event.country !== selectedCountry) return false;
+        if (selectedCity && event.city !== selectedCity) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.time);
+        const dateB = new Date(b.time);
+        return selectedDate === 'newest'
+          ? dateB - dateA
+          : selectedDate === 'oldest'
+            ? dateA - dateB
+            : 0;
+      });
   };
 
   // Get filtered events
@@ -97,15 +97,15 @@ const Homepage = () => {
               <div className='w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-28'>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className='md:hidden w-full bg-[#540A26] text-white py-2 px-4 rounded-lg mb-2'
+                  className='md:hidden w-auto bg-[#540A26] text-white py-2 px-4 rounded-lg mb-2'
                 >
                   {showFilters ? 'Hide Filters' : 'Show Filters'}
                 </button>
 
                 <div
                   className={`w-full md:flex items-center gap-2 md:gap-4 ${showFilters
-                      ? 'flex flex-col md:flex-row'
-                      : 'hidden md:flex md:flex-row'
+                    ? 'flex flex-col md:flex-row'
+                    : 'hidden md:flex md:flex-row'
                     }`}
                 >
                   <div className='relative w-full md:w-auto'>
@@ -168,10 +168,28 @@ const Homepage = () => {
                       </option>
                     </select>
                   </div>
+                  <div className=' md:hidden relative w-full md:w-auto mt-2 md:mt-28'>
+                    <BsCalendar className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
+                    <select
+                      className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                    >
+                      <option value='' className='text-black'>
+                        Date
+                      </option>
+                      <option value='newest' className='text-black'>
+                        Newest to Oldest
+                      </option>
+                      <option value='oldest' className='text-black'>
+                        Oldest to Newest
+                      </option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className='relative w-full md:w-auto mt-2 md:mt-28'>
+              </div>
+              <div className='hidden md:block relative w-full md:w-auto mt-2 md:mt-28'>
                 <BsCalendar className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
                 <select
                   className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
@@ -189,6 +207,7 @@ const Homepage = () => {
                   </option>
                 </select>
               </div>
+
             </div>
 
             {/* Event Slider */}

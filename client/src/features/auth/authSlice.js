@@ -11,7 +11,20 @@ const initialState = {
   message: '',
 };
 
-// Login thunk
+// // Login thunk
+// export const login = createAsyncThunk(
+//   'auth/login',
+//   async (userData, thunkAPI) => {
+//     try {
+//       const response = await authService.loginUser(userData);
+//       return response;
+//     } catch (error) {
+//       return thunkAPI.rejectWithValue(
+//         error.response?.data?.message || 'Login failed'
+//       );
+//     }
+//   }
+// );
 export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
@@ -19,13 +32,14 @@ export const login = createAsyncThunk(
       const response = await authService.loginUser(userData);
       return response;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Login failed'
-      );
+      const message = 
+        error.response?.data?.message || 
+        error.message || 
+        'Login failed';
+      return thunkAPI.rejectWithValue(message);
     }
   }
 );
-
 // Fetch profile thunk
 export const fetchProfile = createAsyncThunk(
   'auth/fetchProfile',
@@ -43,13 +57,13 @@ export const fetchProfile = createAsyncThunk(
 // update user profile
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (userData, thunkAPI) => {
+  async ({ userData, confirmPassword }, thunkAPI) => {
     try {
-      const updatedUser = await authService.updateProfile(userData);
-      return updatedUser; 
+      const updatedUser = await authService.updateProfile(userData, confirmPassword);
+      return updatedUser;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to update profile'
+        error.message || 'Failed to update profile'
       );
     }
   }
@@ -87,7 +101,7 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
+        state.message = action.payload; 
         toast.error(state.message);
       })
       .addCase(fetchProfile.pending, (state) => {

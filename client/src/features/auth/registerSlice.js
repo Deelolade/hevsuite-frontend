@@ -30,6 +30,7 @@ const initialState = {
     },
     step4: {
       employmentStatus: '',
+      businessName: '',
       interests: [],
       otherClubMembership: '',
       preferredSocialMedia: '',

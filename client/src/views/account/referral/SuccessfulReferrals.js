@@ -1,7 +1,7 @@
 import React from "react";
 import ReferralItem from "./ReferralItem";
 
-const SuccessfulReferrals = ({ referrals }) => {
+const SuccessfulReferrals = ({ referrals ,setReferralsData}) => {
   return (
     <div className="space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2">
       {referrals.length > 0 ? (
@@ -10,6 +10,7 @@ const SuccessfulReferrals = ({ referrals }) => {
             key={index}
             referral={referral}
             activeTab="Successful Referrals"
+              setReferralsData={setReferralsData}
           />
         ))
       ) : (

@@ -94,7 +94,9 @@ const RegisterStep7 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center'>
+            <Link to='/'>
             <img src={logo_white} alt='Hevsuite Club' className='h-16' />
+            </Link>
           </div>
         </header>
       </div>

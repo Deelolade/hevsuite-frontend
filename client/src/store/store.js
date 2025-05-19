@@ -6,6 +6,11 @@ import authReducer from '../features/auth/authSlice';
 import newsReducer from '../features/newsSlice';
 import eventReducer from '../features/eventSlice';
 import askReducer from '../features/askSlice'
+import notificationReducer from '../features/notificationSlice';
+import landingPageReducer from '../features/landingPageSlice';
+import generalSettingReducer from '../features/generalSettingSlice'
+import footerReducer from '../features/footerSlice'
+import menusReducer from '../features/menuSlice'
 // Persist configuration for the register slice
 const registerPersistConfig = {
   key: 'register',
@@ -29,7 +34,12 @@ export const store = configureStore({
     auth: persistedAuthReducer,        // Persisted auth slice
     news: newsReducer,
     events: eventReducer,
-    ask:askReducer
+    ask:askReducer,
+    notifications: notificationReducer,
+    landingPage:landingPageReducer,
+    generalSettings:generalSettingReducer,
+    footer:footerReducer,
+    menus:menusReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

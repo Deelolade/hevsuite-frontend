@@ -7,6 +7,7 @@ import bg_image from "../../assets/header-bg.jpg";
 import Footer from "../../components/Footer";
 import topicsService from "../../services/topicsService";
 import logo from '../../assets/logo_white.png';
+
 const Topics = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +21,17 @@ const Topics = () => {
   const [faqsLoading, setFAQsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [faqs, setFAQs] = useState([]);
+const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768); // Tailwind 'md' breakpoint
+  };
+
+  handleResize(); // Set initial state
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   useEffect(() => {
     const fetchTopicsAndFAQs = async () => {
@@ -70,10 +82,16 @@ const Topics = () => {
     (topic?.title?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
     (topic?.description?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
   );
+  // Filter faqs based on search query
+    const filteredFAQs = faqs?.filter(faq =>
+    (faq?.question?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
+    (faq?.answer?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
+  );
   
 
   // Update totalPages calculation
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = isMobile ? 1 : 6;
+
   const totalPages = Math.ceil(filteredTopics?.length / ITEMS_PER_PAGE);
 
   const popularTopics = filteredTopics?.slice(
@@ -144,7 +162,7 @@ const Topics = () => {
                   <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">
                     {topic.title}
                   </h3>
-                  <p className="text-gray-600 text-xs md:text-sm">
+                  <p className="text-quatr text-xs md:text-sm">
                     {topic.description}
                   </p>
                 </div>
@@ -155,7 +173,7 @@ const Topics = () => {
           {/* Navigation Dots */}
           <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               style={{
@@ -177,7 +195,7 @@ const Topics = () => {
             ))}
 
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               style={{
@@ -196,14 +214,14 @@ const Topics = () => {
             FAQs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {faqs?.map((faq, index) => (
+            {filteredFAQs?.map((faq, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 md:gap-6 border-b-0 pb-4 md:pb-6"
               >
                 <span className="relative w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm md:text-base font-medium shrink-0 mt-1">
                   {index + 1}
-                  <span className="absolute md:block hidden -bottom-28 left-1/2 transform -translate-x-1/2 w-[2px] h-24 bg-[#540A26]"></span>{" "}
+                  <span className="absolute  -bottom-28 left-1/2 transform -translate-x-1/2 w-[2px] h-24 bg-[#540A26]"></span>{" "}
                   {/* Added vertical line under circle */}
                 </span>
 
@@ -212,7 +230,7 @@ const Topics = () => {
                     {faq.question}
                   </h3>
                   <p
-                    className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
+                    className="text-quatr text-sm md:text-base leading-relaxed mb-2 md:mb-3"
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,

@@ -30,7 +30,8 @@ const RegisterStep6 = () => {
           referralService.checkReferral()
         ]);
         setMembers(usersResponse.users);
-        setReferrals(referralResponse.referrals)
+        setReferrals(referralResponse.referredBy)
+        console.log(referrals)
 
       } catch (error) {
         toast.error(error.message);
@@ -105,11 +106,13 @@ const RegisterStep6 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -125,8 +128,8 @@ const RegisterStep6 = () => {
               <div className='relative'>
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 6
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
                     }`}
                   onClick={() => {
                     if (index === 6) handleSubmit();
@@ -161,7 +164,7 @@ const RegisterStep6 = () => {
       </div>
 
       {approval ? (
-        <RegisterApproval setApproval={setApproval} referrals={referrals} setReferrals={setReferrals}/>
+        <RegisterApproval setApproval={setApproval} referrals={referrals} />
       ) : (
         <div className='container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow'>
           <h1 className='text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]'>
@@ -217,7 +220,7 @@ const RegisterStep6 = () => {
                       className='w-4 h-4 rounded border-gray-300'
                     />
                     <img
-                      src={member.avatar||avatar}
+                      src={member.avatar || avatar}
                       alt={member.name}
                       className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover'
                     />
@@ -341,15 +344,26 @@ const RegisterStep6 = () => {
             <button
               onClick={async () => {
                 try {
-                  await referralService.sendReferralsRequest(selectedMembers);
-                  toast.success('Referral requests sent successfully!');
+                  const response = await referralService.sendReferralsRequest(selectedMembers);
+                  console.log(response)
+                  if (response.success == true) {
+                    toast.success('Referral requests sent successfully!');
 
-                  // Refetch updated referral data
-                  const referralResponse = await referralService.checkReferral();
-                  setReferrals(referralResponse.referrals);
+                    // Refetch updated referral data
+                    const [referralResponse, userResponse] = await Promise.all([
+                      referralService.checkReferral(),
+                      referralService.fetchAllUsersBasicInfo()
+                    ]);
 
-                  setIsReferralModalOpen(false);
-                  setSelectedMembers([]); // Clear selection
+                    // Update state
+                    setMembers(userResponse.users);
+                    setReferrals(referralResponse.referredBy);
+
+                    setIsReferralModalOpen(false);
+                    setSelectedMembers([]); // Clear selection
+                  } else {
+                    toast.error(response.error || 'Failed to send referrals');
+                  }
 
                 } catch (error) {
                   toast.error(error.message);

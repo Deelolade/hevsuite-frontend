@@ -1,6 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { BsArrowLeft, BsPencil, BsX } from "react-icons/bs";
 import { FaCheck, FaTimes, FaCloudUploadAlt } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { formatDateWithSuffix } from "../../../utils/formatDate";
+import supportRequestService from "../../../services/supportRequestService";
 
 const SupportRequestsView = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState("approved");
@@ -8,61 +11,88 @@ const SupportRequestsView = ({ onBack }) => {
   const [requestType, setRequestType] = useState("");
   const [requestDescription, setRequestDescription] = useState("");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
-
-  const requestData = {
-    all: [
-      {
-        id: 1,
-        type: "Evidence Review",
-        date: "Jan 16, 2025",
-        status: "Pending",
-      },
-      {
-        id: 2,
-        type: "Evidence Review",
-        date: "Jan 16, 2025",
-        status: "Pending",
-      },
-      { id: 3, type: "Card Request", date: "Jan 10, 2025", status: "Pending" },
-    ],
-    approved: [
-      {
-        id: 1,
-        type: "Evidence Review",
-        date: "Jan 16, 2025",
-        status: "Approved",
-      },
-      {
-        id: 4,
-        type: "Membership Upgrade",
-        date: "Dec 20, 2024",
-        status: "Approved",
-      },
-    ],
-    pending: [
-      { id: 3, type: "Card Request", date: "Jan 10, 2025", status: "Pending" },
-    ],
-    declined: [
-      {
-        id: 2,
-        type: "Evidence Review",
-        date: "Jan 16, 2025",
-        status: "Declined",
-      },
-      {
-        id: 5,
-        type: "Evidence Review",
-        date: "Jan 16, 2025",
-        status: "Declined",
-      },
-    ],
-  };
-
-  const getCurrentData = () => {
-    return requestData[activeTab] || requestData.all;
-  };
-
+  const [requests, setRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  // const requestData = {
+  //   all: [
+  //     {
+  //       id: 1,
+  //       type: "Evidence Review",
+  //       date: "Jan 16, 2025",
+  //       status: "Pending",
+  //     },
+  //     {
+  //       id: 2,
+  //       type: "Evidence Review",
+  //       date: "Jan 16, 2025",
+  //       status: "Pending",
+  //     },
+  //     { id: 3, type: "Card Request", date: "Jan 10, 2025", status: "Pending" },
+  //   ],
+  //   approved: [
+  //     {
+  //       id: 1,
+  //       type: "Evidence Review",
+  //       date: "Jan 16, 2025",
+  //       status: "Approved",
+  //     },
+  //     {
+  //       id: 4,
+  //       type: "Membership Upgrade",
+  //       date: "Dec 20, 2024",
+  //       status: "Approved",
+  //     },
+  //   ],
+  //   pending: [
+  //     { id: 3, type: "Card Request", date: "Jan 10, 2025", status: "Pending" },
+  //   ],
+  //   declined: [
+  //     {
+  //       id: 2,
+  //       type: "Evidence Review",
+  //       date: "Jan 16, 2025",
+  //       status: "Declined",
+  //     },
+  //     {
+  //       id: 5,
+  //       type: "Evidence Review",
+  //       date: "Jan 16, 2025",
+  //       status: "Declined",
+  //     },
+  //   ],
+  // };
+  // Fetch requests when component mounts or tab changes
+  useEffect(() => {
+    const fetchRequests = async () => {
+      setIsLoading(true);
+      try {
+        const response = await supportRequestService.getSupportRequests();
+        setRequests(response.data);
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRequests();
+  }, [activeTab]);
+ const getCurrentData = () => {
+    if (!requests.length) return [];
+    
+    switch(activeTab) {
+      case 'approved':
+        return requests.filter(req => req.status === 'Approved');
+      case 'pending':
+        return requests.filter(req => req.status === 'Pending');
+      case 'declined':
+        return requests.filter(req => req.status === 'Declined');
+      default:
+        return requests;
+    }
+  }
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
@@ -70,6 +100,8 @@ const SupportRequestsView = ({ onBack }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
+
       const reader = new FileReader();
       reader.onload = () => {
         setUploadedImage(reader.result);
@@ -78,21 +110,62 @@ const SupportRequestsView = ({ onBack }) => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting request:", {
-      type: requestType,
-      description: requestDescription,
-      image: uploadedImage,
-    });
+  const handleSubmit = async () => {
+    try {
+  const formData = new FormData();
+    formData.append('type', requestType);
+    formData.append('description', requestDescription);
+    
+    // Append the File object directly (not the base64 string)
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
 
-    setRequestType("");
-    setRequestDescription("");
-    setUploadedImage(null);
-    setShowModal(false);
+      const newRequest = await supportRequestService.createSupportRequest(formData);
+      
+      setRequests([...requests, newRequest.data]);
+      
+      // Reset form
+      setRequestType("");
+      setRequestDescription("");
+      setUploadedImage(null);
+      setShowModal(false);
+      toast.success("Support request created successfully.")
+      
+    } catch (error) {
+      toast.error(error.message || 'Failed to submit request:')
+      console.error("Failed to submit request:", error);
+    }
   };
-
+  const handleDeleteRequest = async (id) => {
+    try {
+    const response=  await supportRequestService.deleteSupportRequest(id);
+      // Update local state by removing the deleted request
+      if (response.success) {
+        // Update local state by removing the deleted request
+        setRequests(requests.filter(req => req._id !== id));
+        toast.success('Request deleted successfully');
+      } 
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete request');
+      console.error("Failed to delete request:", error);
+    }
+  };
   const renderCardView = () => {
-    return getCurrentData().map((request) => (
+    const currentData = getCurrentData();
+    console.log("currentData", currentData);
+    if (isLoading) {
+      return <div className="text-center py-8">Loading requests...</div>;
+    }
+
+    if (!currentData.length) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          No {activeTab} requests found.
+        </div>
+      );
+    }
+    return currentData?.map((request) => (
       <div
         key={request.id}
         className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm"
@@ -115,7 +188,7 @@ const SupportRequestsView = ({ onBack }) => {
           </span>
         </div>
         <div className="text-sm text-gray-600 mb-3">
-          Submitted on: {request.date}
+          Submitted on: {formatDateWithSuffix(request.createdAt)}
         </div>
         {request.status === "Declined" && (
           <div className="flex gap-2 mt-3 border-t pt-3">
@@ -125,7 +198,9 @@ const SupportRequestsView = ({ onBack }) => {
             <button className="flex items-center gap-1 text-green-600 text-sm">
               <FaCheck /> Approve
             </button>
-            <button className="flex items-center gap-1 text-red-600 text-sm">
+            <button 
+             onClick={() => handleDeleteRequest(request._id)}
+             className="flex items-center gap-1 text-red-600 text-sm">
               <FaTimes /> Delete
             </button>
           </div>
@@ -216,10 +291,10 @@ const SupportRequestsView = ({ onBack }) => {
             </thead>
             <tbody>
               {getCurrentData().map((request, index) => (
-                <tr key={request.id} className="border-t">
-                  <td className="py-4 pr-4">{request.id}</td>
+                <tr key={request._id} className="border-t">
+                  <td className="py-4 pr-4">{index+1}</td>
                   <td className="pr-4">{request.type}</td>
-                  <td className="pr-4">{request.date}</td>
+                  <td className="pr-4">{formatDateWithSuffix(request.createdAt)}</td>
                   <td
                     className={`pr-4 ${
                       request.status === "Approved"

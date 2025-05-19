@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { BsCalendar } from 'react-icons/bs';
 import { MdAccessTime } from 'react-icons/md';
 import { IoArrowBack } from 'react-icons/io5';
@@ -9,54 +9,32 @@ import image_card from '../../assets/image.jpg';
 import Footer from '../../components/Footer';
 import HeaderOne from '../../components/HeaderOne';
 import Header from '../../components/Header';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import {formatDateWithSuffix,formatTime} from "../../utils/formatDate";
+import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
+import { fetchNewsById, setSelectedNews } from '../../features/newsSlice';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+import 'swiper/css';
+
 const NewsDetail = () => {
-  // const relatedNews = [
-  //   {
-  //     id: 1,
-  //     title: 'The Bout for Lions',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Battle for NBA Cup',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'The Adventurer',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  //   {
-  //     id: 4,
-  //     title: 'Battle for NBA Cup',
-  //     date: '2nd January, 2025',
-  //     time: '10:00pm',
-  //     image: event_card,
-  //   },
-  // ];
-  const allNewsItems = useSelector((state) => state.news.newsItems);
-  const selectedNews = useSelector((state) => state.news.selectedNews);
+  const { newsItems: allNewsItems, selectedNews, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
+  const { id } = useParams();
   // Filter out the selectedNews from allNewsItems to get relatedNews
-  const relatedNews = allNewsItems.filter(news => news.id !== selectedNews?.id);
+  const relatedNews = allNewsItems.filter(news => news._id !== selectedNews?._id);
 
 
+useEffect(() => {
+  if (!selectedNews || selectedNews._id !== id) {
+    dispatch(fetchNewsById(id));
+  }
+}, [id, selectedNews, dispatch]);
   useEffect(() => {
 
-    if (!selectedNews) {
-      navigate('/news'); // Redirect if no news selected (e.g. on refresh)
-    }
     if (selectedNews?._id) {
       fetch(`${process.env.REACT_APP_API_BASE_URL}/api/news/${selectedNews._id}/increment-reads`, {
         method: 'PUT',
@@ -65,6 +43,13 @@ const NewsDetail = () => {
   }, [selectedNews, navigate]);
 
   if (!selectedNews) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
+        Loading...
+      </div>
+    );
+  }
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -80,11 +65,24 @@ const NewsDetail = () => {
           <span>back</span>
         </Link>
         <div className='relative inset-0 bg-black/50'>
-          <img
-            src={image_card}
-            alt=''
-            className='w-full md:h-[70vh] h-[50vh] object-cover brightness-50'
-          />
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            pagination={{ clickable: true }}
+            className="w-full h-[50vh] md:h-[70vh]"
+          >
+            {(selectedNews.images.length > 0 ? selectedNews.images : [image_card]).map((img, index) => (
+              <SwiperSlide key={index}>
+                <img
+                  src={img}
+                  alt={`Slide ${index}`}
+                  className='w-full h-full object-cover brightness-50 '
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
           {/* <video
             autoPlay
             muted
@@ -109,7 +107,7 @@ const NewsDetail = () => {
       <section className='container mx-auto px-4 md:px-12 py-16'>
         <div>
           <h1 className='text-3xl md:text-4xl font-semibold mb-4 font-primary text-gradient_r'>
-          {selectedNews.title}
+            {selectedNews.title}
           </h1>
           <div className='flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 mb-8'>
             <div className='flex items-center gap-2'>
@@ -142,15 +140,17 @@ const NewsDetail = () => {
               <div className='flex justify-between gap-4 sm:gap-6 min-w-max'>
                 {relatedNews.map((item) => (
                   <div
-                    key={item.id}
-                    onClick={() =>
-                      window.scrollTo({ top: 50, behavior: 'smooth' })
-                    }
+                    key={item._id}
+                    onClick={() => {
+                       dispatch(setSelectedNews(item));
+                    navigate(`/news-detail/${item._id}`);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     className='relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] w-[300px] flex-shrink-0'
                   >
                     <div
                       className='relative h-96 sm:h-64 rounded-2xl bg-cover bg-current bg-center'
-                      style={{ backgroundImage: `url(${item.image})` }}
+                      style={{ backgroundImage: `url(${item.images[0]})` }}
                     >
                       {/* Gradient Overlay */}
                       <div className='absolute bottom-0 left-0 right-0 p-4 sm:p-3 !z-50 '>

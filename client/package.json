@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
+    "email-validator": "^2.0.4",
     "react": "^19.0.0",
     "react-country-state-city": "^1.1.12",
     "react-dom": "^19.0.0",

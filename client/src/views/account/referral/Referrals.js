@@ -23,7 +23,7 @@ const NavigationTabs = ({ activeTab, setActiveTab }) => {
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm ${
+          className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm border border-gray-400 ${
             tab === activeTab
               ? "bg-[#540A26] text-white"
               : "bg-white text-black hover:bg-gray-100"
@@ -242,7 +242,6 @@ const Referrals = () => {
         const successfulIds = successfulRefs.map(ref => ref.userId);
         const pendingIds = pendingRefs.map(ref => ref.userId);
         const cancelledIds = cancelledRefs.map(ref => ref.userId);
-        console.log(successfulIds, pendingIds, cancelledIds);
         // Fetch user details in parallel
         const [successfulUsers, pendingUsers, cancelledUsers] = await Promise.all([
           successfulIds.length > 0 ? referralService.fetchReferralbyIds(successfulIds) : Promise.resolve([]),
@@ -408,13 +407,13 @@ setReferralsData({
         </div>
         <div className="bg-white rounded-lg shadow-sm p-2 sm:p-4">
           {activeTab === "Successful Referrals" && (
-            <SuccessfulReferrals referrals={getCurrentReferrals()} />
+            <SuccessfulReferrals referrals={getCurrentReferrals()}  setReferralsData={setReferralsData} />
           )}
           {activeTab === "Pending Referrals" && (
-            <PendingReferrals referrals={getCurrentReferrals()} />
+            <PendingReferrals referrals={getCurrentReferrals()}   setReferralsData={setReferralsData} />
           )}
           {activeTab === "Cancelled Referrals" && (
-            <CancelledReferrals referrals={getCurrentReferrals()} />
+            <CancelledReferrals referrals={getCurrentReferrals() } setReferralsData={setReferralsData}/>
           )}
         </div>
         </>

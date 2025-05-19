@@ -30,7 +30,7 @@ const Ask = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportType, setReportType] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState({});
   const [newMessage, setNewMessage] = useState('');
 
@@ -224,6 +224,8 @@ const Ask = () => {
   // create ask handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+      // Prevent multiple submissions
+  if (isSubmitting) return;
     try {
       await dispatch(createAsk(formData)).unwrap();
       setIsModalOpen(false);
@@ -233,18 +235,30 @@ const Ask = () => {
         deadline: '',
         agreeToGuidelines: false,
       });
-    } catch (error) {
-      console.error('Failed to create ask:', error);
-    }
+     } catch (error) {
+    console.error('Failed to create ask:', error);
+    toast.error(error.message || 'Failed to create ask');
+  } finally {
+    setIsSubmitting(false);
+  }
   };
   // Handle claim ask
   const handleClaimAsk = async (askId) => {
     try {
+          // Find the ask in the asks array
+    const askToClaim = asks.find(ask => ask._id === askId);
+    
+    // Check if current user is the creator of the ask
+    if (currentUser?._id?.toString() === askToClaim?.createdBy?.toString()) {
+      toast.error("You cannot claim your own ask");
+      return;
+    }
       await dispatch(claimAsk(askId));
       const selected = asks.find(ask => ask.id === askId);
       dispatch(setCurrentAsk(selected));
       setIsChatModalOpen(true);
     } catch (error) {
+      toast.error(error.messages || 'Failed to claim ask:')
       console.error('Failed to claim ask:', error);
     }
   };
@@ -255,7 +269,8 @@ const Ask = () => {
       const selected = asks.find(ask => ask.id === askId);
       dispatch(setCurrentAsk(selected));
     } catch (error) {
-      console.error('Failed to claim ask:', error);
+      toast.error(error.messages || 'Failed to abandon ask:')
+      console.error('Failed to abandon ask:', error);
     }
   };
   // Update pagination to use real data
@@ -493,6 +508,7 @@ const Ask = () => {
 
             <button
               type='submit'
+              disabled={isSubmitting}
               className='w-full py-2 md:py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg font-medium text-sm md:text-base'
             >
               Add Ask

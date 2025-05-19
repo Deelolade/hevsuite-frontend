@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider,Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 
 import Landing from './views/landing/Landing';
 import Login from './views/auth/login/Login';
@@ -29,6 +29,11 @@ import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from './features/auth/authSlice';
+import { useEffect, useReducer, useState } from 'react';
+import MaintenancePage from './components/MaintainanceMode';
+import { fetchGeneralSettings } from './features/generalSettingSlice';
+import NotFound from './views/NotFound';
 
 axios.defaults.withCredentials = true;
 
@@ -36,10 +41,35 @@ axios.defaults.withCredentials = true;
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const location = useLocation();
+
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check membership status if user exists
+  if (user && user.membershipStatus && user.membershipStatus !== 'accepted') {
+    return <Navigate to="/register-6" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
+// Add this new component
+const LoginRedirect = ({ children }) => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const location = useLocation();
+
+  if (isAuthenticated) {
+    // Redirect to homepage or wherever you want logged-in users to go
+    if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.joinFeeStatus == 'paid') {
+      return <Navigate to="/homepage" state={{ from: location }} replace />;
+    } else if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.joinFeeStatus == 'pending') {
+      return <Navigate to="/register-7" state={{ from: location }} replace />;
+    }
+    else if (user && user.membershipStatus && user.membershipStatus == 'pending') {
+      return <Navigate to="/register-6" state={{ from: location }} replace />;
+    }
   }
 
   return children;
@@ -54,10 +84,16 @@ const router = createBrowserRouter([
     element: <News />,
   },
   {
-    path: '/news-detail',
+    path: '/news-detail/:id',
     element: <NewsDetail />,
   },
-  { path: 'login', element: <Login /> },
+  {
+    path: 'login', element: (
+      <LoginRedirect>
+        <Login />
+      </LoginRedirect>
+    )
+  },
   { path: 'forgot-password', element: <ForgotPassword /> },
   { path: 'reset-password', element: <ResetPassword /> },
   { path: 'reset-success', element: <ResetSuccess /> },
@@ -77,6 +113,22 @@ const router = createBrowserRouter([
   {
     path: '/success',
     element: <Success />,
+  },
+  {
+    path: 'topics',
+    element: <Topics />,
+  },
+  {
+    path: 'topic-details/:id',
+    element: <TopicDetails />,
+  },
+  {
+    path: 'terms',
+    element: <Terms />,
+  },
+  {
+    path: 'how-it-works',
+    element: <HowItWorks />,
   },
   {
     path: '/register',
@@ -127,27 +179,39 @@ const router = createBrowserRouter([
         path: 'ask',
         element: <Ask />,
       },
-      {
-        path: 'topics',
-        element: <Topics />,
-      },
-      {
-        path: 'topic-details/:id',
-        element: <TopicDetails />,
-      },
-      {
-        path: 'terms',
-        element: <Terms />,
-      },
-      {
-        path: 'how-it-works',
-        element: <HowItWorks />,
-      },
-    ],
+    ], 
   },
+  { path: '*', element: <NotFound/> },
 ]);
 
 function App() {
+  const dispatch = useDispatch();
+  const { Settings} = useSelector((state) => state.generalSettings);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+   const [isLoading, setIsLoading] = useState(true); 
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     dispatch(fetchProfile());
+  //   }
+  // }, [dispatch, isAuthenticated]);
+    useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await dispatch(fetchGeneralSettings()).unwrap();
+        if (isAuthenticated) {
+          await dispatch(fetchProfile()).unwrap();
+        }
+      } catch (error) {
+        console.error("Initialization error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initializeApp();
+  }, [dispatch, isAuthenticated]);
+    if (Settings?.maintenanceMode) {
+    return <MaintenancePage />;
+  }
   return <RouterProvider router={router} />;
 }
 

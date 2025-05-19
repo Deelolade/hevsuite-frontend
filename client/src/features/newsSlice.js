@@ -9,8 +9,21 @@ export const fetchNonExpiredNews = createAsyncThunk(
   'news/fetchNonExpiredNews',
   async (_, thunkAPI) => {
     try {
-      const response = await axios.get(`${API_URL}`,{
-         withCredentials: true,
+      const response = await axios.get(`${API_URL}`, {
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch news');
+    }
+  }
+);
+export const fetchNewsById = createAsyncThunk(
+  'news/fetchNewsById',
+  async (id, thunkAPI) => {
+    try {
+      const response = await axios.get(`${API_URL}/${id}`, {
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -47,6 +60,19 @@ const newsSlice = createSlice({
       .addCase(fetchNonExpiredNews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+       .addCase(fetchNewsById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchNewsById.fulfilled, (state, action) => {
+        state.selectedNews = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchNewsById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Something went wrong';
+        state.selectedNews = null;
       });
   },
 });

@@ -16,7 +16,8 @@ import { useDispatch, useSelector } from "react-redux";
 import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../features/auth/authSlice";
-
+import { requestClubCard } from "../../../services/clubCardService";
+import { CountrySelect, StateSelect } from 'react-country-state-city';
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
     personalInfo: true,
@@ -25,14 +26,14 @@ const StandardProfile = () => {
     referrals: true,
   });
   const { user, isLoading } = useSelector((state) => state.auth);
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
 
   const [isEditing, setIsEditing] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showRequestView, setShowRequestView] = useState(false);
   const [isEditingFullName, setIsEditingFullName] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-
+  const [countryId, setCountryId] = useState('');
   const [personalInfo, setPersonalInfo] = useState({
     title: user?.title || "",
     forename: user?.forename || "",
@@ -53,11 +54,12 @@ const StandardProfile = () => {
     secondaryEmail: user?.secondaryEmail || "",
     primaryPhone: user?.primaryPhone || "",
     secondaryPhone: user?.secondaryPhone || "",
-    state: user?.address?.state || "",
+    state: user?.state || "",
   });
 
   const [occupationInfo, setOccupationInfo] = useState({
     employmentStatus: user?.employmentStatus || "",
+    businessName: user?.businessName || "",
     memberOfClub: user?.memberOfClub || "",
     preferredSocialMedia: user?.preferredSocialMedia || "",
   });
@@ -95,31 +97,105 @@ const StandardProfile = () => {
       [field]: value,
     });
   };
+  const changeNationalityHandler = (country, key) => {
+    setPersonalInfo((prev) => ({ ...prev, [key]: country.name }));
+  };
+  const handleSave = async () => {
+    try {
+      const formData = {
+        personalInfo,
+        contactDetails,
+        occupationInfo,
+      }
+      // Get confirmPassword from user input
+      const confirmPassword = await Swal.fire({
+        title: 'Confirm Password',
+        input: 'password',
+        inputLabel: 'Please enter your current password to confirm changes',
+        inputPlaceholder: 'Enter your password',
+        showCancelButton: true,
+        confirmButtonText: 'Confirm', // Custom text
+        cancelButtonText: 'Cancel', // Custom text
+        confirmButtonColor: '#540A26',
+        cancelButtonColor: '#6c757d',
+        customClass: {
+          confirmButton: 'swal-confirm-button', // Optional custom class
+          cancelButton: 'swal-cancel-button' // Optional custom class
+        },
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You need to enter your password!';
+          }
+        },
+        buttonsStyling: false, // Disable default styling
+        willOpen: () => {
+          // Apply inline styles when modal opens
+          const confirmBtn = document.querySelector('.custom-confirm-button');
+          const cancelBtn = document.querySelector('.custom-cancel-button');
 
-  const handleSave = async() => {
-    // updating user profile data
-    const updatedData = {
-      personalInfo,
-      contactDetails,
-      occupationInfo,
-    }
-    const resultAction = await dispatch(updateProfile(updatedData));
-    
-    if (updateProfile.fulfilled.match(resultAction)) {
-      // Success - no need to do anything extra as Redux will update state
-      setIsEditing(false);
-    } else {
-      throw new Error(resultAction.payload || 'Update failed');
-    }
+          if (confirmBtn) {
+            confirmBtn.style.backgroundColor = '#540A26';
+            confirmBtn.style.color = 'white';
+            confirmBtn.style.border = 'none';
+            confirmBtn.style.padding = '8px 24px';
+            confirmBtn.style.margin = '0 5px';
+          }
 
-    setIsEditing(false);
+          if (cancelBtn) {
+            cancelBtn.style.backgroundColor = '#6c757d';
+            cancelBtn.style.color = 'white';
+            cancelBtn.style.border = 'none';
+            cancelBtn.style.padding = '8px 24px';
+            cancelBtn.style.margin = '0 5px';
+          }
+        }
+      });
+
+      if (confirmPassword.isConfirmed) {
+        const resultAction = await dispatch(updateProfile({
+          userData: formData,
+          confirmPassword: confirmPassword.value
+        }));
+
+        if (updateProfile.fulfilled.match(resultAction)) {
+          toast.success('Profile updated successfully');
+          setIsEditing(false);
+        } else {
+          throw new Error(resultAction.payload || 'Update failed');
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.error('Update error:', error);
+    }
   };
 
-  const handleRequestCard = () => {
+  const handleRequestCard = async () => {
+    try {
+      const userId = user?._id;
+      const isReplacement = cardRequest.disableCurrent === 'Yes';
 
-    console.log(cardRequest);
-    setShowPaymentModal(true);
+      const result = await requestClubCard({ userId, isReplacement });
+      if (result.success) {
+        toast.success("Your club card request has been submitted.")
+      }
+
+      // Optionally clear form or update UI
+      setCardRequest({
+        fullName: '',
+        cardType: 'Standard',
+        disableCurrent: 'No',
+      });
+      setIsEditingFullName(false);
+    } catch (error) {
+      showModal({
+        title: 'Error',
+        text: error.message || 'Failed to request club card.',
+        confirmText: 'Try Again',
+      });
+    }
   };
+
 
   const PaymentMethodModal = ({ onClose }) => {
     const paymentMethods = [
@@ -194,16 +270,16 @@ const StandardProfile = () => {
           {showPaymentModal && (
             <PaymentMethodModal onClose={() => setShowPaymentModal(false)} />
           )}
-          <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+          <div className="flex items-start gap-4 mb-6">
             <img
               src={user?.profilePhoto || avatar}
               alt="Profile"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
+              className="w-12 h-12 sm:w-20 sm:h-20 rounded-full object-cover"
             />
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">Good luck</h2>
-              <p className="text-gray-600 mb-1">Standard Member/12345678</p>
-              <p className="text-gray-500">{user?.primaryEmail}</p>
+              <h2 className="text-sm sm:text-xl font-semibold">{user?.forename} {user?.surname}</h2>
+              <p className="text-xs sm:text-base text-gray-600 mb-1">Standard Member/12345678</p>
+              <p className="text-xs sm:text-base text-gray-500">{user?.primaryEmail}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -214,7 +290,7 @@ const StandardProfile = () => {
               </button>
 
               <button
-                className={`px-4 sm:px-6 py-1.5 sm:py-2 ${isEditing ? "bg-green-600" : "bg-[#540A26]"
+                className={`px-2 text-sm sm:text-base sm:px-6 py-1.5 sm:py-2 ${isEditing ? "bg-green-600" : "bg-[#540A26]"
                   } text-white rounded-lg`}
                 onClick={isEditing ? handleSave : () => setIsEditing(true)}
               >
@@ -239,17 +315,22 @@ const StandardProfile = () => {
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block mb-1 text-sm">Title*</label>
-                  <input
-                    type="text"
+                  <select
                     value={personalInfo.title}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("title", e.target.value)
-                    }
+                    onChange={(e) => handlePersonalInfoChange("title", e.target.value)}
                     disabled={!isEditing}
                     className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
                       } rounded-lg border border-gray-200`}
-                  />
+                  >
+                    <option value="">Select title</option>
+                    <option value="Mr">Mr</option>
+                    <option value="Mrs">Mrs</option>
+                    <option value="Miss">Miss</option>
+                    <option value="Ms">Ms</option>
+                    <option value="Dr">Dr</option>
+                  </select>
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm">Forename*</label>
                   <input
@@ -278,78 +359,112 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Gender*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.gender}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("gender", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+                    <select
+                      value={personalInfo.gender}
+                      onChange={(e) => handlePersonalInfoChange("gender", e.target.value)}
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  ) : (<div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                    {personalInfo.gender}
+                  </div>)}
+
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Date of birth*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.dob}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("dob", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+                    <input
+                      type="date"
+                      value={personalInfo.dob}
+                      onChange={(e) => handlePersonalInfoChange("dob", e.target.value)}
+                      className="w-full px-3 py-2 bg-white rounded-lg border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.dob}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block mb-1 text-sm">
-                    Relationship Status*
-                  </label>
-                  <input
-                    type="text"
-                    value={personalInfo.relationshipStatus}
-                    onChange={(e) =>
-                      handlePersonalInfoChange(
-                        "relationshipStatus",
-                        e.target.value
-                      )
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  <label className="block mb-1 text-sm">Relationship Status*</label>
+                  {isEditing ? (
+                    <select
+                      value={personalInfo.relationshipStatus}
+                      onChange={(e) => handlePersonalInfoChange("relationshipStatus", e.target.value)}
+                      disabled={!isEditing}
+                      className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                        } rounded-lg border border-gray-200`}
+                    >
+                      <option value="">Select status</option>
+                      <option value="Single">Single</option>
+                      <option value="Married">Married</option>
+                      <option value="Divorced">Divorced</option>
+                      <option value="Widowed">Widowed</option>
+                    </select>
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.relationshipStatus}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Nationality*</label>
-                  <input
-                    type="text"
-                    value={personalInfo.nationality}
-                    onChange={(e) =>
-                      handlePersonalInfoChange("nationality", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => changeNationalityHandler(country, "nationality")}
+                      onTextChange={() =>
+                        setPersonalInfo(prev => ({ ...prev, nationality: '' }))
+                      }
+                      defaultValue={personalInfo.nationality}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.nationality}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="block mb-1 text-sm">
-                    Additional Nationality*
-                  </label>
-                  <input
-                    type="text"
-                    value={personalInfo.additionalNationality}
-                    onChange={(e) =>
-                      handlePersonalInfoChange(
-                        "additionalNationality",
-                        e.target.value
-                      )
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  <label className="block mb-1 text-sm">Additional Nationality*</label>
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => changeNationalityHandler(country, "additionalNationality")}
+                      onTextChange={() =>
+                        setPersonalInfo(prev => ({ ...prev, additionalNationality: '' }))
+                      }
+                      defaultValue={personalInfo.additionalNationality}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {personalInfo.additionalNationality}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -401,16 +516,33 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">Country*</label>
-                  <input
-                    type="text"
-                    value={contactDetails.country}
-                    onChange={(e) =>
-                      handleContactDetailsChange("country", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <CountrySelect
+                      onChange={(country) => {
+                        handleContactDetailsChange("country", country.name);
+                        setCountryId(country.id);
+                        handleContactDetailsChange("state", "");
+                      }}
+                      onTextChange={() =>
+                        setContactDetails(prev => ({ ...prev, country: '' }))
+                      }
+                      defaultValue={contactDetails.country}
+                      placeHolder='Select Country'
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {contactDetails.country}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">
@@ -490,16 +622,32 @@ const StandardProfile = () => {
                 </div>
                 <div>
                   <label className="block mb-1 text-sm">State*</label>
-                  <input
-                    type="text"
-                    value={contactDetails.state}
-                    onChange={(e) =>
-                      handleContactDetailsChange("state", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
-                      } rounded-lg border border-gray-200`}
-                  />
+                  {isEditing ? (
+
+                    <StateSelect
+                      countryid={countryId}
+                      placeHolder='Select State'
+                      onChange={(state) => {
+                        handleContactDetailsChange("state", state.name);
+                      }}
+                      onTextChange={() =>
+                        setContactDetails(prev => ({ ...prev, state: '' }))
+                      }
+                      defaultValue={contactDetails.state}
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        borderRadius: '5px',
+                        border: 'none',
+                        fontSize: '16px',
+                      }}
+                    />
+
+                  ) : (
+                    <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                      {contactDetails.state}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -521,15 +669,37 @@ const StandardProfile = () => {
               <div className="mt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div>
+                    <label className="block mb-1 text-sm">Employment Status*</label>
+                    {isEditing ? (
+                      <select
+                        value={occupationInfo.employmentStatus}
+                        onChange={(e) => handleOccupationInfoChange("employmentStatus", e.target.value)}
+                        disabled={!isEditing}
+                        className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
+                          } rounded-lg border border-gray-200`}
+                      >
+                        <option value="">Select status</option>
+                        <option value="Employed">Employed</option>
+                        <option value="Self-employed">Self-employed</option>
+                        <option value="Retired">Retired</option>
+                        <option value="Student">Student</option>
+                      </select>
+                    ) : (
+                      <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                        {occupationInfo.employmentStatus}
+                      </div>
+                    )}
+                  </div>
+                  <div>
                     <label className="block mb-1 text-sm">
-                      Employment Status*
+                      Bussiness Name / Organization / Institution
                     </label>
                     <input
                       type="text"
-                      value={occupationInfo.employmentStatus}
+                      value={occupationInfo.businessName}
                       onChange={(e) =>
                         handleOccupationInfoChange(
-                          "employmentStatus",
+                          " businessName",
                           e.target.value
                         )
                       }
@@ -560,19 +730,25 @@ const StandardProfile = () => {
                     <label className="block mb-1 text-sm">
                       Prefered Social Media*
                     </label>
-                    <input
-                      type="text"
+                    {isEditing ? (<select
                       value={occupationInfo.preferredSocialMedia}
-                      onChange={(e) =>
-                        handleOccupationInfoChange(
-                          "preferredSocialMedia",
-                          e.target.value
-                        )
-                      }
+                      onChange={(e) => handleOccupationInfoChange("preferredSocialMedia", e.target.value)}
                       disabled={!isEditing}
                       className={`w-full px-3 py-2 ${isEditing ? "bg-white" : "bg-gray-50"
                         } rounded-lg border border-gray-200`}
-                    />
+                    >
+                      <option value="">Select platform</option>
+                      <option value="Facebook">Facebook</option>
+                      <option value="Instagram">Instagram</option>
+                      <option value="Twitter">Twitter</option>
+                      <option value="LinkedIn">LinkedIn</option>
+                    </select>) : (
+                      <div className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                        {occupationInfo.preferredSocialMedia}
+                      </div>
+                    )}
+
+
                   </div>
                   <div>
                     <label className="block mb-1 text-sm">
@@ -596,11 +772,15 @@ const StandardProfile = () => {
 
                 <h4 className="font-medium mb-3">Your Interests</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4">
-                  {interests.map((interest, index) => (
-                    <div key={index} className="flex items-center">
-                      <span className="text-sm">{interest}</span>
-                    </div>
-                  ))}
+                  {user?.userInterests?.length > 0 ? (
+                    user.userInterests.map((interest, index) => (
+                      <div key={index} className="flex items-center">
+                        <span className="text-sm">{interest}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className=" text-sm col-span-full">No interests selected</p>
+                  )}
                 </div>
               </div>
             )}
@@ -802,7 +982,7 @@ const StandardProfile = () => {
                     <div className="md:col-span-2 mt-6 flex-1">
                       <div className="flex justify-end gap-3">
                         <button
-                          className="px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
+                          className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
                           onClick={() => {
                             showModal({
                               title: "Success",
@@ -816,7 +996,7 @@ const StandardProfile = () => {
                           Save
                         </button>
                         <button
-                          className="px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
+                          className="text-sm sm:text-base px-2 sm:px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
                           onClick={handleRequestCard}
                         >
                           Request New Club Card
@@ -910,20 +1090,21 @@ const ReferralsList = ({ referredBy }) => {
         // Extract user IDs from referredBy array
 
         const referralIds = referredBy
-        .filter(ref => ref.status === 'approved')
-        .map(ref => ref.userId);
+          .filter(ref => ref.status === 'approved')
+          .map(ref => ref.userId);
 
         if (referralIds.length > 0) {
           // Fetch referral user details
           const referralUsers = await referralService.fetchReferralbyIds(referralIds);
 
-          // Combine with referral data
-          const combinedData = referredBy.map((ref, index) => ({
-            ...ref,
-            user: referralUsers[index],
-          }));
+          const approvedReferrals = referredBy
+            .filter(ref => ref.status === 'approved')
+            .map((ref, index) => ({
+              ...ref,
+              user: referralUsers[index], // Now indexes match since we filtered both arrays
+            }));
 
-          setReferrals(combinedData);
+          setReferrals(approvedReferrals);
         }
       } catch (error) {
         console.error('Error fetching referrals:', error);
@@ -934,7 +1115,7 @@ const ReferralsList = ({ referredBy }) => {
 
     fetchReferrals();
   }, [referredBy]);
-
+  console.log(referrals)
   if (loading) {
     return <p className="text-gray-500">Loading referrals...</p>;
   }

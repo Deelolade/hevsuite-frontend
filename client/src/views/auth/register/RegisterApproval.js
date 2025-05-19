@@ -7,38 +7,18 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
-import toast from 'react-hot-toast';
-import referralService from '../../../services/referralService';
 
-const RegisterApproval = ({ setApproval ,referrals,setReferrals}) => {
+import { useSelector } from 'react-redux';
+
+const RegisterApproval = ({ setApproval, referrals }) => {
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
-  // const referrals = [
-  //   {
-  //     id: 1,
-  //     name: 'Andrew Bojangles',
-  //     avatar: avatar,
-  //     status: 'Approved',
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Andrew Bojangles',
-  //     avatar: avatar,
-  //     status: 'Pending',
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Andrew Bojangles',
-  //     avatar: avatar,
-  //     status: 'Pending',
-  //   },
-  // ];
 
-  const allApproved = referrals.length > 0 && referrals.every(
-    (referral) => referral.status === 'Approved'
-  );
+  const allApproved = user?.membershipStatus === 'accepted'
+
   return (
     <div className='min-h-screen flex flex-col'>
       {/* Main Content */}
@@ -69,7 +49,7 @@ const RegisterApproval = ({ setApproval ,referrals,setReferrals}) => {
             Check your referrals
           </h3>
           <div className='space-y-3 md:space-y-4'>
-            {referrals.length>0 && referrals.map((referral) => (
+            {referrals.length > 0 && referrals.map((referral) => (
               <div
                 key={referral.id}
                 className='flex flex-wrap md:flex-nowrap items-center justify-between bg-gray-50 p-3 md:p-4 rounded-lg'
@@ -85,35 +65,22 @@ const RegisterApproval = ({ setApproval ,referrals,setReferrals}) => {
                   </span>
                 </div>
                 <div className='flex flex-wrap gap-2 w-full md:w-auto justify-end'>
-                  {referral.status === 'Approved' ? (
+                  {referral.status === 'approved' ? (
                     <span className='px-3 md:px-4 py-1 md:py-2 bg-[#0A5440] text-white rounded-lg text-xs md:text-base'>
                       Approved
                     </span>
+                  ) : referral.status === 'declined' ? (
+                    <>
+                      <span
+                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
+                      >
+                        Declined
+                      </span>
+                    </>
                   ) : (
                     <>
                       <span className='px-3 md:px-4 py-1 md:py-2 bg-white text-gray-500 border border-gray-200 rounded-lg text-xs md:text-base'>
                         Pending
-                      </span>
-                      <span
-                        onClick={() =>
-                          showModal({
-                            title: 'Decline Approval Request?',
-                            text: 'This action can not be undone!',
-                            confirmText: 'Yes',
-                            onConfirm: async () => {
-                              try {
-                                await referralService.declineReferral(referral.userId._id); 
-                                setReferrals(prev => prev.filter(r => r._id !== referral._id));
-                                toast.success('Referral declined successfully');
-                              } catch (error) {
-                                toast.error(error.message);
-                              }
-                            },
-                          })
-                        }
-                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
-                      >
-                        Decline
                       </span>
                     </>
                   )}

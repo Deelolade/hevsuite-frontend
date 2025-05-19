@@ -3,10 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
 import { BsCheck2Circle } from 'react-icons/bs';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from '../../../features/auth/authSlice';
 
 const Success = () => {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
+  const { user, isLoading } = useSelector(
+    (state) => state.auth
+  );
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
       {/* Background Image - Visible on all screens */}
@@ -62,7 +67,21 @@ const Success = () => {
               </h2>
 
               <button
-                onClick={() => navigate('/homepage')}
+                // onClick={() => navigate('/homepage')}
+                onClick={async() => {
+                  await dispatch(fetchProfile()).unwrap();
+                  if (!user) {
+                    navigate('/login');
+                  } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
+                    navigate('/homepage');
+                  }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
+                    navigate('/register-7');
+                  }
+                   else {
+                    navigate('/register-6'); // Or your membership registration page
+                  }
+                }}
+              
                 className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
               >
                 Continue

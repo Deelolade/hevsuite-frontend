@@ -19,7 +19,8 @@ const ForgotPassword = () => {
       // Store the email/phone in session for the reset page
       sessionStorage.setItem('resetIdentifier', emailOrPhone);
       // toast.success(response.message);
-      navigate("/reset-password");
+        toast.success(response.message || 'Password reset link sent to your email');
+      // navigate("/reset-password");
     } catch (error) {
       toast.error(error.message);
     } finally {

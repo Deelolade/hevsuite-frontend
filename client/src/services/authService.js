@@ -36,14 +36,10 @@ const pendingRegLogin = async (email) => {
 const loginUser = async (userData) => {
   try {
     const response = await axios.post(API_URL + 'login', userData);
+    console.log(response)
     return response.data;
-    
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || 
-      error.message || 
-      'Login failed'
-    );
+    throw error
   }
 };
 
@@ -97,13 +93,12 @@ const forgotPassword = async (emailOrPhone) => {
 };
 
 // Reset Password - Confirm with code and new password
-const resetPassword = async (emailOrPhone, code, newPassword) => {
+const resetPassword = async ( code, newPassword,userId) => {
   try {
-    const isEmail = emailOrPhone.includes('@');
     const payload = {
-      [isEmail ? 'email' : 'phone']: emailOrPhone,
       code,
-      newPassword
+      newPassword,
+      userId
     };
     const response = await axios.post(`${API_URL}reset-password`, payload);
     return response.data;
@@ -130,7 +125,7 @@ const resend2FACode = async () => {
 }
 const logout = async () => {
   try {
-    const response = await axios.post(API_URL + 'logout',{
+    const response = await axios.post(API_URL + 'logout',null,{
       withCredentials: true,
     });
     return response.data;
@@ -143,21 +138,26 @@ const logout = async () => {
   }
 
 };
-// Register user
-const updateProfile = async (userData) => {
-  try{
-  const response = await axios.put(API_URL + 'update', userData ,{
-    withCredentials: true,
-  });
-  return response.data;
-}catch (error) {
-
-  throw new Error(
-    error.response?.data?.message || 
-    error.message || 
-    'Registration failed'
-  );
-}
+// update profile
+const updateProfile = async (userData, confirmPassword) => {
+  try {
+    const response = await axios.put(API_URL + 'update', 
+      {
+        updates: userData,
+        confirmPassword
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Profile update failed'
+    );
+  }
 };
 
 const authService = {

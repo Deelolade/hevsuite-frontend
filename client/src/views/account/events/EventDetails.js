@@ -5,6 +5,7 @@ import {
   BsChevronRight,
   BsCalendar,
   BsHeart,
+  BsHeartFill,
 } from "react-icons/bs";
 import { MdAccessTime } from "react-icons/md";
 import avatar from "../../../assets/user.avif";
@@ -13,14 +14,18 @@ import eventimg from "../../../assets/event.png";
 import mastercard from "../../../assets/Mastercard.png";
 import paypal from "../../../assets/PayPal.png";
 import stripe from "../../../assets/Stripe.png"
-import { fetchAttendingMembers } from "../../../features/eventSlice";
+import { fetchAttendingMembers, removeSavedEvent, saveEvent } from "../../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
+import toast from "react-hot-toast";
 
 const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   const dispatch = useDispatch();
+  const { savedEvents, saveEventLoading, removeSavedEventLoading } =
+    useSelector(state => state.events);
 
+  const isSaved = savedEvents.some(saved => saved._id === event._id);
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -50,7 +55,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
 
-   const [currentEventIndex, setCurrentEventIndex] = useState(
+  const [currentEventIndex, setCurrentEventIndex] = useState(
     events.findIndex((eventx) => eventx.name === event.name)
   );
 
@@ -68,7 +73,8 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   return (
     <div className="fixed inset-0 z-50  superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className="bg-white h-[90vh]  rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-hidden">
+      <div className="bg-white h-full sm:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-y-auto">
+
         <div className="flex flex-col md:flex-row md:h-full">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -80,33 +86,58 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
               />
               <span>{eventType}</span>
             </div>
-            <div className="relative h-full overflow-y-auto">
+            <div className="relative h-auto sm:h-full overflow-y-auto">
               <img
                 src={currentEvent.image}
                 alt={currentEvent.name}
-                className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
+                className="w-full md:h-full min-h-[25rem] object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
                 <button
                   onClick={handlePrev}
-                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  className="w-8 sm:w-12 cursor-pointer z-50 h-8 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
                 >
-                  <BsChevronLeft className="text-white text-xl" />
+                  <BsChevronLeft className="text-white text-sm sm:text-xl" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-12 cursor-pointer z-50 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  className="w-8 sm:w-12 cursor-pointer z-50 h-8 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
                 >
-                  <BsChevronRight className="text-white text-xl" />
+                  <BsChevronRight className="text-white text-sm sm:text-xl" />
                 </button>
               </div>
               <div className="absolute top-6 right-6">
-                <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm  active:text-red-500 flex items-center justify-center">
+                {/* <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm  active:text-red-500 flex items-center justify-center">
                   <BsHeart className="text-white text-xl transition-all duration-300 active:text-red-500" />
+                </button> */}
+                <button
+                  onClick={async () => {
+                    try {
+                      if (isSaved) {
+                        await dispatch(removeSavedEvent(event._id)).unwrap();
+                        toast.success('Removed from saved!');
+                      } else {
+                        await dispatch(saveEvent(event._id)).unwrap();
+                        toast.success('Event saved!');
+                      }
+                    } catch (err) {
+                      console.log(err)
+                      toast.error(err || 'Something went wrong');
+                    }
+
+                  }}
+                  className={`w-12 h-12 flex items-center justify-center ${isSaved ? 'text-red-500' : 'text-white'
+                    }`}
+                >
+                  {isSaved ? (
+                    <BsHeartFill className="text-xl" />
+                  ) : (
+                    <BsHeart className="text-xl" />
+                  )}
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
-                <div className="text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
+                <div className="text-2xl sm:text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
                 <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
                   {currentEvent.audienceType === "members" ? "Members Only" : currentEvent.audienceType === "vip" ? "VIP Only" : "Open to All"}
                 </div>
@@ -126,8 +157,8 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                     : `Note: You can buy up to ${currentEvent.numberOfTicket} tickets`}
                 </p>
                 <button
-                  // onClick={() => setShowPaymentModal(true)}
-                  className="w-full opacity-0 py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full opacity-70 py-2 sm:py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-base sm:text-lg font-medium"
                 >
                   Attend
                 </button>
@@ -177,7 +208,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
             <div className="p-8">
               {activeTab === "description" && (
                 <div>
-                  <h2 className="text-[40px] font-bold mb-4 text-black font-primary">
+                  <h2 className=" text-[30px] sm:text-[40px] font-bold mb-4 text-black font-primary">
                     {currentEvent.name}
                   </h2>
                   <h3 className="text-xl mb-4 text-black font-primary font-semibold">
@@ -236,7 +267,9 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                       />
-
+                      <p className="mt-4 text-gray-600">
+                        {currentEvent.location?.address}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -253,7 +286,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                       />
                       <div>
                         <h3 className="font-semibold text-black">
-                        {`${attendee.forename} ${attendee.surname}`}
+                          {`${attendee.forename} ${attendee.surname}`}
                         </h3>
                         <p className="text-gray-600">{formatDateWithSuffix(attendee.createdAt)}</p>
                       </div>
@@ -302,17 +335,17 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
   );
 };
 
-export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect }) => {
-   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+export const PaymentMethodModal = ({ onClose, showNewModal, onPaymentMethodSelect }) => {
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const paymentMethods = [
     { id: "mastercard", logo: mastercard, name: "Mastercard" },
     { id: "paypal", logo: paypal, name: "PayPal" },
     { id: "stripe", logo: stripe, name: "Stripe" },
   ];
 
-  const handleMethodSelection = ()=>{
+  const handleMethodSelection = () => {
     if (selectedPaymentMethod) {
-      
+
       // Optionally call showNewModal or close the modal
       onPaymentMethodSelect(selectedPaymentMethod);
       showNewModal();
@@ -337,11 +370,10 @@ export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect
             <div
               key={method.id}
               onClick={() => setSelectedPaymentMethod(method.name)}
-              className={`bg-white rounded-lg p-4 shadow-sm border cursor-pointer transition-colors ${
-                selectedPaymentMethod === method.name
-                  ? 'border-[#540A26] bg-[#540A26]/10'
-                  : 'hover:border-[#540A26] border-gray-200'
-              }`}
+              className={`bg-white rounded-lg p-4 shadow-sm border cursor-pointer transition-colors ${selectedPaymentMethod === method.name
+                ? 'border-[#540A26] bg-[#540A26]/10'
+                : 'hover:border-[#540A26] border-gray-200'
+                }`}
             >
               <img
                 src={method.logo}
@@ -352,7 +384,7 @@ export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect
           ))}
         </div>
 
-        <button onClick={()=>handleMethodSelection()} className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+        <button onClick={() => handleMethodSelection()} className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
           Next
         </button>
       </div>
