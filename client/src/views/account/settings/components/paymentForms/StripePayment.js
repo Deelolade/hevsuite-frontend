@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import paymentService from '../../../../../services/paymentService';
+import toast from 'react-hot-toast';
 
-const StripePaymentForm = ({ onSuccess, onError, isEditing }) => {
+const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [clientSecret, setClientSecret] = useState(null);
@@ -31,6 +32,12 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing }) => {
     event.preventDefault();
     if (!stripe || !elements || !clientSecret) return;
 
+    // When editing, ensure paymentMethodId is provided
+    if (isEditing && !paymentMethodId) {
+      onError('Payment method ID is required for editing');
+      return;
+    }
+
     setLoading(true);
     try {
       const cardElement = elements.getElement(CardElement);
@@ -45,19 +52,25 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing }) => {
         throw error;
       }
 
-      const response = await paymentService.addPayment('stripe', {
-        paymentMethodId: setupIntent.payment_method,
-        editing: isEditing,
-      });
+      // Choose the appropriate API based on isEditing
+      const response = isEditing
+        ? await paymentService.editPayment('stripe', {
+            paymentMethodId, // The ID of the payment method being edited
+            newPaymentMethodId: setupIntent.payment_method, // New Stripe payment method ID
+          })
+        : await paymentService.addPayment('stripe', {
+            paymentMethodId: setupIntent.payment_method,
+          });
 
       if (response.success) {
+        toast.success(isEditing ? 'Payment Method updated successfully!' : 'Payment Method added successfully!');
         onSuccess(response.data);
       } else {
-        throw new Error(response.message || 'Failed to save payment method');
+        throw new Error(response.message || `Failed to ${isEditing ? 'update' : 'save'} payment method`);
       }
     } catch (error) {
       console.error('Stripe setup error:', error);
-      onError(error.message || 'Failed to save payment method');
+      onError(error.message || `Failed to ${isEditing ? 'update' : 'save'} payment method`);
     } finally {
       setLoading(false);
     }
@@ -88,7 +101,7 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing }) => {
         disabled={!stripe || !clientSecret || loading}
         className="w-full bg-primary text-white rounded-lg p-3 font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Saving...' : 'Save Card'}
+        {loading ? 'Saving...' : isEditing ? 'Update Card' : 'Save Card'}
       </button>
     </form>
   );

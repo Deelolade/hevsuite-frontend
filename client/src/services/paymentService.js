@@ -3,28 +3,8 @@ import axios from 'axios';
 const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
 const API_URL = baseUrl + '/api/payments/';
-console.log("APIURL",API_URL )
 
 
-
-const addPayment = async (paymentType, paymentData) => {
-    const response = await axios.post(API_URL + 'addpaymentMethod', {
-        paymentType,
-        paymentData
-      },
-      {
-        withCredentials: true, 
-        headers: {
-          'Content-Type': 'application/json',
-         
-        }
-      }
-    );
-      return response.data;
-
-  };
-
- 
   const createSetupIntent = async () => {
     try {
        
@@ -47,10 +27,60 @@ const addPayment = async (paymentType, paymentData) => {
   };
 
 
+const addPayment = async (paymentType, paymentData) => {
+    const response = await axios.post(API_URL + 'addpaymentMethod', {
+        paymentType,
+        paymentData
+      },
+      {
+        withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json',
+         
+        }
+      }
+    );
+      return response.data;
+
+  };
+
+
+
+const editPayment = async (paymentType, paymentData) => {
+    const response = await fetch(API_URL + 'editpaymentMethod', {
+      method: 'PUT',
+      body: JSON.stringify({ paymentType, paymentData: paymentData, paymentMethodId: paymentData.paymentMethodId }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+      return response.json();
+
+  };
+
+  const deletePayment = async (method) => {
+    const response = await axios.post(API_URL + 'deletepaymentMethod', {
+        paymentMethodId: method,
+      },
+      {
+        withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json',
+         
+        }
+      }
+    );
+      return response.data;
+
+  };
+
+ 
+
+
 
   const paymentService = {
     addPayment,
-    createSetupIntent
+    createSetupIntent,
+    editPayment,
+    deletePayment
 
   };
 

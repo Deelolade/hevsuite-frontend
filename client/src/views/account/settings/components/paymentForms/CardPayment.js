@@ -42,6 +42,7 @@ const CardPaymentForm = ({isEditing}) => {
   
       if (paymentResponse.success) {
         alert('Payment method added successfully');
+        
         return paymentResponse.data;
       } else {
         throw new Error(paymentResponse.message || 'Failed to add payment method');
