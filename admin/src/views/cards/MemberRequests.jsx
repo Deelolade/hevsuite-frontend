@@ -14,7 +14,7 @@ import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { useDispatch, useSelector } from "react-redux"
-import { getNewMembers } from "../../store/cards/cardSlice"
+import { getNewMembers, postCards } from "../../store/cards/cardSlice"
 
 Modal.setAppElement("#root")
 
@@ -46,12 +46,27 @@ const MemberRequests = () => {
     }));
   };
 
+  // Post selected cards and move them to 'Card Issued'
+  const handlePostSelectedCards = async () => {
+    if (selectedCards.length === 0) {
+      alert("Please select at least one card to post.");
+      return;
+    }
+    try {
+      await dispatch(postCards({ cardIds: selectedCards })).unwrap();
+      setSelectedCards([]);
+      handleCardIssued();
+    } catch (error) {
+      alert(error?.message || "Failed to post cards.");
+    }
+  };
+
   useEffect(() => {
     dispatch(
       getNewMembers({
         search: searchTerm,
         status: statusFilter.toLowerCase(),
-        filter: requestTypeFilter.toLowerCase(),
+        filter: requestTypeFilter === "All" ? "all" : requestTypeFilter.toLowerCase(),
       }),
     )
   }, [dispatch, searchTerm, statusFilter, requestTypeFilter, refreshTrigger])
@@ -72,16 +87,22 @@ const MemberRequests = () => {
   const exportMenuRef = useRef(null)
 
   // Filter cards based on selected filters
+  // Filter cards based on selected filters
   const filteredCards = new_members.filter((card) => {
-    // Filter by member type
-    if (memberTypeFilter === "VIP" && card.cardType !== "vip") {
-      return false
-    }
-    if (memberTypeFilter === "Standard" && card.cardType !== "standard") {
-      return false
-    }
+  // Filter by member type
+  if (memberTypeFilter === "VIP" && card.cardType !== "vip") {
+    return false
+  }
+  if (memberTypeFilter === "Standard" && card.cardType !== "standard") {
+    return false
+  }
 
-    return true
+  // Filter by approval status
+  if (card.approvedByAdmin) {
+    return false
+  }
+
+  return true
   })
 
   const handleViewQR = (card) => {
@@ -111,10 +132,10 @@ const MemberRequests = () => {
           card._id.substring(0, 8),
           card.isBanned ? "Cancelled" : card.approvedByAdmin ? "Active" : "Pending",
           card.cardType,
-          card?.addressLine1 || "",
-          card?.town || "",
-          card?.country || "",
-          card?.postcode || "",
+          card.userId?.addressLine1 || "",
+          card.userId?.town || "",
+          card.userId?.country || "",
+          card.userId?.postcode || "",
         ])
 
         autoTable(doc, {
@@ -138,10 +159,10 @@ const MemberRequests = () => {
               card._id.substring(0, 8),
               card.isBanned ? "Cancelled" : card.approvedByAdmin ? "Active" : "Pending",
               card.cardType,
-              card?.addressLine1 || "",
-              card?.town || "",
-              card?.country || "",
-              card?.postcode || "",
+              card.userId?.addressLine1 || "",
+              card.userId?.town || "",
+              card.userId?.country || "",
+              card.userId?.postcode || "",
             ].join(","),
           ),
         ].join("\n")
@@ -228,18 +249,18 @@ const MemberRequests = () => {
                 <option value="Pending">Pending</option>
                 <option value="Cancelled">Cancelled</option>
               </select>
-              {statusFilter === "Pending" && (
+              {/* {statusFilter === "Pending" && ( */}
                 <select
                   value={requestTypeFilter}
                   onChange={(e) => setRequestTypeFilter(e.target.value)}
                   className="px-4 hidden md:inline-block py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
                 >
                   <option value="All">All Types</option>
-                  <option value="new">New Registration</option>
+                  <option value="new-registration">New Registration</option>
                   <option value="replacement">Replacement</option>
                   <option value="promotion">Promoted</option>
                 </select>
-              )}
+              {/* )} */}
             </div>
           </div>
           {statusFilter === "Pending" && (

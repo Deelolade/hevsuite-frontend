@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 const initialState = {
   cms: [],
   menus: [],
+  pages: [],
   footers: [],
   pagination: {
     total: 0,
@@ -232,6 +233,61 @@ export const uploadFooterIcon = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       return await cmsService.uploadFooterIcon(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const createPage = createAsyncThunk(
+  "cms/create-page",
+  async (data, thunkAPI) => {
+    try {
+      return await cmsService.createPage(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const getPages = createAsyncThunk(
+  "cms/get-pages",
+  async (data, thunkAPI) => {
+    try {
+      return await cmsService.getPages(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const getPageById = createAsyncThunk(
+  "cms/get-page-by-id",
+  async (id, thunkAPI) => {
+    try {
+      return await cmsService.getPageById(id);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const updatePage = createAsyncThunk(
+  "cms/updatePage",
+  async ({ id, data }, thunkAPI) => {
+    try {
+      return await cmsService.updatePage(id, data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const deletePage = createAsyncThunk(
+  "cms/delete-page",
+  async (id, thunkAPI) => {
+    try {
+      return await cmsService.deletePage(id);
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -483,9 +539,9 @@ export const cmsSlice = createSlice({
         state.isLoading = false
         state.isSuccess = true
         state.isError = false
-        state.message = "Footer updated successfully"
+        // state.message = "Footer updated successfully"
         state.footers = state.footers.map((item) => (item._id === action.payload._id ? action.payload : item))
-        toast.success(state.message)
+        // toast.success(state.message)
       })
       .addCase(editFooter.rejected, (state, action) => {
         state.isLoading = false
@@ -657,6 +713,92 @@ export const cmsSlice = createSlice({
         state.isError = true;
         state.message = action.error.message;
         toast.error(state.message);
+      })
+      // createPage
+      .addCase(createPage.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createPage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.pages.push(action.payload);
+      })
+      .addCase(createPage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      // getPages
+      .addCase(getPages.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getPages.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.pages = action.payload.data;
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(getPages.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      // getPageById
+      .addCase(getPageById.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getPageById.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        const index = state.pages.findIndex(page => page._id === action.payload._id);
+        if (index !== -1) {
+          state.pages[index] = action.payload;
+        } else {
+          state.pages.push(action.payload);
+        }
+      })
+      .addCase(getPageById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      // updatePage
+      .addCase(updatePage.pending, (state) => {
+        state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+      })
+      .addCase(updatePage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "Page updated successfully";
+        const index = state.pages.findIndex((page) => page._id === action.payload._id);
+        if (index !== -1) {
+          state.pages[index] = action.payload;
+        }
+        toast.success(state.message);
+      })
+      .addCase(updatePage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error.message;
+        toast.error(state.message);
+      })
+      // deletePage
+      .addCase(deletePage.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deletePage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.pages = state.pages.filter(page => page._id !== action.payload._id);
+      })
+      .addCase(deletePage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });

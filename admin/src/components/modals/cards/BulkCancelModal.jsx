@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
-const BulkCancelModal = ({ onClose, selectedCount }) => {
+const BulkCancelModal = ({ onClose, selectedCount, onConfirm, selectedCards }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -54,7 +54,23 @@ const BulkCancelModal = ({ onClose, selectedCount }) => {
             onClick={() => {
               // Handle bulk cancel logic here
               console.log("Bulk cancelling with password:", password);
-              onClose(false);
+              // Ensure API call is made here
+              fetch('http://localhost:5000/admin/bulk-cancel', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password, selectedCount, cardIds: selectedCards }),
+              })
+                .then(response => response.json())
+                .then(data => {
+                  console.log('Success:', data);
+                  onConfirm(password);
+                  onClose(false);
+                })
+                .catch((error) => {
+                  console.error('Error:', error);
+                });
             }}
             className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
           >

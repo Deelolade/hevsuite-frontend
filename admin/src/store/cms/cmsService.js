@@ -371,6 +371,66 @@ const uploadFooterIcon = async (data) => {
   return response.data
 }
 
+
+// Create a new page
+const createPage = async (formData) => {
+  const token = getAuthToken();
+  const response = await axios.post(`${base_url}/api/cms/pages`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+const getPages = async (data) => {
+  const token = getAuthToken();
+  const response = await axios.get(`${base_url}/api/cms/pages`, { 
+    params: data,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+const getPageById = async (id) => {
+  const token = getAuthToken();
+  const response = await axios.get(`${base_url}/api/cms/pages/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+const updatePage = async (id, data) => {
+  const token = getAuthToken();
+  const response = await axios.put(`${base_url}/api/cms/pages/${id}`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+const deletePage = async (id) => {
+  const token = getAuthToken();
+  const response = await axios.delete(`${base_url}/api/cms/pages/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+};
+
 const cmsService = {
   addNewCMS,
   getAllCMS,
@@ -394,6 +454,11 @@ const cmsService = {
   uploadAdminLogo,
   uploadFavIcon,
   uploadFooterIcon,
+  createPage,
+  getPages,
+  getPageById,
+  updatePage,
+  deletePage,
 };
 
 export default cmsService;

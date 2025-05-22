@@ -51,6 +51,7 @@ const Event = () => {
     name: "",
     location: "",
     time: new Date().toISOString(),
+    endTime: new Date().toISOString(),
     description: "",
     audienceType: "all",
     price: "",
@@ -107,6 +108,7 @@ const Event = () => {
         name: "",
         location: "",
         time: new Date().toISOString(),
+        endTime: new Date().toISOString(),
         description: "",
         audienceType: "all",
         price: "",
@@ -126,15 +128,20 @@ const Event = () => {
     if (selectedEvent && isEditEventOpen) {
       // Format date and time for input fields
       let eventTime = new Date()
+      let eventEndTime = new Date()
 
       if (selectedEvent.time) {
         eventTime = new Date(selectedEvent.time)
+      }
+      if (selectedEvent.endTime) {
+        eventEndTime = new Date(selectedEvent.endTime)
       }
 
       setEventFormData({
         name: selectedEvent.name || "",
         location: selectedEvent.location || "",
         time: eventTime.toISOString(),
+        endTime: eventEndTime.toISOString(),
         description: selectedEvent.description || "",
         audienceType: selectedEvent.audienceType || "all",
         price: selectedEvent.price || "",
@@ -207,7 +214,11 @@ const Event = () => {
   const validateForm = () => {
     const errors = {}
     if (!eventFormData.name.trim()) errors.name = "Event name is required"
-    if (!eventFormData.time) errors.time = "Date and time are required"
+    if (!eventFormData.time) errors.time = "Start date and time are required"
+    if (!eventFormData.endTime) errors.endTime = "End date and time are required"
+    if (new Date(eventFormData.endTime) <= new Date(eventFormData.time)) {
+      errors.endTime = "End time must be after start time"
+    }
     if (!eventFormData.description.trim()) errors.description = "Description is required"
     if (!eventFormData.location.trim()) errors.location = "Location is required"
 
@@ -253,6 +264,7 @@ const Event = () => {
     formData.append("name", eventFormData.name)
     formData.append("location", eventFormData.location)
     formData.append("time", new Date(eventFormData.time).toISOString())
+    formData.append("endTime", new Date(eventFormData.endTime).toISOString())
     formData.append("description", eventFormData.description)
     formData.append("audienceType", eventFormData.audienceType)
     formData.append("price", eventFormData.price)
@@ -295,6 +307,7 @@ const Event = () => {
     formData.append("name", eventFormData.name)
     formData.append("location", eventFormData.location)
     formData.append("time", new Date(eventFormData.time).toISOString())
+    formData.append("endTime", new Date(eventFormData.endTime).toISOString())
     formData.append("description", eventFormData.description)
     formData.append("audienceType", eventFormData.audienceType)
     formData.append("price", eventFormData.price)
@@ -596,11 +609,11 @@ const Event = () => {
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2 text-white/80">
                           <BsCalendar className="w-4 h-4" />
-                          <span className="text-[12px]">{formatDate(event.time)}</span>
+                          <span className="text-[12px]">{formatDate(event.time)} - {formatDate(event.endTime)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-white/80">
                           <MdAccessTime className="w-4 h-4" />
-                          <span className="text-[12px]">{formatTime(event.time)}</span>
+                          <span className="text-[12px]">{formatTime(event.time)} - {formatTime(event.endTime)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-white/80 cursor-pointer">
@@ -728,7 +741,7 @@ const Event = () => {
                 {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
               </div>
               <div>
-                <label className="block mb-1">Date & Time</label>
+                <label className="block mb-1">Start Date & Time</label>
                 <div className="relative">
                   <input
                     type="datetime-local"
@@ -738,6 +751,19 @@ const Event = () => {
                     onChange={handleInputChange}
                   />
                   {formErrors.time && <p className="text-red-500 text-xs mt-1">{formErrors.time}</p>}
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1">End Date & Time</label>
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    name="endTime"
+                    className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${formErrors.endTime ? "border-red-500" : ""}`}
+                    value={eventFormData.endTime ? new Date(eventFormData.endTime).toISOString().slice(0, 16) : ""}
+                    onChange={handleInputChange}
+                  />
+                  {formErrors.endTime && <p className="text-red-500 text-xs mt-1">{formErrors.endTime}</p>}
                 </div>
               </div>
             </div>
@@ -990,11 +1016,11 @@ const Event = () => {
                   <div className="flex items-center gap-3 md:gap-6 text-white mb-2 md:mb-4 text-sm md:text-base">
                     <div className="flex items-center gap-2">
                       <BsCalendar />
-                      <span>{formatDate(selectedEvent.time)}</span>
+                      <span>{formatDate(selectedEvent.time)} - {formatDate(selectedEvent.endTime)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MdAccessTime />
-                      <span>{formatTime(selectedEvent.time)}</span>
+                      <span>{formatTime(selectedEvent.time)} - {formatTime(selectedEvent.endTime)}</span>
                     </div>
                   </div>
                   <p className="text-white/70 text-xs md:text-sm mb-3 md:mb-6">
@@ -1240,7 +1266,7 @@ const Event = () => {
                   {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
                 </div>
                 <div>
-                  <label className="block mb-1">Date & Time</label>
+                  <label className="block mb-1">Start Date & Time</label>
                   <div className="relative">
                     <input
                       type="datetime-local"
@@ -1250,6 +1276,19 @@ const Event = () => {
                       onChange={handleInputChange}
                     />
                     {formErrors.time && <p className="text-red-500 text-xs mt-1">{formErrors.time}</p>}
+                  </div>
+                </div>
+                <div>
+                  <label className="block mb-1">End Date & Time</label>
+                  <div className="relative">
+                    <input
+                      type="datetime-local"
+                      name="endTime"
+                      className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${formErrors.endTime ? "border-red-500" : ""}`}
+                      value={eventFormData.endTime ? new Date(eventFormData.endTime).toISOString().slice(0, 16) : ""}
+                      onChange={handleInputChange}
+                    />
+                    {formErrors.endTime && <p className="text-red-500 text-xs mt-1">{formErrors.endTime}</p>}
                   </div>
                 </div>
               </div>

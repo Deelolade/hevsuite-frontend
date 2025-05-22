@@ -41,7 +41,7 @@ const PostCard = ({ onClose, selectedCards }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full">
+      <div className="bg-white rounded-lg p-8 max-w-md w-full shadow-lg">
         <h2 className="text-2xl font-bold mb-6">Post Selected Cards</h2>
         
         <form onSubmit={handleSubmit}>
@@ -63,23 +63,23 @@ const PostCard = ({ onClose, selectedCards }) => {
             <p className="text-sm text-gray-600">
               Selected Cards: {selectedCards.length}
             </p>
-            <p className="text-sm text-gray-600 mt-2">
-              A PDF containing card details will be sent to the specified email address.
-            </p>
+           
           </div>
 
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={onClose}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={() => {
+                onClose();
+              }}
+              className="text-gray-500 hover:text-gray-700"
               disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? "Posting..." : "Post Cards"}

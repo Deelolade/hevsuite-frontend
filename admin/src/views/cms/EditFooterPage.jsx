@@ -3,46 +3,39 @@
 import { useState, useRef, useEffect } from "react"
 import { BsArrowLeft } from "react-icons/bs"
 import { AiOutlineCloudUpload } from "react-icons/ai"
-import { useDispatch } from "react-redux"
-import { updatePage } from "../../store/pages/pageSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { editFooter } from "../../store/cms/cmsSlice"
+import { Loader } from "lucide-react"
 import toast from "react-hot-toast"
 
-const EditPage = ({ onBack, selectedItem, refreshData }) => {
+const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) => {
   const dispatch = useDispatch()
-  // Pre-fill state with selectedItem
-  const [title, setTitle] = useState(selectedItem?.title || "")
-  const [slides, setSlides] = useState(
-    selectedItem?.slides?.length > 0
-      ? selectedItem.slides.map((slide, idx) => ({
-          id: slide.id || Date.now() + idx,
-          title: slide.title || "",
-          image: slide.video ? slide.video : (slide.image ? slide.image : null),
-          link: slide.link || "",
-          fileType: slide.video ? "video" : slide.image ? "image" : null,
-          file: null, // for new uploads
-        }))
-      : [{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null }]
-  )
-  const [content, setContent] = useState(selectedItem?.content ? (Array.isArray(selectedItem.content) ? selectedItem.content[0]?.content || "" : selectedItem.content) : "")
+  const { isLoading } = useSelector((state) => state.cms)
+  const [title, setTitle] = useState("")
+  const [slides, setSlides] = useState([
+    { id: Date.now(), title: "", image: null, link: "", content: "" }
+  ])
+  const [content, setContent] = useState("")
   const inputRefs = useRef({})
 
+  // Initialize form with selected page data
   useEffect(() => {
-    // If selectedItem changes, update state
-    setTitle(selectedItem?.title || "")
-    setSlides(
-      selectedItem?.slides?.length > 0
-        ? selectedItem.slides.map((slide, idx) => ({
-            id: slide.id || Date.now() + idx,
-            title: slide.title || "",
-            image: slide.video ? slide.video : (slide.image ? slide.image : null),
-            link: slide.link || "",
-            fileType: slide.video ? "video" : slide.image ? "image" : null,
-            file: null,
-          }))
-        : [{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null }]
-    )
-    setContent(selectedItem?.content ? (Array.isArray(selectedItem.content) ? selectedItem.content[0]?.content || "" : selectedItem.content) : "")
-  }, [selectedItem])
+    if (selectedPage) {
+      setTitle(selectedPage.title || "")
+      if (selectedPage.slides && selectedPage.slides.length > 0) {
+        setSlides(selectedPage.slides.map(slide => ({
+          id: Date.now() + Math.random(),
+          title: slide.title || "",
+          image: slide.image || null,
+          link: slide.link || "",
+          content: slide.content || ""
+        })))
+      }
+      if (selectedPage.content && selectedPage.content.length > 0) {
+        setContent(selectedPage.content[0]?.content || "")
+      }
+    }
+  }, [selectedPage])
 
   const handleImageUpload = (e, id) => {
     const file = e.target.files[0]
@@ -62,7 +55,7 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
   }
 
   const handleAddSlide = () => {
-    setSlides(prev => [...prev, { id: Date.now() + Math.random(), title: "", image: null, link: "", fileType: null, file: null }])
+    setSlides(prev => [...prev, { id: Date.now() + Math.random(), title: "", image: null, link: "", content: "" }])
   }
 
   const handleRemoveSlide = (id) => {
@@ -75,23 +68,58 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
       toast.error("Page title is required")
       return
     }
-    // Prepare form data
-    const formData = new FormData()
-    formData.append("title", title)
-    formData.append("visibility", selectedItem?.visibility ?? true)
-    formData.append("content", JSON.stringify([{ title: "", content, visibility: true }]))
-    formData.append("slides", JSON.stringify(slides.map(slide => ({ title: slide.title, link: slide.link, content: "" }))))
-    slides.forEach((slide) => {
-      if (slide.file) {
-        formData.append('slideImages', slide.file);
-      }
-    })
+
+    if (!selectedFooter) {
+      toast.error("No footer selected")
+      return
+    }
+
     try {
-      await dispatch(updatePage({ id: selectedItem._id, data: formData })).unwrap()
+      // Create updated page object
+      const updatedPage = {
+        ...selectedPage,
+        title,
+        visibility: true,
+        owner: "System",
+        slides: slides.map((slide) => ({
+          title: slide.title,
+          image: slide.image,
+          link: slide.link,
+          content: slide.content,
+        })),
+        content: [
+          {
+            title: "",
+            content: content,
+            visibility: true,
+          },
+        ],
+      }
+
+      // Update the page in the footer's items array
+      const updatedItems = selectedFooter.items.map(item => 
+        item._id === selectedPage._id ? updatedPage : item
+      )
+
+      // Prepare data for API call
+      const data = {
+        id: selectedFooter._id,
+        data: {
+          items: updatedItems,
+        },
+      }
+
+      // Dispatch the action to update footer
+      await dispatch(editFooter(data)).unwrap()
+
+      // Show success message
+      toast.success("Page updated successfully")
+
+      // Refresh data and go back
       if (refreshData) refreshData()
       onBack()
-      toast.success("Page updated successfully")
     } catch (error) {
+      console.error("Error updating page:", error)
       toast.error("Failed to update page")
     }
   }
@@ -110,13 +138,13 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
       <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center mb-6 shadow-sm">
         <div className="flex-1 w-full md:w-auto">
           <label className="block text-sm mb-2 font-medium">Page Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="Title"
             className="w-full md:w-96 px-3 py-2 border rounded-lg text-sm bg-gray-50"
-            />
+          />
         </div>
         <button
           className="ml-0 md:ml-6 mt-4 md:mt-0 px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
@@ -160,18 +188,18 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1">
               <label className="block text-sm mb-2 font-medium">Button Text</label>
-                <input
-                  type="text"
+              <input
+                type="text"
                 value={slide.title}
                 onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, title: e.target.value } : s))}
                 placeholder="Add text"
                 className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50"
-                />
-              </div>
+              />
+            </div>
             <div className="flex-1">
               <label className="block text-sm mb-2 font-medium">Available Link</label>
-                <input
-                  type="text"
+              <input
+                type="text"
                 value={slide.link}
                 onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, link: e.target.value } : s))}
                 placeholder="link"
@@ -180,7 +208,7 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
             </div>
           </div>
           <div className="flex justify-end">
-                <button
+            <button
               className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
               onClick={() => handleRemoveSlide(slide.id)}
               disabled={slides.length === 1}
@@ -196,29 +224,36 @@ const EditPage = ({ onBack, selectedItem, refreshData }) => {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-sm font-medium">Normal text</span>
           <span className="w-px h-5 bg-gray-200 mx-2" />
-            </div>
+        </div>
         <div className="border rounded-lg flex flex-col items-center justify-center min-h-[180px] mb-4 w-full">
-              <textarea
+          <textarea
             value={content}
             onChange={e => setContent(e.target.value)}
             className="w-full min-h-[120px] p-2 rounded-lg border-none focus:ring-0 focus:outline-none resize-none text-sm"
             placeholder="Enter content..."
-              />
-            </div>
+          />
+        </div>
       </div>
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 mt-8">
-        <button className="px-8 py-2 border rounded-lg text-sm font-semibold bg-white text-gray-800" onClick={onBack}>Cancel</button>
         <button
           className="px-8 py-2 rounded-lg text-sm font-semibold bg-[#0A5438] text-white"
           onClick={handleSavePage}
+          disabled={isLoading}
         >
-          Save Changes
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader className="animate-spin h-4 w-4 mr-2" />
+              Saving...
+            </span>
+          ) : (
+            "Update Page"
+          )}
         </button>
       </div>
     </div>
   )
 }
 
-export default EditPage
+export default EditFooterPage 

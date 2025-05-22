@@ -52,6 +52,8 @@ const UserManagement = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
+  const [selectedUserDetails, setSelectedUserDetails] = useState(null);
 
   // Fetch all users when component mounts or when search/role changes
   useEffect(() => {
@@ -336,6 +338,190 @@ const UserManagement = () => {
     );
   };
 
+  // Add UserDetailsModal component
+  const UserDetailsModal = ({ isOpen, onClose, user }) => {
+    if (!user) return null;
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[600px] max-h-[90vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">User Registration Details</h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          </div>
+          
+          <div className="space-y-6">
+            {/* Profile Section */}
+            <div className="flex items-start gap-6">
+              <img
+                src={user.profilePhoto || avatar}
+                alt="Profile"
+                className="w-24 h-24 rounded-lg object-cover"
+              />
+              <div>
+                <h3 className="text-lg font-medium">{user.forename} {user.surname}</h3>
+                <p className="text-gray-600">ID#{user.membershipNumber || '00000000'}</p>
+                <p className="text-gray-600">{user.primaryEmail}</p>
+              </div>
+            </div>
+
+            {/* Personal Information */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Personal Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="font-medium">{user.title || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Gender</p>
+                  <p className="font-medium capitalize">{user.gender || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Date of Birth</p>
+                  <p className="font-medium">{user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Nationality</p>
+                  <p className="font-medium">{user.nationality || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Relationship Status</p>
+                  <p className="font-medium capitalize">{user.relationshipStatus || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Employment Status</p>
+                  <p className="font-medium capitalize">{user.employmentStatus || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Contact Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-medium">{user.primaryPhone || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{user.primaryEmail}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Address Information */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Address</h4>
+              <div className="space-y-2">
+                <p className="font-medium">{user.addressLine1 || 'N/A'}</p>
+                <p className="text-gray-600">{user.city || 'N/A'}, {user.country || 'N/A'}</p>
+                <p className="text-gray-600">{user.postcode || 'N/A'}</p>
+              </div>
+            </div>
+
+            {/* Membership Information */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Membership Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Membership Status</p>
+                  <p className="font-medium capitalize">{user.membershipStatus || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Join Fee Status</p>
+                  <p className="font-medium capitalize">{user.joinFeeStatus || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Loyalty Level</p>
+                  <p className="font-medium capitalize">{user.roleName || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Registration Date</p>
+                  <p className="font-medium">{user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Club Member</p>
+                  <p className="font-medium capitalize">{user.isClubMember || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Admin Approval</p>
+                  <p className="font-medium capitalize">{user.approvedByAdmin ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Status */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Verification Status</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Email Verification</p>
+                  <p className="font-medium capitalize">{user.isEmailVerified ? 'Verified' : 'Not Verified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Phone Verification</p>
+                  <p className="font-medium capitalize">{user.isPhoneVerified ? 'Verified' : 'Not Verified'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">2FA Status</p>
+                  <p className="font-medium capitalize">{user.is2FAEnabled ? 'Enabled' : 'Disabled'}</p>
+                </div>
+                {user.is2FAEnabled && (
+                  <div>
+                    <p className="text-sm text-gray-500">2FA Method</p>
+                    <p className="font-medium capitalize">{user.twoFAMethod || 'N/A'}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-3">Preferences</h4>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Preferred Social Media</p>
+                  <div className="flex flex-wrap gap-2">
+                    {user.preferredSocialMedia && user.preferredSocialMedia.length > 0 ? (
+                      user.preferredSocialMedia.map((platform, index) => (
+                        <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          {platform}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-gray-600">None selected</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Interests</p>
+                  <div className="flex flex-wrap gap-2">
+                    {user.userInterests && user.userInterests.length > 0 ? (
+                      user.userInterests.map((interest, index) => (
+                        <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm capitalize">
+                          {interest}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-gray-600">None selected</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
   return (
     <div className='md:px-6 space-y-6'>
       {/* Header section - updated styles */}
@@ -472,10 +658,20 @@ const UserManagement = () => {
                             src={user.profilePhoto || avatar}
                         alt=''
                         className='w-10 h-10 rounded-full object-cover'
+                        onClick={() => {
+                          setSelectedUserDetails(user);
+                          setShowUserDetailsModal(true);
+                        }}
                       />
-                      <span className='text-sm font-medium'>
+                      <button
+                        onClick={() => {
+                          setSelectedUserDetails(user);
+                          setShowUserDetailsModal(true);
+                        }}
+                        className='text-sm font-medium hover:text-primary transition-colors'
+                      >
                         {user.forename} {user.surname}
-                      </span>
+                      </button>
                     </div>
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-600'>
@@ -822,6 +1018,16 @@ const UserManagement = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Add UserDetailsModal */}
+      <UserDetailsModal
+        isOpen={showUserDetailsModal}
+        onClose={() => {
+          setShowUserDetailsModal(false);
+          setSelectedUserDetails(null);
+        }}
+        user={selectedUserDetails}
+      />
 
     </div>
   );

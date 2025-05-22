@@ -1,136 +1,244 @@
-import React, { useState } from "react";
-import { BsArrowLeft } from "react-icons/bs";
-import { AiOutlineCloudUpload } from "react-icons/ai";
+"use client"
 
-const AddFooterPage = ({ onBack }) => {
-  const [title, setTitle] = useState("");
-  const [buttonText, setButtonText] = useState("");
-  const [link, setLink] = useState("");
+import { useState, useRef } from "react"
+import { BsArrowLeft } from "react-icons/bs"
+import { AiOutlineCloudUpload } from "react-icons/ai"
+import { useDispatch, useSelector } from "react-redux"
+import { editFooter } from "../../store/cms/cmsSlice"
+import { Loader } from "lucide-react"
+import toast from "react-hot-toast"
+
+const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
+  const dispatch = useDispatch()
+  const { isLoading } = useSelector((state) => state.cms)
+  const [title, setTitle] = useState("")
+  const [slides, setSlides] = useState([
+    { id: Date.now(), title: "", image: null, link: "", content: "" }
+  ])
+  const [content, setContent] = useState("")
+  const inputRefs = useRef({})
+
+  const handleImageUpload = (e, id) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setSlides((prev) =>
+      prev.map((slide) =>
+        slide.id === id
+          ? {
+              ...slide,
+              file,
+              image: URL.createObjectURL(file),
+              fileType: file.type.startsWith('video') ? 'video' : 'image',
+            }
+          : slide
+      )
+    )
+  }
+
+  const handleAddSlide = () => {
+    setSlides(prev => [...prev, { id: Date.now() + Math.random(), title: "", image: null, link: "", content: "" }])
+  }
+
+  const handleRemoveSlide = (id) => {
+    if (slides.length === 1) return
+    setSlides(prev => prev.filter(slide => slide.id !== id))
+  }
+
+  const handleSavePage = async () => {
+    if (!title.trim()) {
+      toast.error("Page title is required")
+      return
+    }
+
+    if (!selectedFooter) {
+      toast.error("No footer selected")
+      return
+    }
+
+    try {
+      // Create new page object
+      const newPage = {
+        _id: Date.now().toString(),
+        title,
+        visibility: true,
+        owner: "System",
+        createdAt: new Date().toISOString(),
+        slides: slides.map((slide) => ({
+          title: slide.title,
+          image: slide.image,
+          link: slide.link,
+          content: slide.content,
+        })),
+        content: [
+          {
+            title: "",
+            content: content,
+            visibility: true,
+          },
+        ],
+      }
+
+      // Add the new page to the footer's items array
+      const updatedItems = [...(selectedFooter.items || []), newPage]
+
+      // Prepare data for API call
+      const data = {
+        id: selectedFooter._id,
+        data: {
+          items: updatedItems,
+        },
+      }
+
+      // Dispatch the action to update footer
+      await dispatch(editFooter(data)).unwrap()
+
+      // Show success message
+      toast.success("Page added successfully")
+
+      // Reset form
+      setTitle("")
+      setContent("")
+      setSlides([{ id: Date.now(), title: "", image: null, link: "", content: "" }])
+
+      // Refresh data and go back
+      if (refreshData) refreshData()
+      onBack()
+    } catch (error) {
+      console.error("Error adding page:", error)
+      toast.error("Failed to add page")
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center gap-2">
+    <div className="min-h-screen flex flex-col pb-10">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-6 mt-2">
         <button className="text-gray-600" onClick={onBack}>
           <BsArrowLeft size={20} />
         </button>
-        <span>Add New Page</span>
+        <span className="text-lg font-medium">Add New Page</span>
       </div>
 
-      {/* Page Title */}
-      <div className="bg-white rounded-lg p-4">
-        <div className="flex justify-between">
-          <div>
-            <label className="block text-sm mb-2">Page Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
-              className="w-96 px-3 py-2 border rounded-lg text-sm"
-            />
-          </div>
-          <button className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm ">
-            Add Slide
-          </button>
+      {/* Page Title Card */}
+      <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center mb-6 shadow-sm">
+        <div className="flex-1 w-full md:w-auto">
+          <label className="block text-sm mb-2 font-medium">Page Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className="w-full md:w-96 px-3 py-2 border rounded-lg text-sm bg-gray-50"
+          />
         </div>
+        <button
+          className="ml-0 md:ml-6 mt-4 md:mt-0 px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
+          onClick={handleAddSlide}
+        >
+          Add Slide
+        </button>
       </div>
 
-      {/* Hero Section */}
-      <div className="bg-white rounded-lg p-4 space-y-4">
-        <h3 className="font-medium">Hero Section</h3>
-        <div className="bg-gray-50 rounded-lg p-8 flex flex-col items-center justify-center min-h-[200px]">
-          <button className="text-primary flex flex-col items-center gap-2">
-            <AiOutlineCloudUpload size={24} />
-            <span className="text-sm">Click to Add image/Video</span>
-          </button>
+      {/* Hero Section Cards */}
+      {slides.map((slide, idx) => (
+        <div key={slide.id} className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+          <div className="mb-6">
+            <span className="block text-base font-medium mb-4">Hero Section</span>
+            <div className="flex flex-col items-center justify-center">
+              <div
+                className="flex flex-col items-center justify-center cursor-pointer"
+                onClick={() => inputRefs.current[slide.id]?.click()}
+              >
+                <input
+                  type="file"
+                  ref={el => inputRefs.current[slide.id] = el}
+                  className="hidden"
+                  accept="image/*,video/*"
+                  onChange={e => handleImageUpload(e, slide.id)}
+                />
+                <AiOutlineCloudUpload size={36} className="text-primary mb-2" />
+                <span className="text-sm text-primary font-medium">Click to Add image/Video</span>
+                {slide.image && slide.fileType === 'image' && (
+                  <img src={slide.image} alt="slide" className="mt-4 h-32 rounded-lg object-cover" />
+                )}
+                {slide.image && slide.fileType === 'video' && (
+                  <video controls className="mt-4 h-32 rounded-lg object-cover">
+                    <source src={slide.image} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <label className="block text-sm mb-2 font-medium">Button Text</label>
+              <input
+                type="text"
+                value={slide.title}
+                onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, title: e.target.value } : s))}
+                placeholder="Add text"
+                className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm mb-2 font-medium">Available Link</label>
+              <input
+                type="text"
+                value={slide.link}
+                onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, link: e.target.value } : s))}
+                placeholder="link"
+                className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
+              onClick={() => handleRemoveSlide(slide.id)}
+              disabled={slides.length === 1}
+            >
+              Remove Slide
+            </button>
+          </div>
         </div>
+      ))}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm mb-2">Button Text</label>
-            <input
-              type="text"
-              value={buttonText}
-              onChange={(e) => setButtonText(e.target.value)}
-              placeholder="Add text"
-              className="w-48 px-3 py-2 border rounded-lg text-sm text-center bg-gray-100"
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-2">Available Link</label>
-            <input
-              type="text"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="link"
-              className="w-72 px-3 py-2 border rounded-lg text-sm bg-gray-100"
-            />
-          </div>
+      {/* Content Editor Card */}
+      <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm font-medium">Normal text</span>
+          <span className="w-px h-5 bg-gray-200 mx-2" />
         </div>
-        <div className="flex justify-end">
-          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
-            Remove Slide
-          </button>
-        </div>
-      </div>
-
-      {/* Rich Text Editor */}
-      <div className="bg-white rounded-lg p-4">
-        <div className="border-b pb-2 mb-4">
-          <div className="flex items-center gap-2">
-            <select className="text-sm border rounded-lg px-2 py-1">
-              <option>Normal text</option>
-            </select>
-            <div className="flex items-center gap-1 border-l pl-2">
-              <button className="p-1 hover:bg-gray-100 rounded">B</button>
-              <button className="p-1 hover:bg-gray-100 rounded">I</button>
-              <button className="p-1 hover:bg-gray-100 rounded">U</button>
-              <button className="p-1 hover:bg-gray-100 rounded">S</button>
-            </div>
-            <div className="flex items-center gap-1 border-l pl-2">
-              <button className="p-1 hover:bg-gray-100 rounded">{"<>"}</button>
-              <button className="p-1 hover:bg-gray-100 rounded">🔗</button>
-            </div>
-            <div className="flex items-center gap-1 border-l pl-2">
-              <button className="p-1 hover:bg-gray-100 rounded">•</button>
-              <button className="p-1 hover:bg-gray-100 rounded">1.</button>
-            </div>
-            <div className="flex items-center gap-1 border-l pl-2">
-              <button className="p-1 hover:bg-gray-100 rounded">⇱</button>
-              <button className="p-1 hover:bg-gray-100 rounded">""</button>
-            </div>
-            <div className="flex items-center gap-1 ml-auto">
-              <button className="p-1 hover:bg-gray-100 rounded">≡</button>
-              <button className="p-1 hover:bg-gray-100 rounded">=</button>
-              <button className="p-1 hover:bg-gray-100 rounded">≣</button>
-            </div>
-          </div>
-        </div>
-        <div className="min-h-[200px] flex items-center justify-center">
-          <button className="text-gray-400 text-3xl">+</button>
-        </div>
-        <div className="flex justify-end mt-4">
-          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm">
-            Save
-          </button>
+        <div className="border rounded-lg flex flex-col items-center justify-center min-h-[180px] mb-4 w-full">
+          <textarea
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            className="w-full min-h-[120px] p-2 rounded-lg border-none focus:ring-0 focus:outline-none resize-none text-sm"
+            placeholder="Enter content..."
+          />
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3">
-        <button className="px-6 py-2 w-28  border rounded-lg text-sm font-semibold">
-          Preview
-        </button>
-        <button className="px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm">
-          Remove
-        </button>
-        <button className="px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm">
-          Confirm
+      <div className="flex justify-end gap-4 mt-8">
+        <button
+          className="px-8 py-2 rounded-lg text-sm font-semibold bg-[#0A5438] text-white"
+          onClick={handleSavePage}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader className="animate-spin h-4 w-4 mr-2" />
+              Saving...
+            </span>
+          ) : (
+            "Add Page"
+          )}
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AddFooterPage;
+export default AddFooterPage

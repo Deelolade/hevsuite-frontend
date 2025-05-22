@@ -40,11 +40,10 @@ const getUserDetails = async (userId) => {
   return response.data
 }
 
-const API_URL = "/api/club-cards"
 
 // Post cards
 const postCards = async (data) => {
-  const response = await axios.post(API_URL + "/post", data)
+  const response = await axios.post(`${base_url}/admin/post-cards`, data)
   return response.data
 }
 

@@ -12,7 +12,7 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
   const { users, isLoading } = useSelector((state) => state.cards)
 
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUsers, setSelectedUsers] = useState([])
   const [cardType, setCardType] = useState("standard")
   const [issuedReason, setIssuedReason] = useState("")
   const [addressLine1, setAddressLine1] = useState("")
@@ -85,10 +85,12 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
   }
 
   const handleUserSelect = (user) => {
-    setSelectedUser(user)
+    if (selectedUsers.some((u) => u._id === user._id)) {
+      setSelectedUsers(selectedUsers.filter((u) => u._id !== user._id))
+    } else {
+      setSelectedUsers([...selectedUsers, user])
+    }
     setShowUserList(false)
-
-    // Fetch user details including address
     if (user._id) {
       fetchUserDetails(user._id)
     }
@@ -96,7 +98,7 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
 
   const validateForm = () => {
     const errors = {}
-    if (!selectedUser) errors.user = "Please select a user"
+    if (selectedUsers.length === 0) errors.user = "Please select at least one user"
     if (useExistingAddress) {
       if (!addressLine1) errors.addressLine1 = "Address line 1 is required"
       if (!town) errors.town = "Town/City is required"
@@ -109,59 +111,52 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
   }
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
-    const cardData = {
-      userId: selectedUser._id,
-      cardType,
-      issuedReason,
-      requestType: "admin-issued",
-      approvedByAdmin: true,
-      paymentStatus: "paid",
-    }
-
-    // Only include address if using existing address
-    if (useExistingAddress) {
-      cardData.addressLine1 = addressLine1
-      cardData.town = town
-      cardData.country = country
-      cardData.postcode = postcode
-    }
-
-    dispatch(issueNewCard(cardData))
-      .unwrap()
-      .then((response) => {
-        // Refresh the cards list
-        // dispatch(getNewMembers({
-        //   search: "",
-        //   status: "all",
-        //   filter: "all",
-        // }))
-        onClose()
-        if (onCardIssued && response.cards && response.cards.length > 0) {
-          onCardIssued(response.cards[0])
+    const bulkCardData = selectedUsers.map((user) => {
+      const cardData = {
+        userId: user._id,
+        cardType,
+        issuedReason,
+        requestType: "new-registration",
+        approvedByAdmin: false,
+        paymentStatus: "paid",
+      };
+      if (useExistingAddress) {
+        cardData.addressLine1 = addressLine1;
+        cardData.town = town;
+        cardData.country = country;
+        cardData.postcode = postcode;
+      }
+      return cardData;
+    });
+    Promise.all(bulkCardData.map((cardData) => dispatch(issueNewCard(cardData)).unwrap()))
+      .then((responses) => {
+        onClose();
+        if (onCardIssued && responses.length > 0) {
+          onCardIssued(responses);
         }
       })
       .catch((error) => {
-        setFormErrors({ submit: error.toString() })
-        setIsSubmitting(false)
+        setFormErrors({ submit: error.toString() });
+        setIsSubmitting(false);
       })
       .finally(() => {
-        setIsSubmitting(false)
-      })
-  }
+        setIsSubmitting(false);
+      });
+  };
 
   const handleToggleAddressUse = () => {
-    setUseExistingAddress(!useExistingAddress)
+    setUseExistingAddress(!useExistingAddress);
 
     // Clear form errors related to address when toggling
-    const { addressLine1, town, country, ...otherErrors } = formErrors
-    setFormErrors(otherErrors)
-  }
+    const { addressLine1, town, country, ...otherErrors } = formErrors;
+    setFormErrors(otherErrors);
+  };
 
   return (
     <div className="p-6 max-h-[500px] overflow-y-auto">
@@ -182,7 +177,7 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
         {/* User Selection */}
         <div className="mb-4 relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select User <span className="text-red-500">*</span>
+            Select Users <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -191,14 +186,13 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
               placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setShowUserList(true)
+                setSearchTerm(e.target.value);
+                setShowUserList(true);
               }}
               onFocus={() => setShowUserList(true)}
               className="w-full pl-10 pr-4 py-2 border rounded-lg"
             />
           </div>
-
           {showUserList && (
             <div className="absolute z-10 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
               {isLoading ? (
@@ -207,9 +201,15 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
                 filteredUsers.map((user) => (
                   <div
                     key={user._id}
-                    className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                    className={`p-2 hover:bg-gray-100 cursor-pointer flex items-center ${selectedUsers.some((u) => u._id === user._id) ? 'bg-primary/10' : ''}`}
                     onClick={() => handleUserSelect(user)}
                   >
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.some((u) => u._id === user._id)}
+                      readOnly
+                      className="mr-2"
+                    />
                     {user.profilePhoto && (
                       <img
                         src={user.profilePhoto || "/placeholder.svg"}
@@ -230,44 +230,35 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
               )}
             </div>
           )}
-
-          {selectedUser && (
-            <div className="mt-2 p-2 border rounded-lg flex items-center">
-              {selectedUser.profilePhoto && (
-                <img
-                  src={selectedUser.profilePhoto || "/placeholder.svg"}
-                  alt={`${selectedUser.forename} ${selectedUser.surname}`}
-                  className="w-8 h-8 rounded-full mr-2"
-                />
-              )}
-              <div>
-                <div className="font-medium">
-                  {selectedUser.forename} {selectedUser.surname}
+          {selectedUsers.length > 0 && (
+            <div className="mt-2 p-2 border rounded-lg flex flex-wrap gap-2">
+              {selectedUsers.map((user) => (
+                <div key={user._id} className="flex items-center bg-gray-100 px-2 py-1 rounded">
+                  {user.profilePhoto && (
+                    <img
+                      src={user.profilePhoto || "/placeholder.svg"}
+                      alt={`${user.forename} ${user.surname}`}
+                      className="w-6 h-6 rounded-full mr-1"
+                    />
+                  )}
+                  <span className="text-sm">{user.forename} {user.surname}</span>
+                  <button
+                    type="button"
+                    className="ml-1 text-gray-400 hover:text-gray-600"
+                    onClick={() => setSelectedUsers(selectedUsers.filter((u) => u._id !== user._id))}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
                 </div>
-                <div className="text-sm text-gray-500">{selectedUser.primaryEmail}</div>
-              </div>
-              <button
-                type="button"
-                className="ml-auto text-gray-400 hover:text-gray-600"
-                onClick={() => {
-                  setSelectedUser(null)
-                  setAddressLine1("")
-                  setTown("")
-                  setCountry("")
-                  setPostcode("")
-                }}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+              ))}
             </div>
           )}
-
           {formErrors.user && <p className="mt-1 text-sm text-red-600">{formErrors.user}</p>}
         </div>
 
@@ -286,90 +277,7 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
           </select>
         </div>
 
-        {/* Delivery Address */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-gray-700">Delivery Address</h3>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="useExistingAddress"
-                checked={useExistingAddress}
-                onChange={handleToggleAddressUse}
-                className="mr-2 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-              />
-              <label htmlFor="useExistingAddress" className="text-sm text-gray-600">
-                Include delivery address
-              </label>
-            </div>
-          </div>
-
-          {loadingUserDetails && (
-            <div className="flex justify-center items-center py-4">
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
-              <span className="ml-2 text-sm text-gray-600">Loading address...</span>
-            </div>
-          )}
-
-          {useExistingAddress && (
-            <>
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">
-                  Address Line 1 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={addressLine1}
-                  onChange={(e) => setAddressLine1(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                {formErrors.addressLine1 && <p className="mt-1 text-sm text-red-600">{formErrors.addressLine1}</p>}
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">
-                  Town/City <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={town}
-                  onChange={(e) => setTown(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                {formErrors.town && <p className="mt-1 text-sm text-red-600">{formErrors.town}</p>}
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">
-                  Country <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                {formErrors.country && <p className="mt-1 text-sm text-red-600">{formErrors.country}</p>}
-              </div>
-
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">Postcode/Zipcode</label>
-                <input
-                  type="text"
-                  value={postcode}
-                  onChange={(e) => setPostcode(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-            </>
-          )}
-
-          {!useExistingAddress && (
-            <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
-              No delivery address will be associated with this card. The user will need to provide an address later.
-            </div>
-          )}
-        </div>
+        
 
         {/* Issued Reason */}
         <div className="mb-6">

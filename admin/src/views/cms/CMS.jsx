@@ -92,7 +92,7 @@ const CMS = () => {
         >
           Footer
         </button>
-        <button
+        {/* <button
           className={`pb-4 px-2 ${
             activeTab === "logos"
               ? "border-b-4 border-primary "
@@ -101,7 +101,7 @@ const CMS = () => {
           onClick={() => setActiveTab("logos")}
         >
           Site Logos
-        </button>
+        </button> */}
       </div>
       {renderTabContent()}
     </div>

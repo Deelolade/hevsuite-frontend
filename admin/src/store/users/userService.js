@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { base_url } from '../../constants/axiosConfig';
-const getAuthToken = () => {
+
+export const getAuthToken = () => {
   const adminData = localStorage.getItem('admin');
   const admin = adminData ? JSON.parse(adminData) : null;
   return admin?.token || '';
@@ -20,9 +21,19 @@ export const getAllUsers = async ({ page = 1, limit = 10, search = '', role = ''
 };
 
 
-export const memberUsers = async (page = 1, search = '', role = 'member', membershipStatus ='accepted') => {
+export const memberUsers = async ({ page = 1, search = '', role = '' }) => {
+  const token = getAuthToken();
   const response = await axios.get(`${base_url}/api/user/users`, {
-    params: { page, search, role, membershipStatus },
+    params: { 
+      page, 
+      search, 
+      role,
+      membershipStatus: 'accepted'
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
   });
   return response.data;
 };

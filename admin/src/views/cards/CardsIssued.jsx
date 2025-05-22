@@ -46,7 +46,7 @@ const CardsIssued = () => {
   }, [dispatch, searchTerm])
 
   // Filter to only show approved cards
-  const issuedCards = new_members.filter((card) => card.approvedByAdmin)
+  const issuedCards = new_members
 
   // Apply additional filters
   const filteredCards = issuedCards.filter((card) => {
@@ -63,6 +63,11 @@ const CardsIssued = () => {
       return false
     }
     if (statusFilter === "Cancelled" && !card.isBanned) {
+      return false
+    }
+
+    // Filter by approval status
+    if (!card.approvedByAdmin) {
       return false
     }
 
@@ -333,7 +338,7 @@ const CardsIssued = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
           {filteredCards.length > 0 ? (
             filteredCards.map((card) => (
-              <div key={card._id} className="bg-white rounded-xl p-4 shadow-sm self-start relative">
+              <div key={card._id} className={`${card.cardType === "vip" ? "bg-[#FFB800]/70" : "bg-white"} rounded-xl p-2 shadow-sm relative`}>
                 <div className="absolute top-4 right-4 z-10">
                   <input
                     type="checkbox"
@@ -361,7 +366,7 @@ const CardsIssued = () => {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="font-medium text-sm">{`${card.userId?.forename || ""} ${card.userId?.surname || ""}`}</h3>
-                        <p className="text-xs text-gray-500">Member/{card._id.substring(0, 8)}</p>
+                        <p className="text-xs text-gray-500">Member/{card.userId?.membershipNumber || card.membershipNumber || card._id.substring(0, 8)}</p>
                       </div>
                       <button className="text-gray-400">
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -397,7 +402,7 @@ const CardsIssued = () => {
                             </label>
                             <input
                               type="text"
-                              value={card?.addressLine1 || ""}
+                              value={card.userId?.addressLine1 || card.addressLine1 || ""}
                               className="w-full px-3 py-1.5 text-sm text-gray font-primary border rounded-lg"
                               readOnly
                             />
@@ -408,7 +413,7 @@ const CardsIssued = () => {
                             </label>
                             <input
                               type="text"
-                              value={card?.town || ""}
+                              value={card.userId?.city || card.city || ""}
                               className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                               readOnly
                             />
@@ -419,7 +424,7 @@ const CardsIssued = () => {
                             </label>
                             <input
                               type="text"
-                              value={card?.country || ""}
+                              value={card.userId?.country || card.country || ""}
                               className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                               readOnly
                             />
@@ -428,7 +433,7 @@ const CardsIssued = () => {
                             <label className="text-sm text-gray-600 font-primary block mb-1">Postcode/Zipcode</label>
                             <input
                               type="text"
-                              value={card?.postcode || ""}
+                              value={card.userId?.postcode || card.postcode || ""}
                               className="w-full px-3 py-1.5 text-sm border text-gray font-primary rounded-lg"
                               readOnly
                             />
@@ -438,17 +443,17 @@ const CardsIssued = () => {
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Status</span>
                         <span
-                          className={`text-xs px-5 py-0.5 rounded-lg ${
+                          className={`text-xs px-3 py-0.5 rounded-lg ${
                             card.isBanned
                               ? "bg-tertiary text-white"
                               : card.approvedByAdmin
-                                ? "bg-green-500 text-white"
+                                ? "bg-blue-500 text-white"
                                 : card.status === "Not Activated"
                                   ? "bg-blue-500 text-white"
                                   : "bg-gray-200 text-gray-600"
                           }`}
                         >
-                          {card.isBanned ? "Cancelled" : card.approvedByAdmin ? "Active" : "Pending"}
+                          {card.isBanned ? "Cancelled" : card.approvedByAdmin && card.isActive ? "Active" : card.approvedByAdmin ? "Not Activated" : "Pending"}
                         </span>
                       </div>
                     </div>
@@ -500,6 +505,7 @@ const CardsIssued = () => {
         <BulkCancelModal
           onClose={setIsBulkCancelModalOpen}
           selectedCount={selectedCards.length}
+          onConfirm={handleConfirmBulkCancel}
           selectedCards={selectedCards}
         />
       </Modal>
@@ -508,3 +514,9 @@ const CardsIssued = () => {
 }
 
 export default CardsIssued
+
+const handleConfirmBulkCancel = () => {
+  console.log("Bulk cancel confirmed for selected cards:", selectedCards);
+  // Add logic for bulk cancellation here
+  setIsBulkCancelModalOpen(false);
+}

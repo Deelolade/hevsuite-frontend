@@ -16,8 +16,8 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
   }
 
   const handleViewQR = () => {
-    if (!card.qrCode && !card.approvedByAdmin) {
-      setQRError("QR code is only available for approved cards")
+    if (!card.qrCode) {
+      setQRError("No QR code available for this card")
       return
     }
 
@@ -65,7 +65,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
           <div className="flex items-start justify-between mb-3">
             <div>
               <h3 className="font-medium text-sm">{`${card.userId?.forename || ""} ${card.userId?.surname || ""}`}</h3>
-              <p className="text-xs text-gray-500">Member/ID#{card.userId?.membershipNumber || "00000000"}</p>
+              <p className="text-xs text-gray-500">Member/ID#{card.userId?.membershipNumber || card.membershipNumber || "00000000"}</p>
             </div>
             <button className="text-gray-400">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -97,7 +97,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
                   </label>
                   <input
                     type="text"
-                    value={card?.addressLine1 || ""}
+                    value={card.userId?.addressLine1 || ""}
                     className="w-full px-3 py-1.5 text-sm border rounded-lg"
                     readOnly
                   />
@@ -108,7 +108,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
                   </label>
                   <input
                     type="text"
-                    value={card?.town || ""}
+                    value={card.userId?.city || ""}
                     className="w-full px-3 py-1.5 text-sm border rounded-lg"
                     readOnly
                   />
@@ -119,7 +119,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
                   </label>
                   <input
                     type="text"
-                    value={card?.country || ""}
+                    value={card.userId?.country || ""}
                     className="w-full px-3 py-1.5 text-sm border rounded-lg"
                     readOnly
                   />
@@ -128,7 +128,7 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
                   <label className="text-sm text-gray-600 block mb-1">Postcode/Zipcode</label>
                   <input
                     type="text"
-                    value={card?.postcode || ""}
+                    value={card.userId?.postcode || ""}
                     className="w-full px-3 py-1.5 text-sm border rounded-lg"
                     readOnly
                   />
@@ -153,12 +153,12 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
           </div>
 
           <div className="flex gap-2 mt-4">
-            <button
+            {/* <button
               className="flex-1 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 transition-colors"
               onClick={handleViewQR}
             >
               View QR
-            </button>
+            </button> */}
 
             {!card.isBanned && (
               <button
@@ -173,14 +173,14 @@ const ClubCardItem = ({ card, onSelect, isSelected }) => {
       </div>
 
       {/* QR Code Modal */}
-      <Modal
+      {/* <Modal
         isOpen={isQRModalOpen}
         onRequestClose={() => setIsQRModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
         <QRCodeModal onClose={setIsQRModalOpen} selectedCard={card} />
-      </Modal>
+      </Modal> */}
 
       {/* Cancel Card Modal */}
       <Modal

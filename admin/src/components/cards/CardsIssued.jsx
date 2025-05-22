@@ -48,10 +48,17 @@ const CardsIssued = () => {
         </span>
       )
     }
-    if (card.isActivated) {
+    if (card.approvedByAdmin && card.isActive) {
       return (
         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
           Active
+        </span>
+      )
+    }
+    if (card.approvedByAdmin && !card.isActive) {
+      return (
+        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+          Not Activated
         </span>
       )
     }
@@ -124,7 +131,7 @@ const CardsIssued = () => {
                     </div>
                     <div className="text-sm text-gray-500">{card.userId.primaryEmail}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${card.cardType === 'VIP' ? 'bg-gold' : ''}`}>
                     {card.cardType}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -157,3 +164,37 @@ const CardsIssued = () => {
 }
 
 export default CardsIssued 
+
+// Filter to only show approved cards
+const issuedCards = new_members.filter((card) => card.approvedByAdmin);
+
+// Apply additional filters
+const filteredCards = issuedCards.filter((card) => {
+  // Filter by card type
+  if (cardTypeFilter !== "All" && card.cardType !== cardTypeFilter) {
+    return false;
+  }
+
+  // Filter by status
+  if (statusFilter === "Active" && card.isBanned) {
+    return false;
+  }
+  if (statusFilter === "Not Activated" && !card.isBanned && !card.isActivated) {
+    return true;
+  }
+  if (statusFilter === "Cancelled" && !card.isBanned) {
+    return false;
+  }
+
+  // Search by name or ID
+  if (
+    searchTerm &&
+    !card.userId?.forename?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !card.userId?.surname?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    !card._id.includes(searchTerm)
+  ) {
+    return false;
+  }
+
+  return true;
+});

@@ -4,18 +4,18 @@ import { useState, useEffect } from "react"
 import { FiEdit } from "react-icons/fi"
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs"
 import Modal from "react-modal"
-import AddMenuPage from "./AddMenuPage"
+import AddMenuPage from "./AddPage"
 import EditMenuItem from "../../components/modals/cms/menu/EditMenuItem"
 import EditMenu from "../../components/modals/cms/menu/EditMenu"
 import CreatedMenuPages from "../../components/modals/cms/menu/CreatedMenuPages"
-import EditMenuPage from "./EditMenuPage"
+import EditPage from "./EditPage"
 import { useDispatch, useSelector } from "react-redux"
-import { getAllMenus, changeMenuVisibility, updateMenuOrder, addNewMenu, editMenus } from "../../store/cms/cmsSlice"
+import { getAllMenus, changeMenuVisibility, updateMenuOrder, addNewMenu, editMenus, getPages, updatePage } from "../../store/cms/cmsSlice"
 import { Loader } from "lucide-react"
 
 const Menu = () => {
   const dispatch = useDispatch()
-  const { menus, isLoading } = useSelector((state) => state.cms)
+  const { menus, isLoading, pages: storePages } = useSelector((state) => state.cms)
 
   const [selectedSection, setSelectedSection] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -33,11 +33,51 @@ const Menu = () => {
   const [showEditPage, setShowEditPage] = useState(false)
   const [menuItems, setMenuItems] = useState([])
   const [sections, setSections] = useState([])
+  const [selectedPages, setSelectedPages] = useState([])
+
+  const [draggingPage, setDraggingPage] = useState(null)
+  const [dragPageOver, setDragPageOver] = useState(null)
+
+  const handleDragPageStart = (event, index) => {
+    setDraggingPage(index)
+  }
+
+  const handleDragPageOver = (event, index) => {
+    event.preventDefault()
+    setDragPageOver(index)
+  }
+
+  const handleDragPageEnd = (event) => {
+    if (draggingPage !== null && dragPageOver !== null) {
+      const newPages = [...storePages]
+      const [reorderedPage] = newPages.splice(draggingPage, 1)
+      newPages.splice(dragPageOver, 0, reorderedPage)
+      
+      // Update in the backend
+      dispatch(
+        updatePage({
+          id: reorderedPage._id,
+          data: {
+            order: dragPageOver + 1
+          }
+        })
+      ).then(() => {
+        dispatch(getPages({ status: "active" }))
+      })
+    }
+    setDraggingPage(null)
+    setDragPageOver(null)
+  }
 
   // Fetch menus on component mount and when status filter changes
   useEffect(() => {
     dispatch(getAllMenus({ status: statusFilter }))
   }, [dispatch, statusFilter])
+
+  // Fetch pages when component mounts
+  useEffect(() => {
+    dispatch(getPages({ status: "active" }))
+  }, [dispatch])
 
   // Update sections when menus are loaded
   useEffect(() => {
@@ -179,18 +219,79 @@ const Menu = () => {
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages]
   }
 
+  // Add this function to handle page selection
+  const handlePageSelection = (pageId) => {
+    const page = storePages.find(p => p._id === pageId)
+    if (page) {
+      setSelectedPages(prev => [...prev, {
+        _id: Date.now().toString(),
+        type: "page",
+        pageId: page._id,
+        title: page.title,
+        visibility: true,
+        createdAt: new Date().toISOString()
+      }])
+    }
+  }
+
+  // Add this function to remove selected page
+  const handleRemovePage = (pageId) => {
+    setSelectedPages(prev => prev.filter(p => p.pageId !== pageId))
+  }
+
+  // Update page visibility
+  const handlePageVisibilityChange = (pageId, newVisibility) => {
+    // Update backend
+    dispatch(
+      updatePage({
+        id: pageId,
+        data: {
+          visibility: newVisibility
+        }
+      })
+    ).then((response) => {
+      if (response.meta.requestStatus === 'fulfilled') {
+        // Update local state immediately
+        const updatedPages = storePages.map(page => 
+          page._id === pageId ? { ...page, visibility: newVisibility } : page
+        );
+        // No need to refresh pages since we've updated the local state
+      }
+    })
+  }
+
+  // Update page after edit
+  const handlePageEdit = (updatedPage) => {
+    // Update backend
+    dispatch(
+      updatePage({
+        id: updatedPage._id,
+        data: updatedPage
+      })
+    ).then((response) => {
+      if (response.meta.requestStatus === 'fulfilled') {
+        // Update local state immediately
+        const updatedPages = storePages.map(page => 
+          page._id === updatedPage._id ? updatedPage : page
+        );
+        // No need to refresh pages since we've updated the local state
+      }
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Controls */}
       {showAddPage ? (
         showEditPage ? (
-          <EditMenuPage
+          <EditPage
             onBack={() => {
               setShowAddPage(false)
               setShowEditPage(false)
               window.history.pushState(null, "", `?tab=menu`)
             }}
             selectedItem={selectedItem}
+            onSave={handlePageEdit}
           />
         ) : (
           <AddMenuPage
@@ -282,12 +383,12 @@ const Menu = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-                <div
+                {/* <div
                   onClick={() => setIsCreatedPagesOpen(true)}
                   className="bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-primary/50 transition-colors"
                 >
                   Created Pages
-                </div>
+                </div> */}
               </div>
 
               <div className="flex justify-end">
@@ -314,40 +415,42 @@ const Menu = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedItems.length > 0 ? (
-                      paginatedItems.map((item, index) => (
-                        <tr
-                          key={item._id}
+                    {storePages && storePages.length > 0 ? (
+                      storePages.map((page, index) => (
+                        <tr 
+                          key={page._id} 
+                          className={`border-b ${draggingPage === index ? 'opacity-50' : ''} ${dragPageOver === index ? 'border-t-2 border-primary' : ''}`}
                           draggable={true}
-                          onDragStart={(e) => handleDragItemsStart(e, index)}
-                          onDragOver={(e) => handleDragItemsOver(e, index)}
-                          onDragEnd={handleDragItemsEnd}
-                          className="border-b"
+                          onDragStart={(e) => handleDragPageStart(e, index)}
+                          onDragOver={(e) => handleDragPageOver(e, index)}
+                          onDragEnd={handleDragPageEnd}
                         >
                           <td className="py-4 px-6 flex items-center gap-2">
                             <span className="p-1 border rounded cursor-move">⋮⋮</span>
-                            {item.title}
+                            {page.title}
                           </td>
                           <td className="py-4 px-6">
                             <label className="relative inline-flex items-center cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={item.visibility}
+                                checked={page.visibility || false}
                                 className="sr-only peer"
-                                onChange={() => handleVisibility(item._id)}
+                                onChange={() => handlePageVisibilityChange(page._id, !page.visibility)}
                               />
-                              <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                              <div className={`w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                                page.visibility ? "bg-primary" : "bg-gray-500"
+                              }`}></div>
                             </label>
                           </td>
-                          <td className="py-4 px-6 text-sm text-gray-600">{item.owner || "System"}</td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
                           <td className="py-4 px-6">
-                            <button
+                            <button 
                               className="text-primary"
                               onClick={() => {
-                                setSelectedItem(item)
-                                setShowEditPage(true)
-                                setShowAddPage(true)
-                                window.history.pushState(null, "", `?tab=menu&edit=2&system=true`)
+                                setSelectedItem(page);
+                                setShowEditPage(true);
+                                setShowAddPage(true);
+                                window.history.pushState(null, "", `?tab=menu&edit=2`);
                               }}
                             >
                               <FiEdit size={18} />
@@ -358,7 +461,7 @@ const Menu = () => {
                     ) : (
                       <tr>
                         <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
-                          No items found. Add a new page to get started.
+                          No pages found
                         </td>
                       </tr>
                     )}
@@ -433,7 +536,7 @@ const Menu = () => {
             overlayClassName="fixed inset-0 bg-black/50"
           >
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Add Menu</h2>
                 <button onClick={() => setIsAddMenuOpen(false)} className="text-gray-400 hover:text-gray-600">
                   ✕
@@ -443,7 +546,7 @@ const Menu = () => {
               <div className="space-y-6">
                 {/* Menu Title */}
                 <div>
-                  <label className="block text-sm mb-2">Menu Title</label>
+                  <label className="block text-sm mb-1">Menu Title</label>
                   <input
                     type="text"
                     value={menuTitle}
@@ -455,7 +558,7 @@ const Menu = () => {
 
                 {/* Link */}
                 <div>
-                  <label className="block text-sm mb-2">Link (available)</label>
+                  <label className="block text-sm mb-1">Link (available)</label>
                   <input
                     type="text"
                     value={menuLink}
@@ -465,9 +568,47 @@ const Menu = () => {
                   />
                 </div>
 
+                {/* Page Selection */}
+                <div>
+                  <label className="block text-sm mb-1">Select Pages</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    onChange={(e) => handlePageSelection(e.target.value)}
+                    value=""
+                  >
+                    <option value="">Select a page</option>
+                    {storePages?.filter(page => !selectedPages.some(selectedPage => selectedPage.pageId === page._id))
+                      .map((page) => (
+                        <option key={page._id} value={page._id}>
+                          {page.title}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Selected Pages List */}
+                {selectedPages.length > 0 && (
+                  <div className="mt-2">
+                    <label className="block text-sm mb-1">Selected Pages</label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPages.map((page) => (
+                        <div key={page.pageId} className="flex items-center justify-between bg-gray-50 p-2 rounded" style={{ width: 'fit-content' }}>
+                          <span className="text-sm">{page.title}</span>
+                          <button
+                            onClick={() => handleRemovePage(page.pageId)}
+                            className="text-red-500 hover:text-red-700 ml-2"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Visibility */}
                 <div>
-                  <label className="block text-sm mb-2">Visibility</label>
+                  <label className="block text-sm mb-1">Visibility</label>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -486,19 +627,21 @@ const Menu = () => {
                   </button>
                   <button
                     onClick={() => {
-                      dispatch(
-                        addNewMenu({
-                          title: menuTitle,
-                          items: [],
-                          visibility: menuVisibility,
-                          link: menuLink,
-                        }),
-                      ).then(() => {
-                        setIsAddMenuOpen(false)
-                        setMenuTitle("")
-                        setMenuLink("")
-                        setMenuVisibility(false)
-                      })
+                      if (!menuTitle.trim()) {
+                        alert("Menu title is required")
+                        return
+                      }
+                      dispatch(addNewMenu({
+                        title: menuTitle,
+                        link: menuLink,
+                        visibility: menuVisibility,
+                        items: selectedPages
+                      }))
+                      setIsAddMenuOpen(false)
+                      setMenuTitle("")
+                      setMenuLink("")
+                      setMenuVisibility(false)
+                      setSelectedPages([])
                     }}
                     className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
                     disabled={isLoading}
@@ -550,7 +693,7 @@ const Menu = () => {
               selectedMenu={menus.find((f) => f._id === selectedSection)}
               onSave={(updatedMenu) => {
                 dispatch(
-                  editMenu({
+                  editMenus({
                     id: selectedSection,
                     data: updatedMenu,
                   }),
@@ -584,3 +727,4 @@ const Menu = () => {
 }
 
 export default Menu
+
