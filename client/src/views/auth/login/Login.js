@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProfile, login } from '../../../features/auth/authSlice';
 
 const Login = () => {
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
   const navigate = useNavigate();
   const { isLoading, isError, message } = useSelector((state) => state.auth);
 
@@ -59,11 +59,13 @@ const Login = () => {
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
           <div className='flex flex-col items-center text-center mt-auto'>
             <div className='w-32 h-32 rounded-2xl mb-4 bg-red'>
-              <img
-                src={logo}
-                alt='Hevsuite Club'
-                className='w-full h-full p-4'
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
@@ -195,11 +197,10 @@ const Login = () => {
               <button
                 type='submit'
                 disabled={isLoading}
-                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${
-                  isLoading
+                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${isLoading
                     ? 'cursor-not-allowed'
                     : ''
-                }`}
+                  }`}
               >
                 Login
               </button>

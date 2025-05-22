@@ -55,17 +55,28 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   const mapCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos coordinates
 
-   const [currentEventIndex, setCurrentEventIndex] = useState(
+  const [currentEventIndex, setCurrentEventIndex] = useState(
     events.findIndex((eventx) => eventx.name === event.name)
   );
 
+  // const handleNext = () => {
+  //   setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+  // };
+
+  // const handlePrev = () => {
+  //   setCurrentEventIndex((prevIndex) =>
+  //     prevIndex === 0 ? events.length - 1 : prevIndex - 1
+  //   );
+  // };
   const handleNext = () => {
-    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+    setCurrentImageIndex((prevIndex) =>
+      (prevIndex + 1) % currentEvent.images.length
+    );
   };
 
   const handlePrev = () => {
-    setCurrentEventIndex((prevIndex) =>
-      prevIndex === 0 ? events.length - 1 : prevIndex - 1
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? currentEvent.images.length - 1 : prevIndex - 1
     );
   };
 
@@ -86,8 +97,13 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
               <span>{eventType}</span>
             </div>
             <div className="relative h-full overflow-y-auto">
-              <img
+              {/* <img
                 src={currentEvent.image}
+                alt={currentEvent.name}
+                className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
+              /> */}
+              <img
+                src={currentEvent.images[currentImageIndex]}
                 alt={currentEvent.name}
                 className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
               />
@@ -258,7 +274,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                       />
                       <div>
                         <h3 className="font-semibold text-black">
-                        {`${attendee.forename} ${attendee.surname}`}
+                          {`${attendee.forename} ${attendee.surname}`}
                         </h3>
                         <p className="text-gray-600">{formatDateWithSuffix(attendee.createdAt)}</p>
                       </div>
@@ -360,16 +376,16 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-    const [activeSlide, setActiveSlide] = useState(1);
-    const [showFilters, setShowFilters] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    useEffect(() => {
-      dispatch(fetchNonExpiredNews());
-      dispatch(fetchEvents());
-    }, [dispatch]);
-    const { events, loading: eventsLoading, error: eventsError } = useSelector((state) => state.events);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(fetchNonExpiredNews());
+    dispatch(fetchEvents());
+  }, [dispatch]);
+  const { events, loading: eventsLoading, error: eventsError } = useSelector((state) => state.events);
 
   // Add this function to filter events by date
   const filterEvents = () => {
@@ -396,7 +412,7 @@ const Events = () => {
     }).sort((a, b) => {
       const dateA = new Date(a.time);
       const dateB = new Date(b.time);
-    
+
       if (selectedDate === 'newest') {
         return dateB.getTime() - dateA.getTime();
       } else if (selectedDate === 'oldest') {
@@ -423,7 +439,7 @@ const Events = () => {
 
   return (
     <div className='min-h-screen'>
-      <div className='relative text-white'>
+      <div className='relative text-white min-h-screen'>
         <div className='absolute inset-0 z-0'>
           <img
             src={headerBg}
@@ -537,7 +553,7 @@ const Events = () => {
                   onClick={() => setSelectedEvent(event)}
                 >
                   <img
-                    src={event.image}
+                    src={event.images[0]}
                     alt={event.name}
                     className='w-full h-[300px] object-cover transition-transform duration-300 group-hover:scale-110'
                   />
@@ -558,9 +574,8 @@ const Events = () => {
                 {Array.from({ length: totalPages }, (_, index) => (
                   <button
                     key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      currentPage === index + 1 ? 'bg-[#540A26]' : 'bg-gray-400'
-                    } flex items-center justify-center`}
+                    className={`w-3 h-3 rounded-full ${currentPage === index + 1 ? 'bg-[#540A26]' : 'bg-gray-400'
+                      } flex items-center justify-center`}
                     onClick={() => handlePageChange(index + 1)}
                   >
                     {/* {index + 1} */}

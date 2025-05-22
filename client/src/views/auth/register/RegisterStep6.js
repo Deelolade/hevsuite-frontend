@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 import referralService from '../../../services/referralService';
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
 const RegisterStep6 = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,6 +21,7 @@ const RegisterStep6 = () => {
   const [members, setMembers] = useState([])
   const [approval, setApproval] = useState(false);
   const [referrals, setReferrals] = useState([])
+   const { Settings } = useSelector((state) => state.generalSettings);
   useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
 
@@ -74,7 +76,7 @@ const RegisterStep6 = () => {
   const handleMemberSelect = (memberId) => {
     if (selectedMembers.includes(memberId)) {
       setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
-    } else if (selectedMembers.length < 3) {
+    } else if (selectedMembers.length < (Settings?.requiredReferralNumber ?? 3)) {
       setSelectedMembers([...selectedMembers, memberId]);
     }
   };
@@ -246,7 +248,7 @@ const RegisterStep6 = () => {
             </div>
 
             <p className='text-gray-500 text-xs md:text-sm mt-4'>
-              Note: you can select only 3 members
+              Note: you can select only {Settings?.requiredReferralNumber ?? 3} members
             </p>
           </div>
 

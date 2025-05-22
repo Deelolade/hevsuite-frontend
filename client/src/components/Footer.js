@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchFooterData } from "../features/footerSlice";
-import LoadingSpinner from "../views/LoadingSpinner";
 import instagram from "../assets/icons/insta.png";
 import twitter from "../assets/icons/twitter.png";
 import facebook from "../assets/icons/facebook.png";
@@ -56,20 +55,35 @@ const Footer = () => {
           </div>
 
           <div className="text-sm sm:text-base text-right font-black">
-            &copy; 2024 Hazor Group (Trading as HH Club)
+            &copy; {new Date().getFullYear()}  Hazor Group (Trading as HH Club)
           </div>
         </div>
       </div>
     </footer>
   );
+  // Platform-specific styling
+  const getPlatformStyle = (platformName) => {
+    const platform = platformName.toLowerCase();
+    const styles = {
+      facebook: "bg-[#1877F2] hover:bg-[#166FE5]",
+      twitter: "bg-[#1DA1F2] hover:bg-[#1A91DA]",
+      instagram: "bg-gradient-to-br from-[#833AB4] via-[#C13584] to-[#E1306C] hover:opacity-90",
+      linkedin: "bg-[#0077B5] hover:bg-[#00669C]",
+      youtube: "bg-[#FF0000] hover:bg-[#E60000]",
+      tiktok: "bg-black hover:bg-gray-800",
+      pinterest: "bg-[#E60023] hover:bg-[#D5001F]",
+      default: "bg-primary hover:bg-primary-dark"
+    };
 
+    return styles[platform] || styles.default;
+  };
   return (
     <footer className="py-8 border-t bg-gray-50 hidden sm:block" style={{ boxShadow: "-4px -4px 8px 0px #00000040" }}>
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-8 sm:gap-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
             {/* Social Media Links */}
-            {socialMedia.length > 0 && (
+            {/* {socialMedia.length > 0 && (
               <div className="flex items-center gap-4">
                 <span className="font-medium">Follow us</span>
                 <div className="flex gap-4">
@@ -85,6 +99,29 @@ const Footer = () => {
                         src={item.iconImage}
                         alt={item.socialName}
                         className="w-6 h-6"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )} */}
+                        {socialMedia.length > 0 && (
+              <div className="flex items-center gap-4">
+                <span className="font-medium text-gray-700">Follow us</span>
+                <div className="flex gap-3">
+                  {socialMedia.map((item) => (
+                    <Link
+                      key={item._id}
+                      to={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-8 h-8 rounded-3xl flex items-center justify-center transition-all duration-300 ${getPlatformStyle(item.socialName)} shadow-md hover:shadow-lg hover:scale-105`}
+                      aria-label={`Follow us on ${item.socialName}`}
+                    >
+                      <img
+                        src={item.iconImage}
+                        alt={item.socialName}
+                        className="w-6 h-6 rounded-3xl"
                       />
                     </Link>
                   ))}
@@ -112,7 +149,7 @@ const Footer = () => {
 
           {/* Copyright */}
           <div className="text-sm sm:text-base text-right font-black">
-            &copy; 2024 Hazor Group (Trading as HH Club)
+            &copy; {new Date().getFullYear()} Hazor Group (Trading as HH Club)
           </div>
         </div>
       </div>

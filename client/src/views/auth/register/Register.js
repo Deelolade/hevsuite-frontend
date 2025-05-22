@@ -15,6 +15,7 @@ const Register = () => {
     dispatch(reset());
   }, []);
   const { currentStep } = useSelector((state) => state.register);
+    const { Settings } = useSelector((state) => state.generalSettings);
   const navigate = useNavigate();
   const handleUpdateStep = () => {
     dispatch(updateStepData({ step: `step${currentStep}`, data: {} }));
@@ -119,7 +120,7 @@ const Register = () => {
                 2. Proof of ID
               </h2>
               <p className='text-sm md:text-base text-quatr'>
-                (e.g. Drivers License, Passport or ID card).  Applicants must be over 18 years of age.
+                 {`(e.g. Driver's License, Passport or ID card). Applicants must be over ${Settings?.requiredJoiningAge ?? 18} years of age.`}
               </p>
             </div>
             <hr />

@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
 import { persistor } from '../store/store';
+import { fetchMenusData } from '../features/menuSlice';
 import {
   BsFillHouseDoorFill,
   BsQuestionCircle,
@@ -24,9 +25,13 @@ const HeaderOne = () => {
   const { user, isLoading } = useSelector(
     (state) => state.auth
   );
+  const { menus, loading: menusLoading, error: menusError } = useSelector((state) => state.menus);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
   const notRef = React.useRef(false);
+  useEffect(() => {
+    dispatch(fetchMenusData());
+  }, [])
   useEffect(() => {
     if (isMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -34,7 +39,7 @@ const HeaderOne = () => {
       document.body.classList.remove("overflow-hidden");
     }
   }, [isMenuOpen]);
-
+  console.log(menus)
 
 
   const handleLogout = async () => {
@@ -45,26 +50,57 @@ const HeaderOne = () => {
   };
 
   return (
-    <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40 ">
-      <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
-        <Link to={user ? '/homepage' : '/'} className='text-white text-3xl font-bold'>
-          <img src={logo} alt='Logo' className='h-10 sm:h-12' />
-        </Link>
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden">
+    // <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40 ">
+    //   <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
+    //     <Link to={user ? '/homepage' : '/'} className='text-white text-3xl font-bold'>
+    //       <img src={logo} alt='Logo' className='h-10 sm:h-12' />
+    //     </Link>
+    //     {/* Mobile Menu Toggle */}
+    //     <div className="md:hidden">
+    //       <button
+    //         onClick={() => setIsMenuOpen(!isMenuOpen)}
+    //         className="text-white text-2xl focus:outline-none"
+    //       >
+    //         {isMenuOpen ? "×" : "☰"}
+    //       </button>
+    //     </div>
+
+    //     {/* Desktop Menu */}
+    //     <div className="hidden max-w-[600px] w-full fixed  bg-black bg-opacity-40  backdrop-blur-md right-0 md:flex sm:gap-2 md:gap-4 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl  pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
+    <header className='absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40'>
+      <nav className='container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center'>
+        {/* Logo - Fixed on left */}
+        <div className='md:fixed left-4 sm:left-8 md:left-12 md:z-50 top-6'>
+          <Link to={user ? '/homepage' : '/'} className='text-white text-3xl font-bold'>
+            <img src={logo} alt='Logo' className='h-10 sm:h-12' />
+          </Link>
+        </div>
+
+        {/* Mobile Menu Toggle - Fixed on right */}
+        <div className='md:hidden '>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white text-2xl focus:outline-none"
+            className='text-white text-2xl focus:outline-none'
           >
-            {isMenuOpen ? "×" : "☰"}
+            {isMenuOpen ? '×' : '☰'}
           </button>
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden max-w-[600px] w-full fixed  bg-black bg-opacity-40  backdrop-blur-md right-0 md:flex sm:gap-2 md:gap-4 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl  pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base">
+        <div className='hidden top-6 fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base'>
           <Link to="/register">Become a member</Link>
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
+          {!menusLoading && menus?.map((menu) => (
+            <Link
+              key={menu._id}
+              to={menu.link}
+              className='hover:text-gray-300 transition-colors'
+            >
+              {menu.title}
+            </Link>
+          ))}
+
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
@@ -98,7 +134,7 @@ const HeaderOne = () => {
                   <img
                     src={user.profilePhoto || avatar}
                     alt={user.forename || 'profile'}
-                    className="w-12 h-12 rounded-full border-2 border-red-500"
+                    className="w-12 h-12 rounded-full "
                   />
                   <span className="text-white">{user.forename} {user.surname}</span>
                 </div>
@@ -171,6 +207,15 @@ const HeaderOne = () => {
                   <BsQuestionCircle className="text-xl mr-2" />
                   <span>Help Centre</span>
                 </Link>
+                {!menusLoading && menus?.map((menu) => (
+                  <Link
+                    key={menu._id}
+                    to={menu.link}
+                    className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  >
+                    {menu.title}
+                  </Link>
+                ))}
                 {isLoggedIn && (
                   <>
                     <div
@@ -195,7 +240,6 @@ const HeaderOne = () => {
                         <span>Notification</span>
                         {unreadCount > 0 && (
                           <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            10+
                             {unreadCount > 9 ? '9+' : unreadCount}
                           </span>
                         )}

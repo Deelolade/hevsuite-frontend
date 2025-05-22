@@ -13,6 +13,7 @@ import "swiper/css";
 import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLandingPageData } from "../../features/landingPageSlice";
+import { fetchFooterData } from "../../features/footerSlice";
 
 
   const Landing = () => {
@@ -32,11 +33,25 @@ import { fetchLandingPageData } from "../../features/landingPageSlice";
   
   const { newsItems, loading, error } = useSelector((state) => state.news);
   
-  useEffect(() => {
-    dispatch(fetchNonExpiredNews());
-    dispatch(fetchLandingPageData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchNonExpiredNews());
+  //   dispatch(fetchLandingPageData());
+  // }, [dispatch]);
+useEffect(() => {
+  const fetchAllData = async () => {
+    try {
+      await Promise.all([
+        dispatch(fetchLandingPageData()),
+        dispatch(fetchNonExpiredNews()),
+        dispatch(fetchFooterData()) // Add footer data fetch
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
+  fetchAllData();
+}, [dispatch]);
 
   const handleSlideChange = (index) => {
     if (swiperRef.current) {
@@ -103,12 +118,12 @@ import { fetchLandingPageData } from "../../features/landingPageSlice";
           )}
         </div>
         <div className="absolute z-50 inset-0 flex flex-col items-center justify-end mb-20 text-white px-4 pointer-events-none">
-          <Link
+          {/* <Link
             to="/register"
             className="px-8 py-3 md:px-6 md:py-2 sm:px-4 sm:py-1 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary text-xl md:text-lg sm:text-base"
           >
             Become a Member
-          </Link>
+          </Link> */}
           <div className="flex gap-2 mt-8 pointer-events-auto">
             {landingPages?.map((_, index) => (
               <button
@@ -177,13 +192,13 @@ import { fetchLandingPageData } from "../../features/landingPageSlice";
                                 <div className="flex items-center gap-2 text-white/80">
                                   <BsCalendar className="w-4 h-4 sm:w-3 sm:h-3" />
                                   <span className="text-[12px] sm:text-[10px]">
-                                    {formatDateWithSuffix(item.expireDate)}
+                                    {formatDateWithSuffix(item.createdAt)}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-white/80">
                                   <MdAccessTime className="w-4 h-4 sm:w-3 sm:h-3" />
                                   <span className="text-[12px] sm:text-[10px]">
-                                    {formatTime(item.expireDate)}
+                                    {formatTime(item.createdAt)}
                                   </span>
                                 </div>
                               </div>
@@ -222,6 +237,7 @@ import { fetchLandingPageData } from "../../features/landingPageSlice";
                 )}
               </div>
             </section>
+             {newsItems?.length > 0 && (
             <div className="text-center mt-8">
               <Link
                 to="news"
@@ -230,6 +246,7 @@ import { fetchLandingPageData } from "../../features/landingPageSlice";
                 View all
               </Link>
             </div>
+             )}
           </div>
         )}
       </section>

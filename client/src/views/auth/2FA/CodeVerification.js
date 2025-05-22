@@ -8,15 +8,15 @@ import toast from 'react-hot-toast';
 const CodeVerification = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState(['', '', '', '', '', '']);
-  const [resendCooldown, setResendCooldown] = useState(0); 
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
-  
+
   useEffect(() => {
     if (resendCooldown > 0) {
       const timer = setInterval(() => {
         setResendCooldown((prev) => prev - 1);
       }, 1000);
-  
+
       return () => clearInterval(timer);
     }
   }, [resendCooldown]);
@@ -42,7 +42,7 @@ const CodeVerification = () => {
     setIsResending(true);
     try {
       await authService.resend2FACode();
-      setResendCooldown(30); 
+      setResendCooldown(30);
       toast.success(`New code sent!`);
     } catch (error) {
       toast.error(`Failed to resend code. Please try again later.`);
@@ -87,11 +87,13 @@ const CodeVerification = () => {
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
           <div className='flex flex-col items-center text-center'>
             <div className='w-32 h-32 rounded-2xl mb-4'>
-              <img
-                src={logo}
-                alt='Hevsuite Club'
-                className='w-full h-full p-4'
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
@@ -143,7 +145,7 @@ const CodeVerification = () => {
               </div>
 
               <div className='text-center'>
-              <p className='text-gray-600 mb-4 text-sm md:text-base'>
+                <p className='text-gray-600 mb-4 text-sm md:text-base'>
                   Didn't receive code?{' '}
                   <button
                     type='button'
@@ -151,8 +153,8 @@ const CodeVerification = () => {
                     onClick={handleResendCode}
                     disabled={resendCooldown > 0 || isResending}
                   >
-                    {isResending ? 'Sending...' : 
-                     resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
+                    {isResending ? 'Sending...' :
+                      resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
                   </button>
                 </p>
 

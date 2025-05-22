@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile, logout } from "../features/auth/authSlice";
 import { persistor } from '../store/store';
 import { fetchNotifications } from '../features/notificationSlice';
+import { fetchMenusData } from '../features/menuSlice';
 import {
   BsFillHouseDoorFill,
   BsQuestionCircle,
@@ -25,6 +26,7 @@ const Header = () => {
   const { user, isLoading } = useSelector(
     (state) => state.auth
   );
+  const { menus, loading: menusLoading, error: menusError } = useSelector((state) => state.menus);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
 
@@ -38,12 +40,13 @@ const Header = () => {
     }
   }, [isMenuOpen]);
   useEffect(() => {
+    dispatch(fetchMenusData());
     if (user?._id) {
       dispatch(fetchNotifications(user._id));
     }
   }, [dispatch, isLoggedIn]);
 
-
+  console.log(menus)
   const handleLogout = async () => {
     dispatch(logout()).then(() => {
       persistor.purge(); // safely purge after logout completes
@@ -54,12 +57,15 @@ const Header = () => {
   return (
     <header className='absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40'>
       <nav className='container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center'>
-        <Link to={user? '/homepage' : '/'} className='text-white text-3xl font-bold'>
-          <img src={logo} alt='Logo' className='h-10 sm:h-12' />
-        </Link>
+        {/* Logo - Fixed on left */}
+        <div className='md:fixed left-4 sm:left-8 md:left-12 md:z-50 top-6'>
+          <Link to={user ? '/homepage' : '/'} className='text-white text-3xl font-bold'>
+            <img src={logo} alt='Logo' className='h-10 sm:h-12' />
+          </Link>
+        </div>
 
-        {/* Mobile Menu Toggle */}
-        <div className='md:hidden'>
+        {/* Mobile Menu Toggle - Fixed on right */}
+        <div className='md:hidden '>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className='text-white text-2xl focus:outline-none'
@@ -69,10 +75,20 @@ const Header = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className='hidden fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base'>
+        <div className='hidden top-6 fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base'>
           <Link to='/how-it-works'>How it works</Link>
           <Link to='/topics'>Help centre</Link>
           <Link to='/ask'>Ask</Link>
+          {!menusLoading && menus?.map((menu) => (
+            <Link
+              key={menu._id}
+              to={menu.link}
+              className='hover:text-gray-300 transition-colors'
+            >
+              {menu.title}
+            </Link>
+          ))}
+
           {isLoggedIn ? (
             <>
               <div className='flex items-center space-x-6'>
@@ -103,7 +119,7 @@ const Header = () => {
                   <img
                     src={user.profilePhoto || avatar}
                     alt={user.forename || 'profile'}
-                    className='w-12 h-12 rounded-full border-2 border-red-500 object-cover'
+                    className='w-12 h-12 rounded-full  object-cover'
                   />
                   <span className='text-white'>{user.forename} {user.surname}</span>
                 </div>
@@ -123,11 +139,11 @@ const Header = () => {
         <div
           className={`${isMenuOpen ? 'block' : 'hidden'
             } md:hidden fixed inset-0 z-100`}
-            style={{
-    backdropFilter: 'blur(124px)',
-    boxShadow: '0px 4px 54px 0px #00003033',
-    background: 'linear-gradient(163.72deg, rgba(255, 255, 255, 0.21) 3.23%, rgba(255, 255, 255, 0.18) 106.2%)'
-  }}
+          style={{
+            backdropFilter: 'blur(124px)',
+            boxShadow: '0px 4px 54px 0px #00003033',
+            background: 'linear-gradient(163.72deg, rgba(255, 255, 255, 0.21) 3.23%, rgba(255, 255, 255, 0.18) 106.2%)'
+          }}
         >
           <div className='p-6 h-full flex flex-col overflow-auto'>
             <div className='flex justify-between items-center mb-8'>
@@ -144,72 +160,80 @@ const Header = () => {
             </div>
 
             {/* Menu Items */}
-                      <div className="flex-grow">
-                        <div className="space-y-2">
-                          <Link
-                            to="/"
-                            className="flex text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                          >
-                            <BsFillHouseDoorFill className="text-xl mr-2" />
-                            <span>Home</span>
-                          </Link>
-                          <Link
-                            to="/how-it-works"
-                            className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                          >
-                            <PiCirclesThreeDuotone className="text-xl mr-2" />
-                            <span>How it Works</span>
-                          </Link>
-                          {isLoggedIn && (
-                            <Link
-                              to="/ask"
-                              className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                            >
-                              <BsChatFill className="text-xl mr-2" />
-                              <span>Ask</span>
-                            </Link>
-                          )}
-                          <Link
-                            to="/topics"
-                            className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                          >
-                            <BsQuestionCircle className="text-xl mr-2" />
-                            <span>Help Centre</span>
-                          </Link>
-                          {isLoggedIn && (
-                            <>
-                              <div
-                                className="flex text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                                onClick={() => {
-                                  notRef.current = false;
-                                  setShowProfileModal(true);
-                                }}
-                              >
-                                <BsPerson className="text-xl mr-2" />
-                                <span>My Account</span>
-                              </div>
-                              <div className="relative  text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
-                                <div
-                                  onClick={() => {
-                                    notRef.current = true;
-                                    setShowProfileModal(true);
-                                  }}
-                                  className="flex text-white py-2 px-4 rounded-lg hover:bg-gray-700"
-                                >
-                                  <BsBell className="text-xl mr-2" />
-                                  <span>Notification</span>
-                                  {unreadCount > 0 && (
-                                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                      10+
-                                      {unreadCount > 9 ? '9+' : unreadCount}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
+            <div className="flex-grow">
+              <div className="space-y-2">
+                <Link
+                  to="/"
+                  className="flex text-sm text-white py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
+                  <BsFillHouseDoorFill className="text-xl mr-2" />
+                  <span>Home</span>
+                </Link>
+                <Link
+                  to="/how-it-works"
+                  className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
+                  <PiCirclesThreeDuotone className="text-xl mr-2" />
+                  <span>How it Works</span>
+                </Link>
+                {isLoggedIn && (
+                  <Link
+                    to="/ask"
+                    className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  >
+                    <BsChatFill className="text-xl mr-2" />
+                    <span>Ask</span>
+                  </Link>
+                )}
+                <Link
+                  to="/topics"
+                  className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                >
+                  <BsQuestionCircle className="text-xl mr-2" />
+                  <span>Help Centre</span>
+                </Link>
+                {!menusLoading && menus?.map((menu) => (
+                  <Link
+                    key={menu._id}
+                    to={menu.link}
+                    className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                  >
+                    {menu.title}
+                  </Link>
+                ))}
+                {isLoggedIn && (
+                  <>
+                    <div
+                      className="flex text-sm text-white  py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      onClick={() => {
+                        notRef.current = false;
+                        setShowProfileModal(true);
+                      }}
+                    >
+                      <BsPerson className="text-xl mr-2" />
+                      <span>My Account</span>
+                    </div>
+                    <div className="relative  text-sm rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+                      <div
+                        onClick={() => {
+                          notRef.current = true;
+                          setShowProfileModal(true);
+                        }}
+                        className="flex text-white py-2 px-4 rounded-lg hover:bg-gray-700"
+                      >
+                        <BsBell className="text-xl mr-2" />
+                        <span>Notification</span>
+                        {unreadCount > 0 && (
+                          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
                       </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
 
             <div className='mt-auto'>
               {isLoggedIn ? (
@@ -313,10 +337,10 @@ const Header = () => {
             }
           `}</style>
 
-            <ProfileModal
-              forNotification={notRef.current ? notRef : null}
-              onClose={() => setShowProfileModal(false)}
-            />
+          <ProfileModal
+            forNotification={notRef.current ? notRef : null}
+            onClose={() => setShowProfileModal(false)}
+          />
         </Modal>
       )}
     </header>

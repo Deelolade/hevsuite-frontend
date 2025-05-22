@@ -28,11 +28,11 @@ const NewsDetail = () => {
   const relatedNews = allNewsItems.filter(news => news._id !== selectedNews?._id);
 
 
-useEffect(() => {
-  if (!selectedNews || selectedNews._id !== id) {
-    dispatch(fetchNewsById(id));
-  }
-}, [id, selectedNews, dispatch]);
+  useEffect(() => {
+    if (!selectedNews || selectedNews._id !== id) {
+      dispatch(fetchNewsById(id));
+    }
+  }, [id, selectedNews, dispatch]);
   useEffect(() => {
 
     if (selectedNews?._id) {
@@ -50,6 +50,10 @@ useEffect(() => {
       </div>
     );
   }
+  const mediaSlides = [
+    ...(selectedNews.videos || []).map((url) => ({ type: 'video', url })),
+    ...(selectedNews.images || []).map((url) => ({ type: 'image', url })),
+  ];
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -65,6 +69,63 @@ useEffect(() => {
           <span>back</span>
         </Link>
         <div className='relative inset-0 bg-black/50'>
+          {/* <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            pagination={{ clickable: true }}
+            className="w-full h-[50vh] md:h-[70vh]"
+          >
+            {selectedNews.images?.length > 0 ? (
+              selectedNews.images.map((img, index) => (
+                <SwiperSlide key={`${index}-${img}`}>
+                  <img
+                    src={img}
+                    alt={`Slide ${index}`}
+                    className='w-full h-full object-cover brightness-50'
+                    loading='lazy'
+                    onError={(e) => {
+                      e.target.src = image_card; // Fallback to default image if error
+                    }}
+                  />
+                </SwiperSlide>
+              ))
+            ) : (
+              <SwiperSlide>
+                <img
+                  src={image_card} // Fallback when no images exist
+                  alt="Default slide"
+                  className='w-full h-full object-cover brightness-50'
+                />
+              </SwiperSlide>
+            )}
+          </Swiper> */}
+          {/* {selectedNews.videos?.length > 0 && (
+            selectedNews.videos.map((video, index) => (
+              <SwiperSlide key={`video-${index}`}>
+                <div className="relative w-full h-full">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Video failed to load:', video);
+                      e.target.style.display = 'none'; // Hide if error occurs
+                    }}
+                  >
+                    <source src={video} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                 
+                  <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                    VIDEO
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))
+          )} */}
           <Swiper
             modules={[Autoplay, Pagination]}
             autoplay={{ delay: 4000, disableOnInteraction: false }}
@@ -72,27 +133,53 @@ useEffect(() => {
             pagination={{ clickable: true }}
             className="w-full h-[50vh] md:h-[70vh]"
           >
-            {(selectedNews.images.length > 0 ? selectedNews.images : [image_card]).map((img, index) => (
-              <SwiperSlide key={index}>
+            {mediaSlides.length > 0 ? (
+              mediaSlides.map((media, index) => (
+                <SwiperSlide key={`media-${index}`}>
+                  {media.type === 'video' ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Video failed to load:', media.url);
+                          e.target.style.display = 'none';
+                        }}
+                      >
+                        <source src={media.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                        VIDEO
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={media.url}
+                      alt={`Slide ${index}`}
+                      className="w-full h-full object-cover brightness-50"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.src = image_card; // fallback image
+                      }}
+                    />
+                  )}
+                </SwiperSlide>
+              ))
+            ) : (
+              <SwiperSlide>
                 <img
-                  src={img}
-                  alt={`Slide ${index}`}
-                  className='w-full h-full object-cover brightness-50 '
+                  src={image_card}
+                  alt="Default slide"
+                  className="w-full h-full object-cover brightness-50"
                 />
               </SwiperSlide>
-            ))}
+            )}
           </Swiper>
 
-          {/* <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src="/videos/hero.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video> */}
         </div>
         <div className=' hidden absolute inset-0  flex-col items-center justify-end mb-20 text-white'>
           <div className='flex gap-2 mt-8'>
@@ -112,11 +199,11 @@ useEffect(() => {
           <div className='flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 mb-8'>
             <div className='flex items-center gap-2'>
               <BsCalendar className='w-4 h-4' />
-              <span>{formatDateWithSuffix(selectedNews.expireDate)}</span>
+              <span>{formatDateWithSuffix(selectedNews.createdAt)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <MdAccessTime className='w-4 h-4' />
-              <span>{formatTime(selectedNews.expireDate)}</span>
+              <span>{formatTime(selectedNews.createdAt)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <span>👁</span>
@@ -142,8 +229,8 @@ useEffect(() => {
                   <div
                     key={item._id}
                     onClick={() => {
-                       dispatch(setSelectedNews(item));
-                    navigate(`/news-detail/${item._id}`);
+                      dispatch(setSelectedNews(item));
+                      navigate(`/news-detail/${item._id}`);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className='relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] w-[300px] flex-shrink-0'

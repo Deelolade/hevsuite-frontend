@@ -30,11 +30,13 @@ const Success = () => {
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
           <div className='flex flex-col items-center text-center'>
             <div className='w-32 h-32 rounded-2xl mb-4'>
-              <img
-                src={logo}
-                alt='Hevsuite Club'
-                className='w-full h-full p-4'
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
@@ -68,20 +70,31 @@ const Success = () => {
 
               <button
                 // onClick={() => navigate('/homepage')}
-                onClick={async() => {
-                  await dispatch(fetchProfile()).unwrap();
+                onClick={async () => {
+                  // await dispatch(fetchProfile()).unwrap();
+                  // if (!user) {
+                  //   navigate('/login');
+                  // } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
+                  //   navigate('/homepage');
+                  // }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
+                  //   navigate('/register-6');
+                  // }
+                  //  else {
+                  //   navigate('/register-6'); // Or your membership registration page
+                  // }
+                   await dispatch(fetchProfile()).unwrap();
+
                   if (!user) {
                     navigate('/login');
-                  } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
                     navigate('/homepage');
-                  }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
-                    navigate('/register-7');
-                  }
-                   else {
-                    navigate('/register-6'); // Or your membership registration page
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+                    navigate('/register-6');
+                  } else {
+                    navigate('/register-6'); // fallback
                   }
                 }}
-              
+
                 className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
               >
                 Continue
