@@ -59,15 +59,27 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
     events.findIndex((eventx) => eventx.name === event.name)
   );
 
-  const handleNext = () => {
-    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+  // const handleNext = () => {
+  //   setCurrentEventIndex((prevIndex) => (prevIndex + 1) % events.length);
+  // };
+
+  // const handlePrev = () => {
+  //   setCurrentEventIndex((prevIndex) =>
+  //     prevIndex === 0 ? events.length - 1 : prevIndex - 1
+  //   );
+  // };
+   const handleNext = () => {
+    setCurrentImageIndex((prevIndex) =>
+      (prevIndex + 1) % currentEvent.images.length
+    );
   };
 
   const handlePrev = () => {
-    setCurrentEventIndex((prevIndex) =>
-      prevIndex === 0 ? events.length - 1 : prevIndex - 1
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? currentEvent.images.length - 1 : prevIndex - 1
     );
   };
+
 
   const currentEvent = events[currentEventIndex];
 
@@ -87,10 +99,15 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
               <span>{eventType}</span>
             </div>
             <div className="relative h-auto sm:h-full overflow-y-auto">
-              <img
+              {/* <img
                 src={currentEvent.image}
                 alt={currentEvent.name}
                 className="w-full md:h-full min-h-[25rem] object-center bg-center bg-current opacity-90"
+              /> */}
+               <img
+                src={currentEvent.images[currentImageIndex]}
+                alt={currentEvent.name}
+                className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
               />
               <div className="absolute -mt-10 inset-0 flex items-center justify-between px-6">
                 <button

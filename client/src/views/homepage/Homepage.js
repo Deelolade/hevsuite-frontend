@@ -15,7 +15,7 @@ import 'swiper/css/pagination';
 import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
 import './forced.css';
 import EventDetailsModal from '../account/events/EventDetails';
-import { fetchNonExpiredNews } from '../../features/newsSlice';
+import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { fetchEvents } from '../../features/eventSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDateWithSuffix, formatTime } from '../../utils/formatDate';
@@ -42,7 +42,7 @@ const Homepage = () => {
   // Add this function to filter events by date
   const filterEvents = () => {
     if (!events) return [];
-
+    console.log(events)
     return events
       .filter(event => {
         if (selectedAudience && event.audienceType !== selectedAudience) return false;
@@ -76,7 +76,7 @@ const Homepage = () => {
   return (
     <div className='min-h-screen'>
       {/* Header */}
-      <header className='relative text-white'>
+      <header className='relative text-white min-h-screen'>
         <div className='absolute inset-0 z-0'>
           <img
             src={headerBg}
@@ -272,7 +272,7 @@ const Homepage = () => {
                             }`}
                         >
                           <img
-                            src={event.image}
+                            src={event.images[0]}
                             alt={event.name}
                             className='w-full h-full  object-cover bg-cover bg-center '
                           />
@@ -336,11 +336,15 @@ const Homepage = () => {
                 <div
                   key={item.id}
                   className='relative cursor-pointer group'
-                  onClick={() => navigate('/news-detail')}
+                  // onClick={() => navigate('/news-detail')}
+                  onClick={() => {
+                    dispatch(setSelectedNews(item));
+                    navigate(`/news-detail/${item._id}`);
+                  }}
                 >
-                  <div className='relative w-80 md:w-92 h-80 md:h-80 rounded-2xl overflow-hidden'>
+                  <div className='relative  w-full  h-80 md:h-80 rounded-2xl overflow-hidden'>
                     <img
-                      src={item.image}
+                      src={item.images[0]}
                       alt={item.title}
                       className='w-full h-full object-cover bg-cover bg-center bg-current'
                     />
@@ -351,11 +355,11 @@ const Homepage = () => {
                       <div className='flex items-center justify-between gap-5 mt-2 text-xs md:text-sm'>
                         <div className='flex items-center gap-2'>
                           <BsCalendar className='w-3 h-3 md:w-4 md:h-4' />
-                          <span>{formatDateWithSuffix(item.expireDate)}</span>
+                          <span>{formatDateWithSuffix(item.createdAt)}</span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <MdAccessTime className='w-3 h-3 md:w-4 md:h-4' />
-                          <span>{formatTime(item.expireDate)}</span>
+                          <span>{formatTime(item.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -365,14 +369,16 @@ const Homepage = () => {
             </div>
           )
           }
-          <div className='text-center mt-6 md:mt-8'>
-            <button
-              onClick={() => navigate('/events')}
-              className=' border-gray-600 text-white px-8 py-2 rounded-full'
-            >
-              View all
-            </button>
-          </div>
+          {newsItems?.length > 0 && (
+            <div className='text-center mt-6 md:mt-8'>
+              <button
+                onClick={() => navigate('/news')}
+                className="px-6 py-3 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-secondary text-lg hover:opacity-90 transition-opacity duration-200 md:px-8 md:py-3 md:text-xl"
+              >
+                View All
+              </button>
+            </div>
+          )}
         </div>
       </section>
       {selectedEvent && (

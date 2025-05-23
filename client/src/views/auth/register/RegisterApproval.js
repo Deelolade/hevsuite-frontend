@@ -8,16 +8,25 @@ import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../features/auth/authSlice';
+import { persistor } from '../../../store/store';
 
 const RegisterApproval = ({ setApproval, referrals }) => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
 
-  const allApproved = user?.membershipStatus === 'accepted'
+  const allApproved = user&& user.membershipStatus === 'accepted'
+  const handleLogout = async () => {
+    dispatch(logout()).then(() => {
+      persistor.purge(); // safely purge after logout completes
+    });
+    navigate("/");
+  };
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -109,14 +118,21 @@ const RegisterApproval = ({ setApproval, referrals }) => {
               </svg>
               Add other referral
             </button>
-            {allApproved && (
+            {allApproved ? (
               <Link
-                to='/register-7'
-                className='px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors'
+                to="/register-7"
+                className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
               >
                 Go to payment
-                <span className='ml-1'>→</span>
+                <span className="ml-1">→</span>
               </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>

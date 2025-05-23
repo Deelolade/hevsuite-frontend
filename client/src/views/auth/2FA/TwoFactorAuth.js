@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState('email');
-  const dispatch=useDispatch()
-    const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth);
   const handleMethodSelection = async () => {
     // Redirect to the appropriate verification page
     navigate(`/${input}-verification`)
@@ -59,7 +59,9 @@ const TwoFactorAuth = () => {
           {/* Logo for mobile only */}
           <div className='flex justify-center mb-6 md:hidden'>
             <div className='w-24 h-24 bg-[#540A26] rounded-2xl flex items-center justify-center'>
+              <Link to='/'>
               <img src={logo} alt='Logo' className='w-16 h-16' />
+              </Link>
             </div>
           </div>
           <div className='bg-white max-w-md p-8 rounded-xl'>
@@ -117,16 +119,27 @@ const TwoFactorAuth = () => {
                 //   navigate('/homepage');
                 // }}
                 onClick={async () => {
-                  await dispatch(fetchProfile()).unwrap();
+                  // await dispatch(fetchProfile()).unwrap();
+                  // if (!user) {
+                  //   navigate('/login');
+                  // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
+                  //   navigate('/homepage');
+                  // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+                  //   navigate('/register-6');
+                  // }
+                  // else {
+                  //   navigate('/register-6'); // Or your membership registration page
+                  // }
+                   await dispatch(fetchProfile()).unwrap();
+
                   if (!user) {
                     navigate('/login');
                   } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
                     navigate('/homepage');
                   } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
-                    navigate('/register-7');
-                  }
-                  else {
-                    navigate('/register-6'); // Or your membership registration page
+                    navigate('/register-6');
+                  } else {
+                    navigate('/register-6'); // fallback
                   }
                 }}
               >

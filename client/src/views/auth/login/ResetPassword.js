@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, useLocation} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import authService from "../../../services/authService";
 import toast from 'react-hot-toast';
 import logo from '../../../assets/logo_white.png';
@@ -9,7 +9,7 @@ import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
-    const location = useLocation(); 
+  const location = useLocation();
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: ''
@@ -24,15 +24,15 @@ const ResetPasswordPage = () => {
 
   // Get email from location state or session storage
   const emailOrPhone = sessionStorage.getItem('resetIdentifier');
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get('code');
+  const searchParams = new URLSearchParams(location.search);
+  const code = searchParams.get('code');
   const userId = searchParams.get('userId');
 
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validatePassword = (pass) => {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
       return passwordRegex.test(pass);
@@ -43,7 +43,7 @@ const ResetPasswordPage = () => {
       return;
     }
 
- 
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("Passwords don't match");
       return;
@@ -62,7 +62,7 @@ const ResetPasswordPage = () => {
         passwordData.newPassword,
         userId
       );
-      
+
       toast.success('Password reset successfully!');
       sessionStorage.removeItem('resetEmail');
       navigate("/reset-success");
@@ -94,7 +94,9 @@ const ResetPasswordPage = () => {
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
           <div className='flex flex-col items-center text-center mt-auto'>
             <div className='w-32 h-32 rounded-2xl mb-4'>
-              <img src={logo} alt='Hevsuite Club' className='w-full h-full p-4' />
+              <Link to='/'>
+                <img src={logo} alt='Hevsuite Club' className='w-full h-full p-4' />
+              </Link>
             </div>
             <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
@@ -150,7 +152,7 @@ const ResetPasswordPage = () => {
                   </span>
                   <button
                     type='button'
-                    onClick={() => setShowPassword({...showPassword, new: !showPassword.new})}
+                    onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })}
                     className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'
                   >
                     {showPassword.new ? <BsEyeSlash size={20} /> : <BsEye size={20} />}
@@ -181,7 +183,7 @@ const ResetPasswordPage = () => {
                   </span>
                   <button
                     type='button'
-                    onClick={() => setShowPassword({...showPassword, confirm: !showPassword.confirm})}
+                    onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })}
                     className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'
                   >
                     {showPassword.confirm ? <BsEyeSlash size={20} /> : <BsEye size={20} />}
@@ -194,9 +196,8 @@ const ResetPasswordPage = () => {
               <button
                 type='submit'
                 disabled={isLoading}
-                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-medium ${
-                  isLoading ? 'opacity-50' : ''
-                }`}
+                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-medium ${isLoading ? 'opacity-50' : ''
+                  }`}
               >
                 {isLoading ? 'Resetting Password...' : 'Reset Password'}
               </button>

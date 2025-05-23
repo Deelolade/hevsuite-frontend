@@ -49,9 +49,15 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Check membership status if user exists
-  if (user && user.membershipStatus && user.membershipStatus !== 'accepted') {
-    return <Navigate to="/register-6" state={{ from: location }} replace />;
-  }
+  if (user && user.membershipStatus !== 'accepted') {
+  return <Navigate to="/register-6" replace />;
+}
+if (user && user.joinFeeStatus !== 'paid') {
+  return <Navigate to="/register-6" replace />;
+}
+  // if (user && user.membershipStatus && user.membershipStatus !== 'accepted' || user.joinFeeStatus !== 'paid') {
+  //   return <Navigate to="/register-6" state={{ from: location }} replace />;
+  // }
 
   return children;
 };
@@ -62,12 +68,12 @@ const LoginRedirect = ({ children }) => {
 
   if (isAuthenticated) {
     // Redirect to homepage or wherever you want logged-in users to go
-    if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.joinFeeStatus == 'paid') {
+    if (user && user.membershipStatus && user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
       return <Navigate to="/homepage" state={{ from: location }} replace />;
-    } else if (user && user.membershipStatus && user.membershipStatus == 'accepted' && user.joinFeeStatus == 'pending') {
-      return <Navigate to="/register-7" state={{ from: location }} replace />;
+    } else if (user && user.membershipStatus && user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+      return <Navigate to="/register-6" state={{ from: location }} replace />;
     }
-    else if (user && user.membershipStatus && user.membershipStatus == 'pending') {
+    else if (user && user.membershipStatus && user.membershipStatus === 'pending') {
       return <Navigate to="/register-6" state={{ from: location }} replace />;
     }
   }
