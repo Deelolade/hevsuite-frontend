@@ -1,171 +1,450 @@
-import React, { useState } from "react";
-import { BsGear } from "react-icons/bs";
-import Modal from "react-modal";
-import stripe from "../../assets/Stripe.png";
-import paypal from "../../assets/PayPal.png";
-import mastercard from "../../assets/Mastercard.png";
-import amazon_pay from "../../assets/AmazonPay.png";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { BsGear } from "react-icons/bs"
+import Modal from "react-modal"
+import {
+  getProcessors,
+  updateProcessor,
+  addProcessor,
+  removeProcessor,
+  reset,
+  reorderProcessors,
+} from "../../store/payment/paymentSlice"
+
+// Set app element for Modal accessibility
+Modal.setAppElement("#root")
 
 const Payment = () => {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedProcessor, setSelectedProcessor] = useState(null);
-  const [openOptionsId, setOpenOptionsId] = useState(null);
-  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [newProcessorImage, setNewProcessorImage] = useState(null);
+  const dispatch = useDispatch()
+  const { processors, isLoading, isError, isSuccess, message } = useSelector((state) => state.payment)
 
-  const [dragging, setDragging] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
+  // Local state for UI
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedProcessor, setSelectedProcessor] = useState(null)
+  const [openOptionsId, setOpenOptionsId] = useState(null)
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
+  const [logoFile, setLogoFile] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
-  const Items = (event, index) => {
-    setDragging(index);
-  };
+  // Form state for adding new processor
+  const [newProcessor, setNewProcessor] = useState({
+    provider: "",
+    apiKey: "",
+    secretKey: "",
+    authKey: "",
+    allowedMembers: "All Members",
+  })
 
+  // Form state for editing processor
+  const [editedProcessor, setEditedProcessor] = useState({
+    provider: "",
+    enabled: true,
+    apiKey: "",
+    secretKey: "",
+    authKey: "",
+    currency: "USD",
+  })
+
+  // Drag and drop state
+  const [dragging, setDragging] = useState(null)
+  const [dragOver, setDragOver] = useState(null)
+
+  // Fetch processors on component mount
+  useEffect(() => {
+    dispatch(getProcessors())
+
+    // Cleanup on unmount
+    return () => {
+      dispatch(reset())
+    }
+  }, [dispatch])
+
+  // Reset success/error states after operations
+  useEffect(() => {
+    if (isSuccess || isError) {
+      const timer = setTimeout(() => {
+        dispatch(reset())
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [isSuccess, isError, dispatch])
+
+  // Update editedProcessor when selectedProcessor changes
+  useEffect(() => {
+    if (selectedProcessor) {
+      setEditedProcessor({
+        provider: selectedProcessor.provider || "",
+        enabled: selectedProcessor.enabled !== undefined ? selectedProcessor.enabled : true,
+        apiKey: selectedProcessor.apiKey || "",
+        secretKey: selectedProcessor.secretKey || "",
+        authKey: selectedProcessor.authKey || "",
+        currency: selectedProcessor.currency || "USD",
+      })
+      setLogoPreview(selectedProcessor.logo || null)
+    }
+  }, [selectedProcessor])
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isAddModalOpen) {
+      setNewProcessor({
+        provider: "",
+        apiKey: "",
+        secretKey: "",
+        authKey: "",
+        allowedMembers: "All Members",
+      })
+      setLogoFile(null)
+      setLogoPreview(null)
+    }
+  }, [isAddModalOpen])
+
+  // Handle drag start
+  const handleDragStart = (event, index) => {
+    setDragging(index)
+  }
+
+  // Handle drag over
   const handleDragOver = (event, index) => {
-    setDragOver(index);
-  };
+    event.preventDefault()
+    setDragOver(index)
+  }
 
-  const handleDragEnd = (event) => {
-    if (dragging !== null && dragOver !== null) {
-      const newProccessors = [...processors];
-      const [reorderedItem] = newProccessors.splice(dragging, 1);
-      newProccessors.splice(dragOver, 0, reorderedItem);
-      setProccessors(newProccessors);
+  // Handle drag end
+  const handleDragEnd = () => {
+    if (dragging !== null && dragOver !== null && dragging !== dragOver) {
+      // Create a new array with the reordered processors
+      const reorderedProcessors = [...processors]
+      const [movedProcessor] = reorderedProcessors.splice(dragging, 1)
+      reorderedProcessors.splice(dragOver, 0, movedProcessor)
+
+      // Update the order property for each processor
+      const updatedProcessors = reorderedProcessors.map((processor, index) => ({
+        ...processor,
+        order: index,
+      }))
+
+      // Dispatch the reorder action
+      dispatch(reorderProcessors(updatedProcessors))
     }
-    setDragging(null);
-    setDragOver(null);
-  };
+    setDragging(null)
+    setDragOver(null)
+  }
 
-  // Add handler for settings click
+  // Handle settings click
   const handleSettingsClick = (processor) => {
-    setSelectedProcessor(processor);
-    setIsEditModalOpen(true);
-  };
+    setSelectedProcessor(processor)
+    setIsEditModalOpen(true)
+    setOpenOptionsId(null)
+  }
 
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
+  // Handle logo file selection
+  const handleLogoSelect = (e) => {
+    const file = e.target.files[0]
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
+      setLogoFile(file)
+      const imageUrl = URL.createObjectURL(file)
+      setLogoPreview(imageUrl)
     }
-  };
+  }
 
-  const handleNewImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setNewProcessorImage(imageUrl);
-    }
-  };
-
-  const [processors, setProccessors] = useState([
-    { id: 1, name: "stripe", logo: stripe, isTopPriority: true },
-    { id: 2, name: "amazon", logo: amazon_pay, isTopPriority: false },
-    {
-      id: 3,
-      name: "mastercard",
-      logo: mastercard,
-    },
-    { id: 4, name: "paypal", logo: paypal, isTopPriority: false },
-  ]);
-
+  // Handle remove processor
   const handleRemove = (processor) => {
-    setSelectedProcessor(processor);
-    setIsRemoveModalOpen(true);
-    setOpenOptionsId(null);
+    setSelectedProcessor(processor)
+    setIsRemoveModalOpen(true)
+    setOpenOptionsId(null)
+  }
+
+  // Handle toggle processor enabled status
+  const handleToggleEnabled = (processor) => {
+    const updatedProcessor = {
+      ...processor,
+      enabled: !processor.enabled,
+      provider: processor.provider // Ensure provider is included
+    };
+    dispatch(updateProcessor(updatedProcessor));
   };
+
+  // Handle move processor up
+  const handleMoveUp = (index) => {
+    if (index > 0) {
+      const reorderedProcessors = [...processors];
+      const temp = reorderedProcessors[index];
+      reorderedProcessors[index] = reorderedProcessors[index - 1];
+      reorderedProcessors[index - 1] = temp;
+  
+      const updatedProcessors = reorderedProcessors.map((processor, idx) => ({
+        ...processor,
+        order: idx,
+        provider: processor.provider // Ensure provider is included
+      }));
+  
+      dispatch(reorderProcessors(updatedProcessors));
+    }
+  };
+
+  // Handle move processor down
+  const handleMoveDown = (index) => {
+    if (index < processors.length - 1) {
+      const reorderedProcessors = [...processors]
+      const temp = reorderedProcessors[index]
+      reorderedProcessors[index] = reorderedProcessors[index + 1]
+      reorderedProcessors[index + 1] = temp
+
+      // Update the order property for each processor
+      const updatedProcessors = reorderedProcessors.map((processor, idx) => ({
+        ...processor,
+        order: idx,
+      }))
+
+      dispatch(reorderProcessors(updatedProcessors))
+    }
+  }
+
+  // Handle add processor form input change
+  const handleAddInputChange = (e) => {
+    const { name, value } = e.target
+    setNewProcessor({
+      ...newProcessor,
+      [name]: value,
+    })
+  }
+
+  // Handle edit processor form input change
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target
+    setEditedProcessor({
+      ...editedProcessor,
+      [name]: name === "enabled" ? value === "true" : value,
+    })
+  }
+
+  // Handle add processor submit
+  const handleAddProcessor = () => {
+    const formData = new FormData()
+
+    // Append all processor data
+    Object.keys(newProcessor).forEach((key) => {
+      formData.append(key, newProcessor[key])
+    })
+
+    // Append logo file if exists
+    if (logoFile) {
+      formData.append("logo", logoFile)
+    }
+
+    dispatch(addProcessor(formData)).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        setIsAddModalOpen(false)
+      }
+    })
+  }
+
+  // Handle update processor submit
+  const handleUpdateProcessor = () => {
+    const formData = new FormData();
+    formData.append('provider', selectedProcessor.provider);
+    
+    Object.keys(editedProcessor).forEach((key) => {
+      if (key !== 'provider') {
+        formData.append(key, editedProcessor[key]);
+      }
+    });
+  
+    if (logoFile) {
+      formData.append("logo", logoFile);
+    }
+  
+    dispatch(updateProcessor(formData)).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        setLogoFile(null);
+        setIsEditModalOpen(false);
+      }
+    });
+  };
+
+  // Handle remove processor submit
+  const handleRemoveProcessor = () => {
+    if (selectedProcessor) {
+      dispatch(removeProcessor(selectedProcessor.provider)).then((result) => {
+        if (result.meta.requestStatus === "fulfilled") {
+          setIsRemoveModalOpen(false)
+          dispatch(getProcessors())
+        }
+      })
+    }
+  }
+
+  // Calculate pagination
+  const indexOfLastProcessor = currentPage * itemsPerPage
+  const indexOfFirstProcessor = indexOfLastProcessor - itemsPerPage
+  const currentProcessors = processors.slice(indexOfFirstProcessor, indexOfLastProcessor)
+  const totalPages = Math.ceil(processors.length / itemsPerPage)
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber)
+  }
+
+  // Currency options
+  const currencies = ["USD", "EUR", "GBP", "JPY", "CAD", "AUD"]
+
   return (
-    <div>
+    <div className="p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-medium">Payment Processors</h2>
         <button
-          className="px-6 py-2 mb-2 bg-primary text-white rounded-lg flex items-center gap-2"
+          className="px-6 py-2 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
           onClick={() => setIsAddModalOpen(true)}
         >
           + Add New
         </button>
       </div>
 
+      {/* Success Message */}
+      {/* {isSuccess && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+          <p>Operation completed successfully!</p>
+        </div>
+      )} */}
+
+      {/* Error Message */}
+      {isError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <p>Error: {message}</p>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      )}
+
       {/* Processors List */}
-      <div className="space-y-4">
-        {processors.map((processor, index) => (
-          <div
-            key={processor.id}
-            draggable={true}
-            onDragStart={(e) => Items(e, index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className="flex items-center cursor-pointer justify-between p-4 bg-white rounded-lg border"
-          >
-            <div className="flex items-center gap-8">
-              <span className="text-gray-500">{processor.id}</span>
-              <img
-                src={processor.logo}
-                alt={processor.name}
-                className="h-16 w-32"
-              />
-            </div>
-            <div className="flex items-center gap-6">
-              <div className="flex gap-2">
-                <button className="p-2 hover:bg-gray-100 rounded text-[32px]">
-                  ↑
-                </button>
-                <button className="p-2 hover:bg-gray-100 rounded text-[32px]">
-                  ↓
-                </button>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-            </label>
-            <div className="relative">
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() =>
-                  setOpenOptionsId(
-                    openOptionsId === processor.id ? null : processor.id
-                  )
-                }
+      {!isLoading && (
+        <div className="space-y-4 mb-6">
+          {processors && processors.length > 0 ? (
+            currentProcessors.map((processor, index) => (
+              <div
+                key={processor.provider}
+                draggable={true}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`flex items-center justify-between p-4 bg-white rounded-lg border ${dragOver === index ? "border-primary border-2" : ""
+                  }`}
               >
-                <BsGear size={20} />
-              </button>
-              {openOptionsId === processor.id && (
-                <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                  <button
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                    onClick={() => handleSettingsClick(processor)}
-                  >
-                    Detail
-                  </button>
-                  <button
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-500"
-                    onClick={() => handleRemove(processor)}
-                  >
-                    Remove
-                  </button>
+                <div className="flex items-center gap-8">
+                  <span className="text-gray-500">{indexOfFirstProcessor + index + 1}</span>
+                  <img
+                    src={processor.logo || "/placeholder.svg?height=64&width=128"}
+                    alt={processor.provider}
+                    className="h-16 w-32 object-contain"
+                  />
+                  <span className="font-medium capitalize">{processor.provider}</span>
                 </div>
-              )}
+                <div className="flex items-center gap-6">
+                  <div className="flex gap-2">
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded text-[32px]"
+                      onClick={() => handleMoveUp(index)}
+                      disabled={index === 0}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded text-[32px]"
+                      onClick={() => handleMoveDown(index)}
+                      disabled={index === processors.length - 1}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={processor.enabled}
+                    onChange={() => handleToggleEnabled(processor)}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+                <div className="relative">
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    onClick={() => setOpenOptionsId(openOptionsId === processor.provider ? null : processor.provider)}
+                  >
+                    <BsGear size={20} />
+                  </button>
+                  {openOptionsId === processor.provider && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                        onClick={() => handleSettingsClick(processor)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-500"
+                        onClick={() => handleRemove(processor)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No payment processors found. Add your first processor!</p>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Pagination */}
-      <div className="flex justify-end gap-4 items-center">
-        <button className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg">
-          Previous
-        </button>
-        <span className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg">
-          1
-        </span>
-        <button className="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-lg">
-          Next
-        </button>
-      </div>
+      {!isLoading && processors && processors.length > itemsPerPage && (
+        <div className="flex justify-end gap-4 items-center">
+          <button
+            className={`px-4 py-2 ${currentPage === 1 ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"} rounded-lg`}
+            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
 
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <span
+              key={page}
+              className={`w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${currentPage === page ? "bg-primary text-white" : "bg-gray-100 hover:bg-gray-200"
+                }`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </span>
+          ))}
+
+          <button
+            className={`px-4 py-2 ${currentPage === totalPages ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-50"} rounded-lg`}
+            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Add Processor Modal */}
       <Modal
         isOpen={isAddModalOpen}
         onRequestClose={() => setIsAddModalOpen(false)}
@@ -175,10 +454,7 @@ const Payment = () => {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl">Add New Payment Processor</h2>
-            <button
-              onClick={() => setIsAddModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
@@ -188,83 +464,103 @@ const Payment = () => {
               <label className="block mb-2">Payment Processor Name</label>
               <input
                 type="text"
-                placeholder="Enter here"
+                name="provider"
+                placeholder="e.g., stripe, paypal"
                 className="w-full px-4 py-2 border rounded-lg"
+                value={newProcessor.provider}
+                onChange={handleAddInputChange}
               />
+              <p className="text-xs text-gray-500 mt-1">Use lowercase letters without spaces (e.g., stripe, paypal)</p>
             </div>
+
             <div>
               <label className="block mb-2">Allowed Members</label>
-              <select className="w-full px-4 py-2 border rounded-lg text-quatr">
-                <option>All Members</option>
-                <option>VIP Members</option>
-                <option>Standard Members</option>
+              <select
+                className="w-full px-4 py-2 border rounded-lg"
+                name="allowedMembers"
+                value={newProcessor.allowedMembers}
+                onChange={handleAddInputChange}
+              >
+                <option value="All Members">All Members</option>
+                <option value="Vip">Vip</option>
               </select>
             </div>
+
             <div>
               <label className="block mb-2">API Key</label>
               <input
                 type="text"
-                placeholder="Enter here"
-                className="w-full px-4 py-2 border rounded-lg"
+                name="apiKey"
+                placeholder="Enter API key"
+                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                value={newProcessor.apiKey}
+                onChange={handleAddInputChange}
               />
             </div>
 
             <div>
               <label className="block mb-2">Secret Key</label>
               <input
-                type="text"
-                placeholder="Enter here"
-                className="w-full px-4 py-2 border rounded-lg"
+                type="password"
+                name="secretKey"
+                placeholder="Enter secret key"
+                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                value={newProcessor.secretKey}
+                onChange={handleAddInputChange}
               />
             </div>
 
             <div>
-              <label className="block mb-2">Auth Key</label>
+              <label className="block mb-2">Auth Key (Optional)</label>
               <input
                 type="text"
-                placeholder="Enter here"
-                className="w-full px-4 py-2 border rounded-lg"
+                name="authKey"
+                placeholder="Enter auth key if required"
+                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                value={newProcessor.authKey}
+                onChange={handleAddInputChange}
               />
             </div>
 
             <div className="relative">
-              {newProcessorImage && (
-                <img
-                  src={newProcessorImage}
-                  alt="New Processor Logo"
-                  className="w-20 h-20 mx-auto object-contain mb-4"
-                />
+              {logoPreview && (
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={logoPreview || "/placeholder.svg"}
+                    alt="Processor Logo Preview"
+                    className="h-20 object-contain"
+                  />
+                </div>
               )}
-              <input
-                type="file"
-                id="newProcessorImage"
-                accept="image/*"
-                className="hidden"
-                onChange={handleNewImageSelect}
-              />
+              <input type="file" id="processorLogo" accept="image/*" className="hidden" onChange={handleLogoSelect} />
               <label
-                htmlFor="newProcessorImage"
+                htmlFor="processorLogo"
                 className="w-full p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center cursor-pointer block hover:bg-gray-100"
               >
-                <span className="text-primary">Click to add image</span>
+                <span className="text-primary">Click to add logo image</span>
               </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Recommended size: 128x64px, PNG or SVG with transparent background
+              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
+              <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-2 border rounded-lg hover:bg-gray-50">
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Add Processor
+              <button
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                onClick={handleAddProcessor}
+                disabled={isLoading || !newProcessor.provider || !newProcessor.apiKey || !newProcessor.secretKey}
+              >
+                {isLoading ? "Adding..." : "Add Processor"}
               </button>
             </div>
           </div>
         </div>
       </Modal>
 
+      {/* Edit Processor Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
@@ -274,103 +570,110 @@ const Payment = () => {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl">Edit Payment Processor</h2>
-            <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-2">Payment Processor Name</label>
-              <input
-                type="text"
-                value={selectedProcessor?.name || "Paypal"}
-                className="w-full px-4 py-2 border rounded-lg"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="block mb-2">Allowed Members</label>
-              <select className="w-full px-4 py-2 border rounded-lg text-quatr">
-                <option>All Members</option>
-                <option>VIP Members</option>
-                <option>Standard Members</option>
-              </select>
-            </div>
+          {selectedProcessor && (
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-2">Payment Processor Name</label>
+                <input
+                  type="text"
+                  name="provider"
+                  value={editedProcessor.provider}
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                  disabled
+                />
+                <p className="text-xs text-gray-500 mt-1">Provider name cannot be changed</p>
+              </div>
 
-            <div>
-              <label className="block mb-2">API Key</label>
-              <input
-                type="text"
-                value="15014a3e-0382-4d44-a0bf-a44b944856a315014a3e-0382-4d44-a0bf-a44b944856a3"
-                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
-              />
-            </div>
+              <div>
+                <label className="block mb-2">API Key</label>
+                <input
+                  type="text"
+                  name="apiKey"
+                  value={editedProcessor.apiKey}
+                  className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                  onChange={handleEditInputChange}
+                />
+              </div>
 
-            <div>
-              <label className="block mb-2">Secret Key</label>
-              <input
-                type="text"
-                value="15014a3e-0382-4d44-a0bf-a44b944856a315014a3e-0382-4d4jfcjxjjxjjjiewwope939393999939-0382-4d44-a0bf-a4 4b944856"
-                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
-              />
-            </div>
+              <div>
+                <label className="block mb-2">Secret Key</label>
+                <input
+                  type="password"
+                  name="secretKey"
+                  value={editedProcessor.secretKey}
+                  className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                  onChange={handleEditInputChange}
+                  placeholder="••••••••••••••••••••••••••"
+                />
+                <p className="text-xs text-gray-500 mt-1">Leave blank to keep the current secret key</p>
+              </div>
 
-            <div>
-              <label className="block mb-2">Auth Key</label>
-              <input
-                type="text"
-                value="15014a3e-0382-4d44-a0bf-a44b944856a315014a3e-0382-4d44-a0bf-a44b944856a3"
-                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
-              />
-            </div>
+              <div>
+                <label className="block mb-2">Auth Key (Optional)</label>
+                <input
+                  type="text"
+                  name="authKey"
+                  value={editedProcessor.authKey}
+                  className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
+                  onChange={handleEditInputChange}
+                />
+              </div>
 
-            <div className="relative">
-              <img
-                src={
-                  selectedImage || selectedProcessor?.logo || "/paypal-logo.png"
-                }
-                alt="Processor Logo"
-                className="w-20 h-20 mx-auto object-contain"
-              />
-              <input
-                type="file"
-                id="processorImage"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageSelect}
-              />
-              <label
-                htmlFor="processorImage"
-                className="w-full mt-2 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center text-primary cursor-pointer block hover:bg-gray-100"
-              >
-                Click to change image
-              </label>
-            </div>
+              <div className="relative">
+                {logoPreview && (
+                  <div className="mb-4 flex justify-center">
+                    <img src={logoPreview || "/placeholder.svg"} alt="Processor Logo" className="h-20 object-contain" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  id="editProcessorLogo"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoSelect}
+                />
+                <label
+                  htmlFor="editProcessorLogo"
+                  className="w-full mt-2 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center text-primary cursor-pointer block hover:bg-gray-100"
+                >
+                  Click to change logo
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Recommended size: 128x64px, PNG or SVG with transparent background
+                </p>
+              </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Update
-              </button>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                  onClick={handleUpdateProcessor}
+                  disabled={isLoading || !editedProcessor.apiKey}
+                >
+                  {isLoading ? "Updating..." : "Update"}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </Modal>
 
+      {/* Remove Confirmation Modal */}
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[400px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -378,39 +681,33 @@ const Payment = () => {
               <span className="text-red-500">⚠</span>
               Remove Payment Processor
             </h2>
-            <button
-              onClick={() => setIsRemoveModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsRemoveModalOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
           <div className="space-y-6">
             <p className="text-gray-600">
-              Are you sure you want to remove this payment processor?
+              Are you sure you want to remove{" "}
+              <span className="font-semibold capitalize">{selectedProcessor?.provider}</span>? This action cannot be
+              undone.
             </p>
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsRemoveModalOpen(false)}
-                className="px-6 py-2 border rounded-lg text-sm"
-              >
+              <button onClick={() => setIsRemoveModalOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Handle remove logic here
-                  setIsRemoveModalOpen(false);
-                }}
+                onClick={handleRemoveProcessor}
                 className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
+                disabled={isLoading}
               >
-                Remove
+                {isLoading ? "Removing..." : "Remove"}
               </button>
             </div>
           </div>
         </div>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default Payment;
+export default Payment

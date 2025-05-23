@@ -8,19 +8,40 @@ import authService from '../../../store/auth/authService';
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
     try {
-      const data = {
-        email: email,
-      };
-      await authService.forgotPassword(data);
-      navigate('/reset-password');
+      setLoading(true);
+      const data = { email: email.toLowerCase() };
+      const response = await authService.forgotPassword(data);
+      
+      if (response && response.message) {
+        toast.success(response.message);
+        // Store the email in sessionStorage for the reset password page
+        sessionStorage.setItem('resetEmail', email);
+        navigate('/reset-password');
+      } else {
+        toast.error(response.message || 'Failed to send reset code');
+      }
     } catch (error) {
-      toast.error(
-        error.response.data.message || 'Something went wrong. Please try again'
-      );
+      // Handle specific error cases
+      if (error.response?.status === 404) {
+        toast.error('No account found with this email address');
+      } else if (error.response?.status === 400) {
+        toast.error('Please provide a valid email address');
+      } else {
+        toast.error('Something went wrong. Please try again later');
+      }
+      console.error('Password reset error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,20 +67,25 @@ const ForgotPassword = () => {
             <h2 className='text-3xl font-medium mb-2 font-primary'>
               Reset Password
             </h2>
+            <p className='text-gray-600 font-primary'>
+              Enter your email address and we'll send you a code to reset your password.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className='space-y-6'>
             <div>
               <label className='block mb-2 text-gray-800 font-primary'>
-                Email/Membership ID
+                Email Address
               </label>
               <div className='relative'>
                 <input
-                  type='text'
-                  placeholder='Enter email address'
+                  type='email'
+                  placeholder='Enter your email address'
                   className='w-full px-4 py-3 border border-gray-300 rounded-lg pl-12 font-secondary'
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  required
                 />
                 <span className='absolute left-4 top-1/2 -translate-y-1/2'>
                   <svg
@@ -77,17 +103,26 @@ const ForgotPassword = () => {
                   </svg>
                 </span>
               </div>
-              <p className='text-gray-500 text-sm mt-2 font-primary'>
-                Receive link to reset password via email
-              </p>
             </div>
 
             <button
               type='submit'
-              className='w-full py-3 bg-gradient-to-r from-primary to-[#0A5440] text-white rounded-3xl text-lg font-medium font-primary'
+              disabled={loading}
+              className={`w-full py-3 bg-gradient-to-r from-primary to-[#0A5440] text-white rounded-3xl text-lg font-medium font-primary ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Reset Password
+              {loading ? 'Sending...' : 'Send Reset Code'}
             </button>
+
+            <div className='text-center'>
+              <Link
+                to='/'
+                className='text-primary hover:text-[#0A5440] font-primary'
+              >
+                Back to Login
+              </Link>
+            </div>
           </form>
         </div>
       </div>

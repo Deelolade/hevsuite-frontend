@@ -28,20 +28,13 @@ const Support = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1 max-w-2xl mx-auto px-4">
-          <div className="relative">
-            <BiSearch className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
-            />
-          </div>
+          
         </div>
         <Profile />
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-row md:ml-0 -ml-2 gap-4">
+      {/* <div className="flex flex-row md:ml-0 -ml-2 gap-4">
         <button
           className={`px-6 py-3 rounded-lg flex-1 ${
             activeTab === "evidence"
@@ -72,7 +65,7 @@ const Support = () => {
         >
           Your Assigned Requests
         </button>
-      </div>
+      </div> */}
 
       {renderTabContent()}
     </div>

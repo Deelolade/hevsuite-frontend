@@ -1,70 +1,151 @@
-import React, { useState } from "react";
-import { BiSearch } from "react-icons/bi";
-import Modal from "react-modal";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { BiSearch } from "react-icons/bi"
+import Modal from "react-modal"
+import { getAllRoles, createRole, updateRole, deleteRole } from "../../store/permission/permissionSlice"
+import { toast } from "react-toastify"
+import { Loader } from "lucide-react"
+import LoadingSpinner from '../../components/Spinner';
+
+// Set app element for accessibility
+Modal.setAppElement("#root")
 
 const Permissions = () => {
-  const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false);
-  const [newRolePermissions, setNewRolePermissions] = useState([]);
-  const [isDeleteRoleOpen, setIsDeleteRoleOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const roles = [
-    "Super Admin",
-    "Marketing Manager",
-    "Customer Support",
-    "Sales Representative",
-  ];
+  const dispatch = useDispatch()
+  const { roles, loading } = useSelector((state) => state.permissions)
 
-  const permissions = [
-    { name: "Dashboard", id: 1 },
-    { name: "User Management", id: 2 },
-    { name: "Approve & Decline Verification", id: 3 },
-    { name: "Edit & Delete Admins", id: 4 },
-    { name: "Add Payment Processor", id: 5 },
-    { name: "Newsrooms", id: 6 },
-    { name: "Events Management", id: 7 },
-  ];
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isCreateRoleOpen, setIsCreateRoleOpen] = useState(false)
+  const [isDeleteRoleOpen, setIsDeleteRoleOpen] = useState(false)
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
 
-  const [permissionsMap, setPermissionsMap] = useState({
-    "Super Admin": [1, 2, 3, 4, 5, 6, 7],
-    "Marketing Manager": [1, 2, 3, 4],
-    "Customer Support": [1, 2, 3, 4],
-    "Sales Representative": [1, 2],
-  });
+  const [newRole, setNewRole] = useState({
+    role: "",
+    permissions: [],
+  })
 
-  const togglePermission = (role, permissionId) => {
-    setPermissionsMap((prev) => ({
-      ...prev,
-      [role]: prev[role].includes(permissionId)
-        ? prev[role].filter((id) => id !== permissionId)
-        : [...prev[role], permissionId],
-    }));
-  };
+  const [selectedRole, setSelectedRole] = useState(null)
+
+  // Available permissions
+  const availablePermissions = [
+    { name: "Dashboard", id: "Dashboard" },
+    { name: "User Management", id: "User Management" },
+    { name: "Approve & Decline Verification", id: "Approve & Decline Verification" },
+    { name: "Edit & Delete Admins", id: "Edit & Delete Admins" },
+    { name: "Add Payment Processor", id: "Add Payment Processor" },
+    { name: "Newsrooms", id: "Newsrooms" },
+    { name: "Events Management", id: "Events Management" },
+  ]
+
+  useEffect(() => {
+    dispatch(getAllRoles())
+  }, [dispatch])
+
+  // Filter roles based on search query
+  const filteredRoles = roles.filter((role) => role.role.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  const handleCreateRole = async () => {
+    if (!newRole.role) {
+      toast.error("Role name is required")
+      return
+    }
+
+    try {
+      await dispatch(createRole(newRole)).unwrap()
+      setIsCreateRoleOpen(false)
+      setNewRole({ role: "", permissions: [] })
+      toast.success("Role created successfully")
+    } catch (error) {
+      toast.error(error.message || "Failed to create role")
+    }
+  }
+
+  // Fix the handleUpdatePermissions function to correctly update permissions
+  const handleUpdatePermissions = async (role, permissionId) => {
+    const updatedPermissions = [...role.permissions]
+
+    if (updatedPermissions.includes(permissionId)) {
+      // Remove permission
+      const index = updatedPermissions.indexOf(permissionId)
+      updatedPermissions.splice(index, 1)
+    } else {
+      // Add permission
+      updatedPermissions.push(permissionId)
+    }
+
+    try {
+      await dispatch(
+        updateRole({
+          id: role._id,
+          data: { permissions: updatedPermissions },
+        }),
+      ).unwrap()
+      toast.success("Permissions updated successfully")
+    } catch (error) {
+      toast.error(error.message || "Failed to update permissions")
+    }
+  }
+
+  const handleDeleteRole = async () => {
+    if (!selectedRole) return
+
+    try {
+      await dispatch(deleteRole(selectedRole._id)).unwrap()
+      setIsConfirmDeleteOpen(false)
+      setIsDeleteRoleOpen(false)
+      toast.success("Role deleted successfully")
+    } catch (error) {
+      toast.error(error.message || "Failed to delete role")
+    }
+  }
+
+  const togglePermission = (permissionId) => {
+    setNewRole((prev) => {
+      const updatedPermissions = [...prev.permissions]
+
+      if (updatedPermissions.includes(permissionId)) {
+        // Remove permission
+        const index = updatedPermissions.indexOf(permissionId)
+        updatedPermissions.splice(index, 1)
+      } else {
+        // Add permission
+        updatedPermissions.push(permissionId)
+      }
+
+      return { ...prev, permissions: updatedPermissions }
+    })
+  }
+
+  if (loading && roles.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner className="animate-spin h-8 w-8 text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="md:flex justify-between items-center mb-6">
-        <h2 className="text-xl">8 Admin Users</h2>
-        <div className="md:flex grid grid-cols-2  items-center gap-4">
+        <h2 className="text-xl">{filteredRoles.length} Roles</h2>
+        <div className="md:flex grid grid-cols-2 items-center gap-4">
           <div className="relative md:mt-0 mt-4 col-span-2">
             <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search"
               className="pl-10 pr-4 py-2 border rounded-lg w-[300px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button
-            className="px-6 py-2 bg-primary text-white rounded-lg"
-            onClick={() => setIsCreateRoleOpen(true)}
-          >
+          <button className="px-6 py-2 bg-primary text-white rounded-lg" onClick={() => setIsCreateRoleOpen(true)}>
             Create New Role
           </button>
-          <button
-            className="px-6 py-2 bg-primary text-white rounded-lg"
-            onClick={() => setIsDeleteRoleOpen(true)}
-          >
+          <button className="px-6 py-2 bg-primary text-white rounded-lg" onClick={() => setIsDeleteRoleOpen(true)}>
             Delete Role
           </button>
         </div>
@@ -76,31 +157,28 @@ const Permissions = () => {
           <thead>
             <tr className="border-b">
               <th className="text-left py-4 px-6">Permission</th>
-              {roles.map((role) => (
-                <th key={role} className="text-center py-4 px-6">
-                  {role}
+              {filteredRoles.map((role) => (
+                <th key={role._id} className="text-center py-4 px-6">
+                  {role.role}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {permissions.map((permission) => (
+            {availablePermissions.map((permission) => (
               <tr key={permission.id} className="border-b">
                 <td className="py-4 px-6">{permission.name}</td>
-                {roles.map((role) => (
-                  <td
-                    key={`${role}-${permission.id}`}
-                    className="text-center py-4 px-6"
-                  >
+                {filteredRoles.map((role) => (
+                  <td key={`${role._id}-${permission.id}`} className="text-center py-4 px-6">
                     <label className="inline-flex items-center justify-center">
                       <input
                         type="checkbox"
-                        checked={permissionsMap[role]?.includes(permission.id)}
-                        onChange={() => togglePermission(role, permission.id)}
+                        checked={role.permissions.includes(permission.id)}
+                        onChange={() => handleUpdatePermissions(role, permission.id)}
                         className="hidden peer"
                       />
-                      <div className="w-5 h-5 border border-gray-300 rounded flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary">
-                        {permissionsMap[role]?.includes(permission.id) && (
+                      <div className="w-5 h-5 border border-gray-300 rounded flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary cursor-pointer">
+                        {role.permissions.includes(permission.id) && (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-3.5 w-3.5 text-white"
@@ -123,6 +201,8 @@ const Permissions = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Create Role Modal */}
       <Modal
         isOpen={isCreateRoleOpen}
         onRequestClose={() => setIsCreateRoleOpen(false)}
@@ -132,10 +212,7 @@ const Permissions = () => {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl">Create Role</h2>
-            <button
-              onClick={() => setIsCreateRoleOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsCreateRoleOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
@@ -147,74 +224,23 @@ const Permissions = () => {
                 type="text"
                 placeholder="Backend Engineer"
                 className="w-full px-4 py-2 border rounded-lg"
+                value={newRole.role}
+                onChange={(e) => setNewRole({ ...newRole, role: e.target.value })}
               />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setNewRolePermissions([...newRolePermissions, 1]);
-                    } else {
-                      setNewRolePermissions(
-                        newRolePermissions.filter((id) => id !== 1)
-                      );
-                    }
-                  }}
-                />
-                <span>Dashboard</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>UsersManagement</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>Edit/Delete Admins</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>Verification</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>Add Payment Processor</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>Newsrooms</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                />
-                <span>Events Management</span>
-              </label>
+              {availablePermissions.map((permission) => (
+                <label key={permission.id} className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    className="mt-1 rounded border-gray-300"
+                    checked={newRole.permissions.includes(permission.id)}
+                    onChange={() => togglePermission(permission.id)}
+                  />
+                  <span>{permission.name}</span>
+                </label>
+              ))}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
@@ -224,14 +250,19 @@ const Permissions = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Create Role
+              <button
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                onClick={handleCreateRole}
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Role"}
               </button>
             </div>
           </div>
         </div>
       </Modal>
 
+      {/* Delete Role Modal */}
       <Modal
         isOpen={isDeleteRoleOpen}
         onRequestClose={() => setIsDeleteRoleOpen(false)}
@@ -241,10 +272,7 @@ const Permissions = () => {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl">Remove Role</h2>
-            <button
-              onClick={() => setIsDeleteRoleOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsDeleteRoleOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
@@ -254,79 +282,36 @@ const Permissions = () => {
               <label className="block mb-2">Select Role Name</label>
               <select
                 className="w-full px-4 py-2 border rounded-lg"
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
+                value={selectedRole?._id || ""}
+                onChange={(e) => {
+                  const role = roles.find((r) => r._id === e.target.value)
+                  setSelectedRole(role || null)
+                }}
               >
-                <option value="">Backend Engineer</option>
+                <option value="">Select a role</option>
                 {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
+                  <option key={role._id} value={role._id}>
+                    {role.role}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Dashboard</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Verification</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Edit/Delete Admins</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Add Payment Processor</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Newsrooms</span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 rounded border-gray-300"
-                  checked={true}
-                  disabled
-                />
-                <span>Events Management</span>
-              </label>
-            </div>
+            {selectedRole && (
+              <div className="grid grid-cols-3 gap-4">
+                {availablePermissions.map((permission) => (
+                  <label key={permission.id} className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      className="mt-1 rounded border-gray-300"
+                      checked={selectedRole.permissions.includes(permission.id)}
+                      disabled
+                    />
+                    <span>{permission.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4">
               <button
@@ -338,6 +323,7 @@ const Permissions = () => {
               <button
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
                 onClick={() => setIsConfirmDeleteOpen(true)}
+                disabled={!selectedRole}
               >
                 Remove Role
               </button>
@@ -346,6 +332,7 @@ const Permissions = () => {
         </div>
       </Modal>
 
+      {/* Confirm Delete Modal */}
       <Modal
         isOpen={isConfirmDeleteOpen}
         onRequestClose={() => setIsConfirmDeleteOpen(false)}
@@ -358,40 +345,31 @@ const Permissions = () => {
               <span className="text-red-500">⚠</span>
               Remove Role
             </h2>
-            <button
-              onClick={() => setIsConfirmDeleteOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setIsConfirmDeleteOpen(false)} className="text-gray-400 hover:text-gray-600">
               ✕
             </button>
           </div>
           <div className="space-y-6">
             <p className="text-gray-600">
-              Are you sure you want to remove this role?
+              Are you sure you want to remove the role "{selectedRole?.role}"? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsConfirmDeleteOpen(false)}
-                className="px-6 py-2 border rounded-lg text-sm"
-              >
+              <button onClick={() => setIsConfirmDeleteOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Add your remove logic here
-                  setIsConfirmDeleteOpen(false);
-                  setIsDeleteRoleOpen(false);
-                }}
+                onClick={handleDeleteRole}
                 className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
+                disabled={loading}
               >
-                Remove
+                {loading ? "Removing..." : "Remove"}
               </button>
             </div>
           </div>
         </div>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default Permissions;
+export default Permissions

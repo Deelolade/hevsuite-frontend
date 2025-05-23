@@ -1,121 +1,268 @@
-import React, { useState, useEffect } from "react";
-import { FiEdit } from "react-icons/fi";
-import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
-import Modal from "react-modal";
-import AddFooterPage from "./AddPage";
-// import AddFooterPage from "./AddFooterPage";
-import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem";
-import EditFooter from "../../components/modals/cms/footer/EditFooter";
-import CreatedPages from "../../components/modals/cms/footer/CreatedPages";
-import EditPage from "./EditPage";
+"use client"
+
+import { useState, useEffect } from "react"
+import { FiEdit } from "react-icons/fi"
+import { BsArrowLeft, BsArrowRight } from "react-icons/bs"
+import Modal from "react-modal"
+import AddFooterPage from "./AddFooterPage"
+import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem"
+import EditFooter from "../../components/modals/cms/footer/EditFooter"
+import CreatedPages from "../../components/modals/cms/footer/CreatedPages"
+import EditPage from "./EditFooterPage"
+import { useDispatch, useSelector } from "react-redux"
+import {
+  getAllFooters,
+  changeFooterVisibility,
+  updateFooterOrder,
+  addNewFooter,
+  editFooter,
+  getPages,
+  updatePage
+} from "../../store/cms/cmsSlice"
+import { Loader } from "lucide-react"
 
 const Footer = () => {
-  const [selectedSection, setSelectedSection] = useState("policies");
-  const [currentPage, setCurrentPage] = useState(2);
-  const [isAddFooterOpen, setIsAddFooterOpen] = useState(false);
-  const [footerTitle, setFooterTitle] = useState("");
-  const [footerLink, setFooterLink] = useState("");
-  const [footerVisibility, setFooterVisibility] = useState(false);
-  const [showAddPage, setShowAddPage] = useState(false);
-  const [menuVisibility, setMenuVisibility] = useState(false);
+  const dispatch = useDispatch()
+  const { footers, isLoading, pages } = useSelector((state) => state.cms)
 
-  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
-  const [isEditFooterModalOpen, setIsEditFooterModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isCreatedPagesOpen, setIsCreatedPagesOpen] = useState(false);
-  const [showEditPage, setShowEditPage] = useState(false);
+  const [selectedSection, setSelectedSection] = useState("policies")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isAddFooterOpen, setIsAddFooterOpen] = useState(false)
+  const [footerTitle, setFooterTitle] = useState("")
+  const [footerLink, setFooterLink] = useState("")
+  const [footerVisibility, setFooterVisibility] = useState(false)
+  const [showAddPage, setShowAddPage] = useState(false)
+  const [menuVisibility, setMenuVisibility] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("active")
+  const [selectedPages, setSelectedPages] = useState([])
 
-  const [sections, setSections] = useState([
-    { id: "policies", name: "Policies" },
-    { id: "hhclub", name: "HH Club & Founder" },
-  ]);
+  const [isCreatedPagesOpen, setIsCreatedPagesOpen] = useState(false)
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false)
+  const [isEditFooterModalOpen, setIsEditFooterModalOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [showEditPage, setShowEditPage] = useState(false)
+  const [footerItems, setFooterItems] = useState([])
+  const [sections, setSections] = useState([])
 
+  // Fetch footers on component mount and when status filter changes
   useEffect(() => {
-    if (selectedSection === "policies") {
-      setFooterItems([
-        {
-          id: 1,
-          title: "Terms and Condition",
-          visibility: true,
-          owner: "System",
-        },
-        { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
+    dispatch(getAllFooters({ status: statusFilter }))
+  }, [dispatch, statusFilter])
 
-        { id: 3, title: "Cookie Policy", visibility: true, owner: "System" },
-        { id: 4, title: "Code of Conduct", visibility: true, owner: "System" },
-      ]);
+  // Update sections when footers are loaded
+  useEffect(() => {
+    if (footers && footers.length > 0) {
+      const sectionData = footers.map((footer) => ({
+        id: footer._id,
+        name: footer.title,
+      }))
+      setSections(sectionData)
+
+      // Set default selected section to the first one if none is selected
+      if (sectionData.length > 0 && !selectedSection) {
+        setSelectedSection(sectionData[0].id)
+      }
     } else {
-      setFooterItems([]);
+      setSections([])
+      setSelectedSection("")
     }
-  }, [selectedSection]);
+  }, [footers])
 
-  const [dragging, setDragging] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
+  // Update footer items when selected section changes
+  useEffect(() => {
+    if (selectedSection && footers) {
+      const selectedFooter = footers.find((footer) => footer._id === selectedSection)
+      if (selectedFooter && selectedFooter.items) {
+        const validItems = selectedFooter.items
+          .filter(item => item !== null)
+          .map(item => ({
+            _id: item?._id || Date.now().toString(),
+            title: item?.title || 'Untitled Item',
+            visibility: item?.visibility || false,
+            owner: item?.owner || 'System',
+            createdAt: item?.createdAt || new Date().toISOString(),
+            content: item?.content || [],
+            slides: item?.slides || []
+          }))
+        setFooterItems(validItems)
+      } else {
+        setFooterItems([])
+      }
+    } else {
+      setFooterItems([])
+    }
+  }, [selectedSection, footers])
 
-  const Items = (event, index) => {
-    setDragging(index);
-  };
+  // Fetch pages when component mounts
+  useEffect(() => {
+    dispatch(getPages({ status: "active" }))
+  }, [dispatch])
+
+  const [dragging, setDragging] = useState(null)
+  const [dragOver, setDragOver] = useState(null)
+
+  const handleDragStart = (event, index) => {
+    setDragging(index)
+  }
 
   const handleDragOver = (event, index) => {
-    setDragOver(index);
-  };
+    event.preventDefault()
+    setDragOver(index)
+  }
 
   const handleDragEnd = (event) => {
     if (dragging !== null && dragOver !== null) {
-      const newFooters = [...sections];
-      const [reorderedItem] = newFooters.splice(dragging, 1);
-      newFooters.splice(dragOver, 0, reorderedItem);
-      setSections(newFooters);
+      const newSections = [...sections]
+      const [reorderedItem] = newSections.splice(dragging, 1)
+      newSections.splice(dragOver, 0, reorderedItem)
+      setSections(newSections)
+
+      // Update order in the backend
+      const orderedIds = newSections.map((section) => section.id)
+      dispatch(updateFooterOrder(orderedIds))
     }
-    setDragging(null);
-    setDragOver(null);
-  };
+    setDragging(null)
+    setDragOver(null)
+  }
 
-  const [footerItems, setFooterItems] = useState([
-    { id: 1, title: "Terms and Condition", visibility: true, owner: "System" },
-    { id: 2, title: "Privacy Policy", visibility: true, owner: "System" },
-    { id: 3, title: "Cookie Policy", visibility: true, owner: "System" },
-    { id: 4, title: "Code of Conduct", visibility: true, owner: "System" },
-  ]);
   const handleVisibility = (id) => {
-    setFooterItems(
-      footerItems.map((item) =>
-        item.id === id ? { ...item, visibility: !item.visibility } : item
-      )
-    );
-  };
+    const item = footerItems.find((item) => item?._id === id)
+    if (item) {
+      const updatedItem = { ...item, visibility: !item.visibility }
 
-  const [draggingItems, setDraggingItems] = useState(null);
-  const [dragItemsOver, setDragItemsOver] = useState(null);
+      // Update local state first for immediate feedback
+      setFooterItems(footerItems.map((i) => (i._id === id ? updatedItem : i)))
+
+      // Then update the backend
+      dispatch(
+        changeFooterVisibility({
+          id: selectedSection,
+          data: {
+            items: footerItems.map((i) => (i._id === id ? updatedItem : i)),
+          },
+        })
+      )
+    }
+  }
+
+  const [draggingItems, setDraggingItems] = useState(null)
+  const [dragItemsOver, setDragItemsOver] = useState(null)
+  const [draggingPages, setDraggingPages] = useState(null)
+  const [dragPagesOver, setDragPagesOver] = useState(null)
 
   const handleDragItemsStart = (event, index) => {
-    setDraggingItems(index);
-  };
+    setDraggingItems(index)
+  }
 
   const handleDragItemsOver = (event, index) => {
-    setDragItemsOver(index);
-  };
+    event.preventDefault()
+    setDragItemsOver(index)
+  }
 
   const handleDragItemsEnd = (event) => {
     if (draggingItems !== null && dragItemsOver !== null) {
-      const newFooters = [...footerItems];
-      const [reorderedItem] = newFooters.splice(draggingItems, 1);
-      newFooters.splice(dragItemsOver, 0, reorderedItem);
-      setFooterItems(newFooters);
+      const newFooterItems = [...footerItems]
+      const [reorderedItem] = newFooterItems.splice(draggingItems, 1)
+      newFooterItems.splice(dragItemsOver, 0, reorderedItem)
+      setFooterItems(newFooterItems)
+
+      // Update in the backend
+      dispatch(
+        changeFooterVisibility({
+          id: selectedSection,
+          data: {
+            items: newFooterItems,
+          },
+        }),
+      )
     }
-    setDraggingItems(null);
-    setDragItemsOver(null);
-  };
+    setDraggingItems(null)
+    setDragItemsOver(null)
+  }
+
+  const handleDragPagesStart = (event, index) => {
+    setDraggingPages(index)
+  }
+
+  const handleDragPagesOver = (event, index) => {
+    event.preventDefault()
+    setDragPagesOver(index)
+  }
+
+  const handleDragPagesEnd = (event) => {
+    if (draggingPages !== null && dragPagesOver !== null) {
+      const newPages = [...pages]
+      const [reorderedPage] = newPages.splice(draggingPages, 1)
+      newPages.splice(dragPagesOver, 0, reorderedPage)
+      
+      // Update in the backend
+      dispatch(
+        updatePage({
+          id: reorderedPage._id,
+          data: {
+            order: dragPagesOver + 1
+          }
+        })
+      ).then(() => {
+        dispatch(getPages({ status: "active" }))
+      })
+    }
+    setDraggingPages(null)
+    setDragPagesOver(null)
+  }
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search).get("edit");
+    const params = new URLSearchParams(window.location.search).get("edit")
     if (params === "1") {
-      setShowAddPage(true);
+      setShowAddPage(true)
     }
     if (params === "2") {
-      setShowAddPage(true);
-      setShowEditPage(true);
+      setShowAddPage(true)
+      setShowEditPage(true)
     }
-  }, []);
+  }, [])
+
+  // Calculate pagination
+  const itemsPerPage = 6
+  const totalPages = Math.ceil(footerItems.length / itemsPerPage)
+  const paginatedItems = footerItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1)
+    }
+
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, "...", totalPages]
+    }
+
+    if (currentPage >= totalPages - 3) {
+      return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+    }
+
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages]
+  }
+
+  // Add this function to handle page selection
+  const handlePageSelection = (pageId) => {
+    const page = pages.find(p => p._id === pageId)
+    if (page) {
+      setSelectedPages(prev => [...prev, {
+        _id: Date.now().toString(),
+        type: "page",
+        pageId: page._id,
+        title: page.title,
+        visibility: true,
+        createdAt: new Date().toISOString()
+      }])
+    }
+  }
+
+  // Add this function to remove selected page
+  const handleRemovePage = (pageId) => {
+    setSelectedPages(prev => prev.filter(p => p.pageId !== pageId))
+  }
 
   return (
     <div className="space-y-6">
@@ -124,246 +271,334 @@ const Footer = () => {
         showEditPage ? (
           <EditPage
             onBack={() => {
-              setShowAddPage(false);
-              setShowEditPage(false);
+              setShowAddPage(false)
+              setShowEditPage(false)
+              window.history.pushState(null, "", `?tab=footer`)
             }}
+            selectedFooter={footers.find(footer => footer._id === selectedSection)}
+            selectedPage={selectedItem}
+            refreshData={() => dispatch(getAllFooters({ status: statusFilter }))}
           />
         ) : (
           <AddFooterPage
             onBack={() => {
-              setShowAddPage(false);
-              setShowEditPage(false);
+              setShowAddPage(false)
+              setShowEditPage(false)
+              window.history.pushState(null, "", `?tab=footer`)
             }}
+            selectedFooter={footers.find(footer => footer._id === selectedSection)}
+            refreshData={() => dispatch(getAllFooters({ status: statusFilter }))}
           />
         )
       ) : (
         <>
           <div className="flex flex-col md:flex-row justify-end items-center gap-2">
-            <select className="px-4 py-2 w-full md:w-fit border rounded-lg text-gray-600 min-w-[200px]">
-              <option>Active</option>
-              <option>Deleted</option>
+            <select
+              className="px-4 py-2 w-full md:w-fit border rounded-lg text-gray-600 min-w-[200px]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="active">Active</option>
+              <option value="deleted">Deleted</option>
             </select>
             <div className="flex items-start justify-start md:justify-end md:items-end w-full md:w-fit gap-3">
-              <button
-                className="px-6 py-2 border rounded-lg"
-                onClick={() => setIsEditFooterModalOpen(true)}
-              >
+              <button className="px-6 py-2 border rounded-lg" onClick={() => setIsEditFooterModalOpen(true)}>
                 Edit Footer
               </button>
-              <button
-                className="px-6 py-2 bg-primary text-white rounded-lg"
-                onClick={() => setIsAddFooterOpen(true)}
-              >
+              <button className="px-6 py-2 bg-primary text-white rounded-lg" onClick={() => setIsAddFooterOpen(true)}>
                 Add Footer
               </button>
             </div>
           </div>
 
-          <div className="flex items-center md:w-full w-full justify-center md:gap-4">
-            <button className="text-gray-400">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            <div className="flex gap-4  overflow-auto">
-              {sections.map((section, index) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader className="animate-spin h-8 w-8 text-primary" />
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center md:w-full w-full justify-center md:gap-4">
                 <button
-                  key={section.id}
-                  draggable={true}
-                  onDragStart={(e) => Items(e, index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`px-6 py-2 rounded-lg  w-56 h-16 flex justify-between items-center gap-2 ${
-                    selectedSection === section.id
-                      ? "bg-primary text-white"
-                      : "border text-gray-600"
-                  }`}
-                  onClick={() => setSelectedSection(section.id)}
+                  className="text-gray-400"
+                  onClick={() => {
+                    const currentIndex = sections.findIndex((s) => s.id === selectedSection)
+                    if (currentIndex > 0) {
+                      setSelectedSection(sections[currentIndex - 1].id)
+                      setIsCreatedPagesOpen(false)
+                    }
+                  }}
+                  disabled={sections.length === 0}
                 >
-                  {section.name}
-                  <div className="flex flex-col  scale-75  gap-1 ">
-                    <BsArrowLeft size={20} />
-                    <BsArrowRight size={20} />
-                  </div>
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
-              ))}
-            </div>
 
-            <button className="text-gray-400 ">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-            <div
-              onClick={() => setSelectedSection("Created")}
-              // onClick={() => setIsCreatedPagesOpen(true)}
-              className={`bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-primary/50 transition-colors ${
-                selectedSection === "Created"
-                  ? "bg-primary text-white"
-                  : "border text-gray-600"
-              }`}
-            >
-              Created Pages
-            </div>
-          </div>
+                <div className="flex gap-4 overflow-auto">
+                  {sections.map((section, index) => (
+                    <button
+                      key={section.id}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`px-6 py-2 rounded-lg w-56 h-16 flex justify-between items-center gap-2 ${
+                        selectedSection === section.id && !isCreatedPagesOpen ? "bg-primary text-white" : "border text-gray-600"
+                      }`}
+                      onClick={() => {
+                        setSelectedSection(section.id)
+                        setIsCreatedPagesOpen(false)
+                      }}
+                    >
+                      {section.name}
+                      <div className="flex flex-col scale-75 gap-1">
+                        <BsArrowLeft size={20} />
+                        <BsArrowRight size={20} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-          <div className="flex justify-end">
-            <button
-              className="px-6 py-2 bg-primary text-white rounded-lg"
-              onClick={() => {
-                setShowAddPage(true);
-                window.history.pushState(null, "", `?tab=footer&edit=1`);
-              }}
-            >
-              Add New Page
-            </button>
-          </div>
+                <button
+                  className="text-gray-400"
+                  onClick={() => {
+                    const currentIndex = sections.findIndex((s) => s.id === selectedSection)
+                    if (currentIndex < sections.length - 1) {
+                      setSelectedSection(sections[currentIndex + 1].id)
+                      setIsCreatedPagesOpen(false)
+                    }
+                  }}
+                  disabled={sections.length === 0}
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <div
+                  onClick={() => {
+                    setIsCreatedPagesOpen(!isCreatedPagesOpen)
+                    if (!isCreatedPagesOpen) {
+                      setSelectedSection("")
+                    }
+                  }}
+                  className={`bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 cursor-pointer transition-colors ${
+                    isCreatedPagesOpen ? "border-primary bg-primary/50" : "border-primary hover:bg-primary/50"
+                  }`}
+                >
+                  Created Pages
+                </div>
+              </div>
 
-          {/* Table */}
-          <div className="bg-white w-[90vw] md:w-full overflow-auto  rounded-lg">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-4 px-6 text-sm font-medium">
-                    Page Title
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-medium">
-                    Visibility
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-medium">
-                    Owner
-                  </th>
-                  <th className="text-left py-4 px-6 text-sm font-medium">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {footerItems.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    draggable={true}
-                    onDragStart={(e) => handleDragItemsStart(e, index)}
-                    onDragOver={(e) => handleDragItemsOver(e, index)}
-                    onDragEnd={handleDragItemsEnd}
-                    className="border-b"
-                  >
-                    <td className="py-4 px-6 flex items-center gap-2">
-                      <span className="p-1 border rounded">⋮⋮</span>
-                      {item.title}
-                    </td>
-                    <td className="py-4 px-6">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={item.visibility}
-                          className="sr-only peer"
-                          onChange={() => handleVisibility(item.id)}
-                        />
-                        <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                      </label>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      {item.owner}
-                    </td>
-                    <td className="py-4 px-6">
-                      <button
-                        className="text-primary"
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setShowEditPage(true);
-                          setShowAddPage(true);
-                          window.history.pushState(
-                            null,
-                            "",
-                            `?tab=footer&edit=2&system=true`
+              {!isCreatedPagesOpen && selectedSection && (
+              <div className="flex justify-end">
+                <button
+                  className="px-6 py-2 bg-primary text-white rounded-lg"
+                  onClick={() => {
+                    setShowAddPage(true)
+                    window.history.pushState(null, "", `?tab=footer&edit=1`)
+                  }}
+                >
+                  Add New Page
+                </button>
+              </div>
+              )}
+
+              {/* Table */}
+              <div className="bg-white w-[90vw] md:w-full overflow-auto rounded-lg">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-4 px-6 text-sm font-medium">Page Title</th>
+                      <th className="text-left py-4 px-6 text-sm font-medium">Visibility</th>
+                      <th className="text-left py-4 px-6 text-sm font-medium">Owner</th>
+                      <th className="text-left py-4 px-6 text-sm font-medium">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isCreatedPagesOpen ? (
+                      pages && Array.isArray(pages) && pages.length > 0 ? (
+                        pages.map((page, index) => {
+                          if (!page) return null;
+                          return (
+                            <tr
+                              key={page._id || index}
+                              draggable={true}
+                              onDragStart={(e) => handleDragPagesStart(e, index)}
+                              onDragOver={(e) => handleDragPagesOver(e, index)}
+                              onDragEnd={handleDragPagesEnd}
+                              className="border-b"
+                            >
+                              <td className="py-4 px-6 flex items-center gap-2">
+                                <span className="p-1 border rounded cursor-move">⋮⋮</span>
+                                {page.title || 'Untitled Page'}
+                              </td>
+                              <td className="py-4 px-6">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={page.visibility || false}
+                                    className="sr-only peer"
+                                    onChange={() => {
+                                      dispatch(
+                                        updatePage({
+                                          id: page._id,
+                                          data: {
+                                            visibility: !page.visibility
+                                          }
+                                        })
+                                      ).then(() => {
+                                        dispatch(getPages({ status: "active" }))
+                                      })
+                                    }}
+                                  />
+                                  <div className={`w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                                    page.visibility ? "bg-primary" : "bg-gray-500"
+                                  }`}></div>
+                                </label>
+                              </td>
+                              <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
+                              <td className="py-4 px-6">
+                                <button
+                                  className="text-primary"
+                                  onClick={() => {
+                                    setSelectedItem(page)
+                                    setShowEditPage(true)
+                                    setShowAddPage(true)
+                                    window.history.pushState(null, "", `?tab=footer&edit=2&system=true`)
+                                  }}
+                                >
+                                  <FiEdit size={18} />
+                                </button>
+                              </td>
+                            </tr>
                           );
-                          // setIsEditItemModalOpen(true);
-                        }}
-                      >
-                        <FiEdit size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
+                            No pages found.
+                          </td>
+                        </tr>
+                      )
+                    ) : (
+                      paginatedItems.length > 0 ? (
+                        paginatedItems.map((item, index) => {
+                          if (!item) return null;
+                          return (
+                            <tr
+                              key={item._id || index}
+                          draggable={true}
+                          onDragStart={(e) => handleDragItemsStart(e, index)}
+                          onDragOver={(e) => handleDragItemsOver(e, index)}
+                          onDragEnd={handleDragItemsEnd}
+                          className="border-b"
+                        >
+                          <td className="py-4 px-6 flex items-center gap-2">
+                            <span className="p-1 border rounded cursor-move">⋮⋮</span>
+                                {item.title || 'Untitled Item'}
+                          </td>
+                          <td className="py-4 px-6">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                    checked={item.visibility || false}
+                                className="sr-only peer"
+                                onChange={() => handleVisibility(item._id)}
+                              />
+                                  <div className={`w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                                    item.visibility ? "bg-primary" : "bg-gray-500"
+                                  }`}></div>
+                            </label>
+                          </td>
+                          <td className="py-4 px-6 text-sm text-gray-600">{item.owner || "System"}</td>
+                          <td className="py-4 px-6">
+                            <button
+                              className="text-primary"
+                              onClick={() => {
+                                setSelectedItem(item)
+                                setShowEditPage(true)
+                                setShowAddPage(true)
+                                window.history.pushState(null, "", `?tab=footer&edit=2&system=true`)
+                              }}
+                            >
+                              <FiEdit size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                          );
+                        })
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
+                          No items found. Add a new page to get started.
+                        </td>
+                      </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* Pagination */}
-          <div className="flex w-[95vw] overflow-auto md:w-full items-center justify-between">
-            <div>
-              Show result:
-              <select className="ml-2 px-2 py-1 border rounded">
-                <option>6</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="p-1 text-gray-400">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              {[1, 2, 3, 4, "...", 20].map((page, index) => (
-                <button
-                  key={index}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg ${
-                    currentPage === page
-                      ? "bg-green-800 text-white"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button className="p-1 text-gray-400">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+              {/* Pagination */}
+              {footerItems.length > 0 && (
+                <div className="flex w-[95vw] overflow-auto md:w-full items-center justify-between">
+                  <div>
+                    Show result:
+                    <select
+                      className="ml-2 px-2 py-1 border rounded"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        // This would need additional state management to be fully implemented
+                        // setItemsPerPage(Number(e.target.value));
+                        // setCurrentPage(1);
+                      }}
+                    >
+                      <option value="6">6</option>
+                      <option value="12">12</option>
+                      <option value="24">24</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="p-1 text-gray-400"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    {generatePaginationNumbers().map((page, index) => (
+                      <button
+                        key={index}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+                          currentPage === page ? "bg-green-800 text-white" : "text-gray-600"
+                        }`}
+                        onClick={() => {
+                          if (typeof page === "number") {
+                            setCurrentPage(page)
+                          }
+                        }}
+                        disabled={typeof page !== "number"}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      className="p-1 text-gray-400"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           <Modal
             isOpen={isAddFooterOpen}
             onRequestClose={() => setIsAddFooterOpen(false)}
@@ -373,10 +608,7 @@ const Footer = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Add Footer</h2>
-                <button
-                  onClick={() => setIsAddFooterOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+                <button onClick={() => setIsAddFooterOpen(false)} className="text-gray-400 hover:text-gray-600">
                   ✕
                 </button>
               </div>
@@ -422,20 +654,36 @@ const Footer = () => {
 
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => setIsAddFooterOpen(false)}
-                    className="px-6 py-2 border rounded-lg text-sm"
-                  >
+                  <button onClick={() => setIsAddFooterOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
                     Cancel
                   </button>
                   <button
                     onClick={() => {
-                      // Handle save changes
-                      setIsAddFooterOpen(false);
+                      dispatch(
+                        addNewFooter({
+                          title: footerTitle,
+                          items: [],
+                          visibility: footerVisibility,
+                          link: footerLink,
+                        }),
+                      ).then(() => {
+                        setIsAddFooterOpen(false)
+                        setFooterTitle("")
+                        setFooterLink("")
+                        setFooterVisibility(false)
+                      })
                     }}
                     className="px-6 py-2 bg-primary text-white rounded-lg text-sm"
+                    disabled={isLoading}
                   >
-                    Save Changes
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <Loader className="animate-spin h-4 w-4 mr-2" />
+                        Saving...
+                      </span>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </button>
                 </div>
               </div>
@@ -451,6 +699,16 @@ const Footer = () => {
             <EditFooterItem
               setIsEditItemModalOpen={setIsEditItemModalOpen}
               selectedItem={selectedItem}
+              onSave={(updatedItem) => {
+                const updatedItems = footerItems.map((item) => (item._id === updatedItem._id ? updatedItem : item))
+
+                dispatch(
+                  editFooter({
+                    id: selectedSection,
+                    data: { items: updatedItems },
+                  }),
+                )
+              }}
             />
           </Modal>
 
@@ -460,20 +718,23 @@ const Footer = () => {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
             overlayClassName="fixed inset-0 bg-black/50"
           >
-            <EditFooter setIsEditFooterModalOpen={setIsEditFooterModalOpen} />
-          </Modal>
-          <Modal
-            isOpen={isCreatedPagesOpen}
-            onRequestClose={() => setIsCreatedPagesOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px]"
-            overlayClassName="fixed inset-0 bg-black/50"
-          >
-            <CreatedPages setIsCreatedPagesOpen={setIsCreatedPagesOpen} />
+            <EditFooter
+              setIsEditFooterModalOpen={setIsEditFooterModalOpen}
+              selectedFooter={footers.find((f) => f._id === selectedSection)}
+              onSave={(updatedFooter) => {
+                dispatch(
+                  editFooter({
+                    id: selectedSection,
+                    data: updatedFooter,
+                  }),
+                )
+              }}
+            />
           </Modal>
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

@@ -10,7 +10,7 @@ const getAuthToken = () => {
 const getSupportRequests = async ({ page, limit, search, sortBy, filter }) => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/support-requests?page=${page}&limit=${limit}&sortBy=${sortBy}&filter=${filter}&search=${search}`,
+    `${base_url}/api/admin/support-requests?page=${page}&limit=${limit}&sortBy=${sortBy}&filter=${filter}&search=${search}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -24,7 +24,7 @@ const getSupportRequests = async ({ page, limit, search, sortBy, filter }) => {
 const getSupportRequestDetails = async (id) => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/support-requests/${id}`,
+    `${base_url}/api/admin/support-requests/${id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -38,7 +38,7 @@ const getSupportRequestDetails = async (id) => {
 const updateSupportRequest = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/support-requests/${data.id}`,
+    `${base_url}/api/admin/support-requests/${data.id}`,
     data,
     {
       headers: {
@@ -53,7 +53,7 @@ const updateSupportRequest = async (data) => {
 const deleteSupportRequest = async (id) => {
   const token = getAuthToken();
   const response = await axios.delete(
-    `${base_url}/admin/support-requests/${id}`,
+    `${base_url}/api/admin/support-requests/${id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -9,6 +9,7 @@ const initialState = {
   isError: false,
   isLoading: false,
   message: "",
+  pagination: {},
 };
 
 export const getAllHelps = createAsyncThunk(
@@ -22,8 +23,19 @@ export const getAllHelps = createAsyncThunk(
   }
 );
 
+export const createTopic = createAsyncThunk(
+  "help/create-topic",
+  async (data, thunkAPI) => {
+    try {
+      return await helpService.createTopic(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const editTopic = createAsyncThunk(
-  "help/edit-topic",
+  "help/topic",
   async (data, thunkAPI) => {
     try {
       return await helpService.editTopic(data);
@@ -90,9 +102,9 @@ export const editQA = createAsyncThunk(
 
 export const deleteQA = createAsyncThunk(
   "help/delete-qa",
-  async (id, thunkAPI) => {
+  async (data, thunkAPI) => {
     try {
-      return await helpService.deleteQA(id);
+      return await helpService.deleteQA(data);
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -133,7 +145,7 @@ export const createFAQs = createAsyncThunk(
 );
 
 export const editFAQs = createAsyncThunk(
-  "help/edit-faqs",
+  "help/faq",
   async (data, thunkAPI) => {
     try {
       return await helpService.editFAQs(data);
@@ -168,7 +180,14 @@ export const visibilityFAQs = createAsyncThunk(
 export const helpSlice = createSlice({
   name: "help",
   initialState,
-  reducers: {},
+  reducers: {
+    reset: (state) => {
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = "";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getAllHelps.pending, (state) => {
@@ -186,6 +205,24 @@ export const helpSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error;
+      })
+      .addCase(createTopic.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createTopic.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "Topic created successfully";
+        state.helps = [...state.helps, action.payload];
+        toast.success(state.message);
+      })
+      .addCase(createTopic.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error.message;
+        toast.error(state.message);
       })
       .addCase(editTopic.pending, (state) => {
         state.isLoading = true;
@@ -383,7 +420,8 @@ export const helpSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.message = "success";
-        state.faqs = action.payload;
+        state.faqs = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getAllFAQs.rejected, (state, action) => {
         state.isLoading = false;
@@ -470,4 +508,5 @@ export const helpSlice = createSlice({
   },
 });
 
+export const { reset } = helpSlice.actions;
 export default helpSlice.reducer;

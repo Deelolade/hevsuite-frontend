@@ -2,7 +2,7 @@ import React, { useState } from "react";
 // import { Switch } from "@headlessui/react";
 
 import General from "./General";
-import SocailLinks from "./SocailLinks";
+import SocialLinks from "./SocailLinks";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 
@@ -15,7 +15,7 @@ const Settings = () => {
       case "general":
         return <General />;
       case "social":
-        return <SocailLinks />;
+        return <SocialLinks />;
 
       default:
         return <General />;

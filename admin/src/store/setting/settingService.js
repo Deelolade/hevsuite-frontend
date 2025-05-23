@@ -10,7 +10,7 @@ const getAuthToken = () => {
 const getSettings = async () => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/settings`,
+    `${base_url}/api/settings`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -18,13 +18,15 @@ const getSettings = async () => {
       withCredentials: true,
     }
   );
+
+  
   return response.data;
 };
 
 const updateGeneralSettings = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/settings/general`,
+    `${base_url}/api/settings`,
     data,
     {
       headers: {

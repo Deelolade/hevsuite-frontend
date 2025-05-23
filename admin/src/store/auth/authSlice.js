@@ -58,6 +58,17 @@ export const codeVerify = createAsyncThunk(
   }
 );
 
+export const resetPassword = createAsyncThunk(
+  "auth/reset-password",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.resetPassword(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -128,6 +139,21 @@ export const authSlice = createSlice({
         state.message = "success";
       })
       .addCase(codeVerify.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "success";
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
