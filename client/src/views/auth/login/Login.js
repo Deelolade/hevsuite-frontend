@@ -35,6 +35,7 @@ const Login = () => {
       } else {
         navigate('/two-factor-auth');
       }
+      console.log("response in login",response)
     } catch (error) {
       // toast.error(error.message);
       console.log(error.message);

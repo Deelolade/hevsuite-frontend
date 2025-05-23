@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
@@ -14,6 +14,15 @@ const TwoFactorAuth = () => {
     // Redirect to the appropriate verification page
     navigate(`/${input}-verification`)
   };
+
+  useEffect(()=>{
+    dispatch(fetchProfile()).unwrap()
+    .then((response) => {
+      console.log("user in useEffect",response)
+    })
+  },[dispatch])
+
+
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
@@ -131,7 +140,7 @@ const TwoFactorAuth = () => {
                   //   navigate('/register-6'); // Or your membership registration page
                   // }
                    await dispatch(fetchProfile()).unwrap();
-
+                     console.log("user in 2fa",user)
                   if (!user) {
                     navigate('/login');
                   } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
@@ -140,6 +149,7 @@ const TwoFactorAuth = () => {
                     navigate('/register-6');
                   } else {
                     navigate('/register-6'); // fallback
+                    // console.log(user.membershipStatus)
                   }
                 }}
               >

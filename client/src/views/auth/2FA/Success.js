@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
@@ -12,6 +12,7 @@ const Success = () => {
   const { user, isLoading } = useSelector(
     (state) => state.auth
   );
+
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
       {/* Background Image - Visible on all screens */}
@@ -82,8 +83,8 @@ const Success = () => {
                   //  else {
                   //   navigate('/register-6'); // Or your membership registration page
                   // }
-                   await dispatch(fetchProfile()).unwrap();
-
+                   await dispatch(fetchProfile()).unwrap()
+                    console.log("user in sucess", user);
                   if (!user) {
                     navigate('/login');
                   } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {

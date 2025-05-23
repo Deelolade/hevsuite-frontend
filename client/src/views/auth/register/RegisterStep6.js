@@ -12,16 +12,22 @@ import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 import referralService from '../../../services/referralService';
 import toast from 'react-hot-toast';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { persistor } from '../../../store/store';
+import { logout } from '../../../features/auth/authSlice';
 const RegisterStep6 = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const dispatch = useDispatch();
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const [members, setMembers] = useState([])
   const [approval, setApproval] = useState(false);
   const [referrals, setReferrals] = useState([])
    const { Settings } = useSelector((state) => state.generalSettings);
+   const {user}= useSelector((state)=> state.auth)
+
+   console.log("user in step 6",user)
   useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
 
@@ -42,6 +48,18 @@ const RegisterStep6 = () => {
 
     fetchData();
   }, []);
+
+   const handleLogout = async () => {
+      try {
+        await dispatch(logout()).unwrap()
+        await persistor.purge();
+        navigate('/');
+        window.location.reload();
+      } catch (error) {
+        toast.error("Logout failed. Please try again.");
+        console.error('Logout failed:', error);
+      }
+    };
 
   // const members = [
   //   {
@@ -169,6 +187,17 @@ const RegisterStep6 = () => {
         <RegisterApproval setApproval={setApproval} referrals={referrals} />
       ) : (
         <div className='container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow'>
+          {/* user && user.joinFeeStatus === 'pending' && */}
+          { (
+            <div className=' w-[100px] absolute top-60 right-4'>
+              <button
+                onClick={handleLogout}
+                className='px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm md:text-base w-full sm:w-auto'
+              >
+                Logout
+              </button>
+            </div>  
+            )}
           <h1 className='text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]'>
             <span className='w-6 h-6 md:w-8 md:h-8 bg-[#eae5e7] rounded-full flex items-center justify-center text-white text-sm md:text-base'>
               👥

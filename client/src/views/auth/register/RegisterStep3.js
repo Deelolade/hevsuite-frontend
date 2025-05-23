@@ -21,6 +21,7 @@ import {
   updateStepData,
   reset,
 } from '../../../features/auth/registerSlice';
+import authService from '../../../services/authService';
 
 const RegisterStep3 = () => {
   useEffect(() => {
@@ -39,7 +40,7 @@ const RegisterStep3 = () => {
   const [primaryPhoneCode, setPrimaryPhoneCode] = useState('');
   const [secondaryPhoneCode, setSecondaryPhoneCode] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Validate required fields for step 3
     const newErrors = {};
@@ -79,10 +80,35 @@ const RegisterStep3 = () => {
       newErrors.primaryEmail = "Primary email is required";
     } else if (!validate(formData.primaryEmail)) {
       newErrors.primaryEmail = "Please enter a valid email address";
-    }
+    } else{
+
+       try {
+        const isValid = await authService.checkUserByEmail(formData.primaryEmail)
+        console.log("is valid test bini",isValid);
+        if(isValid.status){
+          newErrors.primaryEmail ="Email is already registered";
+        }
+       } catch (error) {
+        // console.log("is valid test bini",error);
+        newErrors.primaryEmail = error.message || "Email check failed!";
+        
+       }
+    } 
 
     if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
       newErrors.secondaryEmail = "Please enter a valid email address";
+    }else{
+      try {
+        const isValid = await authService.checkUserByEmail(formData.secondaryEmail)
+        console.log("is valid test bini",isValid);
+        if(isValid.status){
+          newErrors.secondaryEmail ="Email is already registered";
+        }
+       } catch (error) {
+        // console.log("is valid test bini",error);
+        newErrors.secondaryEmail = error.message || "Email check failed!";
+        
+       }
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);

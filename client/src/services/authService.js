@@ -17,6 +17,21 @@ const register = async (userData) => {
   );
 }
 };
+
+const checkUserByEmail = async (email)=> {
+  try {
+    const response = await axios.post(API_URL + "check-email", {email})
+    return response.data;
+    
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Email check failed'
+    );
+    
+  }
+}
 //pending registration login
 const pendingRegLogin = async (email) => {
   try {
@@ -170,7 +185,8 @@ const authService = {
   verify2FA,
   forgotPassword,
   resetPassword,
-  resend2FACode
+  resend2FACode,
+  checkUserByEmail
 };
 
 export default authService;
