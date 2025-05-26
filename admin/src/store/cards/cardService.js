@@ -43,7 +43,18 @@ const getUserDetails = async (userId) => {
 
 // Post cards
 const postCards = async (data) => {
-  const response = await axios.post(`${base_url}/admin/post-cards`, data)
+  const token = getAuthToken()
+  const response = await axios.post(
+    `${base_url}/admin/post-cards`,
+    data, // Send the FormData object directly
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // The 'Content-Type' header is automatically set to 'multipart/form-data' when using FormData
+      },
+      withCredentials: true,
+    },
+  )
   return response.data
 }
 
@@ -95,7 +106,11 @@ const bulkCancelCards = async (data) => {
   const token = getAuthToken()
   const response = await axios.post(
     `${base_url}/admin/bulk-cancel`,
-    { cardIds: data.cardIds, reason: data.reason },
+    { 
+      cardIds: data.cardIds, 
+      reason: data.reason,
+      password: data.password 
+    },
     {
       headers: {
         Authorization: `Bearer ${token}`,

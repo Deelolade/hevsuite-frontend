@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import avatar from "../../assets/user.avif";
 import Modal from "react-modal";
+import { useSelector } from "react-redux";
 
 import {
   BsThreeDotsVertical,
@@ -16,6 +17,10 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
   const [selectedActionUser, setSelectedActionUser] = useState(null);
   const filterDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
+
+  // Get required referral number from settings
+  const settings = useSelector((state) => state.settings);
+  const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3;
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -51,6 +56,38 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
     setSelectedAction(action);
     setSelectedActionUser(user);
     setIsActionModalOpen(true);
+  };
+
+  const getSupportersStatusColor = (user) => {
+    const [current, required] = user.supportersStatus.split('/').map(Number);
+    
+    // If current equals required, it's complete (green)
+    if (current === required) return "bg-green-500";
+    
+    // If current is 0, it's no supporters (red)
+    if (current === 0) return "bg-red-500";
+    
+    // If current is less than required, it's in progress (yellow)
+    if (current < required) return "bg-yellow-500";
+    
+    // If current is more than required (shouldn't happen but just in case)
+    return "bg-green-500";
+  };
+
+  const getSupportersStatusText = (user) => {
+    const [current, required] = user.supportersStatus.split('/').map(Number);
+    
+    // If current equals required, it's complete
+    if (current === required) return "Complete";
+    
+    // If current is 0, it's no supporters
+    if (current === 0) return "No Supporters";
+    
+    // If current is less than required, show progress
+    if (current < required) return `${current}/${required} Supporters`;
+    
+    // If current is more than required (shouldn't happen but just in case)
+    return "Complete";
   };
 
   return (
@@ -166,28 +203,40 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
                 <td className="px-6 py-4 text-gray-500 text-sm">
                   {user.email}
                 </td>
-                <td className="px-6 py-4 text-sm text-white">
-                  <span
-                    className={`px-2 py-1 rounded ${
-                      user.supportersStatus === "3/3"
-                        ? "bg-green-500"
-                        : user.supportersStatus === "0/3"
-                          ? "bg-red-500"
-                        : "bg-yellow-500"
-                      }`}
-                  >
-                    {user.supportersStatus}
-                  </span>
+                <td className="px-6 py-4 text-sm">
+                  {/* <div className="flex flex-col gap-1"> */}
+                    <span className={`px-2 py-1 rounded text-white ${getSupportersStatusColor(user)}`}>
+                      {user.supportersStatus}
+                    </span>
+                    {/* <span className="text-xs text-gray-500">
+                      {getSupportersStatusText(user)}
+                    </span> */}
+                  {/* </div> */}
                 </td>
                 <td className="px-6 py-4 text-gray-500 text-sm">
-                  {user.joinFeeStatus === "Paid" ? "Paid" : "Pending"}
+                  <span className={`px-2 py-1 rounded ${
+                    user.joinFeeStatus?.toLowerCase() === 'paid' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {user.joinFeeStatus === "paid" ? "Paid" : "Pending"}
+                  </span>
                 </td>
-
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button
-                      className="p-1 text-green-600 hover:text-green-700"
-                      onClick={(e) => handleActionClick("accept", user, e)}
+                      className={`p-1 ${
+                        user.canBeApproved 
+                          ? 'text-green-600 hover:text-green-700' 
+                          : 'text-gray-400 cursor-not-allowed'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (user.canBeApproved) {
+                          handleActionClick("accept", user, e);
+                        }
+                      }}
+                      title={!user.canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
                     >
                       <FaCheck />
                     </button>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BsGrid1X2Fill } from "react-icons/bs";
 import {
@@ -16,6 +16,8 @@ import { BiChevronLeft, BiMenu, BiSupport } from "react-icons/bi";
 import { CgClose, CgWebsite } from "react-icons/cg";
 import logo_red from "../../assets/logo_red.png";
 import "./forced.css";
+import axios from 'axios';
+import { base_url } from '../../constants/axiosConfig';
 
 const menuItems = [
   { path: "dashboard", icon: <BsGrid1X2Fill size={20} />, label: "Dashboard" },
@@ -23,6 +25,7 @@ const menuItems = [
     path: "pending",
     icon: <MdOutlinePendingActions size={20} />,
     label: "Pending Registration",
+    showCount: true
   },
   { path: "users", icon: <FaUsers size={20} />, label: "User Management" },
   { path: "cards", icon: <FaIdCard size={20} />, label: "Club Cards" },
@@ -60,6 +63,27 @@ const menuItems = [
 const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const response = await axios.get(`${base_url}/api/statistics/dashboard`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setPendingCount(response.data.pendingRegistrations);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+
+    fetchDashboardStats();
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchDashboardStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -138,8 +162,13 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
-                  <div className="flex items-center justify-center w-10">
+                  <div className="flex items-center justify-center w-10 relative">
                     {item.icon}
+                    {item.showCount && pendingCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {pendingCount}
+                      </span>
+                    )}
                   </div>
                   {!minimize && (
                     <span

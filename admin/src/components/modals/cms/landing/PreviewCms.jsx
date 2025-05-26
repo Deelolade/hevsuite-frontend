@@ -14,11 +14,17 @@ const PreviewCms = ({ setIsPreviewModalOpen, selectedItem }) => {
       </div>
 
       <div className="space-y-6">
-        {/* Preview Image */}
+        {/* Preview Media */}
         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-          {selectedItem?.image && (
+          {selectedItem?.fileType === 'video' ? (
+            <video
+              src={selectedItem.file}
+              controls
+              className="w-full h-full object-cover"
+            />
+          ) : (
             <img
-              src={selectedItem.image}
+              src={selectedItem.file}
               alt="Preview"
               className="w-full h-full object-cover"
             />

@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Modal from 'react-modal';
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
+import idCardPlaceholder from "../../assets/Id.jpg";
+import avatarPlaceholder from "../../assets/user.avif";
+// import moment from 'moment';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
 Modal.setAppElement('#root');
 
@@ -13,11 +18,36 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Access settings from Redux store with proper null checking
+  const settings = useSelector((state) => state.settings);
+  const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3; // Use nullish coalescing
+
+  useEffect(() => {
+    Modal.setAppElement('#root');
+  }, []);
+
   if (!viewUser) return null;
 
   const handleAccept = () => {
+    // Check supporters status
+    const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+    if (approvedSupporters < requiredReferralNumber) {
+      toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
+      return;
+    }
+
+    // Check joining fee status
+    if (viewUser.joinFeeStatus?.toLowerCase() !== 'paid') {
+      toast.error('User must have paid the joining fee before approval.');
+      return;
+    }
+
     onAccept(viewUser);
   };
+
+  // Calculate if user can be approved
+  const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+  const canBeApproved = approvedSupporters === requiredReferralNumber && viewUser.joinFeeStatus?.toLowerCase() === 'paid';
 
   const handleReject = () => {
     onReject(viewUser);
@@ -70,7 +100,13 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
             </button>
             <button
               onClick={handleAccept}
-              className="p-2 text-green-500 hover:bg-green-50 rounded-full"
+              disabled={!canBeApproved}
+              className={`p-2 rounded-full ${
+                canBeApproved 
+                  ? 'text-green-500 hover:bg-green-50' 
+                  : 'text-gray-400 cursor-not-allowed'
+              }`}
+              title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
             >
               <FaCheck size={18} />
             </button>
@@ -184,17 +220,31 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Occupation & Interests</h3>
+                <h3 className="text-lg font-semibold mb-4">Preferred Social Media & Interests</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-500">Occupation</label>
-                    <p className="font-medium">{viewUser.occupation || "Not provided"}</p>
+                    <label className="text-sm text-gray-500">Preferred Social Media</label>
+                    {/* <p className="font-medium">{viewUser.preferredSocialMedia || "Not provided"}</p> */}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {viewUser.preferredSocialMedia && viewUser.preferredSocialMedia.length > 0 ? (
+                        viewUser.preferredSocialMedia.map((interest, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
+                          >
+                            {interest}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No interests specified</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Interests</label>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {viewUser.interests && viewUser.interests.length > 0 ? (
-                        viewUser.interests.map((interest, index) => (
+                      {viewUser.userInterests && viewUser.userInterests.length > 0 ? (
+                        viewUser.userInterests.map((interest, index) => (
                           <span
                             key={index}
                             className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
@@ -314,18 +364,16 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                       </span>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm text-gray-500">Supporters Status</label>
-                    <div className="mt-1">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-lg font-semibold">Supporters Status</h3>
+                    {/* Use requiredReferralNumber for the target number */}
+                    <p className="text-gray-600">{viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0} / {requiredReferralNumber} Approved Supporters</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                      {/* Calculate width based on requiredReferralNumber */}
                         <div
-                          className="bg-[#0A5438] h-2.5 rounded-full"
-                          style={{ width: `${(viewUser.referredBy?.filter(ref => ref.status === 'approved').length / 3) * 100}%` }}
+                        className="bg-green-500 h-2.5 rounded-full"
+                        style={{ width: `${(viewUser.referredBy?.filter(ref => ref.status === 'approved').length / requiredReferralNumber) * 100}%` }}
                         ></div>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0} out of 3 supporters
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -364,7 +412,13 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
         </button>
         <button
           onClick={handleAccept}
-          className="px-6 py-2 bg-[#0A5438] text-white rounded-lg flex items-center space-x-2 hover:bg-[#084433]"
+          disabled={!canBeApproved}
+          className={`px-6 py-2 rounded-lg flex items-center space-x-2 ${
+            canBeApproved 
+              ? 'bg-[#0A5438] text-white hover:bg-[#084433]' 
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
         >
           <FaCheck />
           <span>Accept</span>

@@ -18,10 +18,10 @@ const addNewCMS = async (data) => {
   return response.data;
 };
 
-const getAllCMS = async ({ status }) => {
+const getAllCMS = async ({ status, activeFilter }) => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/api/cms/landing-pages?status=${status}`,
+    `${base_url}/api/cms/landing-pages?status=${status}&activeFilter=${activeFilter}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -49,8 +49,9 @@ const editCMS = async (data) => {
 
 const removeCMS = async (data) => {
   const token = getAuthToken();
-  const response = await axios.delete(
+  const response = await axios.put(
     `${base_url}/api/cms/landing-pages/${data.id}`,
+    { isDeleted: data.isDeleted },
     {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -1,47 +1,100 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { BsArrowLeft } from "react-icons/bs"
-import { AiOutlineCloudUpload } from "react-icons/ai"
+import { useState } from "react"
+import { ArrowLeft, Plus, X } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import { editFooter } from "../../store/cms/cmsSlice"
-import { Loader } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 
 const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { isLoading } = useSelector((state) => state.cms)
-  const [title, setTitle] = useState("")
-  const [slides, setSlides] = useState([
-    { id: Date.now(), title: "", image: null, link: "", content: "" }
-  ])
-  const [content, setContent] = useState("")
-  const inputRefs = useRef({})
 
-  const handleImageUpload = (e, id) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setSlides((prev) =>
-      prev.map((slide) =>
-        slide.id === id
-          ? {
-              ...slide,
-              file,
-              image: URL.createObjectURL(file),
-              fileType: file.type.startsWith('video') ? 'video' : 'image',
-            }
-          : slide
-      )
-    )
+  // Initialize state from sessionStorage or defaults
+  const [title, setTitle] = useState(() => {
+    return sessionStorage.getItem("addFooterPageTitle") || ""
+  })
+
+  const [editors, setEditors] = useState(() => {
+    const savedEditors = sessionStorage.getItem("addFooterPageEditors")
+    if (savedEditors) {
+      try {
+        const parsed = JSON.parse(savedEditors)
+        return parsed.length > 0 ? parsed : [{ id: 1, title: "Main Content", content: "", checked: true }]
+      } catch (e) {
+        return [{ id: 1, title: "Main Content", content: "", checked: true }]
+      }
+    }
+    return [{ id: 1, title: "Main Content", content: "", checked: true }]
+  })
+
+  const [selectedEditor, setSelectedEditor] = useState(null)
+  const [selectedContentIndex, setSelectedContentIndex] = useState(null)
+
+  // Save to sessionStorage whenever state changes
+  useState(() => {
+    sessionStorage.setItem("addFooterPageTitle", title)
+  }, [title])
+
+  useState(() => {
+    sessionStorage.setItem("addFooterPageEditors", JSON.stringify(editors))
+  }, [editors])
+
+  // Clear sessionStorage when component unmounts
+  const clearSessionData = () => {
+    sessionStorage.removeItem("addFooterPageTitle")
+    sessionStorage.removeItem("addFooterPageEditors")
+    // Also clear preview data
+    sessionStorage.removeItem("slides")
+    sessionStorage.removeItem("contents")
+    sessionStorage.removeItem("mainText")
   }
 
-  const handleAddSlide = () => {
-    setSlides(prev => [...prev, { id: Date.now() + Math.random(), title: "", image: null, link: "", content: "" }])
+  const handlePreview = () => {
+    // Save data to sessionStorage in the format expected by the existing preview components
+    const formattedContents = editors.map((editor) => ({
+      id: editor.id,
+      title: editor.title || "",
+      content: editor.content || "",
+      checked: editor.checked,
+    }))
+
+    // Save to sessionStorage with the keys the preview page expects
+    sessionStorage.setItem("slides", JSON.stringify([])) // Empty slides for footer
+    sessionStorage.setItem("contents", JSON.stringify(formattedContents))
+    sessionStorage.setItem("mainText", JSON.stringify(title)) // Stringify the title to match the preview expectation
+
+    // Navigate to preview-system page
+    navigate("./preview-system")
   }
 
-  const handleRemoveSlide = (id) => {
-    if (slides.length === 1) return
-    setSlides(prev => prev.filter(slide => slide.id !== id))
+  const handleAddContent = () => {
+    const newEditor = {
+      id: Date.now(),
+      title: "",
+      content: "",
+      checked: true,
+    }
+    setEditors([...editors, newEditor])
+  }
+
+  const handleRemoveContent = (id) => {
+    if (editors.length === 1) return
+    setEditors((prev) => prev.filter((editor) => editor.id !== id))
+    if (selectedEditor?.id === id) {
+      setSelectedEditor(null)
+      setSelectedContentIndex(null)
+    }
+  }
+
+  const handleTitleChange = (id, value) => {
+    setEditors((prev) => prev.map((editor) => (editor.id === id ? { ...editor, title: value } : editor)))
+  }
+
+  const handleContentChange = (id, value) => {
+    setEditors((prev) => prev.map((editor) => (editor.id === id ? { ...editor, content: value } : editor)))
   }
 
   const handleSavePage = async () => {
@@ -63,19 +116,12 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
         visibility: true,
         owner: "System",
         createdAt: new Date().toISOString(),
-        slides: slides.map((slide) => ({
-          title: slide.title,
-          image: slide.image,
-          link: slide.link,
-          content: slide.content,
+        slides: [], // No slides for footer
+        content: editors.map((editor) => ({
+          title: editor.title,
+          content: editor.content,
+          visibility: true,
         })),
-        content: [
-          {
-            title: "",
-            content: content,
-            visibility: true,
-          },
-        ],
       }
 
       // Add the new page to the footer's items array
@@ -92,13 +138,17 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
       // Dispatch the action to update footer
       await dispatch(editFooter(data)).unwrap()
 
+      // Clear all session data after successful save
+      clearSessionData()
+
+      // Reset state
+      setTitle("")
+      setEditors([{ id: 1, title: "Main Content", content: "", checked: true }])
+      setSelectedEditor(null)
+      setSelectedContentIndex(null)
+
       // Show success message
       toast.success("Page added successfully")
-
-      // Reset form
-      setTitle("")
-      setContent("")
-      setSlides([{ id: Date.now(), title: "", image: null, link: "", content: "" }])
 
       // Refresh data and go back
       if (refreshData) refreshData()
@@ -109,132 +159,157 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
     }
   }
 
+  const handleRemoveAll = () => {
+    if (confirm("Are you sure you want to remove all content?")) {
+      clearSessionData()
+      setTitle("")
+      setEditors([{ id: 1, title: "Main Content", content: "", checked: true }])
+      setSelectedEditor(null)
+    }
+  }
+
+  const handleBack = () => {
+    // Ask user if they want to save their work before leaving
+    if (title || editors.some((e) => e.content)) {
+      if (confirm("You have unsaved changes. Do you want to leave without saving?")) {
+        clearSessionData()
+        onBack()
+      }
+    } else {
+      clearSessionData()
+      onBack()
+    }
+  }
+
   return (
-    <div className="min-h-screen flex flex-col pb-10">
+    <div className="space-y-6 pb-10 max-w-7xl mx-auto px-4">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-6 mt-2">
-        <button className="text-gray-600" onClick={onBack}>
-          <BsArrowLeft size={20} />
+      <div className="flex items-center gap-2 mb-6">
+        <button className="text-gray-600 hover:text-gray-800 transition-colors" onClick={handleBack}>
+          <ArrowLeft size={20} />
         </button>
-        <span className="text-lg font-medium">Add New Page</span>
+        <span className="text-lg font-medium">Add New Footer Page</span>
       </div>
 
-      {/* Page Title Card */}
-      <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center mb-6 shadow-sm">
-        <div className="flex-1 w-full md:w-auto">
-          <label className="block text-sm mb-2 font-medium">Page Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            className="w-full md:w-96 px-3 py-2 border rounded-lg text-sm bg-gray-50"
-          />
+      {/* Page Title */}
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm mb-2 font-medium">Page Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter page title"
+              className="w-full md:w-96 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
-        <button
-          className="ml-0 md:ml-6 mt-4 md:mt-0 px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
-          onClick={handleAddSlide}
-        >
-          Add Slide
-        </button>
       </div>
 
-      {/* Hero Section Cards */}
-      {slides.map((slide, idx) => (
-        <div key={slide.id} className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-          <div className="mb-6">
-            <span className="block text-base font-medium mb-4">Hero Section</span>
-            <div className="flex flex-col items-center justify-center">
-              <div
-                className="flex flex-col items-center justify-center cursor-pointer"
-                onClick={() => inputRefs.current[slide.id]?.click()}
-              >
-                <input
-                  type="file"
-                  ref={el => inputRefs.current[slide.id] = el}
-                  className="hidden"
-                  accept="image/*,video/*"
-                  onChange={e => handleImageUpload(e, slide.id)}
-                />
-                <AiOutlineCloudUpload size={36} className="text-primary mb-2" />
-                <span className="text-sm text-primary font-medium">Click to Add image/Video</span>
-                {slide.image && slide.fileType === 'image' && (
-                  <img src={slide.image} alt="slide" className="mt-4 h-32 rounded-lg object-cover" />
-                )}
-                {slide.image && slide.fileType === 'video' && (
-                  <video controls className="mt-4 h-32 rounded-lg object-cover">
-                    <source src={slide.image} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                )}
-              </div>
+      {/* Content Editor Section */}
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-medium mb-4">Page Content</h3>
+        <p className="text-sm text-blue-600 mb-4">Click any content block to edit</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <div className="lg:col-span-3 bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <div className="flex gap-4 min-w-max">
+              {editors.map((editor, index) => (
+                <div key={editor.id} className="flex items-start gap-2">
+                  <div
+                    onClick={() => {
+                      setSelectedContentIndex(index)
+                      setSelectedEditor(editor)
+                    }}
+                    className={`h-32 w-44 relative cursor-pointer transition-all duration-200 flex items-center justify-center flex-col space-y-2 text-center shadow-md rounded-lg bg-white hover:shadow-lg ${
+                      selectedEditor?.id === editor.id ? "ring-2 ring-blue-500" : ""
+                    }`}
+                  >
+                    <div className="p-4 text-center">
+                      <h4 className="font-medium text-sm mb-2">{editor.title || "Untitled"}</h4>
+                      <p className="text-xs text-gray-500 line-clamp-3">
+                        {editor.content ? editor.content.substring(0, 50) + "..." : "No content"}
+                      </p>
+                    </div>
+                  </div>
+                  {editors.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveContent(editor.id)}
+                      className="text-red-500 hover:text-red-700 bg-white rounded-full p-1 shadow-md transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <label className="block text-sm mb-2 font-medium">Button Text</label>
-              <input
-                type="text"
-                value={slide.title}
-                onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, title: e.target.value } : s))}
-                placeholder="Add text"
-                className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm mb-2 font-medium">Available Link</label>
-              <input
-                type="text"
-                value={slide.link}
-                onChange={e => setSlides(prev => prev.map(s => s.id === slide.id ? { ...s, link: e.target.value } : s))}
-                placeholder="link"
-                className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
+
+          <div className="lg:col-span-1 p-4">
             <button
-              className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
-              onClick={() => handleRemoveSlide(slide.id)}
-              disabled={slides.length === 1}
+              onClick={handleAddContent}
+              className="h-32 w-full cursor-pointer transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border-2 border-blue-500 border-dashed rounded-lg hover:bg-blue-50"
             >
-              Remove Slide
+              <Plus className="text-blue-500" size={24} />
+              <span className="text-blue-500 font-medium text-sm">Add Content</span>
             </button>
           </div>
         </div>
-      ))}
 
-      {/* Content Editor Card */}
-      <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm font-medium">Normal text</span>
-          <span className="w-px h-5 bg-gray-200 mx-2" />
-        </div>
-        <div className="border rounded-lg flex flex-col items-center justify-center min-h-[180px] mb-4 w-full">
-          <textarea
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            className="w-full min-h-[120px] p-2 rounded-lg border-none focus:ring-0 focus:outline-none resize-none text-sm"
-            placeholder="Enter content..."
-          />
-        </div>
+        {/* Selected Content Editor */}
+        {selectedEditor && (
+          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+            <h4 className="text-lg font-semibold mb-4">
+              Editing: {editors[selectedContentIndex]?.title || "Untitled"}
+            </h4>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Content Title</label>
+              <input
+                type="text"
+                className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter content title"
+                value={editors[selectedContentIndex]?.title || ""}
+                onChange={(e) => {
+                  handleTitleChange(editors[selectedContentIndex]?.id, e.target.value)
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Content</label>
+              <textarea
+                value={editors[selectedContentIndex]?.content || ""}
+                onChange={(e) => handleContentChange(editors[selectedContentIndex]?.id, e.target.value)}
+                className="w-full min-h-[200px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                placeholder="Enter your content here..."
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-4 mt-8">
+      <div className="flex justify-end gap-4 pt-6">
         <button
-          className="px-8 py-2 rounded-lg text-sm font-semibold bg-[#0A5438] text-white"
+          onClick={handlePreview}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+        >
+          Preview
+        </button>
+        <button
+          onClick={handleRemoveAll}
+          className="px-6 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+        >
+          Remove
+        </button>
+        <button
           onClick={handleSavePage}
           disabled={isLoading}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
         >
-          {isLoading ? (
-            <span className="flex items-center">
-              <Loader className="animate-spin h-4 w-4 mr-2" />
-              Saving...
-            </span>
-          ) : (
-            "Add Page"
-          )}
+          {isLoading ? "Adding..." : "Add Page"}
         </button>
       </div>
     </div>

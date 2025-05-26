@@ -31,14 +31,20 @@ const Permissions = () => {
   // Available permissions
   const availablePermissions = [
     { name: "Dashboard", id: "Dashboard" },
+    { name: "Pending Registration", id: "Pending Registration" },
     { name: "User Management", id: "User Management" },
-    { name: "Approve & Decline Verification", id: "Approve & Decline Verification" },
-    { name: "Edit & Delete Admins", id: "Edit & Delete Admins" },
-    { name: "Add Payment Processor", id: "Add Payment Processor" },
-    { name: "Newsrooms", id: "Newsrooms" },
+    { name: "Club Cards", id: "Club Cards" },
+    { name: "CMS", id: "CMS" },
     { name: "Events Management", id: "Events Management" },
+    { name: "Newsrooms", id: "Newsrooms" },
+    { name: "Ask", id: "Ask" },
+    { name: "Help Center", id: "Help Center" },
+    { name: "Support Request", id: "Support Request" },
+    { name: "Finance Management", id: "Finance Management" },
+    { name: "Admin Users", id: "Admin Users" },
+    { name: "Site Settings", id: "Site Settings" },
+    // { name: "Add Payment Processor", id: "Add Payment Processor" },
   ]
-
   useEffect(() => {
     dispatch(getAllRoles())
   }, [dispatch])

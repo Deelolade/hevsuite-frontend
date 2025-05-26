@@ -1,9 +1,4 @@
-// import Footer from "@/components/shared/HomeLayout/footer_new";
-// import Header from "@/components/shared/HomeLayout/header";
-// import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
-// import { Button, Tooltip } from "antd";
-// import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ImageSlides } from "./ImageSlides";
 import Profile from "../../components/Profile";

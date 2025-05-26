@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BiSearch } from "react-icons/bi";
 import {
   BsCheckCircleFill,
@@ -10,14 +10,27 @@ import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
+import { useSelector, useDispatch } from "react-redux";
+import { getSupportRequests, updateSupportRequest } from "../../store/support/supportSlice";
+import Spinner from "../../components/Spinner";
+import debounce from 'lodash/debounce';
 
 const AssignedRequest = () => {
+  const dispatch = useDispatch();
+  const { supportRequests, isLoading } = useSelector((state) => state.support);
+  const { user } = useSelector((state) => state.auth);
   const [statusFilter, setStatusFilter] = useState("Pending");
   const [openOptionsId, setOpenOptionsId] = useState(null);
   const [openDetails, setOpenDetails] = useState(false);
   const [pendingDetails, setPendingDetails] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [cache, setCache] = useState({
+    supportRequests: null,
+    lastFetchTime: null
+  });
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -25,41 +38,86 @@ const AssignedRequest = () => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
 
-  const [adminList] = useState([
-    { id: 1, name: "Admin 1" },
-    { id: 2, name: "Admin 2" },
-    { id: 3, name: "Admin 3" },
-  ]);
-  const requests = [
-    {
-      id: 1,
-      user: {
-        name: "Andrew Bojangles",
-        avatar: avatar,
-        email: "Andrew@gmail.com",
-      },
-      type: "Evidence Review",
-      submissionDate: "Jan 16, 2025",
-      status: "Pending",
-      messages: [
-        {
-          id: 1,
-          text: "I want You to review my document of residence...",
-          date: "Jan 16, 2025",
-        },
-        {
-          id: 2,
-          text: "Here are the additional documents you requested...",
-          date: "Jan 17, 2025",
-        },
-        {
-          id: 3,
-          text: "Please review the updated information...",
-          date: "Jan 18, 2025",
-        },
-      ],
-    },
-  ];
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      setSearchTerm(term);
+    }, 500),
+    []
+  );
+
+  // Debounced status filter function
+  const debouncedStatusFilter = useCallback(
+    debounce((status) => {
+      setStatusFilter(status);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        // Check if we have cached data and it's less than 30 seconds old
+        const now = Date.now();
+        const cacheAge = cache.lastFetchTime ? now - cache.lastFetchTime : Infinity;
+        
+        if (cache.supportRequests && cacheAge < 30000) {
+          // Use cached data if it's less than 30 seconds old
+          return;
+        }
+
+        const result = await dispatch(
+          getSupportRequests({
+            page: 1,
+            limit: 100,
+            search: searchTerm,
+            sortBy: "submissionDate",
+            filter: statusFilter,
+            assignedTo: "me"
+          })
+        ).unwrap();
+        
+        // Update cache with new data
+        setCache({
+          supportRequests: result,
+          lastFetchTime: now
+        });
+        
+        setIsInitialLoad(false);
+      } catch (error) {
+        console.error('Failed to fetch assigned requests:', error);
+      }
+    };
+
+    fetchRequests();
+  }, [dispatch, searchTerm, statusFilter, isInitialLoad]);
+
+  const getFilteredRequests = () => {
+    if (!supportRequests) return [];
+    
+    return supportRequests.filter((request) => {
+      const matchesAssignedTo = request.assignedTo === user?._id;
+      const matchesSearch = request.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           request.type?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+      
+      return matchesAssignedTo && matchesSearch && matchesStatus;
+    });
+  };
+
+  const filteredRequests = getFilteredRequests();
+
+  const formattedRequests = filteredRequests.map((request) => ({
+    ID: request._id,
+    Name: request.user?.name || 'Unknown User',
+    Email: request.user?.email || 'No Email',
+    Type: request.type,
+    SubmissionDate: new Date(request.submissionDate).toLocaleDateString(),
+    Status: request.status,
+    Messages: request.messages
+      ?.map((msg) => `${new Date(msg.date).toLocaleDateString()}: ${msg.text}`)
+      .join(" | ") || "",
+  }));
 
   const handlePreviousMessage = () => {
     if (currentMessageIndex > 0) {
@@ -83,7 +141,7 @@ const AssignedRequest = () => {
       setOpenDetails(true);
     }
     setSelectedRequest(request);
-    setCurrentMessageIndex(request.messages.length - 1); //  latest message
+    setCurrentMessageIndex(request.messages.length - 1);
     setOpenOptionsId(null);
   };
 
@@ -92,44 +150,93 @@ const AssignedRequest = () => {
     setIsAssignModalOpen(true);
     setOpenOptionsId(null);
   };
-  const formattedRequests = requests.map((request) => ({
-    ID: request.id,
-    Name: request.user.name,
-    Email: request.user.email,
-    Type: request.type,
-    SubmissionDate: request.submissionDate,
-    Status: request.status,
-    Messages: request.messages
-      .map((msg) => `${msg.date}: ${msg.text}`)
-      .join(" | "),
-  }));
+
+  const handleApprove = async () => {
+    if (selectedRequest) {
+      try {
+        await dispatch(updateSupportRequest({
+          ...selectedRequest,
+          status: "Approved"
+        })).unwrap();
+        
+        // Update local cache instead of making a new API call
+        const updatedRequests = supportRequests.map(request => 
+          request._id === selectedRequest._id 
+            ? { ...request, status: "Approved" }
+            : request
+        );
+        
+        setCache(prev => ({
+          ...prev,
+          supportRequests: updatedRequests
+        }));
+        
+        setIsApproveModalOpen(false);
+      } catch (error) {
+        console.error("Failed to approve request:", error);
+      }
+    }
+  };
+
+  const handleDecline = async () => {
+    if (selectedRequest) {
+      try {
+        await dispatch(updateSupportRequest({
+          ...selectedRequest,
+          status: "Declined"
+        })).unwrap();
+        
+        // Update local cache instead of making a new API call
+        const updatedRequests = supportRequests.map(request => 
+          request._id === selectedRequest._id 
+            ? { ...request, status: "Declined" }
+            : request
+        );
+        
+        setCache(prev => ({
+          ...prev,
+          supportRequests: updatedRequests
+        }));
+        
+        setIsDeclineModalOpen(false);
+      } catch (error) {
+        console.error("Failed to decline request:", error);
+      }
+    }
+  };
+
+  if (isLoading && isInitialLoad) {
+    return <Spinner />;
+  }
 
   return (
     <div>
       <div>
         <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
-          <h2 className="text-xl font-primary text-[1A1A1A]">User Requests</h2>
-          <div className="flex  flex-col md:flex-row items-center gap-4">
+          <h2 className="text-xl font-primary text-[1A1A1A]">Your Assigned Requests</h2>
+          <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="relative">
               <BiSearch className="absolute hidden md:flex left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search"
                 className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
+                onChange={(e) => debouncedSearch(e.target.value)}
               />
             </div>
             <select
               className="px-4 py-2 border w-44 rounded-lg font-primary text-[#343434] bg-white"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => debouncedStatusFilter(e.target.value)}
             >
-              <option>Pending</option>
-              <option>Approved</option>
-              <option>Declined</option>
+              <option value="all">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Declined">Declined</option>
             </select>
             <ExportButton
               data={formattedRequests}
-              fileName="assigned_request"
+              fileName="assigned_requests"
             />
           </div>
         </div>
@@ -148,147 +255,100 @@ const AssignedRequest = () => {
               </tr>
             </thead>
             <tbody>
-              {requests.map((request) => (
-                <tr key={request.id} className="border-b">
-                  <td className="py-4">{request.id}</td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={request.user.avatar}
-                        alt={request.user.name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
-                        {request.user.name}
+              {filteredRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-8 text-gray-500">
+                    No assigned requests found
+                  </td>
+                </tr>
+              ) : (
+                filteredRequests.map((request) => (
+                  <tr key={request._id} className="border-b">
+                    <td className="py-4">{request._id}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={request.user?.avatar || avatar}
+                          alt={request.user?.name || 'User'}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <span className="font-primary w-32 md:w-fit text-[#323C47]">
+                          {request.user?.name || 'Unknown User'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <p className="py-4 w-32 md:w-fit">{request.type}</p>
+                    </td>
+                    <td className="py-4">
+                      <p className="py-4 w-32 md:w-fit">
+                        {new Date(request.submissionDate).toLocaleDateString()}
+                      </p>
+                    </td>
+                    <td className="py-4">
+                      <span
+                        className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
+                          request?.status === "Declined" ? "text-red-500" : ""
+                        }`}
+                      >
+                        {request.status}
                       </span>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">{request.type}</p>
-                  </td>
-                  <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">
-                      {request.submissionDate}
-                    </p>
-                  </td>
-                  <td className="py-4">
-                    <span
-                      className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
-                        request?.status === "Declined" ? "text-red-500" : ""
-                      }`}
-                    >
-                      {request.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {request.status === "Pending" && (
-                        <>
-                          <button
-                            className="p-1 text-green-600 hover:text-green-700"
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {request.status === "Pending" && (
+                          <>
+                            <button
+                              className="p-1 text-green-600 hover:text-green-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsApproveModalOpen(true);
                               }}
-                          >
-                            <BsCheckCircleFill size={24} />
-                          </button>
-                          <button
-                            className="p-1 text-red-600 hover:text-red-700"
+                            >
+                              <BsCheckCircleFill size={24} />
+                            </button>
+                            <button
+                              className="p-1 text-red-600 hover:text-red-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsDeclineModalOpen(true);
                               }}
-                          >
-                            <BsXCircleFill size={24} />
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="p-1 text-gray-400 hover:text-gray-500"
-                        onClick={() => {
-                          setOpenOptionsId(
-                            openOptionsId === request.id ? null : request.id
-                          );
-                        }}
-                      >
-                        <BsThreeDots size={20} />
-                      </button>
-                      {openOptionsId === request.id && (
-                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                          <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            onClick={() => handleDetail(request)}
-                          >
-                            Detail
-                          </button>
-                          <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
-                            onClick={() => handleAssign(request)}
-                          >
-                            Assign Admin
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                            >
+                              <BsXCircleFill size={24} />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="p-1 text-gray-400 hover:text-gray-500"
+                          onClick={() => {
+                            setOpenOptionsId(
+                              openOptionsId === request._id ? null : request._id
+                            );
+                          }}
+                        >
+                          <BsThreeDots size={20} />
+                        </button>
+                        {openOptionsId === request._id && (
+                          <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                              onClick={() => handleDetail(request)}
+                            >
+                              Detail
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
-      <Modal
-        isOpen={isAssignModalOpen}
-        onRequestClose={() => setIsAssignModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
-        overlayClassName="fixed inset-0 bg-black/50"
-      >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Assign Admin</h2>
-            <button
-              onClick={() => setIsAssignModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-2">Select Admin</label>
-              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
-                <option value="">Start Typing Admin Name</option>
-                {adminList.map((admin) => (
-                  <option key={admin.id} value={admin.id}>
-                    {admin.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsAssignModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                onClick={() => {
-                  // Handle admin assignment here
-                  setIsAssignModalOpen(false);
-                }}
-              >
-                Assign Admin
-              </button>
-            </div>
-          </div>
-        </div>
-      </Modal>
-
+      {/* Detail Modal */}
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
@@ -311,16 +371,16 @@ const AssignedRequest = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={selectedRequest?.user?.avatar}
-                  alt={selectedRequest?.user?.name}
+                  src={selectedRequest?.user?.avatar || avatar}
+                  alt={selectedRequest?.user?.name || 'User'}
                   className="w-10 h-10 rounded-full"
                 />
                 <span className="font-medium">
-                  {selectedRequest?.user?.name}
+                  {selectedRequest?.user?.name || 'Unknown User'}
                 </span>
               </div>
               <span className="text-gray-600">
-                {selectedRequest?.user?.email || "Andrew@gmail.com"}
+                {selectedRequest?.user?.email || 'No email provided'}
               </span>
             </div>
 
@@ -330,47 +390,33 @@ const AssignedRequest = () => {
                 className="w-full px-4 py-2 border rounded-lg text-gray-600"
                 disabled
               >
-                <option>Evidence Review</option>
-                <option>Document Review</option>
-                <option>Identity Verification</option>
+                <option>{selectedRequest?.type}</option>
               </select>
             </div>
 
             {/* Preview Images */}
-            <div className="flex gap-4">
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={idcards}
-                  alt="Evidence 1"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
+            {selectedRequest?.images && selectedRequest.images.length > 0 && (
+              <div className="flex gap-4">
+                {selectedRequest.images.map((image, index) => (
+                  <div key={index} className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <img
+                      src={image}
+                      alt={`Evidence ${index + 1}`}
+                      className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                    />
                     <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(idcards);
-                  }}
-                >
-                  Preview
-                    </button>
-              </div>
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={avatar}
-                  alt="Evidence 2"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                    <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(avatar);
-                  }}
-                >
-                  Preview
+                      className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                      onClick={() => {
+                        setShowPreviewModal(true);
+                        setSelectedPreviewImage(image);
+                      }}
+                    >
+                      Preview
                     </button>
                   </div>
-                </div>
+                ))}
+              </div>
+            )}
 
             {showPreviewModal && (
               <div
@@ -389,182 +435,19 @@ const AssignedRequest = () => {
             {/* Request Message */}
             <div className="p-4 border rounded-lg">
               <p className="text-gray-600">
-                I want You to review my document of residence I want You to
-                review my document of residence I want You to review my document
-                of residence...
+                {selectedRequest?.messages?.[currentMessageIndex]?.text || 'No message available'}
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                {selectedRequest?.messages?.[currentMessageIndex]?.date ? 
+                  new Date(selectedRequest.messages[currentMessageIndex].date).toLocaleDateString() : 
+                  'No date available'}
               </p>
             </div>
           </div>
         </div>
       </Modal>
 
-      <Modal
-        isOpen={pendingDetails}
-        onRequestClose={() => setPendingDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px]"
-        overlayClassName="fixed inset-0 bg-black/50"
-      >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Request Details</h2>
-            <button
-              onClick={() => setPendingDetails(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* User Info */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedRequest?.user?.avatar}
-                  alt={selectedRequest?.user?.name}
-                  className="w-10 h-10 rounded-full"
-                />
-                <span className="font-medium">
-                  {selectedRequest?.user?.name}
-                </span>
-              </div>
-              <span className="text-gray-600">
-                {selectedRequest?.user?.email || "Andrew@gmail.com"}
-              </span>
-            </div>
-
-            {/* Request Type */}
-            <div>
-              <select
-                className="w-full px-4 py-2 border rounded-lg text-gray-600"
-                disabled
-              >
-                <option>Evidence Review</option>
-                <option>Document Review</option>
-                <option>Identity Verification</option>
-              </select>
-            </div>
-
-            {/* Preview Images */}
-            <div className="flex gap-4">
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={idcards}
-                  alt="Evidence 1"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(idcards);
-                  }}
-                >
-                  Preview
-                </button>
-              </div>
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={avatar}
-                  alt="Evidence 2"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(avatar);
-                  }}
-                >
-                  Preview
-                </button>
-              </div>
-            </div>
-
-            {showPreviewModal && (
-              <div
-                className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
-                onClick={() => setShowPreviewModal(false)}
-              >
-                <img
-                  src={selectedPreviewImage}
-                  alt="Preview"
-                  className="max-w-[80%] max-h-[80%] object-contain"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-
-            {/* User Message */}
-            <div>
-              <div className="flex justify-between mr-4">
-                <h3 className="font-medium mb-2">User</h3>
-                <div className="flex items-center gap-4">
-                  <button
-                    className={`font-medium mb-2 text-red-500 ${
-                      currentMessageIndex === 0
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    onClick={handlePreviousMessage}
-                    disabled={currentMessageIndex === 0}
-                  >
-                    Previous...
-                  </button>
-                  <button
-                    className={`font-medium mb-2 text-red-500 ${
-                      !selectedRequest ||
-                      currentMessageIndex ===
-                        selectedRequest.messages.length - 1
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    onClick={handleNextMessage}
-                    disabled={
-                      !selectedRequest ||
-                      currentMessageIndex ===
-                        selectedRequest.messages.length - 1
-                    }
-                  >
-                    Next...
-                  </button>
-                </div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <p className="text-gray-600">
-                  {selectedRequest?.messages[currentMessageIndex]?.text}
-                </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  {selectedRequest?.messages[currentMessageIndex]?.date}
-                </p>
-              </div>
-            </div>
-
-            {/* Response Section */}
-            <div>
-              <h3 className="font-medium mb-2">Response</h3>
-              <textarea
-                placeholder="Write Your Response"
-                className="w-full p-4 border rounded-lg resize-none min-h-[100px]"
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setPendingDetails(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
-      </Modal>
-
+      {/* Approve Modal */}
       <Modal
         isOpen={isApproveModalOpen}
         onRequestClose={() => setIsApproveModalOpen(false)}
@@ -586,13 +469,13 @@ const AssignedRequest = () => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src={selectedRequest.user.avatar}
+                  src={selectedRequest.user?.avatar || avatar}
                   alt=""
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
-                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                  <h3 className="font-medium">{selectedRequest.user?.name || 'Unknown User'}</h3>
+                  <p className="text-sm text-gray-500">{selectedRequest.user?.email || 'No email provided'}</p>
                 </div>
               </div>
               <p className="text-gray-600">
@@ -609,10 +492,7 @@ const AssignedRequest = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Handle accept action here
-                setIsApproveModalOpen(false);
-              }}
+              onClick={handleApprove}
               className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
             >
               Accept
@@ -621,6 +501,7 @@ const AssignedRequest = () => {
         </div>
       </Modal>
 
+      {/* Decline Modal */}
       <Modal
         isOpen={isDeclineModalOpen}
         onRequestClose={() => setIsDeclineModalOpen(false)}
@@ -642,13 +523,13 @@ const AssignedRequest = () => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src={selectedRequest.user.avatar}
+                  src={selectedRequest.user?.avatar || avatar}
                   alt=""
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
-                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                  <h3 className="font-medium">{selectedRequest.user?.name || 'Unknown User'}</h3>
+                  <p className="text-sm text-gray-500">{selectedRequest.user?.email || 'No email provided'}</p>
                 </div>
               </div>
               <p className="text-gray-600">
@@ -665,10 +546,7 @@ const AssignedRequest = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Handle reject action here
-                setIsDeclineModalOpen(false);
-              }}
+              onClick={handleDecline}
               className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
             >
               Reject

@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from "react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { useDispatch } from "react-redux";
@@ -6,40 +8,41 @@ import toast from "react-hot-toast";
 
 const AddCms = ({ setIsAddModalOpen, refreshData }) => {
   const dispatch = useDispatch();
-  const [openInNewTab, setOpenInNewTab] = useState(false);
-  const [link, setLink] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [link, setLink] = useState("");
+  const [openInNewTab, setOpenInNewTab] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = async () => {
-    // Validate inputs
-    if (!selectedImage) {
-      toast.error("Please select an image");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Require either image or video
+    if (!selectedImage && !selectedVideo) {
+      toast.error("Please upload an image or a video");
       return;
     }
 
-    if (!link) {
-      toast.error("Please enter a link");
+    if (!link.trim()) {
+      toast.error("Please enter a link URL");
       return;
+    }
+
+      setIsLoading(true);
+      
+      const formData = new FormData();
+      formData.append("link", link);
+      formData.append("openInNewTab", openInNewTab);
+    // Append either image or video file
+    if (selectedImage) {
+      formData.append("media", selectedImage); // Use 'media' field name as in backend
+    } else if (selectedVideo) {
+      formData.append("media", selectedVideo); // Use 'media' field name as in backend
     }
 
     try {
-      setIsLoading(true);
-      
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append("image", selectedImage);
-      formData.append("link", link);
-      formData.append("openInNewTab", openInNewTab);
-      formData.append("visibility", true); // Default to visible
-
-      // Dispatch the action
       await dispatch(addNewCMS(formData)).unwrap();
-
-      // // Show success message
-      // toast.success("Landing page added successfully");
-      
-      // Close modal and refresh data
+      toast.success("Landing page added successfully");
       setIsAddModalOpen(false);
       refreshData();
     } catch (error) {
@@ -51,40 +54,42 @@ const AddCms = ({ setIsAddModalOpen, refreshData }) => {
   };
 
   return (
-    <div>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Add Image Overlay</h2>
-          <button
-            onClick={() => setIsAddModalOpen(false)}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={isLoading}
-          >
+        <h2 className="text-xl font-semibold">Add New Landing Page Item</h2>
+        <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400" disabled={isLoading}>
             ✕
           </button>
         </div>
 
-        <div className="space-y-6">
-          {/* Preview Image */}
-          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Preview Image or Video */}
+        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
             {selectedImage ? (
               <img
                 src={URL.createObjectURL(selectedImage)}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
+          ) : selectedVideo ? (
+            <video
+              src={URL.createObjectURL(selectedVideo)}
+              controls
+              className="w-full h-full object-cover"
+            />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                No image selected
+              No image or video selected
               </div>
             )}
           </div>
 
+        {/* Upload Image or Video */}
+        <div className="flex justify-center gap-4">
           {/* Upload Image */}
-          <div className="flex justify-center">
             <label className="cursor-pointer text-primary flex flex-col items-center">
               <AiOutlineCloudUpload size={24} />
-              <span className="text-sm">Click to upload image</span>
+            <span className="text-sm">Upload Image</span>
               <input
                 type="file"
                 className="hidden"
@@ -92,6 +97,24 @@ const AddCms = ({ setIsAddModalOpen, refreshData }) => {
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
                     setSelectedImage(e.target.files[0]);
+                  setSelectedVideo(null); // Clear video when image is selected
+                }
+              }}
+              disabled={isLoading}
+            />
+          </label>
+          {/* Upload Video */}
+          <label className="cursor-pointer text-primary flex flex-col items-center">
+            <AiOutlineCloudUpload size={24} />
+            <span className="text-sm">Upload Video</span>
+            <input
+              type="file"
+              className="hidden"
+              accept="video/*"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setSelectedVideo(e.target.files[0]);
+                  setSelectedImage(null); // Clear image when video is selected
                   }
                 }}
                 disabled={isLoading}
@@ -125,40 +148,22 @@ const AddCms = ({ setIsAddModalOpen, refreshData }) => {
               className="rounded border-gray-300 text-primary focus:ring-primary"
               disabled={isLoading}
             />
-            <label htmlFor="newTab" className="text-sm">
-              Open in a new tab
+          <label htmlFor="newTab" className="text-sm text-gray-700">
+            Open link in new tab
             </label>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
+        {/* Submit Button */}
+        <div className="flex justify-end">
             <button
-              onClick={() => setIsAddModalOpen(false)}
-              className="px-6 py-2 border rounded-lg text-sm"
+            type="submit"
+            className="px-6 py-2 bg-primary text-white rounded-lg font-semibold"
               disabled={isLoading}
             >
-              Cancel
+            {isLoading ? "Adding..." : "Add Item"}
             </button>
-            <button
-              onClick={handleSave}
-              className="px-6 py-2 bg-primary text-white rounded-lg text-sm disabled:opacity-50"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </span>
-              ) : (
-                "Save"
-              )}
-            </button>
-          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

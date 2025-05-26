@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi"
 import { BiSearch } from "react-icons/bi"
@@ -475,6 +475,69 @@ const Event = () => {
     }
   }, [showFilterDropdown, showSortDropdown])
 
+
+  // Add this state near the other state declarations
+const [locationSuggestions, setLocationSuggestions] = useState([])
+const [showSuggestions, setShowSuggestions] = useState(false)
+const locationInputRef = useRef(null)
+
+// Add this handler function
+const handleLocationChange = async (e) => {
+  const { value } = e.target
+  handleInputChange(e)
+  
+  if (value.length > 2) {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&addressdetails=1&limit=5`
+      )
+      const data = await response.json()
+      setLocationSuggestions(data)
+      setShowSuggestions(true)
+    } catch (error) {
+      console.error("Error fetching location suggestions:", error)
+      setLocationSuggestions([])
+    }
+  } else {
+    setLocationSuggestions([])
+    setShowSuggestions(false)
+  }
+}
+
+// Add this suggestion selection handler
+const handleSelectSuggestion = (suggestion) => {
+  setEventFormData({
+    ...eventFormData,
+    location: suggestion.display_name,
+  })
+  setShowSuggestions(false)
+  
+  if (formErrors.location) {
+    setFormErrors({
+      ...formErrors,
+      location: "",
+    })
+  }
+}
+
+// Add this useEffect for click outside handling
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (locationInputRef.current && !locationInputRef.current.contains(event.target)) {
+      setShowSuggestions(false)
+    }
+    if (!event.target.closest('.relative')) {
+      setShowFilterDropdown(false)
+      setShowSortDropdown(false)
+    }
+  }
+  
+  document.addEventListener('mousedown', handleClickOutside)
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside)
+  }
+}, [showFilterDropdown, showSortDropdown])
+
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
@@ -728,18 +791,36 @@ const Event = () => {
 
             {/* Location and Time */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Enter event location"
-                  className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${formErrors.location ? "border-red-500" : ""}`}
-                  value={eventFormData.location}
-                  onChange={handleInputChange}
-                />
-                {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
-              </div>
+            <div className="relative" ref={locationInputRef}>
+  <label className="block mb-1">Location</label>
+  <input
+    type="text"
+    name="location"
+    placeholder="Enter event location"
+    className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${
+      formErrors.location ? "border-red-500" : ""
+    }`}
+    value={eventFormData.location}
+    onChange={handleLocationChange}
+    autoComplete="off"
+  />
+  {showSuggestions && locationSuggestions.length > 0 && (
+    <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+      {locationSuggestions.map((suggestion, index) => (
+        <li
+          key={index}
+          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => handleSelectSuggestion(suggestion)}
+        >
+          {suggestion.display_name}
+        </li>
+      ))}
+    </ul>
+  )}
+  {formErrors.location && (
+    <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>
+  )}
+</div>
               <div>
                 <label className="block mb-1">Start Date & Time</label>
                 <div className="relative">
@@ -1253,18 +1334,36 @@ const Event = () => {
 
               {/* Location and Time */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1">Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="Enter event location"
-                    className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${formErrors.location ? "border-red-500" : ""}`}
-                    value={eventFormData.location}
-                    onChange={handleInputChange}
-                  />
-                  {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
-                </div>
+              <div className="relative" ref={locationInputRef}>
+  <label className="block mb-1">Location</label>
+  <input
+    type="text"
+    name="location"
+    placeholder="Enter event location"
+    className={`w-full px-4 py-2 border rounded-lg text-gray-600 ${
+      formErrors.location ? "border-red-500" : ""
+    }`}
+    value={eventFormData.location}
+    onChange={handleLocationChange}
+    autoComplete="off"
+  />
+  {showSuggestions && locationSuggestions.length > 0 && (
+    <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+      {locationSuggestions.map((suggestion, index) => (
+        <li
+          key={index}
+          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => handleSelectSuggestion(suggestion)}
+        >
+          {suggestion.display_name}
+        </li>
+      ))}
+    </ul>
+  )}
+  {formErrors.location && (
+    <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>
+  )}
+</div>
                 <div>
                   <label className="block mb-1">Start Date & Time</label>
                   <div className="relative">

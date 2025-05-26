@@ -140,10 +140,11 @@ export const updateUserMembershipStatus = createAsyncThunk(
   'user/update-membership-status',
   async ({ userId, status }, thunkAPI) => {
     try {
-      const response = await userService.updateMembershipStatus(userId, status);
+      // Always use the updateMembershipStatus service function
+      const response = await userService.updateMembershipStatus({ userId, status });
       return response;
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Failed to update membership status';
+      const message = error.response?.data?.message || error.message || `Failed to update membership status to ${status}`;
       toast.error(message);
       return thunkAPI.rejectWithValue(message);
     }

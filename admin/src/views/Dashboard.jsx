@@ -272,16 +272,15 @@ const Dashboard = () => {
     },
   };
 
-  // const seriesColumn = [
-  //   {
-  //     name: 'Earnings',
-  //     data: [80, 120, 150, 200, 180, 220, 300, 250, 270, 350, 370, 400],
-  //   },
-  // ];
   const seriesColumn = [
     {
       name: 'Earnings',
-      data: dashboardStats?.monthlyRevenue?.map(item => item.revenue / 1000) || [],
+      data: Array.from({ length: 12 }, (_, i) => {
+        const monthData = dashboardStats?.monthlyRevenue?.find(
+          item => item._id === i + 1
+        );
+        return monthData ? monthData.revenue / 1000 : 0;
+      })
     },
   ];
 
