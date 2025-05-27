@@ -3,11 +3,11 @@ import { BiSearch } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPendingRegistrations, updateUserMembershipStatus } from "../../store/users/userSlice";
 import toast from "react-hot-toast";
+import { getSettings } from "../../store/setting/settingSlice";
 
 import Profile from "../../components/Profile";
 import ViewPending from "./ViewPending";
 import DefaultPending from "./DefaultPending";
-import user from "../../assets/user.avif";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 
@@ -37,6 +37,12 @@ const Pending = () => {
   const filterDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
 
+  // Access settings from Redux store with proper null checking
+  const settings = useSelector((state) => state.settings);
+  console.log('Settings from Redux:', settings); // Debug log
+  const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3; // Use nullish coalescing
+  console.log('Required Referral Number:', requiredReferralNumber); // Debug log
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -58,12 +64,23 @@ const Pending = () => {
   }, [showFilterDropdown, showSortDropdown]);
 
   useEffect(() => {
-    dispatch(fetchPendingRegistrations({
+    const fetchData = async () => {
+      try {
+        // Fetch both pending registrations and settings
+        await dispatch(fetchPendingRegistrations({
       page: currentPage,
       limit,
       filter: selectedFilter,
       sortBy: selectedSort,
     }));
+        const settingsResponse = await dispatch(getSettings());
+        console.log('Settings fetch response:', settingsResponse); // Debug log
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    
+    fetchData();
   }, [dispatch, currentPage, limit, selectedFilter, selectedSort]);
 
   const handleSearch = (e) => {
@@ -95,9 +112,21 @@ const Pending = () => {
         toast.error('Invalid user data. Cannot accept user.');
         return;
       }
+
+      // Check supporters status
+      const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+      if (approvedSupporters < requiredReferralNumber) {
+        toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
+        return;
+      }
+
+      // Check joining fee status
+      if (user.joinFeeStatus?.toLowerCase() !== 'paid') {
+        toast.error('User must have paid the joining fee before approval.');
+        return;
+      }
       
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
-      // toast.success(`User ${user.forename || ''} ${user.surname || ''} has been accepted`);
       // Refresh the list after accepting a user
       dispatch(fetchPendingRegistrations({ page: currentPage, limit }));
     } catch (error) {
@@ -124,18 +153,24 @@ const Pending = () => {
   };
 
   // Format the user data for the DefaultPending component
-  const formattedUsers = filteredUsers?.map((user) => ({
+  const formattedUsers = filteredUsers?.map((user) => {
+    const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+    const canBeApproved = approvedSupporters === requiredReferralNumber && user.joinFeeStatus?.toLowerCase() === 'paid';
+
+    return {
     id: user._id,
     name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
     registrationId: `ID#${user.membershipNumber || '00000000'}`,
     email: user.primaryEmail || 'No email provided',
-    supportersStatus: `${user.referredBy?.filter(ref => ref.status === 'approved').length || 0}/3`,
+      supportersStatus: `${approvedSupporters}/${requiredReferralNumber}`,
     avatar: user.profilePhoto || avatar,
     idCard: user.idCardPhoto || idcards,
     photo: user.profilePhoto || avatar,
+      canBeApproved, // Add this flag to control approval button state
     // Add all the original user data for the ViewPending component
     ...user
-  }));
+    };
+  });
 
   // Generate pagination buttons
   const renderPaginationButtons = () => {

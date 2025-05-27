@@ -5,18 +5,19 @@ import Modal from "react-modal"
 import { FiEye, FiSettings, FiAlertCircle } from "react-icons/fi"
 import { Loader } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
-import { getAllCMS, changeVisiblity } from "../../store/cms/cmsSlice"
+import { getAllCMS, changeVisiblity, removeCMS } from "../../store/cms/cmsSlice"
+import { toast } from "react-hot-toast"
 
 import EditCms from "../../components/modals/cms/landing/EditCms"
-import RemoveCms from "../../components/modals/cms/landing/RemoveCms"
 import PreviewCms from "../../components/modals/cms/landing/PreviewCms"
 import AddCms from "../../components/modals/cms/landing/AddCms"
+import RemoveCms from "../../components/modals/cms/landing/RemoveCms"
 
 const Landing = () => {
   const dispatch = useDispatch()
   const { cms, isLoading, isError, message } = useSelector((state) => state.cms)
 
-  const [activeFilter, setActiveFilter] = useState("overlays")
+  const [activeFilter, setActiveFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("active")
   const [openSettingsId, setOpenSettingsId] = useState(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -27,15 +28,18 @@ const Landing = () => {
   const [retryCount, setRetryCount] = useState(0)
   const [errorDetails, setErrorDetails] = useState(null)
 
+  // Add state to differentiate delete/restore actions for the modal
+  const [modalActionType, setModalActionType] = useState(null)
+
   // Fetch CMS data on component mount and when filters change
   useEffect(() => {
     fetchCmsData()
-  }, [dispatch, statusFilter])
+  }, [dispatch, statusFilter, activeFilter])
 
   // Function to fetch CMS data with retry logic
   const fetchCmsData = async () => {
     try {
-      await dispatch(getAllCMS({ status: statusFilter })).unwrap()
+      await dispatch(getAllCMS({ status: statusFilter, activeFilter: activeFilter })).unwrap()
       // Reset retry count on successful fetch
       setRetryCount(0)
       setErrorDetails(null)
@@ -82,10 +86,42 @@ const Landing = () => {
     setOpenSettingsId(null) // Close the dropdown when edit is clicked
   }
 
-  const handleRemove = (item) => {
+  // Handle soft delete
+  const handleSoftDelete = async (id) => {
+    try {
+      // Explicitly dispatch the removeCMS action creator from cmsSlice
+      await dispatch(removeCMS({ id: id, isDeleted: true })).unwrap()
+      toast.success("Landing page soft-deleted successfully")
+      fetchCmsData() // Refresh data to update list
+    } catch (error) {
+      console.error("Error soft-deleting landing page:", error)
+      toast.error(error.message || "Failed to soft-delete landing page")
+    } finally {
+      setIsRemoveModalOpen(false) // Close modal after action
+    }
+  }
+
+  // Handle restore
+  const handleRestore = async (id) => {
+    try {
+      // Explicitly dispatch the removeCMS action creator from cmsSlice
+      await dispatch(removeCMS({ id: id, isDeleted: false })).unwrap()
+      toast.success("Landing page restored successfully")
+      fetchCmsData() // Refresh data to update list
+    } catch (error) {
+      console.error("Error restoring landing page:", error)
+      toast.error(error.message || "Failed to restore landing page")
+    } finally {
+      setIsRemoveModalOpen(false) // Close modal after action
+    }
+  }
+
+  // Function to open the remove/restore modal
+  const openRemoveRestoreModal = (item, actionType) => {
     setSelectedItem(item)
+    setModalActionType(actionType) // Set the action type
+    setOpenSettingsId(null) // Close the dropdown
     setIsRemoveModalOpen(true)
-    setOpenSettingsId(null) // Close the dropdown when remove is clicked
   }
 
   const handlePreview = (item) => {
@@ -138,6 +174,7 @@ const Landing = () => {
             onChange={(e) => setActiveFilter(e.target.value)}
             className="px-4 py-2 border mb-6 rounded-lg text-gray-600 md:min-w-[200px]"
           >
+            <option value="all">All</option>
             <option value="overlays">Image Overlays</option>
             <option value="other">Other options</option>
           </select>
@@ -167,7 +204,7 @@ const Landing = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg w-[90vw] md:w-full overflow-auto">
+      <div className="bg-white rounded-lg w-[90vw] md:w-full">
         <table className="w-full">
           <thead>
             <tr className="border-b">
@@ -186,8 +223,15 @@ const Landing = () => {
                   <td className="py-4 px-6">{index + 1}</td>
                   <td className="py-4 px-6">
                     <div className="w-24 h-16 bg-gray-200 rounded-lg overflow-hidden">
+                      {item.fileType === 'video' ? (
+                        <video
+                          src={item.file}
+                          controls
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
                       <img
-                        src={item.image || "/placeholder.svg?height=64&width=96"}
+                          src={item.file || "/placeholder.svg?height=64&width=96"}
                         alt="Preview"
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -195,10 +239,11 @@ const Landing = () => {
                           e.target.src = "/placeholder.svg?height=64&width=96"
                         }}
                       />
+                      )}
                     </div>
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-600">
-                    <button className="text-gray-400 hover:text-gray-600" onClick={() => handlePreview(item)}>
+                    <button className="text-gray-400 hover:text-gray-600" onClick={() => handlePreview(item)} disabled={isLoading}>
                       <FiEye size={20} />
                     </button>
                   </td>
@@ -213,6 +258,8 @@ const Landing = () => {
                     })}
                   </td>
                   <td className="py-4 px-6">
+                    {/* Visibility Toggle (only for non-deleted items) */}
+                    {!item.isDeleted ? (
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -223,6 +270,9 @@ const Landing = () => {
                       />
                       <div className="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
+                    ) : (
+                      <span className="text-sm text-gray-500">N/A</span> // Show N/A for deleted items
+                    )}
                   </td>
                   <td className="py-4 px-6 relative">
                     <button
@@ -242,12 +292,21 @@ const Landing = () => {
                         >
                           Edit
                         </button>
+                        {item.isDeleted ? (
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-gray-50"
+                            onClick={() => openRemoveRestoreModal(item, 'restore')}
+                          >
+                            Restore
+                          </button>
+                        ) : (
                         <button
                           className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-500"
-                          onClick={() => handleRemove(item)}
+                            onClick={() => openRemoveRestoreModal(item, 'delete')}
                         >
                           Remove
                         </button>
+                        )}
                       </div>
                     )}
                   </td>
@@ -281,14 +340,22 @@ const Landing = () => {
         <EditCms setIsEditModalOpen={setIsEditModalOpen} selectedItem={selectedItem} refreshData={fetchCmsData} />
       </Modal>
 
-      {/* Remove Modal */}
+      {/* Remove/Restore Modal (Using the adapted RemoveCms)*/}
       <Modal
         isOpen={isRemoveModalOpen}
         onRequestClose={() => setIsRemoveModalOpen(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[450px]"
         overlayClassName="fixed inset-0 bg-black/50 superZ"
       >
-        <RemoveCms setIsRemoveModalOpen={setIsRemoveModalOpen} selectedItem={selectedItem} refreshData={fetchCmsData} />
+        <RemoveCms
+          setIsRemoveModalOpen={setIsRemoveModalOpen}
+          selectedItem={selectedItem}
+          refreshData={fetchCmsData}
+          modalTitle={modalActionType === 'delete' ? 'Confirm Removal' : 'Confirm Restore'}
+          modalMessage={modalActionType === 'delete' ? `Are you sure you want to remove this landing page item? This action will soft-delete it.` : `Are you sure you want to restore this landing page item? It will become active again.`}
+          confirmButtonText={modalActionType === 'delete' ? 'Remove' : 'Restore'}
+          onConfirmAction={modalActionType === 'delete' ? handleSoftDelete : handleRestore}
+        />
       </Modal>
 
       {/* Preview Modal */}

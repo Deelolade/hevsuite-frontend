@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { FiEdit } from "react-icons/fi"
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs"
+import { FaTrash } from "react-icons/fa"
 import Modal from "react-modal"
 import AddFooterPage from "./AddFooterPage"
 import EditFooterItem from "../../components/modals/cms/footer/EditFooterItem"
@@ -43,6 +44,14 @@ const Footer = () => {
   const [showEditPage, setShowEditPage] = useState(false)
   const [footerItems, setFooterItems] = useState([])
   const [sections, setSections] = useState([])
+
+  const [draggingPages, setDraggingPages] = useState(null)
+  const [dragPagesOver, setDragPagesOver] = useState(null)
+  const [localPageOrder, setLocalPageOrder] = useState({})
+  const [orderedPages, setOrderedPages] = useState([])
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [pageToDelete, setPageToDelete] = useState(null)
 
   // Fetch footers on component mount and when status filter changes
   useEffect(() => {
@@ -147,8 +156,6 @@ const Footer = () => {
 
   const [draggingItems, setDraggingItems] = useState(null)
   const [dragItemsOver, setDragItemsOver] = useState(null)
-  const [draggingPages, setDraggingPages] = useState(null)
-  const [dragPagesOver, setDragPagesOver] = useState(null)
 
   const handleDragItemsStart = (event, index) => {
     setDraggingItems(index)
@@ -180,6 +187,39 @@ const Footer = () => {
     setDragItemsOver(null)
   }
 
+  // Add this useEffect to initialize local storage
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('footer_pages_order');
+    if (savedOrder) {
+      setLocalPageOrder(JSON.parse(savedOrder));
+    }
+  }, []);
+
+  // Update the useEffect that maintains ordered pages
+  useEffect(() => {
+    if (pages && pages.length > 0) {
+      // Filter pages to only show Admin-owned pages
+      const adminPages = pages.filter(page => page.owner === "Admin");
+      
+      const sortedPages = [...adminPages].sort((a, b) => {
+        const orderA = localPageOrder[a._id];
+        const orderB = localPageOrder[b._id];
+        
+        if (orderA !== undefined && orderB !== undefined) {
+          return orderA - orderB;
+        }
+        
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      setOrderedPages(sortedPages);
+    }
+  }, [pages, localPageOrder]);
+
   const handleDragPagesStart = (event, index) => {
     setDraggingPages(index)
   }
@@ -189,26 +229,56 @@ const Footer = () => {
     setDragPagesOver(index)
   }
 
-  const handleDragPagesEnd = (event) => {
-    if (draggingPages !== null && dragPagesOver !== null) {
-      const newPages = [...pages]
-      const [reorderedPage] = newPages.splice(draggingPages, 1)
-      newPages.splice(dragPagesOver, 0, reorderedPage)
-      
-      // Update in the backend
-      dispatch(
-        updatePage({
-          id: reorderedPage._id,
-          data: {
-            order: dragPagesOver + 1
-          }
-        })
-      ).then(() => {
-        dispatch(getPages({ status: "active" }))
-      })
+  const handleDragPagesEnd = async (event) => {
+    if (draggingPages === null || dragPagesOver === null) {
+      setDraggingPages(null)
+      setDragPagesOver(null)
+      return
     }
-    setDraggingPages(null)
-    setDragPagesOver(null)
+
+    try {
+      // Create new array with reordered pages
+      const newPages = [...orderedPages];
+      const [reorderedPage] = newPages.splice(draggingPages, 1);
+      newPages.splice(dragPagesOver, 0, reorderedPage);
+
+      // Update local storage immediately
+      const newOrder = {};
+      newPages.forEach((page, index) => {
+        newOrder[page._id] = index + 1;
+      });
+      
+      // Update both state and localStorage
+      setLocalPageOrder(newOrder);
+      localStorage.setItem('footer_pages_order', JSON.stringify(newOrder));
+      setOrderedPages(newPages);
+
+      // Update the order for all pages in the backend
+      for (let i = 0; i < newPages.length; i++) {
+        const page = newPages[i];
+        await dispatch(
+          updatePage({
+            id: page._id,
+            data: {
+              order: i + 1
+            }
+          })
+        );
+      }
+
+      // Refresh the pages list
+      await dispatch(getPages({ status: "active" }));
+    } catch (error) {
+      console.error('Error updating page order:', error);
+      // Revert local storage on error
+      const savedOrder = localStorage.getItem('footer_pages_order');
+      if (savedOrder) {
+        setLocalPageOrder(JSON.parse(savedOrder));
+      }
+    } finally {
+      setDraggingPages(null);
+      setDragPagesOver(null);
+    }
   }
 
   useEffect(() => {
@@ -262,6 +332,52 @@ const Footer = () => {
   // Add this function to remove selected page
   const handleRemovePage = (pageId) => {
     setSelectedPages(prev => prev.filter(p => p.pageId !== pageId))
+  }
+
+  // Add handleDeletePage function
+  const handleDeletePage = (pageId) => {
+    setPageToDelete(pageId)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDeletePage = () => {
+    if (!pageToDelete) return
+
+    // First check if the page is in footer items
+    const footerItem = footerItems.find(item => item.pageId === pageToDelete || (item.pageId && item.pageId._id === pageToDelete))
+    
+    if (footerItem) {
+      // If page is in footer items, remove it from the footer
+      const updatedItems = footerItems.filter(item => 
+        item.pageId !== pageToDelete && (!item.pageId || item.pageId._id !== pageToDelete)
+      )
+      
+      dispatch(
+        editFooter({
+          id: selectedSection,
+          data: { items: updatedItems },
+        })
+      ).then(() => {
+        // Update local state
+        setFooterItems(updatedItems)
+      })
+    }
+
+    // Then delete the page itself
+    dispatch(
+      updatePage({
+        id: pageToDelete,
+        data: {
+          visibility: false // Soft delete by setting visibility to false
+        }
+      })
+    ).then(() => {
+      // Refresh pages
+      dispatch(getPages({ status: "active" }))
+      // Close modal and reset state
+      setIsDeleteModalOpen(false)
+      setPageToDelete(null)
+    })
   }
 
   return (
@@ -416,8 +532,8 @@ const Footer = () => {
                   </thead>
                   <tbody>
                     {isCreatedPagesOpen ? (
-                      pages && Array.isArray(pages) && pages.length > 0 ? (
-                        pages.map((page, index) => {
+                      orderedPages && orderedPages.length > 0 ? (
+                        orderedPages.map((page, index) => {
                           if (!page) return null;
                           return (
                             <tr
@@ -426,10 +542,18 @@ const Footer = () => {
                               onDragStart={(e) => handleDragPagesStart(e, index)}
                               onDragOver={(e) => handleDragPagesOver(e, index)}
                               onDragEnd={handleDragPagesEnd}
-                              className="border-b"
+                              className={`border-b transition-colors duration-200 ${
+                                draggingPages === index ? 'opacity-50 bg-gray-50' : ''
+                              } ${
+                                dragPagesOver === index ? 'border-t-2 border-primary bg-primary/5' : ''
+                              }`}
                             >
                               <td className="py-4 px-6 flex items-center gap-2">
-                                <span className="p-1 border rounded cursor-move">⋮⋮</span>
+                                <span className="p-1 border rounded cursor-move hover:bg-gray-50">
+                                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+                                  </svg>
+                                </span>
                                 {page.title || 'Untitled Page'}
                               </td>
                               <td className="py-4 px-6">
@@ -457,9 +581,9 @@ const Footer = () => {
                                 </label>
                               </td>
                               <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
-                              <td className="py-4 px-6">
+                              <td className="py-4 px-6 flex items-center gap-3">
                                 <button
-                                  className="text-primary"
+                                  className="text-primary hover:text-primary-dark"
                                   onClick={() => {
                                     setSelectedItem(page)
                                     setShowEditPage(true)
@@ -469,6 +593,14 @@ const Footer = () => {
                                 >
                                   <FiEdit size={18} />
                                 </button>
+                                {page.owner === "Admin" && (
+                                  <button 
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => handleDeletePage(page._id)}
+                                  >
+                                    <FaTrash size={18} />
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           );
@@ -485,7 +617,7 @@ const Footer = () => {
                         paginatedItems.map((item, index) => {
                           if (!item) return null;
                           return (
-                            <tr
+                        <tr
                               key={item._id || index}
                           draggable={true}
                           onDragStart={(e) => handleDragItemsStart(e, index)}
@@ -730,6 +862,63 @@ const Footer = () => {
                 )
               }}
             />
+          </Modal>
+
+          <Modal
+            isOpen={isDeleteModalOpen}
+            onRequestClose={() => {
+              setIsDeleteModalOpen(false)
+              setPageToDelete(null)
+            }}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Delete Page</h2>
+                <button 
+                  onClick={() => {
+                    setIsDeleteModalOpen(false)
+                    setPageToDelete(null)
+                  }} 
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Are you sure you want to delete this page? This action cannot be undone.
+                </p>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button 
+                    onClick={() => {
+                      setIsDeleteModalOpen(false)
+                      setPageToDelete(null)
+                    }} 
+                    className="px-6 py-2 border rounded-lg text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeletePage}
+                    className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <Loader className="animate-spin h-4 w-4 mr-2" />
+                        Deleting...
+                      </span>
+                    ) : (
+                      "Delete Page"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </Modal>
         </>
       )}

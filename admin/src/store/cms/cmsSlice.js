@@ -308,9 +308,9 @@ export const cmsSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.isError = false;
-        state.message = "Landing page added successfully";
+        // state.message = "Landing page added successfully";
         state.cms = [...state.cms, action.payload];
-        toast.success(state.message);
+        // toast.success(state.message);
       })
       .addCase(addNewCMS.rejected, (state, action) => {
         state.isLoading = false;
@@ -344,18 +344,18 @@ export const cmsSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.isError = false;
-        state.message = "CMS updated successfully";
+        // state.message = "CMS updated successfully";
         state.cms = state.cms.map((item) =>
           item._id === action.payload._id ? action.payload : item
         );
-        toast.success(state.message);
+        // toast.success(state.message);
       })
       .addCase(editCMS.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error.message;
-        toast.error(state.message);
+        // toast.error(state.message);
       })
       // removeCMS
       .addCase(removeCMS.pending, (state) => {
@@ -365,9 +365,9 @@ export const cmsSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.isError = false;
-        state.message = "CMS removed successfully";
+        // state.message = "CMS removed successfully";
         state.cms = state.cms.filter((item) => item._id !== action.payload.id);
-        toast.success(state.message);
+        // toast.success(state.message);
       })
       .addCase(removeCMS.rejected, (state, action) => {
         state.isLoading = false;
@@ -772,12 +772,12 @@ export const cmsSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.isError = false;
-        state.message = "Page updated successfully";
+        // state.message = "Page updated successfully";
         const index = state.pages.findIndex((page) => page._id === action.payload._id);
         if (index !== -1) {
           state.pages[index] = action.payload;
         }
-        toast.success(state.message);
+        // toast.success(state.message);
       })
       .addCase(updatePage.rejected, (state, action) => {
         state.isLoading = false;

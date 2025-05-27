@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BiSearch } from "react-icons/bi";
 import {
@@ -17,10 +17,12 @@ import {
 } from "../../store/evidence/evidenceSlice";
 import { getAdminUsers } from "../../store/users/userSlice";
 import evidenceService from "../../store/evidence/evidenceService";
+import authService from "../../store/auth/authService";
 import Spinner from "../../components/Spinner";
 import { toast } from "react-toastify";
 import axios from 'axios';
 import { base_url } from '../../constants/axiosConfig';
+import debounce from 'lodash/debounce';
 
 const Evidence = () => {
   const dispatch = useDispatch();
@@ -33,107 +35,69 @@ const Evidence = () => {
   const { user } = useSelector((state) => state.auth);
   const { admin } = useSelector((state) => state.adminProfile);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Fetch current user profile
+  // Cache for API responses
+  const [cache, setCache] = useState({
+    evidenceRequests: null,
+    adminUsers: null,
+    userProfile: null
+  });
+
+  // Fetch current user profile with caching
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const fetchProfile = async () => {
       try {
-        // Get token from localStorage
-        const adminData = localStorage.getItem("admin");
-        if (!adminData) {
-          console.log("No admin data found in localStorage");
+        if (cache.userProfile) {
+          setCurrentUser(cache.userProfile);
           return;
         }
 
-        const { token } = JSON.parse(adminData);
-        if (!token) {
-          console.log("No token found in admin data");
-          return;
-        }
-
-        // Fetch user profile using the token
-        const response = await axios.get(`${base_url}/user/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        console.log("Fetched user profile:", response.data);
-
-        // Extract the user data from the response
-        if (response.data && response.data.user) {
-          console.log("User data from profile:", response.data.user);
-          setCurrentUser(response.data.user);
-        } else {
-          console.error("User data not found in profile response");
+        const response = await authService.getProfile();
+        if (response && response.user) {
+          setCurrentUser(response.user);
+          setCache(prev => ({ ...prev, userProfile: response.user }));
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
+        toast.error("Failed to fetch user profile");
       }
     };
 
-    // Only fetch if we don't have the user in Redux store
-    if (!user || !user._id) {
-      fetchCurrentUser();
-    }
-  }, [user]);
+    fetchProfile();
+  }, [cache.userProfile]);
 
-  // Get user ID from localStorage if not available in Redux store
-  const getUserId = () => {
-    // First try to get from currentUser state
-    if (currentUser && currentUser._id) {
-      console.log("Using user ID from currentUser state:", currentUser._id);
-      return currentUser._id;
-    }
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      setSearchTerm(term);
+    }, 500),
+    []
+  );
 
-    // Then try to get from Redux store
-    if (user && user._id) {
-      console.log("Using user ID from Redux store:", user._id);
-      return user._id;
-    }
-
-    // If still not available, try to get from localStorage
-    const adminData = localStorage.getItem("admin");
-    if (adminData) {
-      try {
-        const admin = JSON.parse(adminData);
-        console.log("Admin data from localStorage:", admin);
-
-        // Try to extract user ID from token if available
-        if (admin.token) {
-          try {
-            // JWT tokens are base64 encoded and have 3 parts separated by dots
-            const tokenParts = admin.token.split('.');
-            if (tokenParts.length === 3) {
-              // Decode the payload (second part)
-              const payload = JSON.parse(atob(tokenParts[1]));
-              console.log("Token payload:", payload);
-              if (payload.userId) {
-                console.log("Using user ID from token:", payload.userId);
-                return payload.userId;
-              }
-            }
-          } catch (tokenError) {
-            console.error("Error parsing token:", tokenError);
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing admin data from localStorage:", error);
-      }
-    }
-
-    console.log("No user ID found from any source");
-    return null;
-  };
-
+  // Fetch evidence requests and admin users with caching
   useEffect(() => {
-    console.log("Admin users from state:", adminUsers); // Add this for debugging
-    if (isError) {
-      toast.error(message);
-    }
-    dispatch(getEvidenceRequests());
-    dispatch(getAdminUsers());
-  }, [dispatch, isError, message]);
+    const fetchData = async () => {
+      try {
+        // Only fetch if cache is empty or it's initial load
+        if (!cache.evidenceRequests || isInitialLoad) {
+          await dispatch(getEvidenceRequests()).unwrap();
+          setCache(prev => ({ ...prev, evidenceRequests: evidenceRequests }));
+        }
+        
+        if (!cache.adminUsers || isInitialLoad) {
+          await dispatch(getAdminUsers()).unwrap();
+          setCache(prev => ({ ...prev, adminUsers: adminUsers }));
+        }
+
+        setIsInitialLoad(false);
+      } catch (error) {
+        toast.error('Failed to fetch data');
+      }
+    };
+
+    fetchData();
+  }, [dispatch, isInitialLoad]);
 
   const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -161,18 +125,55 @@ const Evidence = () => {
 
   const handleAssignToAdmin = async (requestId, adminId = null) => {
     try {
-      await dispatch(assignRequest({ requestId, adminId: adminId || admin._id })).unwrap();
-      toast.success("Request assigned successfully");
-      setShowAssignModal(false);
+      const targetAdminId = adminId || currentUser?._id;
+      
+      const response = await axios.put(
+        `${base_url}/api/support-requests/${requestId}`,
+        { 
+          assignedTo: targetAdminId,
+          status: 'Pending'
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+        }
+      );
+
+      if (response.data) {
+        // Update local cache instead of making a new API call
+        const updatedRequests = evidenceRequests.map(request => 
+          request._id === requestId 
+            ? { ...request, assignedTo: targetAdminId }
+            : request
+        );
+        
+        setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
+        toast.success("Request assigned successfully");
+        setShowAssignModal(false);
+      }
     } catch (error) {
-      toast.error(error.message || "Failed to assign request");
+      console.error('Error assigning request:', error);
+      const errorMessage = error.response?.data?.message || "Failed to assign request";
+      toast.error(errorMessage);
     }
   };
 
   const handleStatusUpdate = async (id, status) => {
     try {
       await dispatch(updateEvidenceStatus({ id, status })).unwrap();
+      
+      // Update local cache
+      const updatedRequests = evidenceRequests.map(request => 
+        request._id === id 
+          ? { ...request, status }
+          : request
+      );
+      
+      setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
       toast.success(`Request ${status.toLowerCase()} successfully`);
+      
       if (status === "Approved") {
         setShowApproveModal(false);
       } else if (status === "Declined") {
@@ -189,15 +190,21 @@ const Evidence = () => {
 
   // Filter requests based on active tab and search term
   const getFilteredRequests = () => {
+    if (!evidenceRequests) {
+      console.log('No evidence requests available');
+      return [];
+    }
+
     let filtered = [...evidenceRequests];
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter((request) =>
-        request.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.type?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter((request) => {
+        const matchesName = request.user?.forename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          request.user?.surname?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = request.type?.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesName || matchesType;
+      });
     }
 
     // Filter by status if not "all"
@@ -207,9 +214,19 @@ const Evidence = () => {
 
     // Filter by tab
     if (activeTab === "assigned") {
-      filtered = filtered.filter((request) => isAssignedToCurrentUser(request));
+      // Show only requests assigned to current user
+      filtered = filtered.filter((request) => {
+        const requestAssignedTo = request.assignedTo?._id || request.assignedTo;
+        const isAssigned = requestAssignedTo === currentUser?._id;
+        return isAssigned;
+      });
     } else if (activeTab === "other") {
-      filtered = filtered.filter((request) => !isAssignedToCurrentUser(request));
+      // Show requests created by the current user
+      filtered = filtered.filter((request) => {
+        const requestCreatedBy = request.createdBy?._id || request.createdBy;
+        const isCreatedByMe = requestCreatedBy === currentUser?._id;
+              return isCreatedByMe;
+      });
     }
 
     return filtered;
@@ -237,7 +254,7 @@ const Evidence = () => {
     <div>
       <div>
         <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
-          <h2 className="text-xl font-primary text-[1A1A1A]">Evidence Requests</h2>
+          {/* <h2 className="text-xl font-primary text-[1A1A1A]"></h2> */}
           <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="relative">
               <BiSearch className="absolute hidden md:flex left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -245,8 +262,7 @@ const Evidence = () => {
                 type="text"
                 placeholder="Search by name or type"
                 className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => debouncedSearch(e.target.value)}
               />
             </div>
             <select
@@ -269,28 +285,31 @@ const Evidence = () => {
         {/* Tabs */}
         <div className="flex flex-row md:ml-0 -ml-2 gap-4">
           <button
-            className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "all"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-              }`}
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "all"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
             onClick={() => setActiveTab("all")}
           >
-            All Requests
+            Evidence Review
           </button>
           <button
-            className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "assigned"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-              }`}
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "assigned"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
             onClick={() => setActiveTab("assigned")}
           >
             Your Assigned Requests
           </button>
           <button
-            className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "other"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-              }`}
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "other"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
             onClick={() => setActiveTab("other")}
           >
             Other Requests

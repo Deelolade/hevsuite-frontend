@@ -21,7 +21,7 @@ export const getAllUsers = async ({ page = 1, limit = 10, search = '', role = ''
 };
 
 
-export const memberUsers = async ({ page = 1, search = '', role = '' }) => {
+export const memberUsers = async ({ page = 1, search = '', role = '', membershipStatus = 'accepted' }) => {
   const token = getAuthToken();
   const response = await axios.get(`${base_url}/api/user/users`, {
     params: { 
@@ -89,15 +89,19 @@ export const deleteUser = async (userId) => {
   return response.data;
 };
 
-// Approve user membership
+// Approve user membership (Corrected to match backend route)
 export const approveUserMembership = async (userId) => {
   const token = getAuthToken();
-  const response = await axios.put(`${base_url}/api/user/approve-membership/${userId}`, {}, {
+  const response = await axios.put(
+    `${base_url}/api/user/approve-membership`,
+    { userId }, // Send userId in the request body
+    {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
-  });
+    }
+  );
   return response.data;
 };
 
@@ -127,8 +131,8 @@ export const getPendingRegistrations = async ({ page = 1, limit = 10, filter = '
   return response.data;
 };
 
-// Update membership status
-export const updateMembershipStatus = async (userId, status) => {
+// Update membership status (Used for declining or other status updates)
+export const updateMembershipStatus = async ({ userId, status }) => {
   const token = getAuthToken();
   const response = await axios.put(
     `${base_url}/api/user/update-membership-status`,

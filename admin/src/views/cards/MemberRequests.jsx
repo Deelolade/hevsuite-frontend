@@ -224,7 +224,7 @@ const MemberRequests = () => {
   }
 
   return (
-    <div className="md:p-6 space-y-6  max-h-[400px] overflow-y-auto">
+    <div className="md:p-6 space-y-6">
       {/* Stats and Controls */}
       <div className="flex  ">
         <div className="flex flex-col md:flex-row items-center gap-4 justify-between md:w-full overflow-x-auto">

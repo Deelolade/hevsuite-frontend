@@ -36,6 +36,7 @@ const Topics = () => {
   const [isDeleteQAModalOpen, setIsDeleteQAModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [topicFilter, setTopicFilter] = useState("active");
+  const topicsPerPage = 4; // Number of topics to show at once
 
   const filteredTopics = helps.filter(topic => {
     let statusMatch = false;
@@ -202,6 +203,20 @@ const Topics = () => {
     }
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTopics.length / topicsPerPage);
+  const startIndex = (currentPage - 1) * topicsPerPage;
+  const endIndex = startIndex + topicsPerPage;
+  const currentTopics = filteredTopics.slice(startIndex, endIndex);
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => (prev > 1 ? prev - 1 : totalPages));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => (prev < totalPages ? prev + 1 : 1));
+  };
+
   return (
     <div className="space-y-6">
       {/* Topics Grid */}
@@ -239,115 +254,129 @@ const Topics = () => {
       ) : filteredTopics.length === 0 ? (
         <div className="text-center">No {topicFilter} topics found</div>
       ) : (
-        <div className="md:grid md:grid-cols-4 w-[90vw] md:w-full overflow-auto flex gap-1">
-          {filteredTopics.map((topic) => (
-            <div
-              key={topic._id}
-              className={`w-56 cursor-pointer ${activeTopic === topic._id
-                  ? "border-4 border-primary rounded-t-3xl"
-                  : ""
-                }`}
-              onClick={() => {
-                setActiveTopic(topic._id);
-                setSelectedTopic(topic);
-              }}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handlePrevPage}
+            className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
-                <h3 className="text-white text-center font-secondary w-64">
-                  {topic.title}
-                </h3>
-                <button
-                  className="text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTopic(topic);
-                    setIsEditModalOpen(true);
-                  }}
-                >
-                  <img src={edit_icon} alt="edit icon" />
-                </button>
-              </div>
-              <div className="p-5 space-y-3 w-56">
-                <div className="flex items-center justify-between">
-                  <span>Visibility</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={topic.visibility}
-                      className="sr-only peer"
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleTopicVisibility(topic._id, topic.visibility);
-                      }}
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <div className="flex gap-4 overflow-x-auto pb-4 flex-nowrap">
+            {currentTopics.map((topic) => (
+              <div
+                key={topic._id}
+                className={`flex-shrink-0 w-56 cursor-pointer ${
+                  activeTopic === topic._id
+                    ? "border-4 border-primary rounded-t-3xl"
+                    : ""
+                }`}
+                onClick={() => {
+                  setActiveTopic(topic._id);
+                  setSelectedTopic(topic);
+                }}
+              >
+                <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
+                  <h3 className="text-white text-center font-secondary w-64">
+                    {topic.title}
+                  </h3>
+                  <button
+                    className="text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTopic(topic);
+                      setIsEditModalOpen(true);
+                    }}
+                  >
+                    <img src={edit_icon} alt="edit icon" />
+                  </button>
                 </div>
-                <button
-                  className={`w-44 py-2 ${topic.archived ? 'bg-primary text-white' : 'bg-gray-200'} rounded-lg`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTopic(topic);
-                    setIsArchiveTopicOpen(true);
-                  }}
-                >
-                  {topic.archived ? 'Unarchive' : 'Archive'}
-                </button>
-                <button
-                  className={`w-44 py-2 ${topic.deleted ? 'bg-primary text-white' : 'bg-primary text-white'} rounded-lg`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTopic(topic);
-                    setIsDeleteTopicOpen(true);
-                  }}
-                >
-                  {topic.deleted ? 'Restore' : 'Delete'}
-                </button>
+                <div className="p-5 space-y-3 w-56">
+                  <div className="flex items-center justify-between">
+                    <span>Visibility</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={topic.visibility}
+                        className="sr-only peer"
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleTopicVisibility(topic._id, topic.visibility);
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                  <button
+                    className={`w-44 py-2 ${topic.archived ? 'bg-primary text-white' : 'bg-gray-200'} rounded-lg`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTopic(topic);
+                      setIsArchiveTopicOpen(true);
+                    }}
+                  >
+                    {topic.archived ? 'Unarchive' : 'Archive'}
+                  </button>
+                  <button
+                    className={`w-44 py-2 ${topic.deleted ? 'bg-primary text-white' : 'bg-primary text-white'} rounded-lg`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTopic(topic);
+                      setIsDeleteTopicOpen(true);
+                    }}
+                  >
+                    {topic.deleted ? 'Restore' : 'Delete'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <button 
+            onClick={handleNextPage}
+            className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
         </div>
       )}
 
       <div className="flex justify-center items-center gap-2 mt-4">
-        <button className="p-1 text-gray-400 hover:text-gray-600">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-        {[1, 2, 3].map((page) => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}
             onClick={() => setCurrentPage(page)}
-            className={`w-2 h-2 rounded-full transition-all ${currentPage === page ? "bg-primary w-4" : "bg-gray-300"
-              }`}
+            className={`w-2 h-2 rounded-full transition-all ${
+              currentPage === page ? "bg-primary w-4" : "bg-gray-300"
+            }`}
           />
         ))}
-        <button className="p-1 text-gray-400 hover:text-gray-600">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
       </div>
 
       {/* Questions Section */}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { FiEdit } from "react-icons/fi"
 import { BsArrowLeft, BsArrowRight } from "react-icons/bs"
+import { FaTrash } from "react-icons/fa"
 import Modal from "react-modal"
 import AddMenuPage from "./AddPage"
 import EditMenuItem from "../../components/modals/cms/menu/EditMenuItem"
@@ -25,6 +26,7 @@ const Menu = () => {
   const [menuVisibility, setMenuVisibility] = useState(false)
   const [showAddPage, setShowAddPage] = useState(false)
   const [statusFilter, setStatusFilter] = useState("active")
+  const [menuPages, setMenuPages] = useState([])
 
   const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false)
   const [isEditMenuModalOpen, setIsEditMenuModalOpen] = useState(false)
@@ -38,6 +40,48 @@ const Menu = () => {
   const [draggingPage, setDraggingPage] = useState(null)
   const [dragPageOver, setDragPageOver] = useState(null)
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [pageToDelete, setPageToDelete] = useState(null)
+
+  const [localPageOrder, setLocalPageOrder] = useState({});
+  const [orderedPages, setOrderedPages] = useState([]);
+
+  // Add this useEffect to initialize local storage and ordered pages
+  useEffect(() => {
+    const savedOrder = localStorage.getItem(`menu_${selectedSection}_order`);
+    if (savedOrder) {
+      setLocalPageOrder(JSON.parse(savedOrder));
+    }
+  }, [selectedSection]);
+
+  // Add this useEffect to maintain ordered pages
+  useEffect(() => {
+    if (storePages && storePages.length > 0) {
+      const filteredPages = storePages.filter(page => {
+        const isMenuPage = page.menuId === selectedSection;
+        const isInMenuItems = menuPages.includes(page._id);
+        return isMenuPage || isInMenuItems;
+      });
+
+      const sortedPages = [...filteredPages].sort((a, b) => {
+        const orderA = localPageOrder[a._id];
+        const orderB = localPageOrder[b._id];
+        
+        if (orderA !== undefined && orderB !== undefined) {
+          return orderA - orderB;
+        }
+        
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      setOrderedPages(sortedPages);
+    }
+  }, [storePages, selectedSection, localPageOrder, menuPages]);
+
   const handleDragPageStart = (event, index) => {
     setDraggingPage(index)
   }
@@ -47,26 +91,56 @@ const Menu = () => {
     setDragPageOver(index)
   }
 
-  const handleDragPageEnd = (event) => {
-    if (draggingPage !== null && dragPageOver !== null) {
-      const newPages = [...storePages]
-      const [reorderedPage] = newPages.splice(draggingPage, 1)
-      newPages.splice(dragPageOver, 0, reorderedPage)
-      
-      // Update in the backend
-      dispatch(
-        updatePage({
-          id: reorderedPage._id,
-          data: {
-            order: dragPageOver + 1
-          }
-        })
-      ).then(() => {
-        dispatch(getPages({ status: "active" }))
-      })
+  const handleDragPageEnd = async (event) => {
+    if (draggingPage === null || dragPageOver === null) {
+      setDraggingPage(null)
+      setDragPageOver(null)
+      return
     }
-    setDraggingPage(null)
-    setDragPageOver(null)
+
+    try {
+      // Create new array with reordered pages
+      const newPages = [...orderedPages];
+      const [reorderedPage] = newPages.splice(draggingPage, 1);
+      newPages.splice(dragPageOver, 0, reorderedPage);
+
+      // Update local storage immediately
+      const newOrder = {};
+      newPages.forEach((page, index) => {
+        newOrder[page._id] = index + 1;
+      });
+      
+      // Update both state and localStorage
+      setLocalPageOrder(newOrder);
+      localStorage.setItem(`menu_${selectedSection}_order`, JSON.stringify(newOrder));
+      setOrderedPages(newPages);
+
+      // Update the order for all pages in the backend
+      for (let i = 0; i < newPages.length; i++) {
+        const page = newPages[i];
+        await dispatch(
+          updatePage({
+            id: page._id,
+            data: {
+              order: i + 1
+            }
+          })
+        );
+      }
+
+      // Refresh the pages list
+      await dispatch(getPages({ status: "active" }));
+    } catch (error) {
+      console.error('Error updating page order:', error);
+      // Revert local storage on error
+      const savedOrder = localStorage.getItem(`menu_${selectedSection}_order`);
+      if (savedOrder) {
+        setLocalPageOrder(JSON.parse(savedOrder));
+      }
+    } finally {
+      setDraggingPage(null);
+      setDragPageOver(null);
+    }
   }
 
   // Fetch menus on component mount and when status filter changes
@@ -74,10 +148,17 @@ const Menu = () => {
     dispatch(getAllMenus({ status: statusFilter }))
   }, [dispatch, statusFilter])
 
-  // Fetch pages when component mounts
+  // Fetch pages when component mounts and when selectedSection changes
   useEffect(() => {
-    dispatch(getPages({ status: "active" }))
-  }, [dispatch])
+    if (selectedSection) {
+      // First fetch pages with menuId
+      dispatch(getPages({ status: "active", menuId: selectedSection }))
+        .then(() => {
+          // Then fetch all active pages to ensure we have the complete list
+          dispatch(getPages({ status: "active" }))
+        })
+    }
+  }, [dispatch, selectedSection])
 
   // Update sections when menus are loaded
   useEffect(() => {
@@ -100,9 +181,22 @@ const Menu = () => {
     if (selectedSection && menus) {
       const selectedMenu = menus.find((menu) => menu._id === selectedSection)
       if (selectedMenu) {
+        console.log('Selected Menu:', selectedMenu)
         setMenuItems(selectedMenu.items || [])
+        // Get the pageIds from menu items - handle both populated and unpopulated cases
+        const pageIds = selectedMenu.items
+          ?.filter(item => item.pageId)
+          .map(item => {
+            // If pageId is an object (populated), get its _id, otherwise use the value directly
+            const pageId = typeof item.pageId === 'object' ? item.pageId._id : item.pageId
+            console.log('Processing pageId:', pageId)
+            return pageId
+          }) || []
+        console.log('Menu Page IDs:', pageIds)
+        setMenuPages(pageIds)
       } else {
         setMenuItems([])
+        setMenuPages([])
       }
     }
   }, [selectedSection, menus])
@@ -279,6 +373,54 @@ const Menu = () => {
     })
   }
 
+  // Update the handleDeletePage function
+  const handleDeletePage = (pageId) => {
+    setPageToDelete(pageId)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDeletePage = () => {
+    if (!pageToDelete) return
+
+    // First check if the page is in menu items
+    const menuItem = menuItems.find(item => item.pageId === pageToDelete || (item.pageId && item.pageId._id === pageToDelete))
+    
+    if (menuItem) {
+      // If page is in menu items, remove it from the menu
+      const updatedItems = menuItems.filter(item => 
+        item.pageId !== pageToDelete && (!item.pageId || item.pageId._id !== pageToDelete)
+      )
+      
+      dispatch(
+        editMenus({
+          id: selectedSection,
+          data: { items: updatedItems },
+        })
+      ).then(() => {
+        // Update local state
+        setMenuItems(updatedItems)
+        // Remove from menuPages
+        setMenuPages(prev => prev.filter(id => id !== pageToDelete))
+      })
+    }
+
+    // Then delete the page itself
+    dispatch(
+      updatePage({
+        id: pageToDelete,
+        data: {
+          visibility: false // Soft delete by setting visibility to false
+        }
+      })
+    ).then(() => {
+      // Refresh pages
+      dispatch(getPages({ status: "active" }))
+      // Close modal and reset state
+      setIsDeleteModalOpen(false)
+      setPageToDelete(null)
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -300,8 +442,10 @@ const Menu = () => {
               setShowEditPage(false)
               window.history.pushState(null, "", `?tab=menu`)
             }}
-            selectedSection={selectedSection}
-            refreshData={() => dispatch(getAllMenus({ status: statusFilter }))}
+            refreshData={() => {
+              dispatch(getPages({ status: "active" }))
+            }}
+            menuId={selectedSection}
           />
         )
       ) : (
@@ -327,7 +471,7 @@ const Menu = () => {
 
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
-              <Loader className="animate-spin h-8 w-8 text-primary" />
+              <Loader className="animate-spin h-8 w-8" />
             </div>
           ) : (
             <>
@@ -383,12 +527,6 @@ const Menu = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-                {/* <div
-                  onClick={() => setIsCreatedPagesOpen(true)}
-                  className="bg-gray-100 rounded-lg p-4 text-center w-2/5 border-2 border-primary cursor-pointer hover:bg-primary/50 transition-colors"
-                >
-                  Created Pages
-                </div> */}
               </div>
 
               <div className="flex justify-end">
@@ -415,18 +553,26 @@ const Menu = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {storePages && storePages.length > 0 ? (
-                      storePages.map((page, index) => (
+                    {orderedPages.length > 0 ? (
+                      orderedPages.map((page, index) => (
                         <tr 
                           key={page._id} 
-                          className={`border-b ${draggingPage === index ? 'opacity-50' : ''} ${dragPageOver === index ? 'border-t-2 border-primary' : ''}`}
+                          className={`border-b transition-colors duration-200 ${
+                            draggingPage === index ? 'opacity-50 bg-gray-50' : ''
+                          } ${
+                            dragPageOver === index ? 'border-t-2 border-primary bg-primary/5' : ''
+                          }`}
                           draggable={true}
                           onDragStart={(e) => handleDragPageStart(e, index)}
                           onDragOver={(e) => handleDragPageOver(e, index)}
                           onDragEnd={handleDragPageEnd}
                         >
                           <td className="py-4 px-6 flex items-center gap-2">
-                            <span className="p-1 border rounded cursor-move">⋮⋮</span>
+                            <span className="p-1 border rounded cursor-move hover:bg-gray-50">
+                              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+                              </svg>
+                            </span>
                             {page.title}
                           </td>
                           <td className="py-4 px-6">
@@ -443,9 +589,9 @@ const Menu = () => {
                             </label>
                           </td>
                           <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
-                          <td className="py-4 px-6">
+                          <td className="py-4 px-6 flex items-center gap-3">
                             <button 
-                              className="text-primary"
+                              className="text-primary hover:text-primary-dark"
                               onClick={() => {
                                 setSelectedItem(page);
                                 setShowEditPage(true);
@@ -455,13 +601,21 @@ const Menu = () => {
                             >
                               <FiEdit size={18} />
                             </button>
+                            {page.owner === "Admin" && (
+                              <button 
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleDeletePage(page._id)}
+                              >
+                                <FaTrash size={18} />
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
                         <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
-                          No pages found
+                          No pages found for this menu
                         </td>
                       </tr>
                     )}
@@ -490,38 +644,48 @@ const Menu = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      className="p-1 text-gray-400"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      className="px-3 py-1 border rounded"
+                      onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
+                      First
+                    </button>
+                    <button
+                      className="px-3 py-1 border rounded"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
                     </button>
                     {generatePaginationNumbers().map((page, index) => (
                       <button
                         key={index}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg ${
-                          currentPage === page ? "bg-green-800 text-white" : "text-gray-600"
+                        className={`px-3 py-1 border rounded ${
+                          page === currentPage ? "bg-primary text-white" : ""
                         }`}
                         onClick={() => {
-                          if (typeof page === "number") {
+                          if (page !== "...") {
                             setCurrentPage(page)
                           }
                         }}
-                        disabled={typeof page !== "number"}
+                        disabled={page === "..."}
                       >
                         {page}
                       </button>
                     ))}
                     <button
-                      className="p-1 text-gray-400"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      className="px-3 py-1 border rounded"
+                      onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      Next
+                    </button>
+                    <button
+                      className="px-3 py-1 border rounded"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
                     </button>
                   </div>
                 </div>
@@ -606,9 +770,8 @@ const Menu = () => {
                   </div>
                 )}
 
-                {/* Visibility */}
+                {/* Visibility Toggle */}
                 <div>
-                  <label className="block text-sm mb-1">Visibility</label>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -719,6 +882,63 @@ const Menu = () => {
                 window.history.pushState(null, "", `?tab=menu&edit=2&system=true`)
               }}
             />
+          </Modal>
+
+          <Modal
+            isOpen={isDeleteModalOpen}
+            onRequestClose={() => {
+              setIsDeleteModalOpen(false)
+              setPageToDelete(null)
+            }}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[90vw]"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Delete Page</h2>
+                <button 
+                  onClick={() => {
+                    setIsDeleteModalOpen(false)
+                    setPageToDelete(null)
+                  }} 
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Are you sure you want to delete this page? This action cannot be undone.
+                </p>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button 
+                    onClick={() => {
+                      setIsDeleteModalOpen(false)
+                      setPageToDelete(null)
+                    }} 
+                    className="px-6 py-2 border rounded-lg text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeletePage}
+                    className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <Loader className="animate-spin h-4 w-4 mr-2" />
+                        Deleting...
+                      </span>
+                    ) : (
+                      "Delete Page"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </Modal>
         </>
       )}

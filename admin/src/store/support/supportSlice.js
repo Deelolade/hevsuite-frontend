@@ -58,7 +58,14 @@ export const deleteSupportRequest = createAsyncThunk(
 export const supportSlice = createSlice({
   name: "support",
   initialState,
-  reducers: {},
+  reducers: {
+    reset: (state) => {
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = "";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getSupportRequests.pending, (state) => {
@@ -102,9 +109,7 @@ export const supportSlice = createSlice({
         state.isError = false;
         state.message = "Support request updated successfully";
         state.supportRequests = state.supportRequests.map((request) =>
-          request._id === action.payload.id
-            ? { ...request, ...action.payload.data }
-            : request
+          request._id === action.payload._id ? action.payload : request
         );
         toast.success(state.message);
       })
@@ -112,8 +117,8 @@ export const supportSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = false;
         state.isError = true;
-        state.message = action.error.message;
-        toast.error(state.message);
+        state.message = action.error;
+        toast.error(action.error);
       })
       .addCase(deleteSupportRequest.pending, (state) => {
         state.isLoading = true;
@@ -138,4 +143,5 @@ export const supportSlice = createSlice({
   },
 });
 
+export const { reset } = supportSlice.actions;
 export default supportSlice.reducer;
