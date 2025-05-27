@@ -861,7 +861,7 @@ const News = () => {
                   onChange={handleInputChange}
                   className="rounded"
                 />
-                <span>Post on Landing Page</span>
+                <span>Post on Home/Landing page</span>
               </label>
               <label className="flex items-center gap-2">
                 <input

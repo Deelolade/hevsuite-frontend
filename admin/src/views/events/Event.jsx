@@ -65,6 +65,7 @@ const Event = () => {
   // Filter and sort states
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [showSortDropdown, setShowSortDropdown] = useState(false)
+  const [showTimeFilterDropdown, setShowTimeFilterDropdown] = useState(false)
 
   // Filter and sort handlers for new UI
   const handleFilterChange = (filterValue) => {
@@ -87,6 +88,26 @@ const Event = () => {
 
   // State for image slider in event detail modal
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Add these helper functions after the existing imports
+  const getEventStatus = (event) => {
+    const now = new Date();
+    const eventStart = new Date(event.time);
+    const eventEnd = new Date(event.endTime);
+    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    if (now > eventEnd) {
+      return 'completed';
+    } else if (now >= eventStart && now <= eventEnd) {
+      return 'ongoing';
+    } else if (eventStart <= sevenDaysFromNow) {
+      return 'upcoming';
+    }
+    return 'future';
+  };
+
+  // Add this state near other state declarations
+  const [timeFilter, setTimeFilter] = useState('all');
 
   // Fetch events and users on component mount
   useEffect(() => {
@@ -462,18 +483,21 @@ const Event = () => {
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
+      if (locationInputRef.current && !locationInputRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
       if (!event.target.closest('.relative')) {
-        setShowFilterDropdown(false)
-        setShowSortDropdown(false)
+        setShowFilterDropdown(false);
+        setShowSortDropdown(false);
+        setShowTimeFilterDropdown(false);
       }
     }
-    if (showFilterDropdown || showSortDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showFilterDropdown, showSortDropdown])
+  }, [showFilterDropdown, showSortDropdown, showTimeFilterDropdown]);
 
 
   // Add this state near the other state declarations
@@ -520,24 +544,6 @@ const handleSelectSuggestion = (suggestion) => {
   }
 }
 
-// Add this useEffect for click outside handling
-useEffect(() => {
-  function handleClickOutside(event) {
-    if (locationInputRef.current && !locationInputRef.current.contains(event.target)) {
-      setShowSuggestions(false)
-    }
-    if (!event.target.closest('.relative')) {
-      setShowFilterDropdown(false)
-      setShowSortDropdown(false)
-    }
-  }
-  
-  document.addEventListener('mousedown', handleClickOutside)
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside)
-  }
-}, [showFilterDropdown, showSortDropdown])
-
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
@@ -563,25 +569,46 @@ useEffect(() => {
           Create Event
           <span className="text-xl">+</span>
         </button>
-        <div className="flex gap-4">
-          {/* Filter Button */}
+        <div className="flex gap-4 relative z-50">
+          {/* Audience Type Filter Button */}
           <div className="relative">
             <button
               className="flex items-center border border-gray-300 rounded-lg px-6 py-2.5 bg-white text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
               onClick={() => setShowFilterDropdown((prev) => !prev)}
               type="button"
             >
-              Filter
+              Audience Type
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17v-3.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" /></svg>
             </button>
             {showFilterDropdown && (
-              <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+              <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('all')}>All</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('members')}>Members Only</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('vip')}>VIP Members</button>
-            </div>
+              </div>
             )}
           </div>
+
+          {/* Time Status Filter Button */}
+          <div className="relative">
+            <button
+              className="flex items-center border border-gray-300 rounded-lg px-6 py-2.5 bg-white text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+              onClick={() => setShowTimeFilterDropdown((prev) => !prev)}
+              type="button"
+            >
+              Time Status
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17v-3.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" /></svg>
+            </button>
+            {showTimeFilterDropdown && (
+              <div className="absolute z-[100] mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('all')}>All Events</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('upcoming')}>Upcoming (7 days)</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('ongoing')}>Ongoing</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('completed')}>Completed</button>
+              </div>
+            )}
+          </div>
+
           {/* Sort By Button */}
           <div className="relative">
             <button
@@ -593,11 +620,11 @@ useEffect(() => {
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M3 12h18M3 17h18" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 10l3 3 3-3" /></svg>
             </button>
             {showSortDropdown && (
-              <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+              <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('all')}>All</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('latest')}>Latest</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('oldest')}>Oldest</button>
-            </div>
+              </div>
             )}
           </div>
         </div>
@@ -619,9 +646,15 @@ useEffect(() => {
 
       {/* Event Grid */}
       {!eventsLoading && !eventsError && (
-        <div className="grid md:grid-cols-4 gap-6">
-          {events?.length > 0 ? (
-            events.map((event) => (
+        <div className="grid md:grid-cols-4 gap-6 relative z-10">
+          {events?.filter(event => {
+            if (timeFilter === 'all') return true;
+            return getEventStatus(event) === timeFilter;
+          }).length > 0 ? (
+            events.filter(event => {
+              if (timeFilter === 'all') return true;
+              return getEventStatus(event) === timeFilter;
+            }).map((event) => (
               <div
                 key={event._id}
                 className="relative group"
@@ -705,7 +738,7 @@ useEffect(() => {
             ))
           ) : (
             <div className="col-span-4 text-center py-12">
-              <p className="text-gray-500">No events found. Create your first event!</p>
+              <p className="text-gray-500">No events found matching the current filters.</p>
             </div>
           )}
         </div>
@@ -1616,3 +1649,4 @@ useEffect(() => {
 }
 
 export default Event
+

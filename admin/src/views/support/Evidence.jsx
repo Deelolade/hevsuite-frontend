@@ -88,12 +88,12 @@ const Evidence = () => {
         if (!cache.adminUsers || isInitialLoad) {
           await dispatch(getAdminUsers()).unwrap();
           setCache(prev => ({ ...prev, adminUsers: adminUsers }));
-        }
+          }
 
         setIsInitialLoad(false);
       } catch (error) {
         toast.error('Failed to fetch data');
-      }
+    }
     };
 
     fetchData();
@@ -150,8 +150,8 @@ const Evidence = () => {
         );
         
         setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
-        toast.success("Request assigned successfully");
-        setShowAssignModal(false);
+      toast.success("Request assigned successfully");
+      setShowAssignModal(false);
       }
     } catch (error) {
       console.error('Error assigning request:', error);
@@ -287,9 +287,9 @@ const Evidence = () => {
           <button
             className={`px-6 py-3 rounded-lg flex-1 ${
               activeTab === "all"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
+              ? "bg-primary text-white"
+              : "bg-white border text-gray-700"
+              }`}
             onClick={() => setActiveTab("all")}
           >
             Evidence Review
@@ -297,9 +297,9 @@ const Evidence = () => {
           <button
             className={`px-6 py-3 rounded-lg flex-1 ${
               activeTab === "assigned"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
+              ? "bg-primary text-white"
+              : "bg-white border text-gray-700"
+              }`}
             onClick={() => setActiveTab("assigned")}
           >
             Your Assigned Requests
@@ -307,9 +307,9 @@ const Evidence = () => {
           <button
             className={`px-6 py-3 rounded-lg flex-1 ${
               activeTab === "other"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
+              ? "bg-primary text-white"
+              : "bg-white border text-gray-700"
+              }`}
             onClick={() => setActiveTab("other")}
           >
             Other Requests

@@ -6,7 +6,7 @@ import {
   FaIdCard,
   FaCalendarAlt,
   FaNewspaper,
-  FaSignOutAlt,
+  FaSignOutAlt,  
 } from "react-icons/fa";
 import { RiUserSettingsLine, RiQuestionAnswerLine } from "react-icons/ri";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
@@ -19,44 +19,86 @@ import "./forced.css";
 import axios from 'axios';
 import { base_url } from '../../constants/axiosConfig';
 
+// Define menu items with their corresponding permissions
 const menuItems = [
-  { path: "dashboard", icon: <BsGrid1X2Fill size={20} />, label: "Dashboard" },
+  { 
+    path: "dashboard", 
+    icon: <BsGrid1X2Fill size={20} />, 
+    label: "Dashboard",
+    permission: "Dashboard"
+  },
   {
     path: "pending",
     icon: <MdOutlinePendingActions size={20} />,
     label: "Pending Registration",
-    showCount: true
+    showCount: true,
+    permission: "Pending Registration"
   },
-  { path: "users", icon: <FaUsers size={20} />, label: "User Management" },
-  { path: "cards", icon: <FaIdCard size={20} />, label: "Club Cards" },
-  { path: "cms", icon: <CgWebsite size={20} />, label: "CMS" },
+  { 
+    path: "users", 
+    icon: <FaUsers size={20} />, 
+    label: "User Management",
+    permission: "User Management"
+  },
+  { 
+    path: "cards", 
+    icon: <FaIdCard size={20} />, 
+    label: "Club Cards",
+    permission: "Club Cards"
+  },
+  { 
+    path: "cms", 
+    icon: <CgWebsite size={20} />, 
+    label: "CMS",
+    permission: "CMS"
+  },
   {
     path: "events",
     icon: <FaCalendarAlt size={20} />,
     label: "Event Management",
+    permission: "Events Management"
   },
-  { path: "news", icon: <FaNewspaper size={20} />, label: "News Room" },
-  { path: "asks", icon: <RiQuestionAnswerLine size={20} />, label: "Asks" },
+  { 
+    path: "news", 
+    icon: <FaNewspaper size={20} />, 
+    label: "News Room",
+    permission: "Newsrooms"
+  },
+  { 
+    path: "asks", 
+    icon: <RiQuestionAnswerLine size={20} />, 
+    label: "Asks",
+    permission: "Ask"
+  },
   {
     path: "help",
     icon: <AiOutlineQuestionCircle size={20} />,
     label: "Help Center",
+    permission: "Help Center"
   },
-  { path: "support", icon: <BiSupport size={20} />, label: "Support Request" },
+  { 
+    path: "support", 
+    icon: <BiSupport size={20} />, 
+    label: "Support Request",
+    permission: "Support Request"
+  },
   {
     path: "finance",
     icon: <TbBuildingBank size={20} />,
     label: "Finance Management",
+    permission: "Finance Management"
   },
   {
     path: "admins",
     icon: <RiUserSettingsLine size={20} />,
     label: "Admin Users",
+    permission: "Admin Users"
   },
   {
     path: "settings",
     icon: <MdOutlineSettings size={20} />,
     label: "Site Settings",
+    permission: "Site Settings"
   },
 ];
 
@@ -64,6 +106,54 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get user role from localStorage
+  const userRole = JSON.parse(localStorage.getItem('admin'))?.role;
+  
+  useEffect(() => {
+    const fetchRolesAndPermissions = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${base_url}/api/permissions`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+                
+        // Find the user's role and get its permissions
+        const userRoleData = response.data.find(role => role.role === userRole);
+
+        if (userRoleData) {
+          setUserPermissions(userRoleData.permissions);
+        } else {
+          // If no specific role found, set default permissions for superadmin
+          if (userRole === 'superadmin') {
+            const allPermissions = menuItems.map(item => item.permission);
+            setUserPermissions(allPermissions);
+          } else {
+            // If user role is not superadmin and no specific role found, set empty permissions
+            setUserPermissions([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+        // On error, set permissions to empty to hide menu items
+        setUserPermissions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userRole) {
+      fetchRolesAndPermissions();
+    } else {
+      // If no user role in localStorage, set permissions to empty and stop loading
+      setUserPermissions([]);
+      setLoading(false);
+    }
+  }, [userRole]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -81,7 +171,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
 
     fetchDashboardStats();
     // Refresh stats every 30 seconds
-    const interval = setInterval(fetchDashboardStats, 30000);
+    const interval = setInterval(fetchDashboardStats, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -91,18 +181,37 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
     window.location.reload();
   };
 
+  // Filter menu items based on user permissions
+  const filteredMenuItems = menuItems.filter(item => 
+    userPermissions.includes(item.permission)
+  );
+
+  // If loading or no permissions, show loading state
+  if (loading) {
+    return (
+      <div className="md:h-fit h-screen fixed z-50 bg-[#1A1A1A] text-white flex-col transition-width duration-300">
+        <div className="p-6">
+          <div className="flex items-center gap-3 pl-4">
+            <img src={logo_red} alt="logo" className="w-[75px] h-[60px]" />
+            <h1 className="text-3xl font-montserrat font-bold">Hevsuite Club</h1>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-400">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={` md:h-fit ${
-        minimize ? "w-20" : ""
-      } h-screen fixed z-50 bg-[#1A1A1A] text-white  flex-col transition-width duration-300 `}
+      className={`flex flex-col md:h-fit ${ minimize ? "w-20" : "" } h-screen fixed z-50 bg-[#1A1A1A] text-white transition-width duration-300 `}
       style={{
         zIndex: 200,
       }}
     >
-      {/* <BiMenu size={30} className='absolute text-black z-50 right-0'/> */}
       {/* Logo */}
-      <div className="p-6 relative">
+      <div className="p-6 relative ">
         <CgClose
           size={20}
           className="absolute top-2 right-2 md:hidden"
@@ -110,9 +219,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
         />
         <BiChevronLeft
           size={30}
-          className={`absolute md:flex hidden cursor-pointer ${
-            minimize && "rotate-180 !top-12 !right-0"
-          } transition-all delay-100  top-20 right-2`}
+          className={`absolute md:flex hidden cursor-pointer ${ minimize && "rotate-180 !top-12 !right-0" } transition-all delay-100 top-20 right-2`}
           onClick={() => setMinimize(!minimize)}
         />
         {!minimize ? (
@@ -120,14 +227,10 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
             <img
               src={logo_red}
               alt="logo"
-              className={`w-[75px] h-[60px] transition-opacity duration-300 ${
-                collapsed ? "opacity-0" : "opacity-100"
-              }`}
+              className={`w-[75px] h-[60px] transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
             />
             <h1
-              className={`text-3xl font-montserrat font-bold transition-opacity duration-300 ${
-                collapsed ? "opacity-0" : "opacity-100"
-              }`}
+              className={`text-3xl font-montserrat font-bold transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
             >
               Hevsuite Club
             </h1>
@@ -137,30 +240,24 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
             <img
               src={logo_red}
               alt="logo"
-              className={`w-[75px]  transition-opacity duration-300 ${
-                collapsed ? "opacity-0" : "opacity-100"
-              }`}
+              className={`w-[75px] transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
             />
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3">
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
+      <nav className="min-h-[70vh]">
+        <ul className="flex flex-col space-y-1">
+          {filteredMenuItems.map((item) => {
             const paths = location.pathname.split("/")[2];
             const isActive = paths === item.path;
 
             return (
-              <li key={item.path}>
+              <li key={item.path} className="flex-grow">
                 <Link
                   to={item.path}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-montserrat transition-colors ${
-                    isActive
-                      ? "bg-gradient-to-r from-primary to-[#1F4F46] text-white"
-                      : "text-gray-400 hover:text-white"
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-montserrat transition-colors ${ isActive ? "bg-gradient-to-r from-primary to-[#1F4F46] text-white" : "text-gray-400 hover:text-white" }`}
                 >
                   <div className="flex items-center justify-center w-10 relative">
                     {item.icon}
@@ -172,9 +269,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
                   </div>
                   {!minimize && (
                     <span
-                      className={`text-sm transition-opacity duration-300 ${
-                        collapsed ? "opacity-0" : "opacity-100"
-                      }`}
+                      className={`text-sm transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
                     >
                       {item.label}
                     </span>
@@ -187,9 +282,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
       </nav>
 
       <div
-        className={`p-3 mt-auto border-t border-gray-800 transition-opacity duration-300 ${
-          collapsed ? "opacity-0" : "opacity-100"
-        }`}
+        className={`p-3 mt-auto border-t border-gray-800 transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
       >
         {minimize ? (
           <button
@@ -198,9 +291,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
           >
             <FaSignOutAlt size={20} />
             <span
-              className={`text-sm transition-opacity duration-300 ${
-                collapsed ? "opacity-0" : "opacity-100"
-              }`}
+              className={`text-sm transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
             >
               Log-out
             </span>
@@ -212,9 +303,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
           >
             <FaSignOutAlt size={20} />
             <span
-              className={`text-sm transition-opacity duration-300 ${
-                collapsed ? "opacity-0" : "opacity-100"
-              }`}
+              className={`text-sm transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
             >
               Log-out
             </span>

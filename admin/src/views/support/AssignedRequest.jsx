@@ -265,88 +265,88 @@ const AssignedRequest = () => {
                 filteredRequests.map((request) => (
                   <tr key={request._id} className="border-b">
                     <td className="py-4">{request._id}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <img
+                  <td className="py-4">
+                    <div className="flex items-center gap-3">
+                      <img
                           src={request.user?.avatar || avatar}
                           alt={request.user?.name || 'User'}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <span className="font-primary w-32 md:w-fit text-[#323C47]">
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
                           {request.user?.name || 'Unknown User'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <p className="py-4 w-32 md:w-fit">{request.type}</p>
-                    </td>
-                    <td className="py-4">
-                      <p className="py-4 w-32 md:w-fit">
-                        {new Date(request.submissionDate).toLocaleDateString()}
-                      </p>
-                    </td>
-                    <td className="py-4">
-                      <span
-                        className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
-                          request?.status === "Declined" ? "text-red-500" : ""
-                        }`}
-                      >
-                        {request.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {request.status === "Pending" && (
-                          <>
-                            <button
-                              className="p-1 text-green-600 hover:text-green-700"
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{request.type}</p>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">
+                        {new Date(request.submissionDate).toLocaleDateString()}
+                    </p>
+                  </td>
+                  <td className="py-4">
+                    <span
+                      className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
+                        request?.status === "Declined" ? "text-red-500" : ""
+                      }`}
+                    >
+                      {request.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {request.status === "Pending" && (
+                        <>
+                          <button
+                            className="p-1 text-green-600 hover:text-green-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsApproveModalOpen(true);
                               }}
-                            >
-                              <BsCheckCircleFill size={24} />
-                            </button>
-                            <button
-                              className="p-1 text-red-600 hover:text-red-700"
+                          >
+                            <BsCheckCircleFill size={24} />
+                          </button>
+                          <button
+                            className="p-1 text-red-600 hover:text-red-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsDeclineModalOpen(true);
                               }}
-                            >
-                              <BsXCircleFill size={24} />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          className="p-1 text-gray-400 hover:text-gray-500"
-                          onClick={() => {
-                            setOpenOptionsId(
+                          >
+                            <BsXCircleFill size={24} />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="p-1 text-gray-400 hover:text-gray-500"
+                        onClick={() => {
+                          setOpenOptionsId(
                               openOptionsId === request._id ? null : request._id
-                            );
-                          }}
-                        >
-                          <BsThreeDots size={20} />
-                        </button>
+                          );
+                        }}
+                      >
+                        <BsThreeDots size={20} />
+                      </button>
                         {openOptionsId === request._id && (
-                          <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                            <button
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                              onClick={() => handleDetail(request)}
-                            >
-                              Detail
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                            onClick={() => handleDetail(request)}
+                          >
+                            Detail
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+          </div>
 
       {/* Detail Modal */}
       <Modal
@@ -396,26 +396,26 @@ const AssignedRequest = () => {
 
             {/* Preview Images */}
             {selectedRequest?.images && selectedRequest.images.length > 0 && (
-              <div className="flex gap-4">
+            <div className="flex gap-4">
                 {selectedRequest.images.map((image, index) => (
                   <div key={index} className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <img
+                <img
                       src={image}
                       alt={`Evidence ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                    />
+                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                />
                     <button
-                      className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                      onClick={() => {
-                        setShowPreviewModal(true);
+                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                  onClick={() => {
+                    setShowPreviewModal(true);
                         setSelectedPreviewImage(image);
-                      }}
-                    >
-                      Preview
+                  }}
+                >
+                  Preview
                     </button>
                   </div>
                 ))}
-              </div>
+                </div>
             )}
 
             {showPreviewModal && (
