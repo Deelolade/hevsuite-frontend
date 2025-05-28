@@ -80,35 +80,72 @@ const RegisterStep3 = () => {
       newErrors.primaryEmail = "Primary email is required";
     } else if (!validate(formData.primaryEmail)) {
       newErrors.primaryEmail = "Please enter a valid email address";
-    } else{
-
-       try {
-        const isValid = await authService.checkUserByEmail(formData.primaryEmail)
-        console.log("is valid test bini",isValid);
-        if(isValid.status){
-          newErrors.primaryEmail ="Email is already registered";
+    } else {
+      try {
+        const response = await authService.checkUserByEmail(formData.primaryEmail);
+        if (!response.available) {
+          newErrors.primaryEmail = response.message || "Email is already registered";
+          // Show toast notification
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Email is already registered',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          return; // Stop form submission if email exists
         }
-       } catch (error) {
-        // console.log("is valid test bini",error);
+      } catch (error) {
         newErrors.primaryEmail = error.message || "Email check failed!";
-        
-       }
-    } 
+        // Show error toast
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: error.message || "Email check failed!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        return; // Stop form submission if check fails
+      }
+    }
 
     if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
       newErrors.secondaryEmail = "Please enter a valid email address";
-    }else{
+    } else if (formData.secondaryEmail) {
       try {
-        const isValid = await authService.checkUserByEmail(formData.secondaryEmail)
-        console.log("is valid test bini",isValid);
-        if(isValid.status){
-          newErrors.secondaryEmail ="Email is already registered";
+        const response = await authService.checkUserByEmail(formData.secondaryEmail);
+        if (!response.available) {
+          newErrors.secondaryEmail = response.message || "Email is already registered";
+          // Show toast notification
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Secondary email is already registered',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          return; // Stop form submission if email exists
         }
-       } catch (error) {
-        // console.log("is valid test bini",error);
+      } catch (error) {
         newErrors.secondaryEmail = error.message || "Email check failed!";
-        
-       }
+        // Show error toast
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: error.message || "Email check failed!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        return; // Stop form submission if check fails
+      }
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
