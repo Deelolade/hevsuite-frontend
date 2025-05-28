@@ -28,6 +28,8 @@ import HowItWorks from './views/how-it-works/HowItWorks';
 import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
 import axios from 'axios';
+import OneTimePayment from './views/account/settings/components/paymentChannels.js/oneTimePayments';
+import MakeSubscriptionPayment from './views/account/settings/components/paymentChannels.js/subscriptionPayments';
 
 axios.defaults.withCredentials = true;
 
@@ -144,6 +146,15 @@ const router = createBrowserRouter([
         path: 'how-it-works',
         element: <HowItWorks />,
       },
+      {
+        path: 'make-one-time-payment',
+        element: <OneTimePayment />,
+      }
+      ,
+      {
+        path: 'make-subscription-payment',
+        element: <MakeSubscriptionPayment />,
+      }
     ],
   },
 ]);

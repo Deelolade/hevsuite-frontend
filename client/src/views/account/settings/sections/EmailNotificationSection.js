@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import profileService from "../../../../services/profileService";
 
 const EmailNotificationSection = () => {
-  const userId = "681bb32edcbec841ac85abc5"; // Replace with actual userId
+  const userId = '6824454697235380416bbbb3';// Replace with actual userId
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [notifications, setNotifications] = useState({
     News: false,
