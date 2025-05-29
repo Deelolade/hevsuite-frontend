@@ -333,7 +333,6 @@ const EventDetailsModal = ({ event, onClose, eventType }) => {
 export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect }) => {
    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const paymentMethods = [
-    { id: "mastercard", logo: mastercard, name: "Mastercard" },
     { id: "paypal", logo: paypal, name: "PayPal" },
     { id: "stripe", logo: stripe, name: "Stripe" },
   ];
@@ -360,7 +359,7 @@ export const PaymentMethodModal = ({ onClose, showNewModal,onPaymentMethodSelect
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {paymentMethods.map((method) => (
             <div
               key={method.id}
