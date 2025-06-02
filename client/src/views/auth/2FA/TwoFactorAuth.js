@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
-import authService from '../../../services/authService';
+import { fetchProfile } from '../../../features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
   const [input, setInput] = useState('email');
-
+  const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth);
   const handleMethodSelection = async () => {
-    if (input === 'email') {
-      await Promise.all([
-        authService.setup2FA({ method: 'email' }),
-        authService.logout(),
-      ]);
-    } else {
-      await Promise.all([
-        authService.setup2FA({ method: 'phone' }),
-        authService.logout(),
-      ]);
-    }
-    navigate('/success');
+    // Redirect to the appropriate verification page
+    navigate(`/${input}-verification`)
   };
+
+  useEffect(()=>{
+    dispatch(fetchProfile()).unwrap()
+    .then((response) => {
+      console.log("user in useEffect",response)
+    })
+  },[dispatch])
+
+
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
@@ -67,7 +68,9 @@ const TwoFactorAuth = () => {
           {/* Logo for mobile only */}
           <div className='flex justify-center mb-6 md:hidden'>
             <div className='w-24 h-24 bg-[#540A26] rounded-2xl flex items-center justify-center'>
+              <Link to='/'>
               <img src={logo} alt='Logo' className='w-16 h-16' />
+              </Link>
             </div>
           </div>
           <div className='bg-white max-w-md p-8 rounded-xl'>
@@ -121,8 +124,33 @@ const TwoFactorAuth = () => {
               </button>
               <div
                 className='w-full flex items-center justify-center hover:underline cursor-pointer text-sm'
-                onClick={() => {
-                  navigate('/homepage');
+                // onClick={() => {
+                //   navigate('/homepage');
+                // }}
+                onClick={async () => {
+                  // await dispatch(fetchProfile()).unwrap();
+                  // if (!user) {
+                  //   navigate('/login');
+                  // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
+                  //   navigate('/homepage');
+                  // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+                  //   navigate('/register-6');
+                  // }
+                  // else {
+                  //   navigate('/register-6'); // Or your membership registration page
+                  // }
+                   await dispatch(fetchProfile()).unwrap();
+                     console.log("user in 2fa",user)
+                  if (!user) {
+                    navigate('/login');
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
+                    navigate('/homepage');
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+                    navigate('/register-6');
+                  } else {
+                    navigate('/register-6'); // fallback
+                    // console.log(user.membershipStatus)
+                  }
                 }}
               >
                 Skip for now

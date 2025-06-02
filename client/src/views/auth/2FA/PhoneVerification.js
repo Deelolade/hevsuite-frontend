@@ -3,15 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo_white.png";
 import image from "../../../assets/image.jpg";
 import { BsTelephone } from "react-icons/bs";
+import toast from "react-hot-toast";
+import authService from "../../../services/authService";
 
 const PhoneVerification = () => {
   const [phone, setPhone] = useState("");
   const navigate = useNavigate();
 
-  const handleVerify = () => {
-    navigate("/code-verification", { state: { type: "phone" } });
-  };
-
+  const handleVerify = async () => {
+    try {
+      await authService.setup2FA({ method: "phone", phone });
+      navigate("/code-verification", { state: { type: "phone" } });
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+    }
+  }
   return (
     <div className="min-h-screen md:grid md:grid-cols-2 relative">
       {/* Background Image - Visible on all screens */}
@@ -30,11 +36,13 @@ const PhoneVerification = () => {
         <div className="hidden md:flex relative z-10 p-16 flex-col h-full">
           <div className="flex flex-col items-center text-center">
             <div className="w-32 h-32 rounded-2xl mb-4">
-              <img
-                src={logo}
-                alt="Hevsuite Club"
-                className="w-full h-full p-4"
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className="text-5xl text-white font-medium">Hevsuite Club</h1>
           </div>

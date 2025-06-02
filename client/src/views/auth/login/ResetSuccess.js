@@ -23,13 +23,15 @@ const ResetSuccess = () => {
 
         {/* Desktop Left Side Content */}
         <div className="hidden md:flex relative z-10 p-16 flex-col h-full">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center mt-auto">
             <div className="w-32 h-32 rounded-2xl mb-4">
-              <img
-                src={logo}
-                alt="Hevsuite Club"
-                className="w-full h-full p-4"
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className="text-5xl text-white font-medium">Hevsuite Club</h1>
           </div>

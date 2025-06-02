@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import Modal from "react-modal";
+import referralService from "../../../services/referralService";
+import toast from "react-hot-toast";
+import userService from "../../../services/userService";
 
-const ReferralItem = ({ referral, activeTab }) => {
+const ReferralItem = ({ referral, activeTab,setReferralsData }) => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   return (
     <>
@@ -24,7 +27,7 @@ const ReferralItem = ({ referral, activeTab }) => {
         </div>
         {activeTab === "Successful Referrals" ? (
           <div className="bg-white text-black shadow-lg font-primary rounded-lg px-4 sm:px-12 py-1.5 sm:py-2 text-sm sm:text-base text-center">
-            {referral.relationship}
+            {referral.relationship || "N/A"}
           </div>
         ) : activeTab === "Pending Referrals" ? (
           <button
@@ -75,9 +78,41 @@ const ReferralItem = ({ referral, activeTab }) => {
               No, Keep it
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 // Add cancel logic here
-                setIsCancelModalOpen(false);
+                try {
+                  await referralService.cancelReferrals({
+                    referredUserId: referral.userId,
+                  })
+                  toast.success('Referral cancelled successfully!')
+                  await userService.getUserProfile()
+                  const updatedProfile = await userService.getUserProfile();
+
+                  // Update the referralsData state
+                  setReferralsData(prev => {
+                    // Remove the cancelled referral from pending
+                    const updatedPending = prev.pending.filter(
+                      ref => ref.userId.toString() !== referral.userId.toString()
+                    );
+
+                    // Add to cancelled with updated status
+                    const cancelledRef = {
+                      ...referral,
+                      status: 'cancelled',
+                      cancelledAt: new Date().toISOString()
+                    };
+
+                    return {
+                      ...prev,
+                      pending: updatedPending,
+                      cancelled: [cancelledRef, ...prev.cancelled]
+                    };
+                  });
+                } catch (error) {
+                  toast.error(error.message || "referral cancel failed")
+                } finally {
+                  setIsCancelModalOpen(false);
+                }
               }}
               className="px-4 sm:px-6 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg text-xs sm:text-sm"
             >

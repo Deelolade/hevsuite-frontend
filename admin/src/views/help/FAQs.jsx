@@ -1,30 +1,137 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BiSearch } from "react-icons/bi";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import Modal from "react-modal";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import {
+  getAllFAQs,
+  createFAQs,
+  editFAQs,
+  deleteFAQs,
+  visibilityFAQs,
+} from "../../store/help/helpSlice";
 
 const FAQs = () => {
-  const [currentPage, setCurrentPage] = useState(2);
+  const dispatch = useDispatch();
+  const { faqs = [], isLoading, isError, message, pagination } = useSelector((state) => state.help || {});
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
   const [isCreateFAQOpen, setIsCreateFAQOpen] = useState(false);
   const [isDeleteFAQOpen, setIsDeleteFAQOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [newFAQ, setNewFAQ] = useState({
+    question: "",
+    answer: "",
+    visibility: true
+  });
 
-  const [faqs, setFAQs] = useState([
-    { id: 1, question: "How do I join the HH Club?", visible: true },
-    { id: 2, question: "How do I change my account details?", visible: true },
-    { id: 3, question: "How do I change my account details?", visible: true },
-    { id: 4, question: "How do I change my account details?", visible: true },
-  ]);
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch(getAllFAQs({ 
+        page: currentPage, 
+        limit: itemsPerPage, 
+        search: searchQuery 
+      }));
+    }, 500); // 500ms delay
 
-  const handleVisibility = (id) => {
-    setFAQs(
-      faqs.map((faq) =>
-        faq.id === id ? { ...faq, visible: !faq.visible } : faq
-      )
-    );
+    return () => clearTimeout(timer);
+  }, [dispatch, currentPage, searchQuery, itemsPerPage]);
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (e) => {
+    const newLimit = parseInt(e.target.value);
+    setItemsPerPage(newLimit);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    if (!pagination?.pages) return [];
+    
+    const totalPages = pagination.pages;
+    const currentPage = pagination.page;
+    const pages = [];
+    
+    // Always show first page
+    pages.push(1);
+    
+    // Calculate range around current page
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    
+    // Add ellipsis if needed
+    if (start > 2) pages.push("...");
+    
+    // Add pages around current page
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // Add ellipsis if needed
+    if (end < totalPages - 1) pages.push("...");
+    
+    // Always show last page if there is more than one page
+    if (totalPages > 1) pages.push(totalPages);
+    
+    return pages;
+  };
+
+  const handleVisibility = async (id, currentVisibility) => {
+    try {
+      await dispatch(editFAQs({ id, data: { visibility: !currentVisibility } }));
+      toast.success("FAQ visibility updated");
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      toast.error("Error updating FAQ visibility");
+    }
+  };
+
+  const handleCreateFAQ = async (e) => {
+    e.preventDefault();
+    try {
+      await dispatch(createFAQs(newFAQ));
+      toast.success("FAQ created successfully");
+      setIsCreateFAQOpen(false);
+      setNewFAQ({
+        question: "",
+        answer: "",
+        visibility: true
+      });
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      toast.error("Error creating FAQ");
+    }
+  };
+
+  const handleEditFAQ = async (e) => {
+    e.preventDefault();
+    try {
+      await dispatch(editFAQs({ id: selectedFAQ._id, data: selectedFAQ }));
+      toast.success("FAQ updated successfully");
+      setIsEditModalOpen(false);
+      setSelectedFAQ(null);
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      toast.error("Error updating FAQ");
+    }
+  };
+
+  const handleDeleteFAQ = async () => {
+    try {
+      await dispatch(deleteFAQs(selectedFAQ._id));
+      toast.success("FAQ deleted successfully");
+      setIsDeleteFAQOpen(false);
+      setSelectedFAQ(null);
+      dispatch(getAllFAQs({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      toast.error("Error deleting FAQ");
+    }
   };
 
   return (
@@ -32,11 +139,13 @@ const FAQs = () => {
       {/* Search and Create FAQ */}
       <div className="flex justify-between items-center">
         <div className="relative flex-1 gap-8 mr-12">
-          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 " />
+          <BiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search questions or answers..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <button
@@ -50,80 +159,94 @@ const FAQs = () => {
 
       {/* FAQs List */}
       <div className="space-y-3">
-        {faqs.map((faq) => (
-          <div key={faq.id} className="border rounded-lg">
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span>{faq.id}</span>
-                <span>{faq.question}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={faq.visible}
-                    className="sr-only peer"
-                    onChange={() => handleVisibility(faq.id)}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-                <button
-                  className="text-primary"
-                  onClick={() => {
-                    setSelectedFAQ(faq);
-                    setIsEditModalOpen(true);
-                  }}
-                >
-                  <FiEdit size={20} />
-                </button>
-                <button
-                  className="text-primary"
-                  onClick={() => {
-                    setSelectedFAQ(faq);
-                    setIsDeleteFAQOpen(true);
-                  }}
-                >
-                  <FiTrash2 size={20} />
-                </button>
-                <button
-                  className="p-2 border rounded-lg"
-                  onClick={() =>
-                    setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)
-                  }
-                >
-                  <svg
-                    className={`w-4 h-4 transform transition-transform ${
-                      expandedFAQ === faq.id ? "rotate-180" : ""
-                    }`}
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+        {isLoading ? (
+          <div className="text-center">Loading...</div>
+        ) : faqs.length === 0 ? (
+          <div className="text-center">No FAQs found</div>
+        ) : (
+          faqs.map((faq) => (
+            <div key={faq._id} className="border rounded-lg">
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {/* <span>{faq._id}</span> */}
+                  <span>{faq.question}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={faq.visibility}
+                      className="sr-only peer"
+                      onChange={() => handleVisibility(faq._id, faq.visibility)}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                  <button
+                    className="text-primary"
+                    onClick={() => {
+                      setSelectedFAQ(faq);
+                      setIsEditModalOpen(true);
+                    }}
                   >
-                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                  </svg>
-                </button>
+                    <FiEdit size={20} />
+                  </button>
+                  <button
+                    className="text-primary"
+                    onClick={() => {
+                      setSelectedFAQ(faq);
+                      setIsDeleteFAQOpen(true);
+                    }}
+                  >
+                    <FiTrash2 size={20} />
+                  </button>
+                  <button
+                    className="p-2 border rounded-lg"
+                    onClick={() =>
+                      setExpandedFAQ(expandedFAQ === faq._id ? null : faq._id)
+                    }
+                  >
+                    <svg
+                      className={`w-4 h-4 transform transition-transform ${
+                        expandedFAQ === faq._id ? "rotate-180" : ""
+                      }`}
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+              {expandedFAQ === faq._id && (
+                <div className="px-4 py-3 border-t">
+                  <p className="text-gray-600">{faq.answer}</p>
+                </div>
+              )}
             </div>
-            {expandedFAQ === faq.id && (
-              <div className="px-4 py-3 border-t">
-                <p className="text-gray-600">
-                  To join the HH Club, please follow these steps...
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div>
           Show result:
-          <select className="ml-2 px-2 py-1 border rounded">
-            <option>6</option>
+          <select 
+            className="ml-2 px-2 py-1 border rounded"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-1 text-gray-400">
+          <button 
+            className="p-1 text-gray-400"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
             <svg
               className="w-5 h-5"
               fill="none"
@@ -138,19 +261,25 @@ const FAQs = () => {
               />
             </svg>
           </button>
-          {[1, 2, 3, 4, "...", 20].map((page, index) => (
+          {generatePaginationNumbers().map((page, index) => (
             <button
               key={index}
               className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                 currentPage === page
-                  ? "bg-green-800 text-white"
-                  : "text-gray-600"
+                  ? "bg-primary text-white"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
+              onClick={() => typeof page === 'number' && setCurrentPage(page)}
+              disabled={page === "..."}
             >
               {page}
             </button>
           ))}
-          <button className="p-1 text-gray-400">
+          <button 
+            className="p-1 text-gray-400"
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage === pagination?.pages}
+          >
             <svg
               className="w-5 h-5"
               fill="none"
@@ -167,6 +296,8 @@ const FAQs = () => {
           </button>
         </div>
       </div>
+
+      {/* Edit FAQ Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onRequestClose={() => setIsEditModalOpen(false)}
@@ -175,7 +306,7 @@ const FAQs = () => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Edit FAQs</h2>
+            <h2 className="text-xl">Edit FAQ</h2>
             <button
               onClick={() => setIsEditModalOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -190,7 +321,7 @@ const FAQs = () => {
               <input
                 type="text"
                 value={selectedFAQ?.question || ""}
-                placeholder="What is Hazor Hevsuite (HH) Club?"
+                placeholder="Enter question"
                 className="w-full px-4 py-2 border rounded-lg"
                 onChange={(e) =>
                   setSelectedFAQ({
@@ -206,7 +337,7 @@ const FAQs = () => {
               <textarea
                 value={selectedFAQ?.answer || ""}
                 className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
-                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
+                placeholder="Enter answer"
                 onChange={(e) =>
                   setSelectedFAQ({
                     ...selectedFAQ,
@@ -214,6 +345,24 @@ const FAQs = () => {
                   })
                 }
               />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="block mb-2">Visibility</label>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedFAQ?.visibility ?? true}
+                  className="sr-only peer"
+                  onChange={(e) =>
+                    setSelectedFAQ({
+                      ...selectedFAQ,
+                      visibility: e.target.checked,
+                    })
+                  }
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
@@ -225,18 +374,16 @@ const FAQs = () => {
               </button>
               <button
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                onClick={() => {
-                  // Handle FAQ update here
-                  setIsEditModalOpen(false);
-                }}
+                onClick={handleEditFAQ}
               >
-                Confirm
+                Save Changes
               </button>
             </div>
           </div>
         </div>
       </Modal>
 
+      {/* Create FAQ Modal */}
       <Modal
         isOpen={isCreateFAQOpen}
         onRequestClose={() => setIsCreateFAQOpen(false)}
@@ -245,7 +392,7 @@ const FAQs = () => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Create FAQ</h2>
+            <h2 className="text-xl">Create New FAQ</h2>
             <button
               onClick={() => setIsCreateFAQOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -254,45 +401,80 @@ const FAQs = () => {
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-2">Question</label>
-              <input
-                type="text"
-                placeholder="What is Hazor Hevsuite (HH) Club?"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-            </div>
+          <form onSubmit={handleCreateFAQ}>
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-2">Question</label>
+                <input
+                  type="text"
+                  value={newFAQ.question}
+                  placeholder="Enter question"
+                  className="w-full px-4 py-2 border rounded-lg"
+                  onChange={(e) =>
+                    setNewFAQ({
+                      ...newFAQ,
+                      question: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block mb-2">Answer</label>
-              <textarea
-                className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
-                placeholder="Hazor Hevsuite (HH) Club is an exclusive members-only community..."
-              />
-            </div>
+              <div>
+                <label className="block mb-2">Answer</label>
+                <textarea
+                  value={newFAQ.answer}
+                  className="w-full px-4 py-2 border rounded-lg resize-y min-h-[150px]"
+                  placeholder="Enter answer"
+                  onChange={(e) =>
+                    setNewFAQ({
+                      ...newFAQ,
+                      answer: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsCreateFAQOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                onClick={() => {
-                  // Handle create FAQ here
-                  setIsCreateFAQOpen(false);
-                }}
-              >
-                Create
-              </button>
+              <div className="flex items-center justify-between">
+                <label className="block mb-2">Visibility</label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newFAQ.visibility}
+                    className="sr-only peer"
+                    onChange={(e) =>
+                      setNewFAQ({
+                        ...newFAQ,
+                        visibility: e.target.checked,
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateFAQOpen(false)}
+                  className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                >
+                  Create FAQ
+                </button>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
       </Modal>
 
+      {/* Delete FAQ Modal */}
       <Modal
         isOpen={isDeleteFAQOpen}
         onRequestClose={() => setIsDeleteFAQOpen(false)}
@@ -323,12 +505,8 @@ const FAQs = () => {
               Cancel
             </button>
             <button
-              className="px-6 py-2 bg-primary text-white rounded-lg"
-              onClick={() => {
-                setFAQs(faqs.filter((f) => f.id !== selectedFAQ.id));
-                setIsDeleteFAQOpen(false);
-                setSelectedFAQ(null);
-              }}
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              onClick={handleDeleteFAQ}
             >
               Delete
             </button>

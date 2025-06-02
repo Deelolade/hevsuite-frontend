@@ -1,114 +1,116 @@
-import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
-const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
-};
+import axios from "axios"
+import { base_url } from "../../constants/axiosConfig"
 
-const getAllAsks = async ({ filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/all-asks?filter=${filter}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
+const getAuthToken = () => {
+  const adminData = localStorage.getItem("admin")
+  const admin = adminData ? JSON.parse(adminData) : null
+  return admin?.token || ""
+}
+
+const getAllAsks = async ({ filter, search }) => {
+  const token = getAuthToken()
+  let url = `${base_url}/api/asks/admin`
+
+  // Add query parameters if provided
+  const params = new URLSearchParams()
+  if (filter && filter !== "all") params.append("filter", filter)
+  if (search) params.append("search", search)
+
+  if (params.toString()) {
+    url += `?${params.toString()}`
+  }
+
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
+
+const deleteAsk = async (data) => {
+  const token = getAuthToken()
+  const response = await axios.delete(`${base_url}/api/asks/${data.id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
 
 const getAllReports = async () => {
-  const token = getAuthToken();
-  const response = await axios.get(`${base_url}/admin/all-reports`, {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/api/asks/reports`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
-  });
-  return response.data;
-};
+  })
+  return response.data
+}
 
-const getTopAsks = async ({ filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(`${base_url}/admin/top-asks`, {
+const getTopAsks = async () => {
+  const token = getAuthToken()
+  const response = await axios.get(`${base_url}/api/asks/top-askers`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
-  });
-  return response.data;
-};
-
-const editReport = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.put(
-    `${base_url}/admin/edit-report/${data.id}`,
-    data.data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
+  })
+  return response.data
+}
 
 const deleteReport = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.delete(
-    `${base_url}/admin/delete-report/${data.id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
+  const token = getAuthToken()
+  const response = await axios.delete(`${base_url}/api/asks/reports/${data.id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  })
+  return response.data
+}
 
 const promoteAsks = async (data) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
   const response = await axios.post(
-    `${base_url}/admin/promote-asks/${data.id}`,
-    data,
+    `${base_url}/api/users/promote/${data.id}`,
+    { memberStatus: data.memberStatus },
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       withCredentials: true,
-    }
-  );
-  return response.data;
-};
+    },
+  )
+  return response.data
+}
 
 const banAsk = async (data) => {
-  const token = getAuthToken();
+  const token = getAuthToken()
   const response = await axios.post(
-    `${base_url}/admin/ban-asks/${data.id}`,
-    data,
+    `${base_url}/api/asks/ban/${data.id}`,
+    { reason: data.data.reason },
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       withCredentials: true,
-    }
-  );
-  return response.data;
-};
+    },
+  )
+  return response.data
+}
 
 const askService = {
   getAllAsks,
+  deleteAsk,
   getAllReports,
   getTopAsks,
-  editReport,
   deleteReport,
   promoteAsks,
   banAsk,
-};
+}
 
-export default askService;
+export default askService

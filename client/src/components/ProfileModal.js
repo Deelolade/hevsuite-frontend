@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AccountProfile from "../views/account/profile/AccountProfile";
 import YourEvents from "../views/account/events/YourEvents";
 import SupportRequest from "../views/account/support/SupportRequest";
@@ -8,8 +8,33 @@ import Settings from "../views/account/settings/Settings";
 import Notification from "../views/account/notifications/Notification";
 import Referrals from "../views/account/referral/Referrals";
 import { useNavigate } from "react-router-dom";
-
+import { logout } from "../features/auth/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { persistor } from '../store/store';
+import toast from "react-hot-toast";
 const ProfileModal = ({ onClose, forNotification }) => {
+  const { user } = useSelector((state) => state.auth);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [requiredPayment, setRequiredPayment] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Check access rights when component mounts or user changes
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user.membershipStatus !== "accepted") {
+      setAccessDenied(true);
+
+    }
+    if (user.membershipStatus == "accepted" && user.joinFeeStatus === "pending") {
+      setRequiredPayment(true);
+
+    }
+  }, [user, navigate]);
   const tabs = [
     "Account Profile",
     "Your Events",
@@ -20,15 +45,32 @@ const ProfileModal = ({ onClose, forNotification }) => {
     "Activity Log",
     "Settings",
   ];
+  //   const tabs = [
+  //   "Account Profile",
+  //   ...(user?.approvedByAdmin ? ["Your Events"] : []),
+  //   "Referrals",
+  //   ...(user?.approvedByAdmin ? ["Support Join Request"] : []),
+  //   ...(user?.approvedByAdmin ? ["Your Asks"] : []),
+  //   "Notifications",
+  //   "Activity Log",
+  //   "Settings"
+  // ];
 
   const [activeTab, setActiveTab] = useState(
-    forNotification.current ? tabs[5] : tabs[0]
+    forNotification && forNotification.current ? tabs[5] : tabs[0]
   );
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    console.log("Logout functionality goes here");
-    navigate("/");
-    if (onClose) onClose();
+
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap(); // unwrap to catch error
+      await persistor.purge();           // clear redux-persist storage
+      navigate('/');
+      window.location.reload();
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+      console.error('Logout failed:', error);
+    }
   };
 
   const containerRef = React.useRef(null);
@@ -55,6 +97,107 @@ const ProfileModal = ({ onClose, forNotification }) => {
   const handleMouseUp = () => {
     isDragging = false;
   };
+  if (accessDenied) {
+    return (
+      <div className="relative bg-transparent rounded-3xl overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-transparent relative">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Logout
+            </button>
+            <button
+              onClick={onClose}
+              className="text-4xl sm:text-2xl font-light text-white hover:text-gray-500 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+
+    <div
+          ref={containerRef}
+          className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-12 no-scrollbar cursor-grab"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+
+          <div className="p-4 md:p-6 space-y-4 text-black bg-white rounded-t-3xl overflow-y-auto h-[650px] md:h-[520px] flex flex-col items-center justify-center">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-red-600 mb-4">Access Restricted</h3>
+              <p className="text-gray-700 mb-6">
+                {user?.membershipStatus === "pending"
+                  ? "Your membership is still pending approval. Please complete your registration."
+                  : "You don't have permission to access this content."}
+              </p>
+              {user?.membershipStatus !== "accepted" && (
+                <button
+                  onClick={() => navigate("/register-6")}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  Complete Registration
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    );
+  }
+  if (requiredPayment) {
+    return (
+      <div className="relative bg-transparent rounded-3xl overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-transparent relative">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Logout
+            </button>
+            <button
+              onClick={onClose}
+              className="text-4xl sm:text-2xl font-light text-white hover:text-gray-500 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+
+    <div
+          ref={containerRef}
+          className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-12 no-scrollbar cursor-grab"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <div className="p-4 md:p-6 space-y-4 text-black bg-white rounded-t-3xl overflow-y-auto h-[650px] md:h-[520px] flex flex-col items-center justify-center pt-12">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-red-600 mb-4">Access Restricted</h3>
+              <p className="text-gray-700 mb-6">
+                {user?.membershipStatus === "accepted" && user.joinFeeStatus ==="pending"
+                  ? "Your membership is still pending approval. Please complete your registration."
+                  : "You don't have permission to access this content."}
+              </p>
+              {(user?.membershipStatus === "accepted" && user.joinFeeStatus ==="pending") && (
+                <button
+                  onClick={() => navigate("/register-6")}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  Complete Payment
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative bg-transparent rounded-3xl overflow-hidden">
       <div className="p-4 md:p-6 border-b border-transparent relative">
@@ -87,11 +230,10 @@ const ProfileModal = ({ onClose, forNotification }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 text-sm rounded-lg whitespace-nowrap w-[165px] transition-colors border border-transparent ${
-                  activeTab === tab
+                className={`px-2  py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap  w-auto sm:w-[165px] transition-colors border border-transparent ${activeTab === tab
                     ? "bg-[#540A26] text-white"
                     : "hover:bg-gray-100 text-gray-700 bg-white"
-                }`}
+                  }`}
               >
                 {tab}
               </button>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BsCalendar } from 'react-icons/bs';
 import { MdAccessTime } from 'react-icons/md';
 import logo from '../../assets/logo_white.png';
@@ -10,66 +10,39 @@ import image_card from '../../assets/image.jpg';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import Header from '../../components/Header';
-
+import { fetchNonExpiredNews } from '../../features/newsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedNews } from '../../features/newsSlice';
+import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
+import { Autoplay, Pagination } from 'swiper/modules';
 const News = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchNonExpiredNews());
+  }, [dispatch]);
+
+  const { newsItems, loading, error } = useSelector((state) => state.news);
   const navigate = useNavigate();
-  const newsItems = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 5,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 6,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-  ];
   const swiperRef = useRef(null); // Create a reference for the Swiper instance
 
-  const handleSlideChange = (index) => {
-    if (swiperRef.current) {
-      swiperRef.current.swiper.slideTo(index); // Correctly accessing the swiper instance
-    }
-  };
+
 
   const swiperRef2 = useRef(null); // Create a reference for the Swiper instance
 
   const images = [image_card, image_card, image_card]; // Replace with your image sources
   const [activeBullet, setActiveBullet] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const spotlightNews = newsItems.find(item => item.isSpotlightNews) || newsItems[0];
+  // Get all media items (both videos and images)
+  const mediaItems = [...(spotlightNews?.videos || []).map(url => ({ type: 'video', url })),
+  ...(spotlightNews?.images || []).map(url => ({ type: 'image', url }))];
+
+  const handleSlideChange = (index) => {
+    if (swiperRef.current && swiperRef.current.swiper) {
+      swiperRef.current.swiper.slideTo(index);
+    }
+  };
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -78,52 +51,129 @@ const News = () => {
       {/* Hero Section */}
       <section className='relative z-0 h-screen'>
         <div className='absolute inset-0 bg-black/50'>
-          <Swiper
-            loop={true}
-            spaceBetween={50}
-            slidesPerView={1}
-            onSlideChange={(swiper) => {
-              // Handle icon change when slide changes
-              const buttons = document.querySelectorAll('.slider-button');
-              buttons.forEach((btn, index) => {
-                btn.classList.toggle('bg-white', index === swiper.activeIndex);
-                btn.classList.toggle(
-                  'bg-white/50',
-                  index !== swiper.activeIndex
-                );
-              });
-            }}
-            ref={swiperRef} // Assign swiperRef to the Swiper component
-          >
-            {images.map((image, index) => (
-              <SwiperSlide key={index}>
-                <img
-                  src={image}
-                  alt={`Image ${index}`}
-                  className='w-full h-[100vh] -z-10 object-cover brightness-50'
-                />
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          {/* 
+          {spotlightNews?.images?.length > 0 ? (
+            <Swiper
+              loop={true}
+              spaceBetween={50}
+              slidesPerView={1}
+              modules={[Autoplay]}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              onSlideChange={(swiper) => {
+                const buttons = document.querySelectorAll('.slider-button');
+                buttons.forEach((btn, index) => {
+                  btn.classList.toggle('bg-white', index === swiper.activeIndex);
+                  btn.classList.toggle('bg-white/50', index !== swiper.activeIndex);
+                });
+              }}
+              ref={swiperRef}
+            >
+              {spotlightNews.images.map((image, index) => (
+                <SwiperSlide key={index}>
+                  <img
+                    src={image}
+                    alt={`Image ${index}`}
+                    className='w-full h-[100vh] -z-10 object-cover brightness-50'
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+          ) : (
+            <div className="h-screen relative">
+              <img
+                src={image_card}
+                alt="Default event"
+                className="w-full h-full object-cover brightness-50"
+              />
+            </div>
+          )} */}
+          {(mediaItems.length > 0) ? (
+            <Swiper
+              loop={true}
+              spaceBetween={50}
+              slidesPerView={1}
+              modules={[Autoplay, Pagination]}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              onSlideChange={(swiper) => {
+                setActiveIndex(swiper.realIndex); // Use realIndex for loop mode
+              }}
+              ref={swiperRef}
+            >
+              {mediaItems.map((media, index) => (
+                <SwiperSlide key={index}>
+                  {media.type === 'video' ? (
+                    <div className='relative w-full h-screen'>
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        controls={false}
+                        className="w-full h-full object-cover pointer-events-none"
+                        onError={(e) => {
+                          console.error('Video failed to load:', media.url);
+                          e.target.style.display = 'none';
+                        }}
+                      >
+                        <source src={media.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                        VIDEO
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={media.url}
+                      alt={`Slide ${index}`}
+                      className='w-full h-screen object-cover brightness-50'
+                    />
+                  )}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <div className="h-screen relative">
+              <img
+                src={image_card}
+                alt="Default event"
+                className="w-full h-full object-cover brightness-50"
+              />
+            </div>
+          )}
+
+
         </div>
         <div className='absolute z-50 inset-0 flex flex-col items-center justify-end mb-20 text-white px-4'>
           <h1 className='text-xl lg:text-6xl md:text-5xl sm:text-4xl font-bold mb-8 text-center'>
-            The Kings Halloween Event Celebration Party
+            {spotlightNews?.title || 'The Kings Halloween Event Celebration Party'}
+
           </h1>
           <Link
-            to='/news-detail'
+            to={`/news-detail/${spotlightNews?._id}`}
+            onClick={() => dispatch(setSelectedNews(spotlightNews))}
             className='px-3 py-1.5 lg:px-8 lg:py-3 sm:px-6 sm:py-2 bg-gradient-to-r from-gradient_r to-[#1F4F46] rounded-3xl font-secondary font-semibold text-lg sm:text-lg'
           >
             Read News
           </Link>
-          <div className='flex gap-2 mt-8'>
-            {images.map((_, index) => (
+          {/* <div className='flex gap-2 mt-8'>
+            {spotlightNews?.images?.map((_, index) => (
               <button
                 key={index}
-                className={`w-2 h-2 rounded-full ${
-                  index === 0 ? 'bg-white' : 'bg-white/50'
-                } slider-button`} // Adjust active button styling
+                className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-white' : 'bg-white/50'
+                  } slider-button`} // Adjust active button styling
                 onClick={() => handleSlideChange(index)} // On button click, change slide
+              ></button>
+            ))}
+          </div> */}
+          {/* Bullet navigation */}
+          <div className='flex gap-2 mt-8'>
+            {mediaItems.map((_, index) => (
+              <button
+                key={index}
+                className={`w-2 h-2 rounded-full ${index === activeIndex ? 'bg-white' : 'bg-white/50'}`}
+                onClick={() => handleSlideChange(index)}
               ></button>
             ))}
           </div>
@@ -154,53 +204,62 @@ const News = () => {
                 setActiveIndex(swiper.realIndex);
               }}
             >
-              {newsItems.map((item) => (
-                <SwiperSlide key={item.id}>
-                  <div
-                    onClick={() => navigate('/news-detail')}
-                    className='relative group cursor-pointer overflow-hidden rounded-2xl shadow-md flex-shrink-0'
-                  >
+              {newsItems
+                ?.filter((item) => item._id !== spotlightNews?._id)
+                .map((item) => (
+                  <SwiperSlide key={item._id}>
                     <div
-                      className='relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center bg-current'
-                      style={{ backgroundImage: `url(${item.image})` }}
+                      // onClick={() => {
+                      //   dispatch(setSelectedNews(item));
+                      //   navigate('/news-detail');
+                      // }}
+                      onClick={() => {
+                        dispatch(setSelectedNews(item));
+                        navigate(`/news-detail/${item._id}`)
+                      }}
+
+                      className='relative group cursor-pointer overflow-hidden rounded-2xl shadow-md flex-shrink-0'
                     >
-                      <div className='absolute inset-0 ' />
-                      <div className='absolute bottom-0 left-0 right-0 p-4'>
-                        <h3 className='text-xl md:text-lg sm:text-base font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap'>
-                          {item.title}
-                        </h3>
-                        <div className='flex justify-between gap-4'>
-                          <div className='flex flex-col gap-2'>
-                            <div className='flex items-center gap-2 text-white/80'>
-                              <BsCalendar className='w-4 h-4 sm:w-3 sm:h-3' />
-                              <span className='text-[12px] sm:text-[10px]'>
-                                {item.date}
-                              </span>
-                            </div>
-                            <div className='flex items-center gap-2 text-white/80'>
-                              <MdAccessTime className='w-4 h-4 sm:w-3 sm:h-3' />
-                              <span className='text-[12px] sm:text-[10px]'>
-                                {item.time}
-                              </span>
+                      <div
+                        className='relative h-80 sm:h-64 md:h-72 rounded-2xl bg-cover bg-center bg-current'
+                        style={{ backgroundImage: `url(${item.images[0]})` }}
+                      >
+                        <div className='absolute inset-0 ' />
+                        <div className='absolute bottom-0 left-0 right-0 p-4'>
+                          <h3 className='text-xl md:text-lg sm:text-base font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap'>
+                            {item.title}
+                          </h3>
+                          <div className='flex justify-between gap-4'>
+                            <div className='flex flex-col gap-2'>
+                              <div className='flex items-center gap-2 text-white/80'>
+                                <BsCalendar className='w-4 h-4 sm:w-3 sm:h-3' />
+                                <span className='text-[12px] sm:text-[10px]'>
+                                  {formatDateWithSuffix(item.createdAt)}
+                                </span>
+                              </div>
+                              <div className='flex items-center gap-2 text-white/80'>
+                                <MdAccessTime className='w-4 h-4 sm:w-3 sm:h-3' />
+                                <span className='text-[12px] sm:text-[10px]'>
+                                  {formatTime(item.createdAt)}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
+                  </SwiperSlide>
+                ))}
             </Swiper>
             <div className='md:flex hidden justify-center gap-2 mt-8'>
               {Array.from({ length: Math.ceil(newsItems.length / 6) }).map(
                 (_, index) => (
                   <button
                     key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index === Math.floor(activeIndex / 6)
-                        ? 'bg-[#540A26]'
-                        : 'bg-gray-300'
-                    } news-slider-button`}
+                    className={`w-2 h-2 rounded-full ${index === Math.floor(activeIndex / 6)
+                      ? 'bg-[#540A26]'
+                      : 'bg-gray-300'
+                      } news-slider-button`}
                     onClick={() => swiperRef2.current.swiper.slideTo(index * 6)}
                   ></button>
                 )
@@ -212,9 +271,8 @@ const News = () => {
                 (_, index) => (
                   <button
                     key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index === activeBullet ? 'bg-[#540A26]' : 'bg-gray-300'
-                    } news-slider-button`}
+                    className={`w-2 h-2 rounded-full ${index === activeBullet ? 'bg-[#540A26]' : 'bg-gray-300'
+                      } news-slider-button`}
                     onClick={() => swiperRef2.current.swiper.slideTo(index * 2)}
                   ></button>
                 )

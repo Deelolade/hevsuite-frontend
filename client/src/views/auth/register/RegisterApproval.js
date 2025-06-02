@@ -8,35 +8,26 @@ import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 
-const RegisterApproval = ({ setApproval }) => {
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../features/auth/authSlice';
+import { persistor } from '../../../store/store';
+
+const RegisterApproval = ({ setApproval, referrals }) => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
-  const referrals = [
-    {
-      id: 1,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Approved',
-    },
-    {
-      id: 2,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Pending',
-    },
-    {
-      id: 3,
-      name: 'Andrew Bojangles',
-      avatar: avatar,
-      status: 'Pending',
-    },
-  ];
 
-  const allApproved = referrals.every(
-    (referral) => referral.status === 'Approved'
-  );
+  const allApproved = user&& user.membershipStatus === 'accepted'
+  const handleLogout = async () => {
+    dispatch(logout()).then(() => {
+      persistor.purge(); // safely purge after logout completes
+    });
+    navigate("/");
+  };
+
   return (
     <div className='min-h-screen flex flex-col'>
       {/* Main Content */}
@@ -67,43 +58,38 @@ const RegisterApproval = ({ setApproval }) => {
             Check your referrals
           </h3>
           <div className='space-y-3 md:space-y-4'>
-            {referrals.map((referral) => (
+            {referrals.length > 0 && referrals.map((referral) => (
               <div
                 key={referral.id}
                 className='flex flex-wrap md:flex-nowrap items-center justify-between bg-gray-50 p-3 md:p-4 rounded-lg'
               >
                 <div className='flex items-center gap-2 md:gap-4 mb-2 md:mb-0 w-full md:w-auto'>
                   <img
-                    src={referral.avatar}
-                    alt={referral.name}
+                    src={referral.userId.profilePhoto || avatar}
+                    alt={`${referral.userId.forename} ${referral.userId.surname}`}
                     className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover'
                   />
                   <span className='font-medium text-sm md:text-base'>
-                    {referral.name}
+                    {`${referral.userId.forename} ${referral.userId.surname}`}
                   </span>
                 </div>
                 <div className='flex flex-wrap gap-2 w-full md:w-auto justify-end'>
-                  {referral.status === 'Approved' ? (
+                  {referral.status === 'approved' ? (
                     <span className='px-3 md:px-4 py-1 md:py-2 bg-[#0A5440] text-white rounded-lg text-xs md:text-base'>
                       Approved
                     </span>
+                  ) : referral.status === 'declined' ? (
+                    <>
+                      <span
+                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
+                      >
+                        Declined
+                      </span>
+                    </>
                   ) : (
                     <>
                       <span className='px-3 md:px-4 py-1 md:py-2 bg-white text-gray-500 border border-gray-200 rounded-lg text-xs md:text-base'>
                         Pending
-                      </span>
-                      <span
-                        onClick={() =>
-                          showModal({
-                            title: 'Decline Approval Request?',
-                            text: 'This action can not be undone!',
-                            confirmText: 'Yes',
-                            onConfirm: () => {},
-                          })
-                        }
-                        className='px-3 cursor-pointer md:px-4 py-1 md:py-2 bg-[#540A26] text-white rounded-lg text-xs md:text-base'
-                      >
-                        Decline
                       </span>
                     </>
                   )}
@@ -132,14 +118,21 @@ const RegisterApproval = ({ setApproval }) => {
               </svg>
               Add other referral
             </button>
-            {allApproved && (
+            {allApproved ? (
               <Link
-                to='/register-7'
-                className='px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors'
+                to="/register-7"
+                className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
               >
                 Go to payment
-                <span className='ml-1'>→</span>
+                <span className="ml-1">→</span>
               </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>

@@ -48,28 +48,28 @@ import AcceptedListCurrent from "./accepted/AcceptedListCurrent";
 import AcceptedGridArchived from "./accepted/AcceptedGridArchived";
 import AcceptedListArchived from "./accepted/AcceptedListArchived";
 
-const AskCard = ({ ask, view, activeTab, filter }) => {
+const AskCard = ({ ask, view, activeTab, filter ,dispatch}) => {
   // No changes needed to the main logic, just ensuring the components it calls are responsive
   const renderView = () => {
     if (activeTab === "Your Asks") {
       if (filter === "Current") {
         return view === "grid"
-          ? renderCurrentGridView(ask, activeTab)
-          : renderCurrentListView(ask, activeTab);
+          ? renderCurrentGridView(ask, activeTab,dispatch)
+          : renderCurrentListView(ask, activeTab,dispatch);
       } else {
         return view === "grid"
-          ? renderArchivedGridView(ask)
-          : renderArchivedListView(ask);
+          ? renderArchivedGridView(ask,dispatch)
+          : renderArchivedListView(ask,dispatch);
       }
     } else {
       if (filter === "Current") {
         return view === "grid"
-          ? AcceptedGridCurrent(ask, activeTab)
-          : AcceptedListCurrent(ask, activeTab);
+          ? AcceptedGridCurrent(ask, activeTab,dispatch)
+          : AcceptedListCurrent(ask, activeTab,dispatch);
       } else {
         return view === "grid"
-          ? AcceptedGridArchived(ask)
-          : AcceptedListArchived(ask);
+          ? AcceptedGridArchived(ask,dispatch)
+          : AcceptedListArchived(ask,dispatch);
       }
     }
   };

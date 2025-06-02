@@ -1,659 +1,453 @@
-import React, { useState } from "react";
-import { BsArrowLeft } from "react-icons/bs";
-import Modal from "react-modal";
+import React, { useState, useEffect } from "react";
+import { IoArrowBack } from "react-icons/io5";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import Modal from 'react-modal';
+import avatar from "../../assets/user.avif";
+import idcards from "../../assets/Id.jpg";
+import idCardPlaceholder from "../../assets/Id.jpg";
+import avatarPlaceholder from "../../assets/user.avif";
+// import moment from 'moment';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
-const ViewPending = ({ setShowViewPending, viewUser }) => {
+Modal.setAppElement('#root');
+
+const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
+  const [activeTab, setActiveTab] = useState("personal");
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
-  const [actionType, setActionType] = useState(null);
+  // Access settings from Redux store with proper null checking
+  const settings = useSelector((state) => state.settings);
+  const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3; // Use nullish coalescing
 
-  const [showPersonalInfo, setShowPersonalInfo] = useState(true);
-  const [showContactDetails, setShowContactDetails] = useState(true);
-  const [showOccupation, setShowOccupation] = useState(true);
-  const [showReferrals, setShowReferrals] = useState(true);
+  useEffect(() => {
+    Modal.setAppElement('#root');
+  }, []);
 
-  const handleAcceptUser = (user) => {
-    console.log(`User accepted:`, user);
+  if (!viewUser) return null;
+
+  const handleAccept = () => {
+    // Check supporters status
+    const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+    if (approvedSupporters < requiredReferralNumber) {
+      toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
+      return;
+    }
+
+    // Check joining fee status
+    if (viewUser.joinFeeStatus?.toLowerCase() !== 'paid') {
+      toast.error('User must have paid the joining fee before approval.');
+      return;
+    }
+
+    onAccept(viewUser);
   };
 
-  const handleRejectUser = (user) => {
-    console.log(`User rejected:`, user);
+  // Calculate if user can be approved
+  const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+  const canBeApproved = approvedSupporters === requiredReferralNumber && viewUser.joinFeeStatus?.toLowerCase() === 'paid';
+
+  const handleReject = () => {
+    onReject(viewUser);
   };
 
-  const handleAction = (type) => {
-    setActionType(type);
-    setIsActionModalOpen(true);
+  // Format date to a more readable format
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not available";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center gap-4 mb-4">
-        <button
-          onClick={() => setShowViewPending(false)}
-          className="flex items-center gap-2 text-gray-600"
-        >
-          <BsArrowLeft />
-          <span>{viewUser?.registrationId}</span>
-        </button>
-      </div>
-
-      {/* User Profile Header */}
-      <div className="md:flex justify-between">
-        <div className="flex items-center gap-4 mb-8">
-          <img
-            src={viewUser?.avatar}
-            alt="Andrew Bojangles"
-            className="w-[90px] h-[90px] rounded-full"
-            onClick={() => console.log(viewUser)}
-          />
-          <div>
-            <h2 className="text-2xl font-primary font-semibold">
-              {viewUser?.name}
-            </h2>
-            <p className="text-gray-500 font-primary">{viewUser?.email}</p>
-          </div>
+    <div className="space-y-6">
+      {/* Header with back button and user info */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setShowViewPending(false)}
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
+            <IoArrowBack className="text-2xl" />
+          </button>
+          <h2 className="text-2xl font-semibold">View Pending Registration</h2>
         </div>
 
-        {/* Documents Section */}
-        <div className="mb-8">
-          <h3 className="text-gray-600 text-[16px]  mb-4 font-secondary font-semibold">
-            Documents
-          </h3>
-          <div className="flex gap-6">
-            <div className="relative">
-              <img
-                src={viewUser?.idCard}
-                alt="ID Card"
-                className="w-full h-[100px] object-cover rounded-lg brightness-50 contrast-50"
-              />
-              <button
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60"
-                onClick={() => {
-                  setShowModal(true);
-                  setSelectedImage(viewUser?.idCard);
-                }}
-              >
-                Preview
-              </button>
-              <p className="mt-2 text-sm text-gray-500  font-primary">
-                ID Card
-              </p>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <img
+              src={viewUser.profilePhoto || avatar}
+              alt="Profile"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <div>
+              <h3 className="font-medium">{`${viewUser.forename} ${viewUser.surname}`}</h3>
+              <p className="text-sm text-gray-500">{viewUser.primaryEmail}</p>
             </div>
-            <div className="relative">
-              <img
-                src={viewUser?.photo}
-                alt="Photo"
-                className="w-full h-[100px] object-cover rounded-lg brightness-50 contrast-50"
-              />
-              <button
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-black/50 border-2 border-white rounded-3xl text-white font-secondary text-sm hover:bg-black/60"
-                onClick={() => {
-                  setShowModal(true);
-                  setSelectedImage(viewUser?.photo);
-                }}
-              >
-                Preview
-              </button>
-              <p className="mt-2 text-sm text-gray-500  font-primary">Photo</p>
-            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleReject}
+              className="p-2 text-red-500 hover:bg-red-50 rounded-full"
+            >
+              <FaTimes size={18} />
+            </button>
+            <button
+              onClick={handleAccept}
+              disabled={!canBeApproved}
+              className={`p-2 rounded-full ${
+                canBeApproved 
+                  ? 'text-green-500 hover:bg-green-50' 
+                  : 'text-gray-400 cursor-not-allowed'
+              }`}
+              title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
+            >
+              <FaCheck size={18} />
+            </button>
+            <button className="p-2 text-gray-400 hover:bg-gray-100 rounded-full">
+              <BsThreeDotsVertical size={18} />
+            </button>
           </div>
         </div>
       </div>
-      {showModal && (
-        <div
-          className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center"
-          onClick={() => setShowModal(false)}
-        >
-          <img
-            src={selectedImage}
-            alt="Preview"
-            className="max-w-[80%] max-h-[80%] object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
 
-      {/* Personal Information */}
-      <div className="bg-white rounded-lg md:p-6 mb-6 font-primary">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold font-primary text-[#323C47]">
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <button
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "personal"
+              ? "border-[#0A5438] text-[#0A5438]"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            onClick={() => setActiveTab("personal")}
+          >
             Personal Information
-          </h3>
-          <button onClick={() => setShowPersonalInfo(!showPersonalInfo)}>
-            <svg
-              className="w-6 h-6 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
           </button>
-        </div>
-        {showPersonalInfo && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm mb-1 font-primary">
-                Title<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Mrs"
-                // value={viewUser?.title}
-                disabled
-                className="w-full p-2.5 border rounded-lg text-[#444444] bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">
-                Forename<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.forename}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Surname<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.surname}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Gender<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Female"
-                // value={viewUser?.gender}
-                disabled
-                className="w-full p-2.5 text-[#444444] border rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Date of birth
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="23 Jan, 2025"
-                // value={viewUser?.dob}
-                disabled
-                className="w-full p-2.5 text-[#444444] border rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Relationship Status
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Married"
-                // value={viewUser?.relationship_status}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Nationality<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Ethiopian"
-                // value={viewUser?.nationality}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Additional Nationality
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="British"
-                // value={viewUser?.additional_nationality}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-          </div>
-        )}
+          <button
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "address"
+              ? "border-[#0A5438] text-[#0A5438]"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            onClick={() => setActiveTab("address")}
+          >
+            Address Detail
+          </button>
+          <button
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "documents"
+              ? "border-[#0A5438] text-[#0A5438]"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            onClick={() => setActiveTab("documents")}
+          >
+            Documents
+          </button>
+          <button
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "status"
+              ? "border-[#0A5438] text-[#0A5438]"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            onClick={() => setActiveTab("status")}
+          >
+            Registration Status
+          </button>
+        </nav>
       </div>
 
-      {/* Contact Details */}
-      <div className="bg-white rounded-lg md:p-6 mb-6 font-primary">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-[#323C47]">
-            Contact Details
-          </h3>
-          <button onClick={() => setShowContactDetails(!showContactDetails)}>
-            <svg
-              className="w-6 h-6 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {showContactDetails && (
+      {/* Tab Content */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        {activeTab === "personal" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm  mb-1">
-                Address Line1
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.address_line1}
-                disabled
-                className="w-full p-2.5 border rounded-lg text-[#444444] bg-gray-50"
-              />
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-500">Title</label>
+                    <p className="font-medium">{viewUser.title || "Not provided"}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+
+                    <div>
+                      <label className="text-sm text-gray-500">Forename</label>
+                      <p className="font-medium">{viewUser.forename || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Surname</label>
+                      <p className="font-medium">{viewUser.surname || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Email</label>
+                      <p className="font-medium">{viewUser.primaryEmail || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Phone</label>
+                      <p className="font-medium">{viewUser.primaryPhone || "Not provided"}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Relationship Status</label>
+                    <p className="font-medium">{viewUser.relationshipStatus || "Not provided"}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-500">Nationality</label>
+                      <p className="font-medium">{viewUser.nationality || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Additional Nationality</label>
+                      <p className="font-medium">{viewUser.additionalNationality || "Not provided"}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-500">Date of Birth</label>
+                      <p className="font-medium">{formatDate(viewUser.dateOfBirth)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Gender</label>
+                      <p className="font-medium">{viewUser.gender || "Not provided"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Town/City<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.town_city}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Country<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.country}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Postcode/Zipcode
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.postcode_zipcode}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Primary Email
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.primary_email}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Secondary Email
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.secondary_email}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Primary Phone
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.primary_phone}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                Secondary Phone
-                <span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.secondary_phone}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm  mb-1">
-                State<span className="text-red-600 font-primary">*</span>
-              </label>
-              <input
-                type="text"
-                value="Andrew"
-                // value={viewUser?.state}
-                disabled
-                className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-              />
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Preferred Social Media & Interests</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-500">Preferred Social Media</label>
+                    {/* <p className="font-medium">{viewUser.preferredSocialMedia || "Not provided"}</p> */}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {viewUser.preferredSocialMedia && viewUser.preferredSocialMedia.length > 0 ? (
+                        viewUser.preferredSocialMedia.map((interest, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
+                          >
+                            {interest}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No interests specified</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Interests</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {viewUser.userInterests && viewUser.userInterests.length > 0 ? (
+                        viewUser.userInterests.map((interest, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
+                          >
+                            {interest}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No interests specified</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Occupation & Interest */}
-      <div className="bg-white rounded-lg md:p-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-[#323C47]">
-            Occupation & Interest
-          </h3>
-          <button onClick={() => setShowOccupation(!showOccupation)}>
-            <svg
-              className="w-6 h-6 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-        </div>
-        {showOccupation && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+        {activeTab === "address" && (
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm  mb-1">
-                  Employment Status
-                  <span className="text-red-600 font-primary">*</span>
-                </label>
-                <input
-                  type="text"
-                  value="Employed"
-                  // value={viewUser?.employment_status}
-                  disabled
-                  className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm  mb-1">
-                  member of a club?
-                  <span className="text-red-600 font-primary">*</span>
-                </label>
-                <input
-                  type="text"
-                  value="No"
-                  // value={viewUser?.member_of_a_club}
-                  disabled
-                  className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm  mb-1">
-                  Prefered Social Media
-                  <span className="text-red-600 font-primary">*</span>
-                </label>
-                <input
-                  type="text"
-                  value="LinkedIn"
-                  // value={viewUser?.preferred_social_media}
-                  disabled
-                  className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm  mb-1">
-                  Secondary Phone
-                  <span className="text-red-600 font-primary">*</span>
-                </label>
-                <input
-                  type="text"
-                  value="Andrew"
-                  // value={viewUser?.secondary_phone}
-                  disabled
-                  className="w-full p-2.5 border text-[#444444] rounded-lg bg-gray-50"
-                />
+                <h3 className="text-lg font-semibold mb-4">Address</h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-500">Address Line 1</label>
+                      <p className="font-medium">{viewUser.addressLine1 || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Town/City</label>
+                      <p className="font-medium">{viewUser.city || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Country</label>
+                      <p className="font-medium">{viewUser.country || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500">Postcode/Zipcode</label>
+                      <p className="font-medium">{viewUser.postcode || "Not provided"}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">State</label>
+                    <p className="font-medium">{viewUser.state || "Not provided"}</p>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <h4 className="text-xl font-semibold text-[#323C47] mb-4">
-              User Interests
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <p>Art & Design</p>
-                <p>Dance</p>
-                <p>Film</p>
-                <p>Music/Dj</p>
-              </div>
-              <div>
-                <p>Cigars</p>
-                <p>Family Entertainment</p>
-                <p>Food</p>
-                <p>Politics</p>
-              </div>
-              <div>
-                <p>Country Pursuits</p>
-                <p>Fashion</p>
-                <p>Literature</p>
-                <p>Sport</p>
-              </div>
-            </div>
-          </>
+          </div>
         )}
-      </div>
 
-      {/* Referrals */}
-      <div className="bg-white rounded-lg md:p-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-[#323C47]">
-            Referrals (2/3)
-          </h3>
-          <button onClick={() => setShowReferrals(!showReferrals)}>
-            <svg
-              className="w-6 h-6 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-        </div>
-        {showReferrals && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={viewUser?.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full"
-                />
-                <span>{viewUser?.name}</span>
+
+        {activeTab === "documents" && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Uploaded Documents</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm text-gray-500 block mb-2">Profile Photo</label>
+                  <div className="relative group">
+                    <img
+                      src={viewUser.profilePhoto || avatar}
+                      alt="Profile"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => {
+                        setSelectedImage(viewUser.profilePhoto || avatar);
+                        setShowModal(true);
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                    >
+                      <span className="text-white text-sm font-medium">Preview</span>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500 block mb-2">ID Card</label>
+                  <div className="relative group">
+                    <img
+                      src={viewUser.idCardPhoto || idcards}
+                      alt="ID Card"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => {
+                        setSelectedImage(viewUser.idCardPhoto || idcards);
+                        setShowModal(true);
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                    >
+                      <span className="text-white text-sm font-medium">Preview</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <span className="text-green-500">Approved</span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={viewUser?.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full"
-                />
-                <span>{viewUser?.name}</span>
+          </div>
+        )}
+
+        {activeTab === "status" && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Registration Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-500">Join Fee Status</label>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${viewUser.joinFeeStatus === "Paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                        }`}>
+                        {viewUser.joinFeeStatus === "paid" ? "Paid" : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-lg font-semibold">Supporters Status</h3>
+                    {/* Use requiredReferralNumber for the target number */}
+                    <p className="text-gray-600">{viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0} / {requiredReferralNumber} Approved Supporters</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                      {/* Calculate width based on requiredReferralNumber */}
+                        <div
+                        className="bg-green-500 h-2.5 rounded-full"
+                        style={{ width: `${(viewUser.referredBy?.filter(ref => ref.status === 'approved').length / requiredReferralNumber) * 100}%` }}
+                        ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-500">Registration Date</label>
+                    <p className="font-medium">{formatDate(viewUser.createdAt)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Registration ID</label>
+                    <p className="font-medium">ID#{viewUser.membershipNumber || "00000000"}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500">Membership Status</label>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                      {viewUser.membershipStatus}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className="text-gray-500">Pending</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={viewUser?.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full"
-                />
-                <span>{viewUser?.name}</span>
-              </div>
-              <span className="text-gray-500">Pending</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end overflow-hidden md:gap-4">
+      <div className="flex justify-end space-x-4">
         <button
-          className="px-6 py-2.5 bg-[#079D64] text-white rounded-lg flex items-center gap-2 font-primary"
-          onClick={() => handleAction("accept")}
+          onClick={handleReject}
+          className="px-6 py-2 bg-red-500 text-white rounded-lg flex items-center space-x-2 hover:bg-red-600"
         >
-          Accept
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          <FaTimes />
+          <span>Reject</span>
         </button>
         <button
-          className="px-6 py-2.5 bg-[#FF0707] text-white rounded-lg flex items-center gap-2 font-primary"
-          onClick={() => handleAction("reject")}
+          onClick={handleAccept}
+          disabled={!canBeApproved}
+          className={`px-6 py-2 rounded-lg flex items-center space-x-2 ${
+            canBeApproved 
+              ? 'bg-[#0A5438] text-white hover:bg-[#084433]' 
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
         >
-          Decline
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <FaCheck />
+          <span>Accept</span>
         </button>
       </div>
+
+      {/* Image Preview Modal */}
       <Modal
-        isOpen={isActionModalOpen}
-        onRequestClose={() => setIsActionModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[93vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        isOpen={showModal}
+        onRequestClose={() => setShowModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[90vw] md:w-[600px]"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
         <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">
-              {actionType === "accept" ? "Accept User" : "Reject User"}
-            </h2>
-            <button
-              onClick={() => setIsActionModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600 text-2xl"
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Image Preview</h2>
+            <button 
+              onClick={() => setShowModal(false)} 
+              className="text-gray-400 hover:text-gray-600"
             >
-              ×
+              ✕
             </button>
           </div>
-
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src={viewUser?.avatar}
-                alt=""
-                className="w-12 h-12 rounded-full"
-              />
-              <div>
-                <h3 className="font-medium">{viewUser?.name}</h3>
-                <p className="text-sm text-gray-500">{viewUser?.email}</p>
-              </div>
-            </div>
-            <p className="text-gray-600">
-              Are you sure you want to{" "}
-              {actionType === "accept" ? "accept" : "reject"} this user?
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setIsActionModalOpen(false)}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                if (actionType === "accept") {
-                  handleAcceptUser(viewUser);
-                } else {
-                  handleRejectUser(viewUser);
-                }
-                setIsActionModalOpen(false);
-              }}
-              className={`px-4 py-2 rounded-lg text-white ${
-                actionType === "accept"
-                  ? "bg-[#079D64] hover:bg-[#068756]"
-                  : "bg-[#FF0707] hover:bg-[#E60606]"
-              }`}
-            >
-              {actionType === "accept" ? "Accept" : "Reject"}
-            </button>
+          <div className="relative w-full h-[400px]">
+            <img
+              src={selectedImage}
+              alt="Preview"
+              className="w-full h-full object-contain rounded-lg"
+            />
           </div>
         </div>
       </Modal>

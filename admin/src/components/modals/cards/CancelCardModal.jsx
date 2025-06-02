@@ -1,8 +1,35 @@
-import React, { useState } from "react";
-import Modal from "react-modal";
+"use client"
 
-const CancelCardModal = ({ onClose, onConfirm }) => {
-  const [reason, setReason] = useState("");
+import { useState } from "react"
+import { useDispatch } from "react-redux"
+import { cancelCard } from "../../../store/cards/cardSlice"
+
+const CancelCardModal = ({ onClose, selectedCard }) => {
+  const [reason, setReason] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const dispatch = useDispatch()
+
+  const handleConfirm = () => {
+    if (!reason.trim()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    dispatch(
+      cancelCard({
+        id: selectedCard._id,
+        reason,
+      }),
+    )
+      .then(() => {
+        setIsSubmitting(false)
+        onClose(false)
+      })
+      .catch(() => {
+        setIsSubmitting(false)
+      })
+  }
 
   return (
     <div className="p-6">
@@ -15,8 +42,7 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
 
       <div className="space-y-6">
         <p className="text-sm text-gray-600">
-          Are you sure you want to cancel this card, request is not reversible
-          and action is permanent?
+          Are you sure you want to cancel this card? This action is not reversible and is permanent.
         </p>
 
         <div>
@@ -25,8 +51,9 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="What the reason?"
+            placeholder="What is the reason?"
             className="w-full px-3 py-2.5 border font-secondary italic rounded-lg text-sm"
+            required
           />
         </div>
 
@@ -34,23 +61,21 @@ const CancelCardModal = ({ onClose, onConfirm }) => {
           <button
             onClick={() => onClose(false)}
             className="px-6 py-2 border rounded-lg text-sm"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onConfirm(reason);
-              setReason("");
-            }}
+            onClick={handleConfirm}
             className="px-6 py-2 bg-secondary text-white rounded-lg text-sm"
+            disabled={!reason.trim() || isSubmitting}
           >
-            Confirm
+            {isSubmitting ? "Processing..." : "Confirm"}
           </button>
         </div>
       </div>
     </div>
-    // </Modal>
-  );
-};
+  )
+}
 
-export default CancelCardModal;
+export default CancelCardModal

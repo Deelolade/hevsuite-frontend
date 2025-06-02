@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { IoSearchOutline } from "react-icons/io5";
 import Header from "../../components/Header";
 import bg_image from "../../assets/header-bg.jpg";
 import Footer from "../../components/Footer";
+import topicsService from "../../services/topicsService";
+import logo from '../../assets/logo_white.png';
 
 const Topics = () => {
   const navigate = useNavigate();
@@ -12,7 +14,60 @@ const Topics = () => {
   const [activePage, setActivePage] = useState(1);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5; // Assuming we have 5 pages total
+
+
+  const [topics, setTopics] = useState([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [faqsLoading, setFAQsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [faqs, setFAQs] = useState([]);
+const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768); // Tailwind 'md' breakpoint
+  };
+
+  handleResize(); // Set initial state
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+  useEffect(() => {
+    const fetchTopicsAndFAQs = async () => {
+      try {
+        setTopicsLoading(true);
+        const response = await topicsService.fetchVisibleTopics();
+        if (Array.isArray(response.data)) {
+          setTopics(response.data);
+        } else {
+          console.error("Invalid topics data format:", response.data);
+          setTopics([]);
+        }
+      } catch (err) {
+        setError("Failed to fetch topics");
+        console.error("Error fetching topics:", err);
+      } finally {
+        setTopicsLoading(false);
+      }
+    };
+
+    const fetchFAQs = async () => {
+      try {
+        setFAQsLoading(true);
+        const response = await topicsService.fetchFAQs();
+        setFAQs(response.data);
+      } catch (err) {
+        setError("Failed to fetch FAQs");
+        console.error("Error fetching FAQs:", err);
+      } finally {
+        setFAQsLoading(false);
+      }
+    };
+
+    fetchTopicsAndFAQs();
+    fetchFAQs();
+  }, []);
 
   // Function to handle page changes
   const handlePageChange = (pageNumber) => {
@@ -22,79 +77,27 @@ const Topics = () => {
       // For example: fetchRequests(pageNumber)
     }
   };
+  // Filter topics based on search query
+  const filteredTopics = topics?.filter(topic =>
+    (topic?.title?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
+    (topic?.description?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
+  );
+  // Filter faqs based on search query
+    const filteredFAQs = faqs?.filter(faq =>
+    (faq?.question?.toLowerCase?.() || "").includes(searchQuery.toLowerCase()) ||
+    (faq?.answer?.toLowerCase?.() || "").includes(searchQuery.toLowerCase())
+  );
+  
 
-  const popularTopics = [
-    {
-      id: 1,
-      icon: "h",
-      title: "About Hazor Hevsuite (HH) Club",
-      description:
-        "What makes HH Club unique? What are the benefits of being a member? How can I contact the HH Club team",
-    },
-    {
-      id: 2,
-      icon: "h",
-      title: "Joining the HH Club",
-      description:
-        "How do I register and join the club? What is the joining fee, and when do I pay it? Why do I need three members to support my registration?",
-    },
-    {
-      id: 3,
-      icon: "h",
-      title: "About Hazor Hevsuite (HH) Club",
-      description:
-        "What makes HH Club unique? What are the benefits of being a member? How can I contact the HH Club team",
-    },
-    {
-      id: 4,
-      icon: "h",
-      title: "Joining the HH Club",
-      description:
-        "How do I register and join the club? What is the joining fee, and when do I pay it? Why do I need three members to support my registration?",
-    },
-    {
-      id: 5,
-      icon: "h",
-      title: "About Hazor Hevsuite (HH) Club",
-      description:
-        "What makes HH Club unique? What are the benefits of being a member? How can I contact the HH Club team",
-    },
-    {
-      id: 6,
-      icon: "h",
-      title: "Joining the HH Club",
-      description:
-        "How do I register and join the club? What is the joining fee, and when do I pay it? Why do I need three members to support my registration?",
-    },
-  ];
+  // Update totalPages calculation
+  const ITEMS_PER_PAGE = isMobile ? 1 : 6;
 
-  const faqs = [
-    {
-      id: 1,
-      question: "How do I join the HH Club?",
-      answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
-    },
-    {
-      id: 2,
-      question: "How do I join the HH Club?",
-      answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
-    },
-    {
-      id: 3,
-      question: "How do I join the HH Club?",
-      answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
-    },
-    {
-      id: 4,
-      question: "How do I join the HH Club?",
-      answer:
-        "To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership. To join, complete the registration form and select three members to support your registration. Once accepted, you'll need to pay a non-refundable joining fee of £120 to activate your membership.",
-    },
-  ];
+  const totalPages = Math.ceil(filteredTopics?.length / ITEMS_PER_PAGE);
 
+  const popularTopics = filteredTopics?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -145,19 +148,21 @@ const Topics = () => {
           {/* Topic Cards - Responsive Grid */}
           <div className="overflow-x-scroll scrollbar-hide pb-4 md:pb-0">
             <div className="flex flex-nowrap gap-4 md:grid md:grid-cols-3 md:gap-8 px-0 md:px-4">
-              {popularTopics.map((topic) => (
+              {popularTopics?.map((topic) => (
                 <div
-                  key={topic.id}
+                  key={topic._id}
                   className="w-full md:w-auto min-w-[280px] md:min-w-0 bg-white rounded-lg p-4 md:p-6 shadow-xl cursor-pointer mb-4 md:mb-4"
-                  onClick={() => navigate(`/topic-details/${topic.id}`)}
+                  onClick={() => navigate(`/topic-details/${topic._id}`, { state: { topic } })}
                 >
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-[#540A26] rounded-lg text-white flex items-center justify-center text-xl md:text-2xl mb-3 md:mb-4">
-                    {topic.icon}
-                  </div>
+                  <img
+                    src={logo}
+                    alt="h"
+                    className="w-10 h-10 md:w-12 md:h-12 "
+                  />
                   <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">
                     {topic.title}
                   </h3>
-                  <p className="text-gray-600 text-xs md:text-sm">
+                  <p className="text-quatr text-xs md:text-sm">
                     {topic.description}
                   </p>
                 </div>
@@ -168,7 +173,7 @@ const Topics = () => {
           {/* Navigation Dots */}
           <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               style={{
@@ -182,16 +187,15 @@ const Topics = () => {
             {[...Array(totalPages)].map((_, index) => (
               <button
                 key={index}
-                className={`w-2 h-2 rounded-full ${
-                  currentPage === index + 1 ? "bg-[#540A26]" : "bg-gray-300"
-                } hover:bg-[#540A26]/70 transition-colors`}
+                className={`w-2 h-2 rounded-full ${currentPage === index + 1 ? "bg-[#540A26]" : "bg-gray-300"
+                  } hover:bg-[#540A26]/70 transition-colors`}
                 onClick={() => handlePageChange(index + 1)}
                 aria-label={`Page ${index + 1}`}
               ></button>
             ))}
 
             <button
-              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-gray-600 hover:text-[#540A26] transition-colors"
+              className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center text-quatr hover:text-[#540A26] transition-colors"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               style={{
@@ -210,14 +214,14 @@ const Topics = () => {
             FAQs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {faqs.map((faq, index) => (
+            {filteredFAQs?.map((faq, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 md:gap-6 border-b-0 pb-4 md:pb-6"
               >
                 <span className="relative w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-[#540A26] to-[#0A5440] rounded-full flex items-center justify-center text-white text-sm md:text-base font-medium shrink-0 mt-1">
                   {index + 1}
-                  <span className="absolute md:block hidden -bottom-28 left-1/2 transform -translate-x-1/2 w-[2px] h-24 bg-[#540A26]"></span>{" "}
+                  <span className="absolute  -bottom-28 left-1/2 transform -translate-x-1/2 w-[2px] h-24 bg-[#540A26]"></span>{" "}
                   {/* Added vertical line under circle */}
                 </span>
 
@@ -226,7 +230,7 @@ const Topics = () => {
                     {faq.question}
                   </h3>
                   <p
-                    className="text-gray-600 text-sm md:text-base leading-relaxed mb-2 md:mb-3"
+                    className="text-quatr text-sm md:text-base leading-relaxed mb-2 md:mb-3"
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: expandedFAQ === faq.id ? "unset" : 2,

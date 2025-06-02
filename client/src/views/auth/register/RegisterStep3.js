@@ -5,11 +5,13 @@ import Footer from '../../../components/Footer';
 import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
+import { validate, isGmail } from 'email-validator';
 import { showModal } from '../../../components/FireModal';
 import {
   CountrySelect,
   StateSelect,
   PhonecodeSelect,
+  Country,
 } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,6 +21,7 @@ import {
   updateStepData,
   reset,
 } from '../../../features/auth/registerSlice';
+import authService from '../../../services/authService';
 
 const RegisterStep3 = () => {
   useEffect(() => {
@@ -32,13 +35,132 @@ const RegisterStep3 = () => {
   );
 
   const [formData, setFormData] = useState({ ...data.step3 });
-
+  const [errors, setErrors] = useState({});
   const [countryId, setCountryId] = useState('');
   const [primaryPhoneCode, setPrimaryPhoneCode] = useState('');
   const [secondaryPhoneCode, setSecondaryPhoneCode] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate required fields for step 3
+    const newErrors = {};
+
+    if (!formData.addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.country) newErrors.country = "Country is required";
+    if (!formData.postcode) {
+      newErrors.postcode = "Postcode is required";
+    } else if (formData.country === 'United Kingdom') {
+      // UK postcode validation (allows standard UK format)
+      if (!/^[A-Za-z]{1,2}\d{1,2}[A-Za-z]?\s?\d[A-Za-z]{2}$/i.test(formData.postcode)) {
+        newErrors.postcode = "Please enter a valid UK postcode (e.g. SW1A 1AA)";
+      }
+    } else {
+      // Default numeric validation for other countries
+      if (!/^\d+$/.test(formData.postcode)) {
+        newErrors.postcode = "Postcode should contain only numbers";
+      }
+    }
+    if (!formData.primaryPhone) {
+      newErrors.primaryPhone = "Primary phone is required";
+    } else if (!/^\d+$/.test(formData.primaryPhone)) {
+      newErrors.primaryPhone = "Phone number should contain only numbers";
+    }
+
+    if (formData.secondaryPhone && !/^\d+$/.test(formData.secondaryPhone)) {
+      newErrors.secondaryPhone = "Phone number should contain only numbers";
+    }
+    // Enhanced email validation function
+    const validateEmail = (email) => {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(String(email).toLowerCase());
+    };
+    // In your handleSubmit:
+    if (!formData.primaryEmail) {
+      newErrors.primaryEmail = "Primary email is required";
+    } else if (!validate(formData.primaryEmail)) {
+      newErrors.primaryEmail = "Please enter a valid email address";
+    } else {
+      try {
+        const response = await authService.checkUserByEmail(formData.primaryEmail);
+        if (!response.available) {
+          newErrors.primaryEmail = response.message || "Email is already registered";
+          // Show toast notification
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Email is already registered',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          return; // Stop form submission if email exists
+        }
+      } catch (error) {
+        newErrors.primaryEmail = error.message || "Email check failed!";
+        // Show error toast
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: error.message || "Email check failed!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        return; // Stop form submission if check fails
+      }
+    }
+
+    if (formData.secondaryEmail && !validateEmail(formData.secondaryEmail)) {
+      newErrors.secondaryEmail = "Please enter a valid email address";
+    } else if (formData.secondaryEmail) {
+      try {
+        const response = await authService.checkUserByEmail(formData.secondaryEmail);
+        if (!response.available) {
+          newErrors.secondaryEmail = response.message || "Email is already registered";
+          // Show toast notification
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Secondary email is already registered',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+          return; // Stop form submission if email exists
+        }
+      } catch (error) {
+        newErrors.secondaryEmail = error.message || "Email check failed!";
+        // Show error toast
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: error.message || "Email check failed!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        return; // Stop form submission if check fails
+      }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Scroll to first error
+      const firstError = Object.keys(newErrors)[0];
+      document.querySelector(`[name="${firstError}"]`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
+
+    // Clear errors
+    setErrors({});
+
     dispatch(
       updateStepData({
         step: `step${currentStep}`,
@@ -65,11 +187,13 @@ const RegisterStep3 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -84,11 +208,10 @@ const RegisterStep3 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 3
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 3
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
+                    }`}
                 >
                   {index < 2 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -104,9 +227,8 @@ const RegisterStep3 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 2 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 2 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -134,13 +256,17 @@ const RegisterStep3 = () => {
             <input
               type='text'
               placeholder='Address Line 1'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.addressLine1 ? 'border-red-500' : ''
+                }`}
               value={formData.addressLine1}
               onChange={(e) =>
                 setFormData({ ...formData, addressLine1: e.target.value })
               }
               required
             />
+            {errors.addressLine1 && (
+              <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>
+            )}
           </div>
 
           <div>
@@ -150,13 +276,17 @@ const RegisterStep3 = () => {
             <input
               type='text'
               placeholder='Town/City'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.city ? 'border-red-500' : ''
+                }`}
               value={formData.city}
               onChange={(e) =>
                 setFormData({ ...formData, city: e.target.value })
               }
               required
             />
+            {errors.city && (
+              <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+            )}
           </div>
 
           <div>
@@ -170,6 +300,7 @@ const RegisterStep3 = () => {
                   country: country.name,
                 }));
                 setCountryId(country.id);
+                setPrimaryPhoneCode(country.phone_code);
               }}
               onTextChange={() => {
                 setFormData((prev) => ({
@@ -185,26 +316,67 @@ const RegisterStep3 = () => {
                 width: '100%',
                 padding: '8px',
                 borderRadius: '5px',
-                border: 'none',
+                border: errors.country ? '1px solid #EF4444' : 'none',
                 fontSize: '16px',
               }}
             />
+            {errors.country && (
+              <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+            )}
           </div>
 
-          <div>
+          {/* <div>
             <label className='block mb-1 md:mb-2 text-sm md:text-base'>
               Postcode/Zipcode<span className='text-red-500'>*</span>
             </label>
             <input
               type='text'
               placeholder='Postcode/Zipcode'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.postcode ? 'border-red-500' : ''
+                }`}
               value={formData.postcode}
               onChange={(e) =>
                 setFormData({ ...formData, postcode: e.target.value })
               }
               required
             />
+            {errors.postcode && (
+              <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>
+            )}
+          </div> */}
+          <div>
+            <label className='block mb-1 md:mb-2 text-sm md:text-base'>
+              Postcode/Zipcode<span className='text-red-500'>*</span>
+            </label>
+
+            {formData.country === 'United Kingdom' && (
+              <p className="text-gray-500 text-xs mb-1">
+                Please enter your full UK postcode (e.g. SW1A 1AA)
+              </p>
+            )}
+
+            <input
+              type='text'
+              placeholder={
+                formData.country === 'United Kingdom'
+                  ? 'Enter UK postcode (e.g. SW1A 1AA)'
+                  : 'Enter postcode/zipcode'
+              }
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.postcode ? 'border-red-500' : ''
+                }`}
+              value={formData.postcode}
+              onChange={(e) => {
+                setFormData({ ...formData, postcode: e.target.value });
+                // Clear error when user starts typing
+                if (errors.postcode) {
+                  setErrors({ ...errors, postcode: '' });
+                }
+              }}
+              required
+            />
+            {errors.postcode && (
+              <p className="text-red-500 text-xs mt-1">{errors.postcode}</p>
+            )}
           </div>
 
           <div>
@@ -214,13 +386,17 @@ const RegisterStep3 = () => {
             <input
               type='email'
               placeholder='Enter email address'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.primaryEmail ? 'border-red-500' : ''
+                }`}
               value={formData.primaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, primaryEmail: e.target.value })
               }
               required
             />
+            {errors.primaryEmail && (
+              <p className="text-red-500 text-xs mt-1">{errors.primaryEmail}</p>
+            )}
           </div>
 
           <div>
@@ -230,7 +406,8 @@ const RegisterStep3 = () => {
             <input
               type='email'
               placeholder='Enter email address'
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.secondaryEmail ? 'border-red-500' : ''
+                }`}
               value={formData.secondaryEmail}
               onChange={(e) =>
                 setFormData({ ...formData, secondaryEmail: e.target.value })
@@ -240,7 +417,7 @@ const RegisterStep3 = () => {
 
           <div>
             <label className='block mb-1 md:mb-2 text-sm md:text-base'>
-              State<span className='text-red-500'>*</span>
+              State
             </label>
             <StateSelect
               countryid={countryId}
@@ -255,7 +432,7 @@ const RegisterStep3 = () => {
                 width: '100%',
                 padding: '8px',
                 borderRadius: '5px',
-                border: 'none',
+                border: errors.state ? '1px solid #EF4444' : 'none',
                 fontSize: '16px',
               }}
             />
@@ -282,13 +459,17 @@ const RegisterStep3 = () => {
               <input
                 type='tel'
                 placeholder='Telephone'
-                className='col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.primaryPhone ? 'border-red-500' : ''
+                  }`}
                 value={formData.primaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, primaryPhone: e.target.value })
                 }
                 required
               />
+              {errors.primaryPhone && (
+                <p className="text-red-500 text-xs mt-1 col-span-3">{errors.primaryPhone}</p>
+              )}
             </div>
           </div>
 
@@ -313,7 +494,8 @@ const RegisterStep3 = () => {
               <input
                 type='tel'
                 placeholder='Mobile'
-                className='col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`col-span-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.secondaryPhone ? 'border-red-500' : ''
+                  }`}
                 value={formData.secondaryPhone}
                 onChange={(e) =>
                   setFormData({ ...formData, secondaryPhone: e.target.value })

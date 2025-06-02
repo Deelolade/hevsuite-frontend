@@ -18,7 +18,7 @@ const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
           {/* User Info */}
           <div className="flex items-center gap-3">
             <img
-              src={selectedUser.user.avatar}
+              src={selectedUser.user.name}
               alt={selectedUser.user.name}
               className="w-12 h-12 rounded-full"
             />

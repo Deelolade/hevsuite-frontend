@@ -10,7 +10,7 @@ const getAuthToken = () => {
 const getAllAdmins = async () => {
   const token = getAuthToken();
   const response = await axios.get(
-    `${base_url}/admin/all-admins`,
+    `${base_url}/api/user/all-admins`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -23,7 +23,7 @@ const getAllAdmins = async () => {
 
 const createAdmin = async (data) => {
   const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/create-admin`, data, {
+  const response = await axios.post(`${base_url}/api/admin/create-admin`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -35,7 +35,7 @@ const createAdmin = async (data) => {
 const updateAdmin = async (data) => {
   const token = getAuthToken();
   const response = await axios.put(
-    `${base_url}/admin/update-admin/${data.id}`,
+    `${base_url}/api/admin/update-admin/${data.id}`,
     data.adminData,
     {
       headers: {
@@ -49,7 +49,7 @@ const updateAdmin = async (data) => {
 
 const deleteAdmin = async (id) => {
   const token = getAuthToken();
-  const response = await axios.delete(`${base_url}/admin/delete-admin/${id}`, {
+  const response = await axios.delete(`${base_url}/api/admin/delete-admin/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

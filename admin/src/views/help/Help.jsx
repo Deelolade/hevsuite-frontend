@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Profile from "../../components/Profile";
 import Topics from "./Topics";
 import FAQs from "./FAQs";
 import { BiSearch } from "react-icons/bi";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllHelps, getAllFAQs } from "../../store/help/helpSlice";
 
 const Help = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("topic");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (activeTab === "topic") {
+      dispatch(getAllHelps());
+    } else {
+      dispatch(getAllFAQs({ page: 1, limit: 10, search: searchQuery }));
+    }
+  }, [dispatch, activeTab, searchQuery]);
 
   return (
     <div className="space-y-6 md:p-6">
@@ -16,7 +28,9 @@ const Help = () => {
             <input
               type="text"
               placeholder="Search..."
-              className="w-full px-8 py-2.5 rounded-full  border border-gray-400 focus:outline-none text-sm"
+              className="w-full px-8 py-2.5 rounded-full border border-gray-400 focus:outline-none text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>

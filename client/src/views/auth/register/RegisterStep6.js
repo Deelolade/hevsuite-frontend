@@ -11,34 +11,66 @@ import RegisterApproval from './RegisterApproval';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
 import referralService from '../../../services/referralService';
-
+import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { persistor } from '../../../store/store';
+import { logout } from '../../../features/auth/authSlice';
 const RegisterStep6 = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const dispatch = useDispatch();
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
-  const [approval, setApproval] = useState(true);
+  const [members, setMembers] = useState([])
+  const [approval, setApproval] = useState(false);
+  const [referrals, setReferrals] = useState([])
+   const { Settings } = useSelector((state) => state.generalSettings);
+   const {user}= useSelector((state)=> state.auth)
 
+   console.log("user in step 6",user)
   useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
 
-    const checkReferral = async () => {
-      const response = await referralService.checkReferral();
-      console.log(response);
+    const fetchData = async () => {
+      try {
+        const [usersResponse, referralResponse] = await Promise.all([
+          referralService.fetchAllUsersBasicInfo(),
+          referralService.checkReferral()
+        ]);
+        setMembers(usersResponse.users);
+        setReferrals(referralResponse.referredBy)
+        console.log(referrals)
+
+      } catch (error) {
+        toast.error(error.message);
+      }
     };
-    checkReferral();
+
+    fetchData();
   }, []);
 
-  const members = [
-    {
-      id: 1,
-      name: 'Andrew Bojangles',
-      email: 'some@gmail.com',
-      type: 'Member',
-      avatar: avatar,
-    },
-    // ... other members
-  ];
+   const handleLogout = async () => {
+      try {
+        await dispatch(logout()).unwrap()
+        await persistor.purge();
+        navigate('/');
+        window.location.reload();
+      } catch (error) {
+        toast.error("Logout failed. Please try again.");
+        console.error('Logout failed:', error);
+      }
+    };
+
+  // const members = [
+  //   {
+  //     id: 1,
+  //     name: 'Andrew Bojangles',
+  //     email: 'some@gmail.com',
+  //     type: 'Member',
+  //     avatar: avatar,
+  //   },
+  //   // ... other members
+  // ];
 
   const modalStyles = {
     content: {
@@ -62,7 +94,7 @@ const RegisterStep6 = () => {
   const handleMemberSelect = (memberId) => {
     if (selectedMembers.includes(memberId)) {
       setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
-    } else if (selectedMembers.length < 3) {
+    } else if (selectedMembers.length < (Settings?.requiredReferralNumber ?? 3)) {
       setSelectedMembers([...selectedMembers, memberId]);
     }
   };
@@ -76,6 +108,11 @@ const RegisterStep6 = () => {
       setIsReferralModalOpen(true);
     }
   };
+  const filteredMembers = members.filter(
+    (member) =>
+      member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -89,11 +126,13 @@ const RegisterStep6 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -108,11 +147,10 @@ const RegisterStep6 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 6
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 6
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
+                    }`}
                   onClick={() => {
                     if (index === 6) handleSubmit();
                   }}
@@ -136,9 +174,8 @@ const RegisterStep6 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 5 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 5 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -147,9 +184,20 @@ const RegisterStep6 = () => {
       </div>
 
       {approval ? (
-        <RegisterApproval setApproval={setApproval} />
+        <RegisterApproval setApproval={setApproval} referrals={referrals} />
       ) : (
         <div className='container mx-auto px-4 py-8 md:py-12 max-w-3xl flex-grow'>
+          {/* user && user.joinFeeStatus === 'pending' && */}
+          { (
+            <div className=' w-[100px] absolute top-60 right-4'>
+              <button
+                onClick={handleLogout}
+                className='px-4 py-2 bg-[#540A26] text-white rounded-lg text-sm md:text-base w-full sm:w-auto'
+              >
+                Logout
+              </button>
+            </div>  
+            )}
           <h1 className='text-2xl md:text-3xl font-medium text-center mb-8 md:mb-12 flex items-center justify-center gap-2 md:gap-3 text-[#540A26]'>
             <span className='w-6 h-6 md:w-8 md:h-8 bg-[#eae5e7] rounded-full flex items-center justify-center text-white text-sm md:text-base'>
               👥
@@ -190,7 +238,7 @@ const RegisterStep6 = () => {
             </div>
 
             <div className='space-y-2'>
-              {members.map((member) => (
+              {filteredMembers.length > 0 && filteredMembers.map((member) => (
                 <div
                   key={member.id}
                   className='flex flex-wrap sm:flex-nowrap items-center justify-between p-3 md:p-4 bg-gray-50 rounded-lg'
@@ -203,7 +251,7 @@ const RegisterStep6 = () => {
                       className='w-4 h-4 rounded border-gray-300'
                     />
                     <img
-                      src={member.avatar}
+                      src={member.avatar || avatar}
                       alt={member.name}
                       className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover'
                     />
@@ -229,7 +277,7 @@ const RegisterStep6 = () => {
             </div>
 
             <p className='text-gray-500 text-xs md:text-sm mt-4'>
-              Note: you can select only 3 members
+              Note: you can select only {Settings?.requiredReferralNumber ?? 3} members
             </p>
           </div>
 
@@ -325,9 +373,33 @@ const RegisterStep6 = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Add your referral sending logic here
-                setIsReferralModalOpen(false);
+              onClick={async () => {
+                try {
+                  const response = await referralService.sendReferralsRequest(selectedMembers);
+                  console.log(response)
+                  if (response.success == true) {
+                    toast.success('Referral requests sent successfully!');
+
+                    // Refetch updated referral data
+                    const [referralResponse, userResponse] = await Promise.all([
+                      referralService.checkReferral(),
+                      referralService.fetchAllUsersBasicInfo()
+                    ]);
+
+                    // Update state
+                    setMembers(userResponse.users);
+                    setReferrals(referralResponse.referredBy);
+
+                    setIsReferralModalOpen(false);
+                    setSelectedMembers([]); // Clear selection
+                  } else {
+                    toast.error(response.error || 'Failed to send referrals');
+                  }
+
+                } catch (error) {
+                  toast.error(error.message);
+                }
+
               }}
               className='px-4 md:px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm md:text-base order-1 sm:order-2'
             >

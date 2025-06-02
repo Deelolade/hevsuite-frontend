@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { BsCalendar } from 'react-icons/bs';
 import { MdAccessTime } from 'react-icons/md';
 import { IoArrowBack } from 'react-icons/io5';
@@ -9,39 +9,51 @@ import image_card from '../../assets/image.jpg';
 import Footer from '../../components/Footer';
 import HeaderOne from '../../components/HeaderOne';
 import Header from '../../components/Header';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
+import { fetchNewsById, setSelectedNews } from '../../features/newsSlice';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination } from 'swiper/modules';
+import 'swiper/css';
 
 const NewsDetail = () => {
-  const relatedNews = [
-    {
-      id: 1,
-      title: 'The Bout for Lions',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 2,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 3,
-      title: 'The Adventurer',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-    {
-      id: 4,
-      title: 'Battle for NBA Cup',
-      date: '2nd January, 2025',
-      time: '10:00pm',
-      image: event_card,
-    },
-  ];
+  const { newsItems: allNewsItems, selectedNews, loading, error } = useSelector((state) => state.news);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  // Filter out the selectedNews from allNewsItems to get relatedNews
+  const relatedNews = allNewsItems.filter(news => news._id !== selectedNews?._id);
 
+
+  useEffect(() => {
+    if (!selectedNews || selectedNews._id !== id) {
+      dispatch(fetchNewsById(id));
+    }
+  }, [id, selectedNews, dispatch]);
+  useEffect(() => {
+
+    if (selectedNews?._id) {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/api/news/${selectedNews._id}/increment-reads`, {
+        method: 'PUT',
+      });
+    }
+  }, [selectedNews, navigate]);
+
+  if (!selectedNews) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+  const mediaSlides = [
+    ...(selectedNews.videos || []).map((url) => ({ type: 'video', url })),
+    ...(selectedNews.images || []).map((url) => ({ type: 'image', url })),
+  ];
   return (
     <div className='min-h-screen'>
       {/* Header */}
@@ -57,21 +69,117 @@ const NewsDetail = () => {
           <span>back</span>
         </Link>
         <div className='relative inset-0 bg-black/50'>
-          <img
-            src={image_card}
-            alt=''
-            className='w-full md:h-[70vh] h-[50vh] object-cover brightness-50'
-          />
-          {/* <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
+          {/* <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            pagination={{ clickable: true }}
+            className="w-full h-[50vh] md:h-[70vh]"
           >
-            <source src="/videos/hero.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video> */}
+            {selectedNews.images?.length > 0 ? (
+              selectedNews.images.map((img, index) => (
+                <SwiperSlide key={`${index}-${img}`}>
+                  <img
+                    src={img}
+                    alt={`Slide ${index}`}
+                    className='w-full h-full object-cover brightness-50'
+                    loading='lazy'
+                    onError={(e) => {
+                      e.target.src = image_card; // Fallback to default image if error
+                    }}
+                  />
+                </SwiperSlide>
+              ))
+            ) : (
+              <SwiperSlide>
+                <img
+                  src={image_card} // Fallback when no images exist
+                  alt="Default slide"
+                  className='w-full h-full object-cover brightness-50'
+                />
+              </SwiperSlide>
+            )}
+          </Swiper> */}
+          {/* {selectedNews.videos?.length > 0 && (
+            selectedNews.videos.map((video, index) => (
+              <SwiperSlide key={`video-${index}`}>
+                <div className="relative w-full h-full">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Video failed to load:', video);
+                      e.target.style.display = 'none'; // Hide if error occurs
+                    }}
+                  >
+                    <source src={video} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                 
+                  <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                    VIDEO
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))
+          )} */}
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop={true}
+            pagination={{ clickable: true }}
+            className="w-full h-[50vh] md:h-[70vh]"
+          >
+            {mediaSlides.length > 0 ? (
+              mediaSlides.map((media, index) => (
+                <SwiperSlide key={`media-${index}`}>
+                  {media.type === 'video' ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Video failed to load:', media.url);
+                          e.target.style.display = 'none';
+                        }}
+                      >
+                        <source src={media.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                        VIDEO
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={media.url}
+                      alt={`Slide ${index}`}
+                      className="w-full h-full object-cover brightness-50"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.src = image_card; // fallback image
+                      }}
+                    />
+                  )}
+                </SwiperSlide>
+              ))
+            ) : (
+              <SwiperSlide>
+                <img
+                  src={image_card}
+                  alt="Default slide"
+                  className="w-full h-full object-cover brightness-50"
+                />
+              </SwiperSlide>
+            )}
+          </Swiper>
+
         </div>
         <div className=' hidden absolute inset-0  flex-col items-center justify-end mb-20 text-white'>
           <div className='flex gap-2 mt-8'>
@@ -86,45 +194,25 @@ const NewsDetail = () => {
       <section className='container mx-auto px-4 md:px-12 py-16'>
         <div>
           <h1 className='text-3xl md:text-4xl font-semibold mb-4 font-primary text-gradient_r'>
-            The Kings Halloween Event Celebration Party
+            {selectedNews.title}
           </h1>
           <div className='flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 mb-8'>
             <div className='flex items-center gap-2'>
               <BsCalendar className='w-4 h-4' />
-              <span>2nd January, 2025</span>
+              <span>{formatDateWithSuffix(selectedNews.createdAt)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <MdAccessTime className='w-4 h-4' />
-              <span>10:00pm</span>
+              <span>{formatTime(selectedNews.createdAt)}</span>
             </div>
             <div className='flex items-center gap-2'>
               <span>👁</span>
-              <span>105 reads</span>
+              <span>{selectedNews.reads} reads</span>
             </div>
           </div>
           <div className='prose max-w-none'>
             <p className='pb-4'>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu
-              turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus
-              nec fringilla accumsan, risus sem sollicitudin lacus, ut interdum
-              tellus elit sed risus. Maecenas eget condimentum velit, sit amet
-              feugiat lectus. Class aptent taciti sociosqu ad litora torquent
-              per conubia nostra, per inceptos himenaeos. Praesent auctor purus
-              luctus enim egestas, ac scelerisque ante pulvinar. Donec ut
-              rhoncus ex. Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur
-              vel bibendum lorem. Morbi convallis convallis diam sit amet
-              lacinia. Aliquam in elementum tellus.
-            </p>
-            <p className='pb-4'>
-              Curabitur tempor quis eros tempus lacinia. Nam bibendum
-              pellentesque quam a convallis. Sed ut vulputate nisi. Integer in
-              felis sed leo vestibulum venenatis. Suspendisse quis arcu sem.
-              Aenean feugiat ex eu vestibulum vestibulum. Morbi a eleifend
-              magna. Nam metus lacus, porttitor eu mauris a, blandit ultrices
-              nibh. Mauris sit amet magna non ligula vestibulum eleifend. Nulla
-              varius volutpat turpis sed lacinia. Nam eget mi in purus lobortis
-              eleifend. Sed nec ante dictum sem condimentum ullamcorper quis
-              venenatis nisi. Proin vitae facilisis nisi, ac posuere leo.
+              {selectedNews.description}
             </p>
           </div>
         </div>
@@ -139,15 +227,17 @@ const NewsDetail = () => {
               <div className='flex justify-between gap-4 sm:gap-6 min-w-max'>
                 {relatedNews.map((item) => (
                   <div
-                    key={item.id}
-                    onClick={() =>
-                      window.scrollTo({ top: 50, behavior: 'smooth' })
-                    }
+                    key={item._id}
+                    onClick={() => {
+                      dispatch(setSelectedNews(item));
+                      navigate(`/news-detail/${item._id}`);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     className='relative group overflow-hidden rounded-2xl shadow-md cursor-pointer min-w-[200px] w-[300px] flex-shrink-0'
                   >
                     <div
                       className='relative h-96 sm:h-64 rounded-2xl bg-cover bg-current bg-center'
-                      style={{ backgroundImage: `url(${item.image})` }}
+                      style={{ backgroundImage: `url(${item.images[0]})` }}
                     >
                       {/* Gradient Overlay */}
                       <div className='absolute bottom-0 left-0 right-0 p-4 sm:p-3 !z-50 '>

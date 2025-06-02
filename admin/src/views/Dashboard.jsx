@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { useDispatch, useSelector } from 'react-redux';
 import {
   BsPeople,
   BsClock,
@@ -20,15 +20,18 @@ import Chart from 'react-apexcharts';
 import { showModal } from '../components/FireModal';
 import eventService from '../store/events/eventService';
 import userService from '../store/users/userService';
+import { getDashboardStats } from '../store/statistics/statisticsSlice';
 
 const MySwal = withReactContent(Swal);
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [addEventImages, setAddEventImages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventLocation, setEventLocation] = useState('');
+  const { dashboardStats = {}, isLoading: statsLoading = false } = useSelector((state) => state.statistics || {});
   const [eventTime, setEventTime] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -39,6 +42,10 @@ const Dashboard = () => {
 
   const [files, setFiles] = useState([]);
   const [removedFiles, setRemovedFiles] = useState([]);
+
+  useEffect(() => {
+    dispatch(getDashboardStats());
+  }, [dispatch]);
 
   const handleRemoveImage = (index) => {
     // Mark file as removed
@@ -205,7 +212,7 @@ const Dashboard = () => {
   const series = [
     {
       name: 'Users',
-      data: [300, 400, 350, 500, 490, 600, 700, 800, 900, 850, 750, 650],
+      data: dashboardStats?.monthlyUsers?.map(item => item.count) || [],
     },
   ];
 
@@ -222,7 +229,10 @@ const Dashboard = () => {
     },
   };
 
-  const seriesDonut = [33, 67];
+  // const seriesDonut = [33, 67];
+  const seriesDonut = dashboardStats?.eventTypeDistribution?.map(type =>
+    parseFloat(type.percentage)
+  ) || [];
 
   const optionsColumn = {
     chart: {
@@ -265,9 +275,23 @@ const Dashboard = () => {
   const seriesColumn = [
     {
       name: 'Earnings',
-      data: [80, 120, 150, 200, 180, 220, 300, 250, 270, 350, 370, 400],
+      data: Array.from({ length: 12 }, (_, i) => {
+        const monthData = dashboardStats?.monthlyRevenue?.find(
+          item => item._id === i + 1
+        );
+        return monthData ? monthData.revenue / 1000 : 0;
+      })
     },
   ];
+
+  if (statsLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
 
   return (
     <div className='space-y-4 md:p-6'>
@@ -300,7 +324,7 @@ const Dashboard = () => {
         <StatCard
           icon={<BsPeople className='text-xl' />}
           label='Total Members'
-          value='1349'
+          value={dashboardStats?.totalMembers?.toLocaleString() || '0'}
           IconWrapper={({ children }) => (
             <div className='bg-[#F0F6FF] text-[#2F6FED] p-3 rounded-lg'>
               {children}
@@ -310,7 +334,7 @@ const Dashboard = () => {
         <StatCard
           icon={<BsClock className='text-xl' />}
           label='Pending Registrations'
-          value='345'
+          value={dashboardStats?.pendingRegistrations?.toLocaleString() || '0'}
           IconWrapper={({ children }) => (
             <div className='bg-[#FFF8EC] text-[#FDB022] p-3 rounded-lg'>
               {children}
@@ -320,17 +344,27 @@ const Dashboard = () => {
         <StatCard
           icon={<FaUserTimes className='text-xl' />}
           label='Non-Engaged Users'
-          value='200'
+          value={dashboardStats?.nonEngagedUsers?.toLocaleString() || '0'}
           IconWrapper={({ children }) => (
             <div className='bg-[#FFF0F0] text-[#F04438] p-3 rounded-lg'>
               {children}
             </div>
           )}
         />
+        {/* <StatCard
+          icon={<IoSparkles className='text-xl' />}
+          label='Total Events'
+          value={dashboardStats?.totalEvents?.toLocaleString() || '0'}
+          IconWrapper={({ children }) => (
+            <div className='bg-[#F0FFF4] text-[#12B76A] p-3 rounded-lg'>
+              {children}
+            </div>
+          )}
+        /> */}
         <StatCard
           icon={<IoSparkles className='text-xl' />}
           label='Total Events'
-          value='3,500'
+          value={(dashboardStats?.totalEvents || 0).toLocaleString()}
           IconWrapper={({ children }) => (
             <div className='bg-[#F0FFF4] text-[#12B76A] p-3 rounded-lg'>
               {children}
@@ -384,16 +418,14 @@ const Dashboard = () => {
               />
             </div>
             <div className='space-y-3'>
-              <EventTypeRow
-                color='#900C3F'
-                label='MEMBERS ONLY'
-                percentage='67.94%'
-              />
-              <EventTypeRow
-                color='#FFD700'
-                label='VIP ONLY'
-                percentage='33.94%'
-              />
+              {dashboardStats?.eventTypeDistribution?.map((type, index) => (
+                <EventTypeRow
+                  key={index}
+                  color={index === 0 ? '#900C3F' : '#FFD700'}
+                  label={type?.type ? type.type.toUpperCase() : 'Unknown'}
+                  percentage={`${type?.percentage || 0}%`}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -414,16 +446,14 @@ const Dashboard = () => {
             />
           </div>
           <div className='space-y-3'>
-            <EventTypeRow
-              color='#900C3F'
-              label='MEMBERS ONLY'
-              percentage='67.94%'
-            />
-            <EventTypeRow
-              color='#FFD700'
-              label='VIP ONLY'
-              percentage='33.94%'
-            />
+            {dashboardStats?.eventTypeDistribution?.map((type, index) => (
+              <EventTypeRow
+                key={index}
+                color={index === 0 ? '#900C3F' : '#FFD700'}
+                label={type?.type ? type.type.toUpperCase() : 'Unknown'}
+                percentage={`${type?.percentage || 0}%`}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -609,11 +639,10 @@ const Dashboard = () => {
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
-                    className={` items-center gap-2 p-2 ${
-                      selectedUsers.some((u) => u.id === user.id)
+                    className={` items-center gap-2 p-2 ${selectedUsers.some((u) => u.id === user.id)
                         ? 'hidden'
                         : 'flex'
-                    }`}
+                      }`}
                   >
                     <input
                       type='checkbox'

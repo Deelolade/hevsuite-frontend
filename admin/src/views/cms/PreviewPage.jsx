@@ -1,76 +1,65 @@
-// import Footer from "@/components/shared/HomeLayout/footer_new";
-// import Header from "@/components/shared/HomeLayout/header";
-// import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import React, { useEffect, useState } from "react";
-// import { Button, Tooltip } from "antd";
-// import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import { ImageSlides } from "./ImageSlides";
-import Profile from "../../components/Profile";
-import { BiArrowBack } from "react-icons/bi";
-import HeaderOne from "./HeaderOne";
 
-export default function PagePreview() {
-  const navigate = useNavigate();
-  const image = sessionStorage.getItem("uploadedImage") || "";
-  const title = sessionStorage.getItem("mainText") || "";
-
-  const editorContent = sessionStorage.getItem("editorContent") || "";
-  const savedMembers = JSON.parse(sessionStorage.getItem("members")) || [];
-  const savedContent = JSON.parse(sessionStorage.getItem("contents")) || [];
-  const savedSlides = JSON.parse(sessionStorage.getItem("slides")) || [];
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, []);
-
+const PagePreviewContent = ({ slides, editors, title }) => {
   return (
-    <div className="relative md:p-6 md:-mr-10">
-      <div className="flex items-center mb-4 justify-between">
-        <div
-          className="p-2 rounded-full flex items-center gap-2  px-6 border border-gray-500 cursor-pointer"
-          onClick={() => navigate(-1)}
-        >
-          <BiArrowBack /> Back
+    <div className="relative p-6">
+      {/* Page Title */}
+      {title && (
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
         </div>
-        <div className="flex-1 max-w-2xl mx-auto px-4">
-          <div className="relative"></div>
-        </div>
-        <Profile />
-      </div>
-
-      {/* <Header /> */}
-      {/* <HeaderOne /> */}
-      {savedSlides.length > 0 && (
-        <ImageSlides
-          // title={savedSlides[0].title}
-          // text={savedSlides[0].content}
-          // path="/auth"
-          showLink={false}
-          // img={image}
-          savedSlides={savedSlides}
-        />
       )}
 
-      {savedSlides.length === 0 && <div className="pt-20"></div>}
-      <div className="mt-2"></div>
+      {/* Hero Slides Section */}
+      {slides.length > 0 && slides.some((slide) => slide.image || slide.title) && (
+        <div className="mb-8">
+          <ImageSlides
+            showLink={false}
+            savedSlides={slides.map((slide) => ({
+              title: slide.title,
+              content: "",
+              image: slide.image,
+              link: slide.link,
+              fileType: slide.fileType,
+            }))}
+          />
+        </div>
+      )}
 
-      {savedContent !== "" &&
-        savedContent.map((r, index) => (
-          <div key={index}>
-            <div className="ql-editor bg-white rounded-lg [&_a]:text-blue-500 [&_a]:underline">
-              <div
-                dangerouslySetInnerHTML={{ __html: r.content }}
-                className="z-50 "
-              />
+      {/* Content Sections */}
+      {editors.length > 0 && (
+        <div className="space-y-8">
+          {editors.map((editor, index) => (
+            <div key={editor.id} className="bg-white rounded-lg">
+              {editor.title && editor.title !== "Main Content" && (
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">{editor.title}</h2>
+              )}
+              {editor.content && (
+                <div className="prose max-w-none">
+                  <div
+                    className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: editor.content }}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {(!slides.length || !slides.some((slide) => slide.image || slide.title)) &&
+        (!editors.length || !editors.some((editor) => editor.content)) && (
+          <div className="text-center py-16">
+            <div className="text-gray-500">
+              <h3 className="text-xl font-medium mb-2">No Content to Preview</h3>
+              <p>Add some slides or content to see the preview</p>
             </div>
           </div>
-        ))}
-
-      <div className="mt-10"></div>
-      {/* <Footer /> */}
+        )}
     </div>
   );
-}
+};
+
+export default PagePreviewContent;

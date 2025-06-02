@@ -22,12 +22,13 @@ const RegisterStep2 = () => {
   }, []);
 
   const navigate = useNavigate();
-
+  const { Settings } = useSelector((state) => state.generalSettings);
   const { currentStep, formData: data } = useSelector(
     (state) => state.register
   );
 
   const [formData, setFormData] = useState({ ...data.step2 });
+  const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
 
@@ -37,6 +38,42 @@ const RegisterStep2 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Check if the form is valid before proceeding
+    const newErrors = {};
+
+    if (!formData.title) newErrors.title = "Title is required";
+    if (!formData.forename) newErrors.forename = "Forename is required";
+    if (!formData.surname) newErrors.surname = "Surname is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else {
+      // ✅ Age validation
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      const isBirthdayPassed = monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0);
+      const actualAge = isBirthdayPassed ? age : age - 1;
+
+      const minAge = Settings?.requiredJoiningAge ?? 18;
+      if (actualAge < minAge) {
+        newErrors.dob = `You must be at least ${minAge} years old.`;
+      }
+    }
+    if (!formData.nationality) newErrors.nationality = "Nationality is required";
+    if (!formData.relationshipStatus)
+      newErrors.relationshipStatus = "Relationship status is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Clear errors
+    setErrors({});
     dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
     dispatch(nextStep());
     navigate('/register-3');
@@ -54,11 +91,13 @@ const RegisterStep2 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -73,11 +112,10 @@ const RegisterStep2 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 2
-                      ? 'bg-[#0A5440]'
-                      : 'bg-white border-2 border-gray-300'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 2
+                    ? 'bg-[#0A5440]'
+                    : 'bg-white border-2 border-gray-300'
+                    }`}
                 >
                   {index < 1 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -93,9 +131,8 @@ const RegisterStep2 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 1 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 1 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -122,7 +159,7 @@ const RegisterStep2 = () => {
                 Title<span className='text-red-500'>*</span>
               </label>
               <select
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.title ? 'border-red-500' : ''}`}
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -136,6 +173,7 @@ const RegisterStep2 = () => {
                 <option value='Ms'>Ms</option>
                 <option value='Dr'>Dr</option>
               </select>
+              {errors.title ? <p className="text-red-500 text-xs mt-1">{errors.title}</p> : <></>}
             </div>
           </div>
 
@@ -147,13 +185,14 @@ const RegisterStep2 = () => {
               <input
                 type='text'
                 placeholder='Enter first name'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.forename ? 'border-red-500' : ''}`}
                 value={formData.forename}
                 onChange={(e) =>
                   setFormData({ ...formData, forename: e.target.value })
                 }
                 required
               />
+              {errors.forename && <p className="text-red-500 text-xs mt-1">{errors.forename}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -162,13 +201,14 @@ const RegisterStep2 = () => {
               <input
                 type='text'
                 placeholder='Enter surname'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.surname ? 'border-red-500' : ''}`}
                 value={formData.surname}
                 onChange={(e) =>
                   setFormData({ ...formData, surname: e.target.value })
                 }
                 required
               />
+              {errors.surname && <p className="text-red-500 text-xs mt-1">{errors.surname}</p>}
             </div>
           </div>
 
@@ -178,7 +218,8 @@ const RegisterStep2 = () => {
                 Gender<span className='text-red-500'>*</span>
               </label>
               <select
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+                name='gender'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.gender ? 'border-red-500' : ''}`}
                 value={formData.gender}
                 onChange={(e) =>
                   setFormData({ ...formData, gender: e.target.value })
@@ -189,6 +230,7 @@ const RegisterStep2 = () => {
                 <option value='male'>Male</option>
                 <option value='female'>Female</option>
               </select>
+              {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -196,13 +238,14 @@ const RegisterStep2 = () => {
               </label>
               <input
                 type='date'
-                className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base'
+                className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.dob ? 'border-red-500' : ''}`}
                 value={formData.dob}
                 onChange={(e) =>
                   setFormData({ ...formData, dob: e.target.value })
                 }
                 required
               />
+              {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
             </div>
           </div>
 
@@ -211,23 +254,26 @@ const RegisterStep2 = () => {
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
                 Nationality<span className='text-red-500'>*</span>
               </label>
-              <CountrySelect
-                onChange={(country) =>
-                  changeNationalityHandler(country, 'nationality')
-                }
-                onTextChange={() =>
-                  setFormData((prev) => ({ ...prev, nationality: '' }))
-                }
-                defaultValue={formData.nationality}
-                placeHolder='Select Country'
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '5px',
-                  border: 'none',
-                  fontSize: '16px',
-                }}
-              />
+              <div className={`${errors.nationality ? 'border border-red-500' : ''}`}>
+                <CountrySelect
+                  onChange={(country) =>
+                    changeNationalityHandler(country, 'nationality')
+                  }
+                  onTextChange={() =>
+                    setFormData((prev) => ({ ...prev, nationality: '' }))
+                  }
+                  defaultValue={formData.nationality}
+                  placeHolder='Select Country'
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    borderRadius: '5px',
+                    border: 'none',
+                    fontSize: '16px',
+                  }}
+                />
+              </div>
+              {errors.nationality && <p className="text-red-500 text-xs mt-1">{errors.nationality}</p>}
             </div>
             <div>
               <label className='block mb-1 md:mb-2 text-sm md:text-base'>
@@ -261,7 +307,7 @@ const RegisterStep2 = () => {
               Relationship Status<span className='text-red-500'>*</span>
             </label>
             <select
-              className='w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base'
+              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg appearance-none bg-white text-sm md:text-base ${errors.relationshipStatus ? 'border-red-500' : ''}`}
               value={formData.relationshipStatus}
               onChange={(e) =>
                 setFormData({ ...formData, relationshipStatus: e.target.value })
@@ -274,6 +320,9 @@ const RegisterStep2 = () => {
               <option value='divorced'>Divorced</option>
               <option value='widowed'>Widowed</option>
             </select>
+            {errors.relationshipStatus && (
+              <p className="text-red-500 text-xs mt-1">{errors.relationshipStatus}</p>
+            )}
           </div>
         </form>
 
@@ -298,7 +347,7 @@ const RegisterStep2 = () => {
             </Link>
             <Link
               to='/register'
-              className='text-gray-600 font-medium text-sm md:text-base'
+              className='text-quatr font-medium text-sm md:text-base'
               onClick={() => {
                 dispatch(prevStep());
               }}

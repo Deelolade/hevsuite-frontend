@@ -1,91 +1,268 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { BiSearch } from "react-icons/bi";
 import {
   BsCheckCircleFill,
   BsThreeDots,
-  BsThreeDotsVertical,
   BsXCircleFill,
 } from "react-icons/bs";
 import Modal from "react-modal";
 import avatar from "../../assets/user.avif";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
+import {
+  getEvidenceRequests,
+  updateEvidenceStatus,
+  assignRequestToAdmin as assignRequest
+} from "../../store/evidence/evidenceSlice";
+import { getAdminUsers } from "../../store/users/userSlice";
+import evidenceService from "../../store/evidence/evidenceService";
+import authService from "../../store/auth/authService";
+import Spinner from "../../components/Spinner";
+import { toast } from "react-toastify";
+import axios from 'axios';
+import { base_url } from '../../constants/axiosConfig';
+import debounce from 'lodash/debounce';
 
 const Evidence = () => {
-  const [statusFilter, setStatusFilter] = useState("Pending");
+  const dispatch = useDispatch();
+  const { evidenceRequests, isLoading, isError, message } = useSelector(
+    (state) => state.evidence
+  );
+  const { adminUsers = [], isLoading: isLoadingAdmins } = useSelector(
+    (state) => state.adminUsers
+  );
+  const { user } = useSelector((state) => state.auth);
+  const { admin } = useSelector((state) => state.adminProfile);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Cache for API responses
+  const [cache, setCache] = useState({
+    evidenceRequests: null,
+    adminUsers: null,
+    userProfile: null
+  });
+
+  // Fetch current user profile with caching
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (cache.userProfile) {
+          setCurrentUser(cache.userProfile);
+          return;
+        }
+
+        const response = await authService.getProfile();
+        if (response && response.user) {
+          setCurrentUser(response.user);
+          setCache(prev => ({ ...prev, userProfile: response.user }));
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        toast.error("Failed to fetch user profile");
+      }
+    };
+
+    fetchProfile();
+  }, [cache.userProfile]);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      setSearchTerm(term);
+    }, 500),
+    []
+  );
+
+  // Fetch evidence requests and admin users with caching
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Only fetch if cache is empty or it's initial load
+        if (!cache.evidenceRequests || isInitialLoad) {
+          await dispatch(getEvidenceRequests()).unwrap();
+          setCache(prev => ({ ...prev, evidenceRequests: evidenceRequests }));
+        }
+        
+        if (!cache.adminUsers || isInitialLoad) {
+          await dispatch(getAdminUsers()).unwrap();
+          setCache(prev => ({ ...prev, adminUsers: adminUsers }));
+        }
+
+        setIsInitialLoad(false);
+      } catch (error) {
+        toast.error('Failed to fetch data');
+      }
+    };
+
+    fetchData();
+  }, [dispatch, isInitialLoad]);
+
+  const [activeTab, setActiveTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [openOptionsId, setOpenOptionsId] = useState(null);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
-  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
-
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
 
-  const [adminList] = useState([
-    { id: 1, name: "Admin 1" },
-    { id: 2, name: "Admin 2" },
-    { id: 3, name: "Admin 3" },
-  ]);
-  const requests = [
-    {
-      id: 1,
-      user: {
-        name: "Andrew Bojangles",
-        avatar: avatar,
-      },
-      type: "Evidence Review",
-      submissionDate: "Jan 16, 2025",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      user: {
-        name: "Andrew Bojangles",
-        avatar: avatar,
-      },
-      type: "Evidence Review",
-      submissionDate: "Jan 16, 2025",
-      status: "Declined",
-    },
-  ];
-
-  const handleDetail = (ask) => {
-    setSelectedRequest(ask);
+  const handleDetail = (request) => {
+    setSelectedRequest(request);
     setOpenDetails(true);
     setOpenOptionsId(null);
   };
 
-  const handleAssign = (ask) => {
-    setSelectedRequest(ask);
-    setIsAssignModalOpen(true);
+  const handleAssign = (request) => {
+    setSelectedRequest(request);
+    setShowAssignModal(true);
     setOpenOptionsId(null);
   };
 
-  const formattedRequests = requests.map((request) => ({
-    ID: request.id,
-    Name: request.user.name,
-    Email: request.user.email,
+  const handleAssignToAdmin = async (requestId, adminId = null) => {
+    try {
+      const targetAdminId = adminId || currentUser?._id;
+      
+      const response = await axios.put(
+        `${base_url}/api/support-requests/${requestId}`,
+        { 
+          assignedTo: targetAdminId,
+          status: 'Pending'
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+        }
+      );
+
+      if (response.data) {
+        // Update local cache instead of making a new API call
+        const updatedRequests = evidenceRequests.map(request => 
+          request._id === requestId 
+            ? { ...request, assignedTo: targetAdminId }
+            : request
+        );
+        
+        setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
+        toast.success("Request assigned successfully");
+        setShowAssignModal(false);
+      }
+    } catch (error) {
+      console.error('Error assigning request:', error);
+      const errorMessage = error.response?.data?.message || "Failed to assign request";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await dispatch(updateEvidenceStatus({ id, status })).unwrap();
+      
+      // Update local cache
+      const updatedRequests = evidenceRequests.map(request => 
+        request._id === id 
+          ? { ...request, status }
+          : request
+      );
+      
+      setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
+      toast.success(`Request ${status.toLowerCase()} successfully`);
+      
+      if (status === "Approved") {
+        setShowApproveModal(false);
+      } else if (status === "Declined") {
+        setShowDeclineModal(false);
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to update status");
+    }
+  };
+
+  const isAssignedToCurrentUser = (request) => {
+    return request.assignedTo?._id === admin?._id;
+  };
+
+  // Filter requests based on active tab and search term
+  const getFilteredRequests = () => {
+    if (!evidenceRequests) {
+      console.log('No evidence requests available');
+      return [];
+    }
+
+    let filtered = [...evidenceRequests];
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter((request) => {
+        const matchesName = request.user?.forename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          request.user?.surname?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = request.type?.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesName || matchesType;
+      });
+    }
+
+    // Filter by status if not "all"
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((request) => request.status === statusFilter);
+    }
+
+    // Filter by tab
+    if (activeTab === "assigned") {
+      // Show only requests assigned to current user
+      filtered = filtered.filter((request) => {
+        const requestAssignedTo = request.assignedTo?._id || request.assignedTo;
+        const isAssigned = requestAssignedTo === currentUser?._id;
+        return isAssigned;
+      });
+    } else if (activeTab === "other") {
+      // Show requests created by the current user
+      filtered = filtered.filter((request) => {
+        const requestCreatedBy = request.createdBy?._id || request.createdBy;
+        const isCreatedByMe = requestCreatedBy === currentUser?._id;
+              return isCreatedByMe;
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredRequests = getFilteredRequests();
+
+  const formattedRequests = filteredRequests.map((request) => ({
+    ID: request._id,
+    Name: `${request.user?.name || ''} ${request.user?.surname || ''}`.trim() || 'Unknown User',
+    Email: request.user?.primaryEmail || 'No Email',
     Type: request.type,
-    SubmissionDate: request.submissionDate,
+    SubmissionDate: new Date(request.submissionDate).toLocaleDateString(),
     Status: request.status,
     Messages: request.messages
-      .map((msg) => `${msg.date}: ${msg.text}`)
-      .join(" | "),
+      ?.map((msg) => `${new Date(msg.date).toLocaleDateString()}: ${msg.text}`)
+      .join(" | ") || "",
   }));
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   return (
     <div>
       <div>
         <div className="md:flex justify-between grid grid-cols-2 items-center mb-4">
-          <h2 className="text-xl font-primary text-[1A1A1A]">User Requests</h2>
-          <div className="flex  flex-col md:flex-row items-center gap-4">
+          {/* <h2 className="text-xl font-primary text-[1A1A1A]"></h2> */}
+          <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="relative">
               <BiSearch className="absolute hidden md:flex left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search by name or type"
                 className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
+                onChange={(e) => debouncedSearch(e.target.value)}
               />
             </div>
             <select
@@ -93,15 +270,50 @@ const Evidence = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option>Pending</option>
-              <option>Approved</option>
-              <option>Declined</option>
+              <option value="all">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Declined">Declined</option>
             </select>
             <ExportButton
               data={formattedRequests}
-              fileName="evidence"
+              fileName="evidence_requests"
             />
           </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-row md:ml-0 -ml-2 gap-4">
+          <button
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "all"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
+            onClick={() => setActiveTab("all")}
+          >
+            Evidence Review
+          </button>
+          <button
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "assigned"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
+            onClick={() => setActiveTab("assigned")}
+          >
+            Your Assigned Requests
+          </button>
+          <button
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "other"
+                ? "bg-primary text-white"
+                : "bg-white border text-gray-700"
+            }`}
+            onClick={() => setActiveTab("other")}
+          >
+            Other Requests
+          </button>
         </div>
 
         {/* Requests Table */}
@@ -110,7 +322,7 @@ const Evidence = () => {
             <thead>
               <tr className="border-b text-quatr font-semibold">
                 <th className="text-left py-4">No</th>
-                <th className="text-center py-4 ">User</th>
+                <th className="text-center py-4">User</th>
                 <th className="text-left py-4">Type</th>
                 <th className="text-left py-4">Submitted on</th>
                 <th className="text-left py-4">Status</th>
@@ -118,18 +330,19 @@ const Evidence = () => {
               </tr>
             </thead>
             <tbody>
-              {requests.map((request) => (
-                <tr key={request.id} className="border-b text-quatr">
-                  <td className="py-4">{request.id}</td>
+              {filteredRequests.map((request, index) => (
+                <tr key={request._id} className="border-b text-quatr">
+                  <td className="py-4">{index + 1}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-3">
+                      {/* Debug: {request.user.forename} */}
                       <img
-                        src={request.user.avatar}
-                        alt={request.user.name}
+                        src={request.user?.profilePhoto || avatar}
+                        alt={request.user?.forename || 'User'}
                         className="w-8 h-8 rounded-full"
                       />
                       <span className="font-primary w-32 md:w-fit text-[#323C47]">
-                        {request.user.name}
+                        {`${request.user?.forename || ""} ${request.user?.surname || "Unknown User"}`}
                       </span>
                     </div>
                   </td>
@@ -137,13 +350,18 @@ const Evidence = () => {
                     <p className="py-4 w-32 md:w-fit">{request.type}</p>
                   </td>
                   <td className="py-4">
-                    <p className="py-4 w-32 md:w-fit">{request.submissionDate}</p>
+                    <p className="py-4 w-32 md:w-fit">
+                      {new Date(request.submissionDate).toLocaleDateString()}
+                    </p>
                   </td>
                   <td className="py-4">
                     <span
-                      className={`px-3 py-1  rounded-full text-sm ${
-                        request?.status === "Declined" ? "text-red-500" : ""
-                      }`}
+                      className={`px-3 py-1 rounded-full text-sm ${request.status === "Declined"
+                        ? "text-red-500"
+                        : request.status === "Approved"
+                          ? "text-green-500"
+                          : "text-yellow-500"
+                        }`}
                     >
                       {request.status}
                     </span>
@@ -152,23 +370,23 @@ const Evidence = () => {
                     <div className="flex items-center gap-2">
                       {request.status === "Pending" && (
                         <>
-                          <button className="p-1 text-green-600 hover:text-green-700">
-                            <BsCheckCircleFill
-                              size={24}
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setIsApproveModalOpen(true);
-                              }}
-                            />
+                          <button
+                            className="p-1 text-green-600 hover:text-green-700"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setShowApproveModal(true);
+                            }}
+                          >
+                            <BsCheckCircleFill size={24} />
                           </button>
-                          <button className="p-1 text-red-600 hover:text-red-700">
-                            <BsXCircleFill
-                              size={24}
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setIsDeclineModalOpen(true);
-                              }}
-                            />
+                          <button
+                            className="p-1 text-red-600 hover:text-red-700"
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setShowDeclineModal(true);
+                            }}
+                          >
+                            <BsXCircleFill size={24} />
                           </button>
                         </>
                       )}
@@ -176,14 +394,14 @@ const Evidence = () => {
                         className="p-1 text-gray-400 hover:text-gray-500"
                         onClick={() => {
                           setOpenOptionsId(
-                            openOptionsId === request.id ? null : request.id
+                            openOptionsId === request._id ? null : request._id
                           );
                         }}
                       >
                         <BsThreeDots size={20} />
                       </button>
 
-                      {openOptionsId === request.id && (
+                      {openOptionsId === request._id && (
                         <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
                           <button
                             className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
@@ -192,7 +410,7 @@ const Evidence = () => {
                             Detail
                           </button>
                           <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                             onClick={() => handleAssign(request)}
                           >
                             Assign Admin
@@ -207,60 +425,12 @@ const Evidence = () => {
           </table>
         </div>
       </div>
-      <Modal
-        isOpen={isAssignModalOpen}
-        onRequestClose={() => setIsAssignModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
-      >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Assign Admin</h2>
-            <button
-              onClick={() => setIsAssignModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-2">Select Admin</label>
-              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
-                <option value="">Start Typing Admin Name</option>
-                {adminList.map((admin) => (
-                  <option key={admin.id} value={admin.id}>
-                    {admin.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={() => setIsAssignModalOpen(false)}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-                onClick={() => {
-                  // Handle admin assignment here
-                  setIsAssignModalOpen(false);
-                }}
-              >
-                Assign Admin
-              </button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      {/* Detail Modal */}
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[96vw]"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
@@ -280,63 +450,53 @@ const Evidence = () => {
             {/* User Info */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+              {/* src={selectedRequest.user?.profilePhoto || avatar}
+              alt={selectedRequest.user?.forename || 'User'} */}
                 <img
-                  src={selectedRequest?.user?.avatar}
-                  alt={selectedRequest?.user?.name}
+                  src={selectedRequest?.user?.profilePhoto || avatar}
+                  alt={selectedRequest?.user?.forename || 'User'}
                   className="w-10 h-10 rounded-full"
                 />
                 <span className="font-medium text-[#323C47]">
-                  {selectedRequest?.user?.name}
+                  {/* {selectedRequest.user?.forename} {selectedRequest.user?.surname}  */}
                 </span>
               </div>
-              <span className="text-gray-600">
-                {selectedRequest?.user?.email || "Andrew@gmail.com"}
-              </span>
+              <br />
             </div>
 
             {/* Request Type */}
             <div>
-              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
-                <option>Evidence Review</option>
-                <option>Document Review</option>
-                <option>Identity Verification</option>
+              <select
+                className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                disabled
+              >
+                <option>{selectedRequest?.type}</option>
               </select>
             </div>
 
             {/* Preview Images */}
             <div className="flex gap-4">
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={idcards}
-                  alt="Evidence 1"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(idcards);
-                  }}
+              {selectedRequest?.images?.map((image, index) => (
+                <div
+                  key={index}
+                  className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center"
                 >
-                  Preview
-                </button>
-              </div>
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={avatar}
-                  alt="Evidence 2"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(avatar);
-                  }}
-                >
-                  Preview
-                </button>
-              </div>
+                  <img
+                    src={image}
+                    alt={`Evidence ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                  />
+                  <button
+                    className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                    onClick={() => {
+                      setShowPreviewModal(true);
+                      setSelectedPreviewImage(image);
+                    }}
+                  >
+                    Preview
+                  </button>
+                </div>
+              ))}
             </div>
 
             {showPreviewModal && (
@@ -356,26 +516,25 @@ const Evidence = () => {
             {/* Request Message */}
             <div className="p-4 border rounded-lg">
               <p className="text-gray-600">
-                I want You to review my document of residence I want You to
-                review my document of residence I want You to review my document
-                of residence...
+                {selectedRequest?.messages?.[0]?.text || "No message provided"}
               </p>
             </div>
           </div>
         </div>
       </Modal>
 
+      {/* Approve Modal */}
       <Modal
-        isOpen={isApproveModalOpen}
-        onRequestClose={() => setIsApproveModalOpen(false)}
+        isOpen={showApproveModal}
+        onRequestClose={() => setShowApproveModal(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Accept Request</h2>
+            <h2 className="text-xl font-semibold">Approve Request</h2>
             <button
-              onClick={() => setIsApproveModalOpen(false)}
+              onClick={() => setShowApproveModal(false)}
               className="text-gray-400 hover:text-gray-600 text-2xl"
             >
               ×
@@ -386,52 +545,52 @@ const Evidence = () => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src={selectedRequest.user.avatar}
-                  alt=""
+                  src={selectedRequest?.user?.avatar || avatar}
+                  alt={selectedRequest?.user?.name || 'User'}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
-                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <p className="text-sm text-gray-500">
+                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                  </p>
                 </div>
               </div>
               <p className="text-gray-600">
-                Are you sure you want to accept this request?
+                Are you sure you want to approve this request?
               </p>
             </div>
           )}
 
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setIsApproveModalOpen(false)}
+              onClick={() => setShowApproveModal(false)}
               className="px-4 py-2 border rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Handle accept action here
-                setIsApproveModalOpen(false);
-              }}
+              onClick={() => handleStatusUpdate(selectedRequest._id, "Approved")}
               className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
             >
-              Accept
+              Approve
             </button>
           </div>
         </div>
       </Modal>
 
+      {/* Decline Modal */}
       <Modal
-        isOpen={isDeclineModalOpen}
-        onRequestClose={() => setIsDeclineModalOpen(false)}
+        isOpen={showDeclineModal}
+        onRequestClose={() => setShowDeclineModal(false)}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[96vw]"
         overlayClassName="fixed inset-0 bg-black/50"
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Reject Request</h2>
+            <h2 className="text-xl font-semibold">Decline Request</h2>
             <button
-              onClick={() => setIsDeclineModalOpen(false)}
+              onClick={() => setShowDeclineModal(false)}
               className="text-gray-400 hover:text-gray-600 text-2xl"
             >
               ×
@@ -442,41 +601,139 @@ const Evidence = () => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src={selectedRequest.user.avatar}
-                  alt=""
+                  src={selectedRequest?.user?.avatar || avatar}
+                  alt={selectedRequest?.user?.name || 'User'}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest.user.name}</h3>
-                  <p className="text-sm text-gray-500">Andrew@gmail.com</p>
+                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <p className="text-sm text-gray-500">
+                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                  </p>
                 </div>
               </div>
               <p className="text-gray-600">
-                Are you sure you want to reject this request?
+                Are you sure you want to decline this request?
               </p>
             </div>
           )}
 
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setIsDeclineModalOpen(false)}
+              onClick={() => setShowDeclineModal(false)}
               className="px-4 py-2 border rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Handle reject action here
-                setIsDeclineModalOpen(false);
-              }}
+              onClick={() => handleStatusUpdate(selectedRequest._id, "Declined")}
               className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
             >
-              Reject
+              Decline
             </button>
           </div>
         </div>
       </Modal>
-    </div>
+
+      {/* Assign Admin Modal */}
+      <Modal
+        isOpen={showAssignModal}
+        onRequestClose={() => setShowAssignModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[96vw]"
+        overlayClassName="fixed inset-0 bg-black/50"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Assign Admin</h2>
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          {selectedRequest && (
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={selectedRequest?.user?.profilePhoto || avatar}
+                  alt={selectedRequest?.user?.name || 'User'}
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <p className="text-sm text-gray-500">
+                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                  </p>
+                </div>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Select an admin to assign this request to:
+              </p>
+
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                <button
+                  onClick={() => handleAssignToAdmin(selectedRequest._id)}
+                  className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 flex items-center gap-3"
+                >
+                  <img
+                    src={user?.profilePhoto || avatar}
+                    alt={user?.name || 'Current User'}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <span>Assign to myself</span>
+                </button>
+
+                {isLoadingAdmins ? (
+                  <div className="text-center py-4">
+                    <Spinner />
+                  </div>
+                ) : adminUsers && adminUsers.length > 0 ? (
+                  adminUsers.map((admin) => (
+                    <button
+                      key={admin._id}
+                      onClick={() => handleAssignToAdmin(selectedRequest._id, admin._id)}
+                      className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 flex items-center gap-3"
+                    >
+                      <img
+                        src={admin.profilePhoto || avatar}
+                        alt={admin.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <div className="flex flex-col">
+                        <span>{admin.name}</span>
+                        <span className="text-sm text-gray-500">{admin.primaryEmail}</span>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    No other admins available
+                  </div>
+                )}
+
+                <button
+                  onClick={() => handleAssignToAdmin(selectedRequest._id, null)}
+                  className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 text-red-600"
+                >
+                  Unassign (make available to all admins)
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div >
   );
 };
 

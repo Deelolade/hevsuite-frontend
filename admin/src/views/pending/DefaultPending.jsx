@@ -1,22 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import avatar from "../../assets/user.avif";
+import Modal from "react-modal";
+import { useSelector } from "react-redux";
 
 import {
   BsThreeDotsVertical,
   BsXCircleFill,
   BsCheckCircleFill,
 } from "react-icons/bs";
-import Modal from "react-modal";
 
-const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
+const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccept, onReject, selectedFilter, setSelectedFilter, selectedSort, setSelectedSort, showFilterDropdown, setShowFilterDropdown, showSortDropdown, setShowSortDropdown, filterOptions, sortOptions }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Filter");
-  const [selectedSort, setSelectedSort] = useState("Sort by");
-
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [selectedActionUser, setSelectedActionUser] = useState(null);
+  const filterDropdownRef = useRef(null);
+  const sortDropdownRef = useRef(null);
+
+  // Get required referral number from settings
+  const settings = useSelector((state) => state.settings);
+  const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3;
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -34,10 +38,17 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     }
   };
 
-  const handleRowClick = (user) => {
-    // console.log(user)
+  const handleViewUser = (user) => {
     setViewUser(user);
     setShowViewPending(true);
+  };
+
+  const handleAccept = (user) => {
+    onAccept(user);
+  };
+
+  const handleReject = (user) => {
+    onReject(user);
   };
 
   const handleActionClick = (action, user, e) => {
@@ -47,122 +58,89 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
     setIsActionModalOpen(true);
   };
 
-  const handleAcceptUser = (user) => {
-    console.log(`User accepted:`, user);
+  const getSupportersStatusColor = (user) => {
+    const [current, required] = user.supportersStatus.split('/').map(Number);
+    
+    // If current equals required, it's complete (green)
+    if (current === required) return "bg-green-500";
+    
+    // If current is 0, it's no supporters (red)
+    if (current === 0) return "bg-red-500";
+    
+    // If current is less than required, it's in progress (yellow)
+    if (current < required) return "bg-yellow-500";
+    
+    // If current is more than required (shouldn't happen but just in case)
+    return "bg-green-500";
   };
 
-  const handleRejectUser = (user) => {
-    console.log(`User rejected:`, user);
+  const getSupportersStatusText = (user) => {
+    const [current, required] = user.supportersStatus.split('/').map(Number);
+    
+    // If current equals required, it's complete
+    if (current === required) return "Complete";
+    
+    // If current is 0, it's no supporters
+    if (current === 0) return "No Supporters";
+    
+    // If current is less than required, show progress
+    if (current < required) return `${current}/${required} Supporters`;
+    
+    // If current is more than required (shouldn't happen but just in case)
+    return "Complete";
   };
 
   return (
     <>
-      <div className="flex justify-end md:gap-8 gap-4 mb-6">
-        {/* Filter Button */}
-        <div className="relative">
+      {/* Filter and Sort dropdowns above the table, right-aligned */}
+      <div className="flex justify-end gap-4 mb-2">
+        <div className="relative inline-block">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600  bg-white flex items-center gap-2 min-w-32"
-            onClick={() => {
-              setShowFilterDropdown(!showFilterDropdown);
-              setShowSortDropdown(false);
-            }}
+            className="flex items-center border border-gray-300 rounded-lg px-6 py-2.5 bg-white text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+            onClick={e => { e.stopPropagation(); setShowFilterDropdown(prev => !prev); setShowSortDropdown(false); }}
+            type="button"
           >
-            <span className="text-gray-500 font-montserrat">
-              {selectedFilter}
-            </span>
-            <svg
-              className="w-5 h-5 ml-auto text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            {filterOptions.find(opt => opt.value === selectedFilter)?.label || 'Filter'}
+            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17v-3.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" /></svg>
           </button>
           {showFilterDropdown && (
-            <div className="absolute left-0 md:right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
-              <div className="py-2">
+            <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+              {filterOptions.map(opt => (
                 <button
-                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
-                  onClick={() => {
-                    setSelectedFilter("Fee completed");
-                    setShowFilterDropdown(false);
-                  }}
+                  key={opt.value}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 "
+                  onClick={e => { e.stopPropagation(); setSelectedFilter(opt.value); setShowFilterDropdown(false); }}
                 >
-                  New Applications
+                  {opt.label}
                 </button>
-                <button
-                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
-                  onClick={() => {
-                    setSelectedFilter("Complete supporter status");
-                    setShowFilterDropdown(false);
-                  }}
-                >
-                  Declined Applications
-                </button>
-              </div>
+              ))}
             </div>
           )}
         </div>
-
-        {/* Sort By Button */}
-        <div className="relative">
+        <div className="relative inline-block">
           <button
-            className="px-6 py-2.5 border rounded-lg text-gray-600 bg-white flex items-center gap-2 min-w-32"
-            onClick={() => {
-              setShowSortDropdown(!showSortDropdown);
-              setShowFilterDropdown(false);
-            }}
+            className="flex items-center border border-gray-300 rounded-lg px-6 py-2.5 bg-white text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+            onClick={e => { e.stopPropagation(); setShowSortDropdown(prev => !prev); setShowFilterDropdown(false); }}
+            type="button"
           >
-            <span className="text-gray-500 font-montserrat">
-              {selectedSort}
-            </span>
-            <svg
-              className="w-5 h-5 ml-auto text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            {sortOptions.find(opt => opt.value === selectedSort)?.label || 'Sort by'}
+            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18M3 12h18M3 17h18" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 10l3 3 3-3" /></svg>
           </button>
           {showSortDropdown && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-10 border border-gray-100">
-              <div className="py-2">
+            <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+              {sortOptions.map(opt => (
                 <button
-                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
-                  onClick={() => {
-                    setSelectedSort("Date");
-                    setShowSortDropdown(false);
-                  }}
+                  key={opt.value}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={e => { e.stopPropagation(); setSelectedSort(opt.value); setShowSortDropdown(false); }}
                 >
-                  Date
+                  {opt.label}
                 </button>
-                <button
-                  className="w-full px-6 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 font-primary"
-                  onClick={() => {
-                    setSelectedSort("Alphabet");
-                    setShowSortDropdown(false);
-                  }}
-                >
-                  Alphabet
-                </button>
-              </div>
+              ))}
             </div>
           )}
         </div>
       </div>
-
       <div className="bg-white w-[90vw] md:w-full overflow-auto p-0 rounded-lg shadow-sm">
         <table className="w-full">
           <thead>
@@ -199,7 +177,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               <tr
                 key={user.id}
                 className="border-b last:border-b-0 hover:bg-gray-50"
-                onClick={() => handleRowClick(user)}
+                onClick={() => handleViewUser(user)}
               >
                 <td className="px-6 py-4">
                   <input
@@ -225,25 +203,48 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
                 <td className="px-6 py-4 text-gray-500 text-sm">
                   {user.email}
                 </td>
-                <td className="px-6 py-4 text-gray-500 text-center text-sm">
-                  {user.supportersStatus}
+                <td className="px-6 py-4 text-sm">
+                  {/* <div className="flex flex-col gap-1"> */}
+                    <span className={`px-2 py-1 rounded text-white ${getSupportersStatusColor(user)}`}>
+                      {user.supportersStatus}
+                    </span>
+                    {/* <span className="text-xs text-gray-500">
+                      {getSupportersStatusText(user)}
+                    </span> */}
+                  {/* </div> */}
                 </td>
                 <td className="px-6 py-4 text-gray-500 text-sm">
-                  {user.joinFeeStatus}
+                  <span className={`px-2 py-1 rounded ${
+                    user.joinFeeStatus?.toLowerCase() === 'paid' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {user.joinFeeStatus === "paid" ? "Paid" : "Pending"}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button
-                      className="p-1 text-green-600 hover:text-green-700"
-                      onClick={(e) => handleActionClick("accept", user, e)}
+                      className={`p-1 ${
+                        user.canBeApproved 
+                          ? 'text-green-600 hover:text-green-700' 
+                          : 'text-gray-400 cursor-not-allowed'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (user.canBeApproved) {
+                          handleActionClick("accept", user, e);
+                        }
+                      }}
+                      title={!user.canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
                     >
-                      <BsCheckCircleFill size={24} />
+                      <FaCheck />
                     </button>
                     <button
                       className="p-1 text-red-600 hover:text-red-700"
                       onClick={(e) => handleActionClick("reject", user, e)}
                     >
-                      <BsXCircleFill size={24} />
+                      <FaTimes />
                     </button>
                     <button className="p-1 text-gray-400 hover:text-gray-500">
                       <BsThreeDotsVertical size={20} />
@@ -254,56 +255,6 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
             ))}
           </tbody>
         </table>
-        <div className="px-6 py-4 border-t flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Show result:</span>
-            <select className="border rounded px-2 py-1 text-sm">
-              <option>6</option>
-              <option>12</option>
-              <option>24</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-500 hover:text-gray-700">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button className="px-3 py-1 text-sm">1</button>
-            <button className="px-3 py-1 text-sm bg-[#0A5438] text-white rounded">
-              2
-            </button>
-            <button className="px-3 py-1 text-sm">3</button>
-            <button className="px-3 py-1 text-sm">4</button>
-            <span className="text-sm">...</span>
-            <button className="px-3 py-1 text-sm">20</button>
-            <button className="p-2 text-gray-500 hover:text-gray-700">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
         <Modal
           isOpen={isActionModalOpen}
           onRequestClose={() => setIsActionModalOpen(false)}
@@ -355,17 +306,16 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser }) => {
               <button
                 onClick={() => {
                   if (selectedAction === "accept") {
-                    handleAcceptUser(selectedActionUser);
+                    handleAccept(selectedActionUser);
                   } else {
-                    handleRejectUser(selectedActionUser);
+                    handleReject(selectedActionUser);
                   }
                   setIsActionModalOpen(false);
                 }}
-                className={`px-4 py-2 rounded-lg text-white ${
-                  selectedAction === "accept"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
+                className={`px-4 py-2 rounded-lg text-white ${selectedAction === "accept"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+                  }`}
               >
                 {selectedAction === "accept" ? "Accept" : "Reject"}
               </button>

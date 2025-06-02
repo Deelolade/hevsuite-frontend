@@ -1,66 +1,65 @@
 import axios from "axios";
-import { base_url } from "../../constants/axiosConfig";
+import { base_url } from '../../constants/axiosConfig';
+// const base_url = import.meta.env.VITE_base_url;
+
+// Get auth token
 const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
+  const user = JSON.parse(localStorage.getItem("user"));
+  return user?.token;
 };
 
-const getAllNews = async ({ status, filter }) => {
-  const token = getAuthToken();
-  const response = await axios.get(
-    `${base_url}/admin/all-news?status=${status}&filter=${filter}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-};
-
-const createNews = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.post(`${base_url}/admin/create-news`, data, {
+// Get all news
+const getAllNews = async (params = {}) => {
+  // Build query string from params
+  const query = new URLSearchParams();
+  if (params.filter) query.append('filter', params.filter);
+  if (params.sort) query.append('sort', params.sort);
+  // You can add pagination/search here if backend supports it
+  const url = `${base_url}/api/newsroom/admin${query.toString() ? `?${query.toString()}` : ''}`;
+  const response = await axios.get(url, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-    withCredentials: true,
   });
   return response.data;
 };
 
-const editNews = async (data) => {
-  const token = getAuthToken();
-  const response = await axios.put(
-    `${base_url}/admin/edit-news/${data.id}`,
-    data.data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
+// Create news
+const createNews = async (formData) => {
+  const response = await axios.post(`${base_url}/api/newsroom`, formData, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
+// Update news
+const updateNews = async (id, newsData) => {
+  const response = await axios.put(`${base_url}/api/newsroom/${id}`, newsData, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+// Delete news
 const deleteNews = async (id) => {
-  const token = getAuthToken();
-  const response = await axios.delete(`${base_url}/admin/delete-news/${id}`, {
+  const response = await axios.delete(`${base_url}/api/newsroom/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-    withCredentials: true,
   });
-  return response.data;
+  return { id }; // Return the ID of the deleted news
 };
 
 const newsService = {
   getAllNews,
   createNews,
-  editNews,
+  updateNews,
   deleteNews,
 };
 

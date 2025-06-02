@@ -40,34 +40,85 @@ const RegisterStep5 = () => {
     setFormData({ ...formData, [type]: file });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate required image fields
 
-    if (formData.password !== formData.confirmPassword) return;
+    if (!formData.proofOfId) {
+      toast.error("Proof of ID is required.");
+      return;
+    }
+    if (!formData.picture) {
+      toast.error("Profile picture is required.");
+      return;
+    }
 
-    dispatch(updateStepData({ step: `step${currentStep}`, data: formData }));
+    // Validate file types and sizes
+    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+
+    const checkFile = (file, label) => {
+      if (!allowedImageTypes.includes(file.type)) {
+        toast.error(`${label} must be a JPEG, PNG, or WEBP image.`);
+        return false;
+      }
+      if (file.size > maxSizeInBytes) {
+        toast.error(`${label} must be smaller than 5MB.`);
+        return false;
+      }
+      return true;
+    };
+
+    if (!checkFile(formData.proofOfId, "Proof of ID")) return;
+    if (!checkFile(formData.picture, "Profile picture")) return;
+
+
+    const validatePassword = (pass) => {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
+      return passwordRegex.test(pass);
+    };
+    // Validate passwords
+    if (!validatePassword(formData.password)) {
+      toast.error('One uppercase, lowercase and a minimum of 7 characters)');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
 
     const finalData = {
       ...data.step2,
       ...data.step3,
       ...data.step4,
-      proofOfId: formData.proofOfId,
-      picture: formData.picture,
       password: formData.password,
     };
 
+    const formDataToSend = new FormData();
+
+
+    for (const key in finalData) {
+      formDataToSend.append(key, finalData[key]);
+    }
+
+    // Append files (if they exist)
+    if (formData.picture) {
+      formDataToSend.append("profilePhoto", formData.picture);
+    }
+    if (formData.proofOfId) {
+      formDataToSend.append("idCardPhoto", formData.proofOfId);
+    }
+
     try {
-      await authService.register(finalData);
-      navigate('/register-6');
-      toast.success(
-        'User Registered Successfully. Please check email and verify to continue.'
-      );
+      await authService.register(formDataToSend);
+      toast.success("Registration successful! Check your email for verification.");
+      navigate("/register-6");
       dispatch(reset());
     } catch (error) {
-      toast.error('Something went wrong. Please try again');
+      toast.error(error.message || "Registration failed.");
     }
   };
-
   return (
     <div className='min-h-screen flex flex-col'>
       <div className='relative text-white'>
@@ -80,11 +131,13 @@ const RegisterStep5 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center items-center'>
-            <img
-              src={logo_white}
-              alt='Hevsuite Club'
-              className='h-12 md:h-16'
-            />
+            <Link to='/'>
+              <img
+                src={logo_white}
+                alt='Hevsuite Club'
+                className='h-12 md:h-16'
+              />
+            </Link>
             {/* <button className="md:hidden text-white text-2xl">
               <span>☰</span>
             </button> */}
@@ -99,11 +152,10 @@ const RegisterStep5 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 5
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 5
                       ? 'bg-[#0A5440]'
                       : 'bg-white border-2 border-gray-300'
-                  }`}
+                    }`}
                 >
                   {index < 4 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -119,9 +171,8 @@ const RegisterStep5 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 4 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 4 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -142,7 +193,7 @@ const RegisterStep5 = () => {
           {/* Upload Proof of ID */}
           <div className='bg-white rounded-lg p-4 md:p-8 text-center'>
             <h3 className='text-lg md:text-xl font-medium mb-1 md:mb-2'>
-              Upload Proof of ID
+              Upload Proof of ID<span className='text-red-500'>*</span>
             </h3>
             <p className='text-gray-600 mb-4 md:mb-6 text-sm md:text-base'>
               Please upload a clear photo of your proof of ID e.g. Driving
@@ -199,7 +250,7 @@ const RegisterStep5 = () => {
           {/* Upload Picture */}
           <div className='bg-white rounded-lg p-4 md:p-8 text-center'>
             <h3 className='text-lg md:text-xl font-medium mb-1 md:mb-2'>
-              Upload Picture
+              Upload Picture<span className='text-red-500'>*</span>
             </h3>
             <p className='text-gray-600 mb-4 md:mb-6 text-sm md:text-base'>
               Please upload a clear photo of a recent headshot of yourself.

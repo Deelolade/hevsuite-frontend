@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
@@ -6,6 +6,9 @@ import avatar from "../../../assets/user.avif";
 import SuccessfulReferrals from "./SuccessfulReferrals";
 import PendingReferrals from "./PendingReferrals";
 import CancelledReferrals from "./CancelledReferrals";
+import { useSelector } from "react-redux";
+import referralService from "../../../services/referralService";
+import toast from "react-hot-toast";
 
 Modal.setAppElement("#root");
 const NavigationTabs = ({ activeTab, setActiveTab }) => {
@@ -20,7 +23,7 @@ const NavigationTabs = ({ activeTab, setActiveTab }) => {
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm ${
+          className={`px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm border border-gray-400 ${
             tab === activeTab
               ? "bg-[#540A26] text-white"
               : "bg-white text-black hover:bg-gray-100"
@@ -74,6 +77,45 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 // Send Referral Modal Component
 const SendReferralModal = ({ isOpen, onClose }) => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    relationship: "",
+    email: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+   try {
+    const { firstName, lastName, relationship, email } = formData;
+
+    // Basic validation
+    if (!firstName || !lastName || !relationship || !email) {
+      toast.error("Please fill in all the fields.");
+      return;
+    }
+      // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    toast.error("Please enter a valid email address.");
+    return;
+  }
+
+      await referralService.sendReferrals(formData);
+    setFormData({ firstName: "", lastName: "", relationship: "", email: "" });
+    onClose();
+    toast.success("Referral sent successfully!")
+   } catch (error) {
+    toast.error(error.message || "Failed to send referral");
+   }finally{
+    setLoading(false);
+   }
+  }
   return (
     <Modal
       isOpen={isOpen}
@@ -100,11 +142,17 @@ const SendReferralModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <input
               type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
               placeholder="First Name"
               className="w-full sm:w-1/2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gray-50 text-sm"
             />
             <input
               type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
               placeholder="Last Name"
               className="w-full sm:w-1/2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gray-50 text-sm"
             />
@@ -115,7 +163,13 @@ const SendReferralModal = ({ isOpen, onClose }) => {
           <label className="block mb-1 sm:mb-2 text-sm sm:text-base">
             Relationship
           </label>
-          <select className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gray-50 text-sm">
+          <select
+            name="relationship"
+            value={formData.relationship}
+            onChange={handleChange}
+            required
+            className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gray-50 text-sm"
+          >
             <option value="">Select Your Relationship with them</option>
             <option value="friend">Friend</option>
             <option value="family">Family</option>
@@ -129,8 +183,12 @@ const SendReferralModal = ({ isOpen, onClose }) => {
           <label className="block mb-1 sm:mb-2 text-sm sm:text-base">
             Email
           </label>
-          <input
+           <input
             type="email"
+            name="email"
+            value={formData.email}
+            required
+            onChange={handleChange}
             placeholder="Enter prospect email"
             className="w-full px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gray-50 text-sm"
           />
@@ -140,11 +198,14 @@ const SendReferralModal = ({ isOpen, onClose }) => {
       <div className="flex justify-end gap-2 sm:gap-4 mt-4 sm:mt-6">
         <button
           onClick={onClose}
+          disabled={loading}
           className="px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs sm:text-sm"
         >
           Cancel
         </button>
-        <button className="px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-[#540A26] text-white hover:bg-[#4a0921] text-xs sm:text-sm">
+        <button
+        onClick={handleSubmit}
+        className="px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-[#540A26] text-white hover:bg-[#4a0921] text-xs sm:text-sm">
           Send
         </button>
       </div>
@@ -154,43 +215,125 @@ const SendReferralModal = ({ isOpen, onClose }) => {
 
 // Main Referrals Component
 const Referrals = () => {
+  const { user, isLoading } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("Successful Referrals");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const successReferrals = Array(15).fill({
-    name: "Matt Hardy",
-    date: "2nd Dec., 2025",
-    image: avatar,
-    relationship: "Friend",
-  });
 
-  const pendingReferrals = Array(12).fill({
-    name: "Matt Hardy",
-    date: "2nd Dec., 2025",
-    image: avatar,
-    relationship: "Friend",
+    // State for storing fetched referrals
+   const [referralsData, setReferralsData] = useState({
+    successful: [],
+    pending: [],
+    cancelled: []
   });
+  useEffect(() => {
+    if (isLoading || !user?.referrals) return;
+    
+    const fetchReferralDetails = async () => {
+      try {
+        // Filter referrals by status
+        const successfulRefs = user.referrals.filter(ref => ref.status === 'approved');
+        const pendingRefs = user.referrals.filter(ref => ref.status === 'pending');
+        const cancelledRefs = user.referrals.filter(ref => ref.status === 'cancelled');
+        
+        // Extract user IDs from each referral
+        const successfulIds = successfulRefs.map(ref => ref.userId);
+        const pendingIds = pendingRefs.map(ref => ref.userId);
+        const cancelledIds = cancelledRefs.map(ref => ref.userId);
+        // Fetch user details in parallel
+        const [successfulUsers, pendingUsers, cancelledUsers] = await Promise.all([
+          successfulIds.length > 0 ? referralService.fetchReferralbyIds(successfulIds) : Promise.resolve([]),
+          pendingIds.length > 0 ? referralService.fetchReferralbyIds(pendingIds) : Promise.resolve([]),
+          cancelledIds.length > 0 ? referralService.fetchReferralbyIds(cancelledIds) : Promise.resolve([])
+        ]);
+        console.log('API Responses:', { successfulUsers, pendingUsers, cancelledUsers });
+        // Combine referral data with user details
+      // Combine referral data with user details
+setReferralsData({
+  successful: successfulRefs.map((ref, index) => ({
+    ...ref,
+    name: `${successfulUsers[index]?.name}`,
+    image: successfulUsers[index]?.profilePhoto || avatar,
+    date: new Date(ref.referDate || ref.createdAt).toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    }),
+    relationship: ref.relationship // Include the relationship from referral
+  })),
+  pending: pendingRefs.map((ref, index) => ({
+    ...ref,
+    name: `${pendingUsers[index]?.name}`,
+    image: pendingUsers[index]?.profilePhoto || avatar,
+    date: new Date(ref.referDate || ref.createdAt).toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    }),
+    relationship: ref.relationship // Include the relationship from referral
+  })),
+  cancelled: cancelledRefs.map((ref, index) => ({
+    ...ref,
+    name: `${cancelledUsers[index]?.name}`,
+    image: cancelledUsers[index]?.profilePhoto || avatar,
+    date: new Date(ref.referDate || ref.createdAt).toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    }),
+    relationship: ref.relationship // Include the relationship from referral
+  }))
+});
+      } catch (error) {
+        console.error('Failed to fetch referral details:', error);
+        toast.error(error.message || 'Failed to fetch referral details')
+        // Fallback to basic data if API fails
+        setReferralsData({
+          successful: user.referrals.filter(ref => ref.status === 'approved'),
+          pending: user.referrals.filter(ref => ref.status === 'pending'),
+          cancelled: user.referrals.filter(ref => ref.status === 'cancelled')
+        });
+      }
+    };
 
-  const cancelledReferrals = Array(9).fill({
-    name: "Matt Hardy",
-    date: "2nd Dec., 2025",
-    image: avatar,
-    relationship: "Friend",
-  });
+    fetchReferralDetails();
+  }, [user, isLoading]);
+
+
+  // const successReferrals = Array(15).fill({
+  //   name: "Matt Hardy",
+  //   date: "2nd Dec., 2025",
+  //   image: avatar,
+  //   relationship: "Friend",
+  // });
+
+  // const pendingReferrals = Array(12).fill({
+  //   name: "Matt Hardy",
+  //   date: "2nd Dec., 2025",
+  //   image: avatar,
+  //   relationship: "Friend",
+  // });
+
+  // const cancelledReferrals = Array(9).fill({
+  //   name: "Matt Hardy",
+  //   date: "2nd Dec., 2025",
+  //   image: avatar,
+  //   relationship: "Friend",
+  // });
 
   const getCurrentReferrals = () => {
-    let referrals;
+    let referrals = [];
     switch (activeTab) {
       case "Successful Referrals":
-        referrals = successReferrals;
+        referrals = referralsData.successful;
         break;
       case "Pending Referrals":
-        referrals = pendingReferrals;
+        referrals = referralsData.pending;
         break;
       case "Cancelled Referrals":
-        referrals = cancelledReferrals;
+        referrals = referralsData.cancelled;
         break;
       default:
         referrals = [];
@@ -201,16 +344,16 @@ const Referrals = () => {
   };
 
   const getTotalPages = () => {
-    let totalItems;
+    let totalItems = 0;
     switch (activeTab) {
       case "Successful Referrals":
-        totalItems = successReferrals.length;
+        totalItems = referralsData.successful.length;
         break;
       case "Pending Referrals":
-        totalItems = pendingReferrals.length;
+        totalItems = referralsData.pending.length;
         break;
       case "Cancelled Referrals":
-        totalItems = cancelledReferrals.length;
+        totalItems = referralsData.cancelled.length;
         break;
       default:
         totalItems = 0;
@@ -248,6 +391,12 @@ const Referrals = () => {
       </div>
 
       <div className="space-y-2 referrals-section">
+      {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p>Loading referrals...</p>
+          </div>
+        ) : (
+          <>
         <div className="flex justify-between px-2 sm:px-4 mb-2">
           <span className="text-base sm:text-lg text-black font-primary">
             Name
@@ -258,15 +407,17 @@ const Referrals = () => {
         </div>
         <div className="bg-white rounded-lg shadow-sm p-2 sm:p-4">
           {activeTab === "Successful Referrals" && (
-            <SuccessfulReferrals referrals={getCurrentReferrals()} />
+            <SuccessfulReferrals referrals={getCurrentReferrals()}  setReferralsData={setReferralsData} />
           )}
           {activeTab === "Pending Referrals" && (
-            <PendingReferrals referrals={getCurrentReferrals()} />
+            <PendingReferrals referrals={getCurrentReferrals()}   setReferralsData={setReferralsData} />
           )}
           {activeTab === "Cancelled Referrals" && (
-            <CancelledReferrals referrals={getCurrentReferrals()} />
+            <CancelledReferrals referrals={getCurrentReferrals() } setReferralsData={setReferralsData}/>
           )}
         </div>
+        </>
+        )}
       </div>
 
       {getTotalPages() > 1 && (

@@ -1,444 +1,568 @@
-import React, { useState, useEffect, createRef } from 'react';
-import { BsArrowLeft } from 'react-icons/bs';
-import EditorToolbar, { modules, formats } from './editorToolbar';
-import ReactQuill from 'react-quill-new';
-import { AiOutlineCloudUpload } from 'react-icons/ai';
-import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
-import { showModal } from '../../components/FireModal';
+"use client"
 
-const MySwal = withReactContent(Swal);
+import { useState, useRef, useEffect } from "react"
+import { ArrowLeft, Upload, Plus, X } from "lucide-react"
+import { useDispatch } from "react-redux"
+import { createPage } from "../../store/pages/pageSlice"
+import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
 
-const AddPage = ({ onBack }) => {
-  const [title, setTitle] = useState('');
-  const navigate = useNavigate();
-  const [buttonText, setButtonText] = useState('');
-  const [link, setLink] = useState('');
+const AddPage = ({ onBack, refreshData, menuId }) => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  // Initialize state from sessionStorage or defaults
+  const [title, setTitle] = useState(() => {
+    return sessionStorage.getItem("addPageTitle") || ""
+  })
+
   const [slides, setSlides] = useState(() => {
-    const savedSlides = sessionStorage.getItem('slides');
-    if (JSON.parse(savedSlides)?.length > 0) {
-      return savedSlides
-        ? JSON.parse(savedSlides)
-        : [{ id: 1, title: '', image: null, link: '', content: '' }];
-    } else {
-      return [{ id: 1, title: '', image: null, link: '', content: '' }];
+    const savedSlides = sessionStorage.getItem("addPageSlides")
+    if (savedSlides) {
+      try {
+        const parsed = JSON.parse(savedSlides)
+        return parsed.length > 0
+          ? parsed
+          : [{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null, content: "" }]
+      } catch (e) {
+        return [{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null, content: "" }]
+      }
     }
-  });
-  // useEffect(() => {
-  //   sessionStorage.setItem("fileType", fileType);
-  // }, [fileType]);
-
-  // useEffect(() => {
-  //   sessionStorage.setItem("members", JSON.stringify(members));
-  // }, [members]);
-
-  // useEffect(() => {
-  //   sessionStorage.setItem("pageTitle", title);
-  // }, [title]);
+    return [{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null, content: "" }]
+  })
 
   const [editors, setEditors] = useState(() => {
-    const savedContents = sessionStorage.getItem('contents');
-    return savedContents
-      ? JSON.parse(savedContents)
-      : [{ id: 1, title: '', content: '', checked: true }];
-  });
+    const savedEditors = sessionStorage.getItem("addPageEditors")
+    if (savedEditors) {
+      try {
+        const parsed = JSON.parse(savedEditors)
+        return parsed.length > 0 ? parsed : [{ id: 1, title: "Main Content", content: "", checked: true }]
+      } catch (e) {
+        return [{ id: 1, title: "Main Content", content: "", checked: true }]
+      }
+    }
+    return [{ id: 1, title: "Main Content", content: "", checked: true }]
+  })
+
+  const [selectedSlide, setSelectedSlide] = useState(null)
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(null)
+  const [selectedEditor, setSelectedEditor] = useState(null)
+  const [selectedContentIndex, setSelectedContentIndex] = useState(null)
+  const inputRefs = useRef({})
+
+  // Save to sessionStorage whenever state changes
   useEffect(() => {
-    sessionStorage.setItem('contents', JSON.stringify(editors));
-  }, [editors]);
+    sessionStorage.setItem("addPageTitle", title)
+  }, [title])
+
   useEffect(() => {
-    sessionStorage.setItem('slides', JSON.stringify(slides));
-  }, [slides]);
-  const [selectedSlide, setSelectedSlide] = useState(null);
-  const [selectedSlideIndex, setSelectedSlideIndex] = useState(null);
-  const [selectedEditor, setSelectedEditor] = useState(null);
-  const [selectedContentIndex, setSelectedContentIndex] = useState(null);
+    sessionStorage.setItem("addPageSlides", JSON.stringify(slides))
+  }, [slides])
+
+  useEffect(() => {
+    sessionStorage.setItem("addPageEditors", JSON.stringify(editors))
+  }, [editors])
+
+  // Clear sessionStorage when component unmounts (when going back or saving)
+  const clearSessionData = () => {
+    sessionStorage.removeItem("addPageTitle")
+    sessionStorage.removeItem("addPageSlides")
+    sessionStorage.removeItem("addPageEditors")
+    // Also clear preview data
+    sessionStorage.removeItem("slides")
+    sessionStorage.removeItem("contents")
+    sessionStorage.removeItem("mainText")
+  }
+
+  const handlePreview = () => {
+    // Save data to sessionStorage in the format expected by the existing preview components
+    const formattedSlides = slides.map((slide) => ({
+      id: slide.id,
+      title: slide.title || "",
+      image: slide.image || "",
+      link: slide.link || "",
+      content: slide.content || "",
+      path: slide.link || "",
+    }))
+
+    const formattedContents = editors.map((editor) => ({
+      id: editor.id,
+      title: editor.title || "",
+      content: editor.content || "",
+      checked: editor.checked,
+    }))
+
+    // Save to sessionStorage with the keys the preview page expects
+    sessionStorage.setItem("slides", JSON.stringify(formattedSlides))
+    sessionStorage.setItem("contents", JSON.stringify(formattedContents))
+    sessionStorage.setItem("mainText", title)
+
+    // Navigate to preview page
+    navigate("./preview")
+  }
+
+  const handleImageUpload = (e, id) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setSlides((prev) =>
+        prev.map((slide) =>
+          slide.id === id
+            ? {
+                ...slide,
+                file,
+                image: reader.result,
+                fileType: file.type.startsWith("video") ? "video" : "image",
+              }
+            : slide,
+        ),
+      )
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleAddSlide = () => {
+    if (slides.length >= 5) return
+    const newSlide = {
+      id: Date.now() + Math.random(),
+      title: "",
+      image: null,
+      link: "",
+      fileType: null,
+      file: null,
+      content: "",
+    }
+    setSlides((prev) => [...prev, newSlide])
+  }
 
   const handleRemoveSlide = (id) => {
-    if (slides.length === 1) return;
-    setSlides((prevSlides) => prevSlides.filter((slide) => slide.id !== id));
-  };
-  const handleAddSlide = () => {
-    if (slides.length === 5) return;
-    const newSlide = {
-      id: Date.now(),
-      image: '',
-      title: '',
-      link: '',
-      content: '',
-    };
-    setSlides([...slides, newSlide]);
-  };
+    if (slides.length === 1) return
+    setSlides((prev) => prev.filter((slide) => slide.id !== id))
+    if (selectedSlide?.id === id) {
+      setSelectedSlide(null)
+      setSelectedSlideIndex(null)
+    }
+  }
 
-  const handleImageUpload2 = (e, id) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSlides((prevSlides) =>
-        prevSlides.map((s) =>
-          s.id === id ? { ...s, image: reader.result } : s
-        )
-      );
-    };
-    reader.readAsDataURL(file);
-  };
   const handleAddContent = () => {
     const newEditor = {
       id: Date.now(),
-      title: '',
-      content: '',
+      title: "",
+      content: "",
       checked: true,
-    };
-    setEditors([...editors, newEditor]);
-  };
+    }
+    setEditors([...editors, newEditor])
+  }
 
-  // Handle content removal
   const handleRemoveContent = (id) => {
-    setEditors((prev) => prev.filter((editor) => editor.id !== id));
-  };
+    if (editors.length === 1) return
+    setEditors((prev) => prev.filter((editor) => editor.id !== id))
+    if (selectedEditor?.id === id) {
+      setSelectedEditor(null)
+      setSelectedContentIndex(null)
+    }
+  }
 
-  // Handle content removal
-  // Handle title change for editors
   const handleTitleChange = (id, value) => {
-    setEditors((prev) =>
-      prev.map((editor) =>
-        editor.id === id ? { ...editor, title: value } : editor
-      )
-    );
-  };
+    setEditors((prev) => prev.map((editor) => (editor.id === id ? { ...editor, title: value } : editor)))
+  }
 
-  // Handle content change for editors
   const handleContentChange = (id, value) => {
-    setEditors((prev) =>
-      prev.map((editor) =>
-        editor.id === id ? { ...editor, content: value } : editor
-      )
-    );
-  };
+    setEditors((prev) => prev.map((editor) => (editor.id === id ? { ...editor, content: value } : editor)))
+  }
 
-  const inputRef2 = createRef();
+  const handleSavePage = async () => {
+    if (!title.trim()) {
+      toast.error("Page title is required")
+      return
+    }
+
+    // Prepare form data
+    const formData = new FormData()
+    formData.append("title", title)
+    formData.append("visibility", true)
+    formData.append(
+      "content",
+      JSON.stringify(
+        editors.map((editor) => ({
+          title: editor.title,
+          content: editor.content,
+          visibility: true,
+        })),
+      ),
+    )
+    formData.append(
+      "slides",
+      JSON.stringify(
+        slides.map((slide) => ({
+          title: slide.title,
+          link: slide.link,
+          content: slide.content || "",
+        })),
+      ),
+    )
+
+    if (menuId) {
+      formData.append("menuId", menuId)
+    }
+
+    slides.forEach((slide) => {
+      if (slide.file) {
+        formData.append("slideImages", slide.file)
+      }
+    })
+
+    try {
+      await dispatch(createPage(formData)).unwrap()
+
+      // Clear all session data after successful save
+      clearSessionData()
+
+      // Reset state
+      setTitle("")
+      setSlides([{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null, content: "" }])
+      setEditors([{ id: 1, title: "Main Content", content: "", checked: true }])
+      setSelectedSlide(null)
+      setSelectedSlideIndex(null)
+      setSelectedEditor(null)
+      setSelectedContentIndex(null)
+
+      if (refreshData) refreshData()
+      onBack()
+      toast.success("Page created successfully!")
+    } catch (error) {
+      toast.error("Failed to add page")
+    }
+  }
+
+  const handleRemoveAll = () => {
+    if (confirm("Are you sure you want to remove all content?")) {
+      clearSessionData()
+      setTitle("")
+      setSlides([{ id: Date.now(), title: "", image: null, link: "", fileType: null, file: null, content: "" }])
+      setEditors([{ id: 1, title: "Main Content", content: "", checked: true }])
+      setSelectedSlide(null)
+      setSelectedEditor(null)
+    }
+  }
+
+  const handleBack = () => {
+    // Ask user if they want to save their work before leaving
+    if (title || slides.some((s) => s.title || s.image || s.link || s.content) || editors.some((e) => e.content)) {
+      if (confirm("You have unsaved changes. Do you want to leave without saving?")) {
+        clearSessionData()
+        onBack()
+      }
+    } else {
+      clearSessionData()
+      onBack()
+    }
+  }
 
   return (
-    <div className='space-y-6 pb-10'>
-      {/* Header with back button */}
-      <div className='flex items-center gap-2'>
-        <button className='text-gray-600' onClick={onBack}>
-          <BsArrowLeft size={20} />
+    <div className="space-y-6 pb-10 max-w-7xl mx-auto px-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-6">
+        <button className="text-gray-600 hover:text-gray-800 transition-colors" onClick={handleBack}>
+          <ArrowLeft size={20} />
         </button>
-        <span>Add New Page</span>
+        <span className="text-lg font-medium">Add New Page</span>
       </div>
 
       {/* Page Title */}
-      <div className='bg-white rounded-lg md:ml-0 -ml-8 p-4'>
-        <div className='flex justify-between flex-col md:flex-row'>
-          <div>
-            <label className='block text-sm mb-2'>Page Title</label>
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm mb-2 font-medium">Page Title</label>
             <input
-              type='text'
+              type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder='Title'
-              className='md:w-96 px-3 py-2 border rounded-lg text-sm'
+              placeholder="Enter page title"
+              className="w-full md:w-96 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
       </div>
 
       {/* Hero Section */}
-      <p className='text-sm text-primary mb-4 w-44'>Click Any To Edit</p>
-      <div className='grid grid-cols-1 md:grid-cols-4 mb-2'>
-        <div className='bg-white p-4 col-span-3 space-x-2 overflow-auto scrollBar flex flex-row'>
-          {slides.map((slide, indx) => (
-            <div key={slide.id} className='flex flex-row'>
-              <div
-                onClick={() => {
-                  setSelectedSlideIndex(indx);
-                  setSelectedSlide(slide);
-                }}
-                className={`h-32 w-44 relative cursor-pointer active:scale-95 transition-all duration-50 flex items-center justify-center flex-col space-y-2 text-center shadow-lg rounded-lg ${
-                  selectedSlide?.id === slide.id
-                    ? 'border-2 border-primary'
-                    : ''
-                }`}
-              >
-                {slide.image ? (
-                  <img
-                    src={slide.image}
-                    alt='Uploaded'
-                    className='object-cover m-auto h-full p-2'
-                  />
-                ) : (
-                  'Slide ' + Number(indx + 1)
-                )}
-              </div>
-              <div>
-                <div
-                  onClick={() => handleRemoveSlide(slide.id)}
-                  className='text-red-600 cursor-pointer rounded-full shadow-lg text-lg bg-white'
-                >
-                  ✘
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-medium mb-4">Hero Section</h3>
+        <p className="text-sm text-blue-600 mb-4">Click any slide to edit</p>
 
-        <div className='bg-transparent col-span-1 p-4'>
-          <div
-            onClick={handleAddSlide}
-            className='h-32 w-44 cursor-pointer active:scale-90 transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border border-primary border-dashed rounded-lg'
-          >
-            <span className='flex items-center bottom-2 font-semibold text-primary text-sm cursor-pointer'>
-              Add Slide
-            </span>
-            <p className='text-primary'>+</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Selected Slide Details */}
-      {selectedSlide && (
-        <div className='bg-white border border-grey rounded-lg mb-4 pb-10 px-4'>
-          <div className='flex justify-between mb-6 px-3 pt-7 flex-col'>
-            <p className='block text-lg py-2 mb-2 font-semibold'>
-              Slide {selectedSlideIndex + 1}.
-            </p>
-            <p className='block text-sm font-semibold'>Image Or Video</p>
-          </div>
-          {slides[selectedSlideIndex]?.image && (
-            <img
-              src={slides[selectedSlideIndex]?.image}
-              alt='Uploaded'
-              className='object-cover m-auto w-1/3 h-full mt-3'
-            />
-          )}
-          <div className='h-10 p-5 flex items-center justify-center'>
-            <div className='mt-2 rounded-lg flex items-center justify-center cursor-pointer'>
-              <label>
-                <div className='w-full flex flex-col items-center mb-4'>
-                  <span className='flex items-center bottom-2 text-primary text-sm cursor-pointer'>
-                    <input
-                      ref={inputRef2}
-                      id={`fileInput-${slides[selectedSlideIndex]?.id}`}
-                      type='file'
-                      accept='image/*, video/*'
-                      onChange={(e) =>
-                        handleImageUpload2(e, slides[selectedSlideIndex]?.id)
-                      }
-                      className='inset-0 opacity-0 cursor-pointer hidden'
-                    />
-                    <AiOutlineCloudUpload size={24} />
-                    Click to replace image/Video
-                  </span>
-                </div>
-              </label>
-            </div>
-          </div>
-          <div className='mt-4 px-3 flex flex-col md:flex-row w-full md:space-x-4'>
-            <div className='w-full md:w-1/4 mb-4 md:mb-0'>
-              <label
-                htmlFor={`title-${slides[selectedSlideIndex]?.id}`}
-                className='block text-lg font-semibold'
-              >
-                Button Text
-              </label>
-              <input
-                value={slides[selectedSlideIndex]?.title}
-                onChange={(e) => {
-                  setSlides((prev) => {
-                    const updatedSlides = [...prev];
-                    updatedSlides[selectedSlideIndex] = {
-                      ...updatedSlides[selectedSlideIndex],
-                      title: e.target.value,
-                    };
-                    return updatedSlides;
-                  });
-                }}
-                id={`title-${slides[selectedSlideIndex]?.id}`}
-                type='text'
-                className='w-full mt-2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300'
-                placeholder='Text'
-              />
-            </div>
-            <div className='w-full md:mr-10 flex flex-row items-end space-x-10 justify-center mb-4 md:mb-0'>
-              <div className='w-full md:ml-20'>
-                <label htmlFor='title' className='block text-lg font-semibold'>
-                  Available Link
-                </label>
-                <input
-                  value={slides[selectedSlideIndex]?.link}
-                  onChange={(e) => {
-                    setSlides((prev) => {
-                      const updatedSlides = [...prev];
-                      updatedSlides[selectedSlideIndex] = {
-                        ...updatedSlides[selectedSlideIndex],
-                        link: e.target.value,
-                      };
-                      return updatedSlides;
-                    });
-                  }}
-                  id='link/url'
-                  type='text'
-                  className='w-full mt-2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300'
-                  placeholder='Text'
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Rich Text Editor */}
-      <div className='bg-white rounded-lg p-4'>
-        <div>
-          <p className='text-sm text-primary mb-4 w-44'>Click Any To Edit</p>
-          <div className='grid grid-cols-1 md:grid-cols-4 gap-4 -ml-6 mb-6'>
-            <div className='bg-white p-4 col-span-3 space-x-2 overflow-auto scrollBar flex flex-row'>
-              {editors.map((editor, indx) => (
-                <div className='flex flex-row' key={editor.id}>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <div className="lg:col-span-3 bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <div className="flex gap-4 min-w-max">
+              {slides.map((slide, index) => (
+                <div key={slide.id} className="flex items-start gap-2">
                   <div
                     onClick={() => {
-                      setSelectedContentIndex(indx);
-                      setSelectedEditor(editor);
+                      setSelectedSlideIndex(index)
+                      setSelectedSlide(slide)
                     }}
-                    className={`h-32 w-44 relative cursor-pointer active:scale-95 transition-all duration-50 flex items-center justify-center flex-col space-y-2 text-center shadow-lg rounded-lg ${
-                      selectedEditor?.id === editor.id
-                        ? 'border-2 border-primary/70'
-                        : ''
+                    className={`h-32 w-44 relative cursor-pointer transition-all duration-200 flex items-center justify-center flex-col space-y-2 text-center shadow-md rounded-lg bg-white hover:shadow-lg ${
+                      selectedSlide?.id === slide.id ? "ring-2 ring-primary" : ""
                     }`}
                   >
-                    <p className='font-semibold'>
-                      {editor.title || 'Untitled'}
-                    </p>
+                    {slide.image ? (
+                      slide.fileType === "video" ? (
+                        <video className="object-cover w-full h-full rounded-lg">
+                          <source src={slide.image} type="video/mp4" />
+                        </video>
+                      ) : (
+                        <img
+                          src={slide.image || "/placeholder.svg"}
+                          alt="Slide preview"
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+                      )
+                    ) : (
+                      <div className="text-gray-500">
+                        <Upload size={24} className="mx-auto mb-2" />
+                        <span className="text-sm">Slide {index + 1}</span>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <div
-                      onClick={() => handleRemoveContent(editor.id)}
-                      className='text-red-600 cursor-pointer rounded-full shadow-lg text-lg bg-white'
+                  {slides.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveSlide(slide.id)}
+                      className="text-red-500 hover:text-red-700 bg-white rounded-full p-1 shadow-md transition-colors"
                     >
-                      ✘
-                    </div>
-                  </div>
+                      <X size={16} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
-            <div className='bg-transparent col-span-1 p-4'>
-              <div
-                onClick={handleAddContent}
-                className='h-32 w-44 cursor-pointer active:scale-95 transition-all duration-50 flex items-center justify-center flex-col space-y-2 text-center border border-primary border-dashed rounded-lg'
-              >
-                <span className='text-primary font-semibold text-sm'>
-                  Add Content
-                </span>
-                <div className='text-primary'>+</div>
-              </div>
-            </div>
           </div>
-          {selectedEditor && (
-            <div className='my-6 bg-white rounded-lg'>
-              <div className='p-3'>
-                <label htmlFor='body' className='block text-lg font-semibold'>
-                  Editing: {editors[selectedContentIndex]?.title || 'Untitled'}
-                </label>
-                <div className='flex flex-col md:flex-row justify-between md:mt-4 mb-8'>
-                  <div className='w-full md:w-2/5 mt-2 md:mt-0'>
-                    <label>Content Title</label>
-                    <input
-                      id={`title-${editors[selectedContentIndex]?.id}`}
-                      type='text'
-                      className='w-full mt-2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300'
-                      placeholder='Title'
-                      value={editors[selectedContentIndex]?.title}
-                      onChange={(e) => {
-                        handleTitleChange(
-                          editors[selectedContentIndex]?.id,
-                          e.target.value
-                        );
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className='mt-4'>
-                  <EditorToolbar />
-                  <ReactQuill
-                    theme='snow'
-                    modules={modules}
-                    formats={formats}
-                    value={editors[selectedContentIndex]?.content}
-                    onChange={(value) =>
-                      handleContentChange(
-                        editors[selectedContentIndex]?.id,
-                        value
-                      )
-                    }
-                    className='bg-white rounded-lg border border-gray-300 text-center'
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+
+          <div className="lg:col-span-1 p-4">
+            <button
+              onClick={handleAddSlide}
+              disabled={slides.length >= 5}
+              className="h-32 w-full cursor-pointer transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border-2 border-primary border-dashed rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="text-primary" size={24} />
+              <span className="text-primary font-medium text-sm">Add Slide</span>
+            </button>
+          </div>
         </div>
 
-        {/* <div className="min-h-[200px] flex items-center justify-center">
-          <button className="text-gray-400 text-3xl">+</button>
-        </div> */}
-        <div className='flex justify-end mt-4'>
-          <button className='px-4 py-2 bg-primary text-white rounded-lg text-sm'>
-            Save
-          </button>
+        {/* Selected Slide Details */}
+        {selectedSlide && (
+          <div className="border border- rounded-lg p-6 bg-gray-50">
+            <h4 className="text-lg font-semibold mb-4">Slide {selectedSlideIndex + 1} Details</h4>
+
+            {/* Image Upload */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Image or Video</label>
+              {slides[selectedSlideIndex]?.image && (
+                <div className="mb-4">
+                  {slides[selectedSlideIndex]?.fileType === "video" ? (
+                    <video controls className="max-w-xs h-32 rounded-lg object-cover">
+                      <source src={slides[selectedSlideIndex]?.image} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={slides[selectedSlideIndex]?.image || "/placeholder.svg"}
+                      alt="Uploaded preview"
+                      className="max-w-xs h-32 rounded-lg object-cover"
+                    />
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary transition-colors">
+                <label className="cursor-pointer flex flex-col items-center">
+                  <input
+                    ref={(el) => (inputRefs.current[slides[selectedSlideIndex]?.id] = el)}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(e) => handleImageUpload(e, slides[selectedSlideIndex]?.id)}
+                    className="hidden"
+                  />
+                  <Upload className="text-primary mb-2" size={24} />
+                  <span className="text-primary text-sm font-medium">
+                    Click to {slides[selectedSlideIndex]?.image ? "replace" : "upload"} image/video
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Slide Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Button Text</label>
+                <input
+                  value={slides[selectedSlideIndex]?.title || ""}
+                  onChange={(e) => {
+                    setSlides((prev) => {
+                      const updatedSlides = [...prev]
+                      updatedSlides[selectedSlideIndex] = {
+                        ...updatedSlides[selectedSlideIndex],
+                        title: e.target.value,
+                      }
+                      return updatedSlides
+                    })
+                  }}
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Enter button text"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Link URL</label>
+                <input
+                  value={slides[selectedSlideIndex]?.link || ""}
+                  onChange={(e) => {
+                    setSlides((prev) => {
+                      const updatedSlides = [...prev]
+                      updatedSlides[selectedSlideIndex] = {
+                        ...updatedSlides[selectedSlideIndex],
+                        link: e.target.value,
+                      }
+                      return updatedSlides
+                    })
+                  }}
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Enter link URL"
+                />
+              </div>
+            </div>
+
+            {/* Slide Content */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-2">Slide Content</label>
+              <textarea
+                value={slides[selectedSlideIndex]?.content || ""}
+                onChange={(e) => {
+                  setSlides((prev) => {
+                    const updatedSlides = [...prev]
+                    updatedSlides[selectedSlideIndex] = {
+                      ...updatedSlides[selectedSlideIndex],
+                      content: e.target.value,
+                    }
+                    return updatedSlides
+                  })
+                }}
+                className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Enter slide content/description..."
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content Editor Section */}
+      <div className="bg-white rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-medium mb-4">Page Content</h3>
+        <p className="text-sm text-blue-600 mb-4">Click any content block to edit</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <div className="lg:col-span-3 bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <div className="flex gap-4 min-w-max">
+              {editors.map((editor, index) => (
+                <div key={editor.id} className="flex items-start gap-2">
+                  <div
+                    onClick={() => {
+                      setSelectedContentIndex(index)
+                      setSelectedEditor(editor)
+                    }}
+                    className={`h-32 w-44 relative cursor-pointer transition-all duration-200 flex items-center justify-center flex-col space-y-2 text-center shadow-md rounded-lg bg-white hover:shadow-lg ${
+                      selectedEditor?.id === editor.id ? "ring-2 ring-primary" : ""
+                    }`}
+                  >
+                    <div className="p-4 text-center">
+                      <h4 className="font-medium text-sm mb-2">{editor.title || "Untitled"}</h4>
+                      <p className="text-xs text-gray-500 line-clamp-3">
+                        {editor.content ? editor.content.substring(0, 50) + "..." : "No content"}
+                      </p>
+                    </div>
+                  </div>
+                  {editors.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveContent(editor.id)}
+                      className="text-red-500 hover:text-red-700 bg-white rounded-full p-1 shadow-md transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-1 p-4">
+            <button
+              onClick={handleAddContent}
+              className="h-32 w-full cursor-pointer transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border-2 border-primary border-dashed rounded-lg hover:bg-blue-50"
+            >
+              <Plus className="text-primary" size={24} />
+              <span className="text-primary font-medium text-sm">Add Content</span>
+            </button>
+          </div>
         </div>
+
+        {/* Selected Content Editor */}
+        {selectedEditor && (
+          <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+            <h4 className="text-lg font-semibold mb-4">
+              Editing: {editors[selectedContentIndex]?.title || "Untitled"}
+            </h4>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Content Title</label>
+              <input
+                type="text"
+                className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Enter content title"
+                value={editors[selectedContentIndex]?.title || ""}
+                onChange={(e) => {
+                  handleTitleChange(editors[selectedContentIndex]?.id, e.target.value)
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Content</label>
+              <textarea
+                value={editors[selectedContentIndex]?.content || ""}
+                onChange={(e) => handleContentChange(editors[selectedContentIndex]?.id, e.target.value)}
+                className="w-full min-h-[200px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Enter your content here..."
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}
-      <div className='flex justify-end gap-3'>
+      <div className="flex justify-end gap-4 pt-6">
         <button
-          className='px-6 py-2 w-28  border rounded-lg text-sm font-semibold hover:bg-red-200 duration-1000 transition-all'
-          onClick={() => navigate('./preview')}
+          onClick={handlePreview}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
         >
           Preview
         </button>
         <button
-          onClick={() => {
-            showModal({
-              title: 'Confirm',
-              message: 'Are you sure you want to remove all saved contents?',
-              confirmText: 'Yes',
-              onConfirm: () => {
-                sessionStorage.clear();
-                window.location.reload();
-              },
-            });
-          }}
-          className='px-6 py-2 w-28 bg-primary text-white rounded-lg text-sm'
+          onClick={handleRemoveAll}
+          className="px-6 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
         >
           Remove
         </button>
         <button
-          onClick={() => {
-            showModal({
-              title: 'Confirm',
-              message: 'Are you sure you want to upload all saved contents?',
-              confirmText: 'Yes',
-              onConfirm: () => {
-                showModal({
-                  title: 'Success',
-                  message: 'Contents saved successfully.',
-                  confirmText: 'Ok',
-                  onConfirm: () => {
-                    navigate('/admin/cms');
-                    window.location.reload();
-                  },
-                });
-              },
-            });
-          }}
-          className='px-6 py-2 w-28 bg-[#0A5438] text-white rounded-lg text-sm'
+          onClick={handleSavePage}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
         >
           Confirm
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AddPage;
+export default AddPage

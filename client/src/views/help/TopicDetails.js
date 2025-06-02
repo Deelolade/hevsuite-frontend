@@ -1,44 +1,95 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { IoSearchOutline } from "react-icons/io5";
 import Header from "../../components/Header";
 import bg_image from "../../assets/header-bg.jpg";
 import logo from "../../assets/logo_white.png";
 import { BsChevronCompactDown, BsChevronCompactUp } from "react-icons/bs";
 import Footer from "../../components/Footer";
+import topicsService from "../../services/topicsService";
 
 const TopicDetails = () => {
   const [expandedQuestion, setExpandedQuestion] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [topic, setTopic] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const questions = [
-    {
-      id: 1,
-      question: "What is Hazor Hevsuite (HH) Club?",
-      answer: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus magna.`,
-    },
-    {
-      id: 2,
-      question: "How do I join the HH Club?",
-      answer: "Answer text here...",
-    },
-    {
-      id: 3,
-      question: "What are the membership benefits?",
-      answer: "Answer text here...",
-    },
-    {
-      id: 4,
-      question: "Can I cancel my membership?",
-      answer: "Answer text here...",
-    },
-    {
-      id: 5,
-      question: "How do I update my profile?",
-      answer: "Answer text here...",
-    },
-  ];
+  const location = useLocation();
+  const { id } = useParams();
+        console.log(id,location.state)
+  useEffect(() => {
+    const fetchTopic = async () => {
+      try {
+        setLoading(true);
+        // First check if we have topic data in location state
+        if (location.state?.topic) {
+          setTopic(location.state.topic);
+        } else {
+            const response = await topicsService.fetchVisibleTopicById(id);
+        if (response.success) {
+          console.log(response.data)
+          setTopic(response.data);
+        } else {
+          setError(response.error);
+        }
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch topic details");
+        setLoading(false);
+        console.error("Error fetching topic:", err);
+      }
+    };
 
+    fetchTopic();
+  }, [id, location.state]);
+  console.log(topic)
+    if (loading) {
+    return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-white flex items-center justify-center text-red-500">{error}</div>;
+  }
+
+  if (!topic) {
+    return <div className="min-h-screen bg-white flex items-center justify-center">Topic not found</div>;
+  }
+  // const questions = [
+  //   {
+  //     id: 1,
+  //     question: "What is Hazor Hevsuite (HH) Club?",
+  //     answer: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla laoreet, erat id mattis eleifend, justo libero suscipit mi, eu posuere ex quam sed lectus. Donec ultrices laoreet diam eget bibendum. Cras at luctus nisi, in euismod nisi. Nullam ut nunc vehicula, condimentum mi sit amet, pretium dui. Nulla placerat metus lacus, vel sollicitudin ipsum facilisis a. Duis scelerisque egestas nibh, non faucibus metus ornare sit amet. Cras nisi enim, rutrum ut dapibus a, euismod id leo. Aenean sit amet enim enim. Pellentesque eu faucibus magna.`,
+  //   },
+  //   {
+  //     id: 2,
+  //     question: "How do I join the HH Club?",
+  //     answer: "Answer text here...",
+  //   },
+  //   {
+  //     id: 3,
+  //     question: "What are the membership benefits?",
+  //     answer: "Answer text here...",
+  //   },
+  //   {
+  //     id: 4,
+  //     question: "Can I cancel my membership?",
+  //     answer: "Answer text here...",
+  //   },
+  //   {
+  //     id: 5,
+  //     question: "How do I update my profile?",
+  //     answer: "Answer text here...",
+  //   },
+  // ];
+
+// Filter QAs based on search query
+const questions = topic.QAs.filter(qa =>
+  qa.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  qa.answer.toLowerCase().includes(searchQuery.toLowerCase())
+);
   return (
     <div className="min-h-screen bg-white">
       {/* Background Image */}
@@ -106,14 +157,14 @@ const TopicDetails = () => {
 
         {/* Questions */}
         <div className="space-y-4">
-          {questions.map((item) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden">
+          {questions?.map((item,index) => (
+            <div key={item._id} className="border rounded-lg overflow-hidden">
               {/* Question Toggle Button */}
               <button
                 className="w-full flex items-center justify-between p-4 sm:p-6 text-left"
                 onClick={() =>
                   setExpandedQuestion(
-                    expandedQuestion === item.id ? null : item.id
+                    expandedQuestion === item._id ? null : item._id
                   )
                 }
               >
@@ -121,14 +172,14 @@ const TopicDetails = () => {
                   <span
                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white text-xs sm:text-sm`}
                   >
-                    {item.id}
+                    {index+1}
                   </span>
                   <span className="font-semibold font-primary text-base sm:text-lg">
                     {item.question}
                   </span>
                 </div>
-                <span className="text-xl sm:text-2xl">
-                  {expandedQuestion === item.id ? (
+                <span className="text-base sm:text-2xl">
+                  {expandedQuestion === item._id ? (
                     <BsChevronCompactUp />
                   ) : (
                     <BsChevronCompactDown />
@@ -137,10 +188,10 @@ const TopicDetails = () => {
               </button>
 
               {/* Answer Section */}
-              {expandedQuestion === item.id && (
+              {expandedQuestion === item._id && (
                 <div className="px-6 pb-6">
                   <div className="ml-12 max-h-[200px] overflow-y-auto pr-4 custom-scrollbar">
-                    <p className="text-gray-600 font-primary leading-relaxed text-sm sm:text-base">
+                    <p className="text-quatr font-primary leading-relaxed text-sm sm:text-base">
                       {item.answer}
                     </p>
                   </div>

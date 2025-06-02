@@ -6,14 +6,19 @@ import { IoClose } from "react-icons/io5";
 import EventDetailsModal, { PaymentMethodModal } from "./EventDetails";
 import Swal from "sweetalert2";
 import { showModal } from "../../../components/FireModal";
+import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
+import { MdAccessTime } from "react-icons/md";
+import { cancelEventAttendance, removeSavedEvent, updateInviteStatus } from "../../../features/eventSlice";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 
-const EventCard = ({ event, activeTab }) => {
+const EventCard = ({ event, activeTab, events }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [openModalPayment, setOpenModalPayment] = useState(false);
-
+  const dispatch = useDispatch();
   const modalStyles = {
     content: {
       top: "50%",
@@ -32,7 +37,35 @@ const EventCard = ({ event, activeTab }) => {
       backgroundColor: "rgba(0, 0, 0, 0.75)",
     },
   };
+  const handleAcceptInvite = () => {
+    dispatch(updateInviteStatus({
+      eventId: event._id,
+      status: 'accepted'
+    }))
+      .unwrap()
+      .then(() => {
+        toast.success('Invitation accepted successfully!');
+        setIsAcceptModalOpen(false);
+      })
+      .catch((error) => {
+        toast.error(error.message || 'Failed to accept invitation');
+      });
+  };
 
+  const handleDeclineInvite = () => {
+    dispatch(updateInviteStatus({
+      eventId: event._id,
+      status: 'declined'
+    }))
+      .unwrap()
+      .then(() => {
+        toast.success('Invitation declined successfully!');
+        setIsDeclineModalOpen(false);
+      })
+      .catch((error) => {
+        toast.error(error.message || 'Failed to decline invitation');
+      });
+  };
   const getActionButtons = () => {
     switch (activeTab) {
       case "Invited Events":
@@ -60,7 +93,16 @@ const EventCard = ({ event, activeTab }) => {
                 title: "Remove Saved Event?",
                 text: "You won't be able to undo this action!",
                 confirmText: "Yes",
-                onConfirm: () => {},
+                onConfirm: () => {
+                  dispatch(removeSavedEvent(event._id))
+                    .unwrap()
+                    .then(() => {
+                      toast.success('Event removed from saved list!');
+                    })
+                    .catch(error => {
+                      toast.error(error.message || 'Failed to remove saved event');
+                    });
+                },
               })
             }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"
@@ -76,7 +118,16 @@ const EventCard = ({ event, activeTab }) => {
                 title: "Cancel Attendance?",
                 text: "You won't be able to undo this action!",
                 confirmText: "Yes",
-                onConfirm: () => {},
+                onConfirm: () => {  // Remove the event parameter here since we're using closure
+                  dispatch(cancelEventAttendance(event._id))
+                    .unwrap()
+                    .then(() => {
+                      toast.success('Attendance cancelled successfully!');
+                    })
+                    .catch((error) => {
+                      toast.error(error.message || 'Failed to cancel attendance');
+                    });
+                },
               })
             }
             className="w-full bg-primary text-white py-2 rounded-lg mb-2 text-sm sm:text-base hover:bg-opacity-90 transition-colors"
@@ -100,19 +151,24 @@ const EventCard = ({ event, activeTab }) => {
       <div className="relative w-full pt-[60%]">
         <img
           src={event.image}
-          alt={event.title}
+          alt={event.name}
           onClick={() => setSelectedEvent(event)}
           className="absolute  cursor-pointer top-0 left-0 w-full h-full object-cover"
         />
       </div>
       <div className="p-3 sm:p-4 flex-grow flex flex-col">
         <h3 className="font-medium mb-2 text-base sm:text-lg font-secondary text-[#121212] line-clamp-2">
-          {event.title}
+          {event.name}
         </h3>
         <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
-          <BsCalendar />
-          <span>{event.date}</span>
-          <span>{event.time}</span>
+          <div className="flex items-center gap-2">
+            <BsCalendar />
+            <span>{formatDateWithSuffix(event.time)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MdAccessTime />
+            <span>{formatTime(event.time)}</span>
+          </div>
         </div>
         <div className="mt-auto">
           {getActionButtons()}
@@ -132,6 +188,7 @@ const EventCard = ({ event, activeTab }) => {
           event={selectedEvent}
           eventType={activeTab}
           onClose={() => setSelectedEvent(null)}
+          events={events}
         />
       )}
       {openModalPayment && (
@@ -173,10 +230,7 @@ const EventCard = ({ event, activeTab }) => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  setIsAcceptModalOpen(false);
-                  setOpenModalPayment(true);
-                }}
+                onClick={handleAcceptInvite}
                 className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#0E5B31] text-white rounded-lg text-xs sm:text-sm"
               >
                 Accept
@@ -225,9 +279,7 @@ const EventCard = ({ event, activeTab }) => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  setIsDeclineModalOpen(false);
-                }}
+                onClick={handleDeclineInvite}
                 className="px-4 sm:px-6 py-1.5 sm:py-2 bg-primary text-white rounded-lg text-xs sm:text-sm"
               >
                 Decline

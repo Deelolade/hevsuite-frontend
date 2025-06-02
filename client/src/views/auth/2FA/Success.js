@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
 import { BsCheck2Circle } from 'react-icons/bs';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from '../../../features/auth/authSlice';
 
 const Success = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, isLoading } = useSelector(
+    (state) => state.auth
+  );
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
@@ -25,11 +31,13 @@ const Success = () => {
         <div className='hidden md:flex relative z-10 p-16 flex-col h-full'>
           <div className='flex flex-col items-center text-center'>
             <div className='w-32 h-32 rounded-2xl mb-4'>
-              <img
-                src={logo}
-                alt='Hevsuite Club'
-                className='w-full h-full p-4'
-              />
+              <Link to='/'>
+                <img
+                  src={logo}
+                  alt='Hevsuite Club'
+                  className='w-full h-full p-4'
+                />
+              </Link>
             </div>
             <h1 className='text-5xl text-white font-medium'>Hevsuite Club</h1>
           </div>
@@ -62,7 +70,32 @@ const Success = () => {
               </h2>
 
               <button
-                onClick={() => navigate('/homepage')}
+                // onClick={() => navigate('/homepage')}
+                onClick={async () => {
+                  // await dispatch(fetchProfile()).unwrap();
+                  // if (!user) {
+                  //   navigate('/login');
+                  // } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
+                  //   navigate('/homepage');
+                  // }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
+                  //   navigate('/register-6');
+                  // }
+                  //  else {
+                  //   navigate('/register-6'); // Or your membership registration page
+                  // }
+                   await dispatch(fetchProfile()).unwrap()
+                    console.log("user in sucess", user);
+                  if (!user) {
+                    navigate('/login');
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
+                    navigate('/homepage');
+                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+                    navigate('/register-6');
+                  } else {
+                    navigate('/register-6'); // fallback
+                  }
+                }}
+
                 className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
               >
                 Continue

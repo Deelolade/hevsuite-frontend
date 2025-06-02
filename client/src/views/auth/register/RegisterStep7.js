@@ -10,8 +10,13 @@ import discover from '../../../assets/Discover.png';
 import visa from '../../../assets/VISA.png';
 import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
+import { persistor } from '../../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../features/auth/authSlice';
+import toast from 'react-hot-toast';
 
 const RegisterStep7 = () => {
+  const dispatch = useDispatch();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
@@ -25,7 +30,7 @@ const RegisterStep7 = () => {
     country: 'United States',
     postalCode: '',
   });
-
+ const { user } = useSelector((state) => state.auth);
   const modalStyles = {
     content: {
       top: '50%',
@@ -81,7 +86,17 @@ const RegisterStep7 = () => {
     setPopoverVisible(false);
     setMode(val);
   }
-
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap(); // unwrap to catch error
+      await persistor.purge();           // clear redux-persist storage
+      navigate('/');
+      window.location.reload();
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+      console.error('Logout failed:', error);
+    }
+  };
   return (
     <div className='min-h-screen'>
       <div className='relative text-white'>
@@ -94,7 +109,9 @@ const RegisterStep7 = () => {
         </div>
         <header className='relative z-10 py-4'>
           <div className='container mx-auto px-4 flex justify-center'>
-            <img src={logo_white} alt='Hevsuite Club' className='h-16' />
+            <Link to='/'>
+              <img src={logo_white} alt='Hevsuite Club' className='h-16' />
+            </Link>
           </div>
         </header>
       </div>
@@ -106,11 +123,10 @@ const RegisterStep7 = () => {
             <div key={index} className='flex items-center flex-shrink-0 mb-4'>
               <div className='relative'>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    index < 7
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 7
                       ? 'bg-[#0A5440]'
                       : 'bg-white border-2 border-gray-300'
-                  }`}
+                    }`}
                 >
                   {index < 6 ? (
                     <BsCheckCircleFill className='text-white' />
@@ -126,9 +142,8 @@ const RegisterStep7 = () => {
               </div>
               {index < 6 && (
                 <div
-                  className={`w-12 md:w-32 h-[2px] ${
-                    index < 6 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                  }`}
+                  className={`w-12 md:w-32 h-[2px] ${index < 6 ? 'bg-[#0A5440]' : 'bg-gray-300'
+                    }`}
                 />
               )}
             </div>
@@ -378,6 +393,14 @@ const RegisterStep7 = () => {
             >
               Cancel Application
             </button>
+            {user && user.joinFeeStatus === 'pending' && (
+              <button
+                onClick={handleLogout}
+                className='w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-base font-medium'
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </div>
