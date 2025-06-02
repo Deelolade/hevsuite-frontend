@@ -35,30 +35,10 @@ const MemberRequests = () => {
   const [requestTypeFilter, setRequestTypeFilter] = useState("All")
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-
-  // Add this function to handle successful card issuance
-  const handleCardIssued = () => {
+  // Callback function to refresh data after successful card action (issue/post)
+  const handleCardsUpdated = () => {
     setRefreshTrigger(prev => prev + 1); // Increment to trigger refresh
-    dispatch(getNewMembers({ // Explicitly refetch data
-      search: searchTerm,
-      status: statusFilter.toLowerCase(),
-      filter: requestTypeFilter.toLowerCase(),
-    }));
-  };
-
-  // Post selected cards and move them to 'Card Issued'
-  const handlePostSelectedCards = async () => {
-    if (selectedCards.length === 0) {
-      alert("Please select at least one card to post.");
-      return;
-    }
-    try {
-      await dispatch(postCards({ cardIds: selectedCards })).unwrap();
-      setSelectedCards([]);
-      handleCardIssued();
-    } catch (error) {
-      alert(error?.message || "Failed to post cards.");
-    }
+    // The useEffect hook will handle fetching new data when refreshTrigger changes
   };
 
   useEffect(() => {
@@ -97,7 +77,7 @@ const MemberRequests = () => {
     return false
   }
 
-  // Filter by approval status
+  // Filter by approval status (only show unapproved cards in this view)
   if (card.approvedByAdmin) {
     return false
   }
@@ -117,17 +97,23 @@ const MemberRequests = () => {
 
   const handleExport = (format) => {
     const cardsToExport =
-      selectedCards.length > 0 ? filteredCards.filter((card) => selectedCards.includes(card._id)) : filteredCards
-
-    if (cardsToExport.length === 0) return alert("No data to export")
-
+      selectedCards.length > 0
+        ? filteredCards.filter((card) => selectedCards.includes(card._id))
+        : filteredCards;
+  
+    if (cardsToExport.length === 0) return alert("No data to export");
+  
     switch (format) {
       case "pdf": {
-        const doc = new jsPDF()
-        doc.text("Member Cards", 14, 10)
-
-        const tableColumn = ["Name", "Member ID", "Status", "Card Type", "Address", "Town", "Country", "Postcode"]
+        const doc = new jsPDF();
+        doc.text("Member Cards", 14, 10);
+  
+        // Table columns - QR Code will be in its own column
+        const tableColumn = ["QR", "Name", "Member ID", "Status", "Card Type", "Address", "Town", "Country", "Postcode"];
+        
+        // Create rows with empty string for QR code column (we'll add the image later)
         const tableRows = cardsToExport.map((card) => [
+          "", // Placeholder for QR code
           `${card.userId?.forename || ""} ${card.userId?.surname || ""}`,
           card._id.substring(0, 8),
           card.isBanned ? "Cancelled" : card.approvedByAdmin ? "Active" : "Pending",
@@ -136,17 +122,55 @@ const MemberRequests = () => {
           card.userId?.town || "",
           card.userId?.country || "",
           card.userId?.postcode || "",
-        ])
-
+        ]);
+  
         autoTable(doc, {
           head: [tableColumn],
           body: tableRows,
           startY: 20,
           headStyles: { fillColor: "#900C3F" },
-        })
-
-        doc.save("member_cards.pdf")
-        break
+          // This runs before drawing cells
+          willDrawCell: (data) => {
+            // Store the current card data in the cell object
+            if (data.section === 'body') {
+              data.cell.card = cardsToExport[data.row.index];
+            }
+          },
+          // This runs when drawing cells
+          didDrawCell: (data) => {
+            // Add QR code to the first column (index 0)
+            if (data.section === 'body' && data.column.index === 0 && data.cell.card?.qrCode) {
+              try {
+                const qrCodeDataUrl = data.cell.card.qrCode;
+                if (qrCodeDataUrl) {
+                  // Calculate size and position
+                  const imgSize = Math.min(data.cell.width - 2, data.cell.height - 2);
+                  const x = data.cell.x + (data.cell.width - imgSize) / 2;
+                  const y = data.cell.y + (data.cell.height - imgSize) / 2;
+                  
+                  // Add the image
+                  doc.addImage(
+                    qrCodeDataUrl,
+                    'PNG',
+                    x,
+                    y,
+                    imgSize,
+                    imgSize
+                  );
+                }
+              } catch (error) {
+                console.error("Error adding QR code:", error);
+              }
+            }
+          },
+          columnStyles: {
+            0: { cellWidth: 20 } // Narrow column for QR codes
+          },
+          rowPageBreak: 'avoid'
+        });
+  
+        doc.save("member_cards.pdf");
+        break;
       }
 
       case "csv": {
@@ -224,10 +248,10 @@ const MemberRequests = () => {
   }
 
   return (
-    <div className="md:p-6 space-y-6">
+    <div className="md:p-6 space-y-6 ">
       {/* Stats and Controls */}
       <div className="flex  ">
-        <div className="flex flex-col md:flex-row items-center gap-4 justify-between md:w-full overflow-x-auto">
+        <div className="flex flex-col md:flex-row items-center gap-4 justify-between md:w-full">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <h2 className="text-3xl font-semibold">{filteredCards.length}</h2>
             <div className="flex flex-row gap-4 overflow-hidden">
@@ -246,100 +270,80 @@ const MemberRequests = () => {
                 className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
               >
                 <option value="All">All</option>
-                <option value="Pending">Pending</option>
-                <option value="Cancelled">Cancelled</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
               </select>
-              {/* {statusFilter === "Pending" && ( */}
-                <select
-                  value={requestTypeFilter}
-                  onChange={(e) => setRequestTypeFilter(e.target.value)}
-                  className="px-4 hidden md:inline-block py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
-                >
-                  <option value="All">All Types</option>
-                  <option value="new-registration">New Registration</option>
-                  <option value="replacement">Replacement</option>
-                  <option value="promotion">Promoted</option>
-                </select>
-              {/* )} */}
+              {/* Request Type Filter */}
+              <select
+                value={requestTypeFilter}
+                onChange={(e) => setRequestTypeFilter(e.target.value)}
+                className="px-4 py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
+              >
+                <option value="All">All Request Types</option>
+                <option value="new-registration">New Registration</option>
+                <option value="promoted">Promoted</option>
+                <option value="replacement">Replacement</option>
+              </select>
             </div>
           </div>
-          {statusFilter === "Pending" && (
-            <select
-              value={requestTypeFilter}
-              onChange={(e) => setRequestTypeFilter(e.target.value)}
-              className="px-4 self-start mr-0 ml-0 md:hidden py-2 border rounded-lg text-gray-600 md:min-w-[180px]"
-            >
-              <option value="All">All Types</option>
-              <option value="new">New Registration</option>
-              <option value="replacement">Replacement</option>
-              <option value="promotion">Promoted</option>
-            </select>
-          )}
-          <div className="flex flex-row gap-4 justify-between md:justify-end w-full overflow-hidden">
-            <button
-              className={`text-primary font-semibold ${selectedCards.length === filteredCards.length ? "font-semibold" : ""
-                }`}
-              onClick={handleSelectAll}
-            >
-              Select All
-            </button>
-            <div className="" ref={exportMenuRef}>
-              <button
-                className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
-                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-              >
-                <FiDownload />
-                Export {selectedCards.length > 0 ? selectedCards.length : ""}
-                <BiChevronDown className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
-              </button>
 
-              {isExportMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                    onClick={() => handleExport("pdf")}
-                  >
-                    <span className="text-red-500">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
-                        <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
-                      </svg>
-                    </span>
-                    Export as PDF
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                    onClick={() => handleExport("csv")}
-                  >
-                    <span className="text-green-500">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </span>
-                    Export as CSV
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                    onClick={() => handleExport("excel")}
-                  >
-                    <span className="text-blue-500">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </span>
-                    Export as Excel
-                  </button>
-                </div>
-              )}
-            </div>
+          {/* Export Button with Dropdown */}
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2"
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+            >
+              <FiDownload />
+              Export {selectedCards.length > 0 ? selectedCards.length : ""}
+              <BiChevronDown className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isExportMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("pdf")}
+                >
+                  <span className="text-red-500">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                      <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                    </svg>
+                  </span>
+                  Export as PDF
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("csv")}
+                >
+                  <span className="text-green-500">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as CSV
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                  onClick={() => handleExport("excel")}
+                >
+                  <span className="text-blue-500">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  Export as Excel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -390,7 +394,7 @@ const MemberRequests = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 h-[100%]">
           {filteredCards.length > 0 ? (
             filteredCards.map((card) => (
               <ClubCardItem
@@ -418,7 +422,16 @@ const MemberRequests = () => {
           content: { zIndex: 1001 },
         }}
       >
-        <PostCard setIsPostModalOpen={setIsPostModalOpen} selectedCards={selectedCards} />
+        {/* Pass the callback to the PostCard modal */}
+        <PostCard
+          onClose={() => setIsPostModalOpen(false)}
+          selectedCards={selectedCards}
+          selectedCardObjects={filteredCards.filter(card => selectedCards.includes(card._id))}
+          onPosted={() => {
+            setSelectedCards([]); // Clear selected cards
+            handleCardsUpdated(); // Trigger data refresh
+          }}
+        />
       </Modal>
 
       <Modal
@@ -459,7 +472,7 @@ const MemberRequests = () => {
       >
         <IssueNewCardModal
           onClose={() => setIsIssueModalOpen(false)}
-          onCardIssued={handleCardIssued} // Pass the callback
+          onCardIssued={handleCardsUpdated} // Pass the callback here too
         />
       </Modal>
 
@@ -477,6 +490,7 @@ const MemberRequests = () => {
           onClose={setIsBulkCancelModalOpen}
           selectedCount={selectedCards.length}
           selectedCards={selectedCards}
+          onBulkCancelSuccess={handleCardsUpdated} // Pass the callback here as well
         />
       </Modal>
     </div>

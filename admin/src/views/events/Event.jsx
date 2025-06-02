@@ -585,7 +585,7 @@ const handleSelectSuggestion = (suggestion) => {
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('all')}>All</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('members')}>Members Only</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('vip')}>VIP Members</button>
-              </div>
+            </div>
             )}
           </div>
 
@@ -624,7 +624,7 @@ const handleSelectSuggestion = (suggestion) => {
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('all')}>All</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('latest')}>Latest</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('oldest')}>Oldest</button>
-              </div>
+            </div>
             )}
           </div>
         </div>

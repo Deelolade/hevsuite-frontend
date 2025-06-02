@@ -68,18 +68,18 @@ const Pending = () => {
       try {
         // Fetch both pending registrations and settings
         await dispatch(fetchPendingRegistrations({
-      page: currentPage,
-      limit,
-      filter: selectedFilter,
-      sortBy: selectedSort,
-    }));
+          page: currentPage,
+          limit,
+          filter: selectedFilter,
+          sortBy: selectedSort,
+        }));
         const settingsResponse = await dispatch(getSettings());
         console.log('Settings fetch response:', settingsResponse); // Debug log
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-    
+
     fetchData();
   }, [dispatch, currentPage, limit, selectedFilter, selectedSort]);
 
@@ -125,7 +125,7 @@ const Pending = () => {
         toast.error('User must have paid the joining fee before approval.');
         return;
       }
-      
+
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
       // Refresh the list after accepting a user
       dispatch(fetchPendingRegistrations({ page: currentPage, limit }));
@@ -141,7 +141,7 @@ const Pending = () => {
         toast.error('Invalid user data. Cannot reject user.');
         return;
       }
-      
+
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'declined' })).unwrap();
       // toast.success(`User ${user.forename || ''} ${user.surname || ''} has been rejected`);
       // Refresh the list after rejecting a user
@@ -158,17 +158,17 @@ const Pending = () => {
     const canBeApproved = approvedSupporters === requiredReferralNumber && user.joinFeeStatus?.toLowerCase() === 'paid';
 
     return {
-    id: user._id,
-    name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
-    registrationId: `ID#${user.membershipNumber || '00000000'}`,
-    email: user.primaryEmail || 'No email provided',
+      id: user._id,
+      name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
+      registrationId: `ID#${user.membershipNumber || '00000000'}`,
+      email: user.primaryEmail || 'No email provided',
       supportersStatus: `${approvedSupporters}/${requiredReferralNumber}`,
-    avatar: user.profilePhoto || avatar,
-    idCard: user.idCardPhoto || idcards,
-    photo: user.profilePhoto || avatar,
+      avatar: user.profilePhoto || avatar,
+      idCard: user.idCardPhoto || idcards,
+      photo: user.profilePhoto || avatar,
       canBeApproved, // Add this flag to control approval button state
-    // Add all the original user data for the ViewPending component
-    ...user
+      // Add all the original user data for the ViewPending component
+      ...user
     };
   });
 
@@ -176,56 +176,53 @@ const Pending = () => {
   const renderPaginationButtons = () => {
     const buttons = [];
     const { currentPage, totalPages } = pagination;
-    
+
     // Previous button
     buttons.push(
       <button
         key="prev"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`px-3 py-1 rounded ${
-          currentPage === 1
+        className={`px-3 py-1 rounded ${currentPage === 1
             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
             : "bg-primary text-white hover:bg-primary-dark"
-        }`}
+          }`}
       >
         Previous
       </button>
     );
-    
+
     // Page buttons
     for (let i = 1; i <= totalPages; i++) {
       buttons.push(
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-1 rounded ${
-            currentPage === i
+          className={`px-3 py-1 rounded ${currentPage === i
               ? "bg-primary text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
+            }`}
         >
           {i}
         </button>
       );
     }
-    
+
     // Next button
     buttons.push(
       <button
         key="next"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`px-3 py-1 rounded ${
-          currentPage === totalPages
+        className={`px-3 py-1 rounded ${currentPage === totalPages
             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
             : "bg-primary text-white hover:bg-primary-dark"
-        }`}
+          }`}
       >
         Next
       </button>
     );
-    
+
     return buttons;
   };
 
@@ -259,10 +256,10 @@ const Pending = () => {
         />
       ) : (
         <>
-        <DefaultPending
+          <DefaultPending
             pendingUsers={formattedUsers || []}
-          setShowViewPending={setShowViewPending}
-          setViewUser={setViewUser}
+            setShowViewPending={setShowViewPending}
+            setViewUser={setViewUser}
             onAccept={handleAcceptUser}
             onReject={handleRejectUser}
             selectedFilter={selectedFilter}
@@ -276,7 +273,7 @@ const Pending = () => {
             filterOptions={filterOptions}
             sortOptions={sortOptions}
           />
-          
+
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-6">
