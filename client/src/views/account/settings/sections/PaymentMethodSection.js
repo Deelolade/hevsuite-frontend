@@ -1,39 +1,33 @@
-import React, { useState } from 'react';
-import { FaCreditCard, FaPaypal, FaStripe } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaPaypal, FaStripe } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import { PaymentMethodModal } from '../../events/EventDetails';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../../components/FireModal';
-import CardPaymentForm from '../components/paymentForms/CardPayment';
-import StripePaymentForm from '../components/paymentForms/StripePayment';
-import PayPalPaymentForm from '../components/paymentForms/PaypalForm';
+import StripePaymentForm from '../components/paymentFormsForAddingMethods/StripePayment';
+import PayPalPaymentForm from '../components/paymentFormsForAddingMethods/PaypalForm';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
-import { useEffect } from 'react';
 import paymentService from '../../../../services/paymentService';
-
-
 import axios from 'axios';
 import toast from 'react-hot-toast';
+
 const apiUrl = 'http://localhost:8000';
-
-
 
 const PaymentMethodSection = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [openModalPayment, setOpenModalPayment] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card'); // Consistent with renderPaymentForm keys
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
-  const [editMethod, setSelectedEditMethod]  = useState("card");
+  const [editMethod, setSelectedEditMethod] = useState("stripe");
   const [isEditing, setIsEditing] = useState(false);
   const [allPaymentMethods, setAllPaymentMethods] = useState([]);
+  const [defaultMethodId, setDefaultMethodId] = useState(null); // Track default method by ID
 
-   const renderPaymentForm = (method) => {
+  const renderPaymentForm = (method) => {
     switch (method) {
-      case 'card':
-        return <CardPaymentForm  isEditing={isEditing}/>;
       case 'paypal':
         return <PayPalPaymentForm isEditing={isEditing} />;
       case 'stripe':
@@ -41,51 +35,68 @@ const PaymentMethodSection = () => {
       default:
         return <p>Please select a payment method.</p>;
     }
-  }; 
+  };
 
   const handlePaymentMethodSelect = (method) => {
-    // Map PaymentMethodModal values to internal values
     const methodMap = {
-      Mastercard: 'card',
       PayPal: 'paypal',
       Stripe: 'stripe',
     };
-    const normalizedMethod = methodMap[method] || 'card';
+    const normalizedMethod = methodMap[method] || 'stripe';
     setPaymentMethod(normalizedMethod);
-    
   };
 
-  // Edit of payment method
-
-  const handleEdit = (method) => {
-    setSelectedEditMethod(method)
+  const handleEdit = (method, paymentMethodId) => {
+    setSelectedEditMethod(method);
     setShowEditForm(true);
     setIsEditing(true);
   };
 
-  // Handle removal of payment method
-
- const handleRemovePayment = async (method) => {
-  console.log("Method id", method);
-
-  try {
-    const response = await paymentService.deletePayment(method);
-
-    if (response.success) {
-      toast.success('Payment method removed successfully!');
-    } else {
-      throw new Error(response.message || 'Failed to remove payment method');
+  const handleRemovePayment = async (methodId) => {
+    try {
+      const response = await paymentService.deletePayment(methodId);
+      if (response.success) {
+        toast.success('Payment method removed successfully!');
+        setAllPaymentMethods(allPaymentMethods.filter(method => method.details.paymentMethodId !== methodId));
+        if (methodId === defaultMethodId) {
+          setDefaultMethodId(null); // Reset default if removed
+        }
+      } else {
+        throw new Error(response.message || 'Failed to remove payment method');
+      }
+    } catch (error) {
+      console.error('Error removing payment method:', error);
+      toast.error(error.message || 'Failed to remove payment method');
     }
-  } catch (error) {
-    console.error('Error removing payment method:', error);
-    toast.error(error.message || 'Failed to remove payment method');
-    // Optionally call an error callback
-    // e.g., onError(error.message);
-  }
-};
+  };
 
- useEffect(() => {
-  if (allPaymentMethods.length === 0) {
+  const handleSetDefault = async (methodId) => {
+    setDefaultMethodId(methodId); // Update frontend immediately
+
+    // Hardcoded API call (to be implemented with actual backend logic)
+    /*
+    try {
+      const response = await axios.post(
+        `${apiUrl}/api/payments/setDefaultPayment`,
+        { paymentMethodId: methodId },
+        { withCredentials: true }
+      );
+      if (response.success) {
+        toast.success('Default payment method updated!');
+        setDefaultMethodId(methodId);
+      } else {
+        throw new Error(response.message || 'Failed to set default payment method');
+      }
+    } catch (error) {
+      console.error('Error setting default payment method:', error);
+      toast.error(error.message || 'Failed to set default payment method');
+      // Revert to previous default if needed
+      setDefaultMethodId(allPaymentMethods[0]?.details.paymentMethodId || null);
+    }
+    */
+  };
+
+  useEffect(() => {
     const getAllPaymentMethods = async () => {
       try {
         const response = await axios.get(
@@ -94,31 +105,26 @@ const PaymentMethodSection = () => {
             withCredentials: true,
           }
         );
-        
-       setAllPaymentMethods(response.data.methods);
+        // Combine backend methods with hardcoded PayPal
+        const hardcodedPayPal = {
+          provider: 'paypal',
+          details: {
+            paymentMethodId: 'paypal-hardcoded-123',
+            email: 'user@example.com'
+          }
+        };
+        const methods = [...response.data.methods, hardcodedPayPal];
+        setAllPaymentMethods(methods);
+        // Set initial default to first method or hardcoded PayPal
+        setDefaultMethodId(methods[0]?.details.paymentMethodId || 'paypal-hardcoded-123');
       } catch (error) {
         console.error("Failed to fetch payment methods:", error);
       }
     };
-
     getAllPaymentMethods();
-  }
-
-  
-}, []);
-
-console.log("allPaymentMethods", allPaymentMethods);
-
-     // Will be replaced with the default one
-
- const lastStripeMethod = [...allPaymentMethods]
-  .reverse()
-  .find((method) => method.provider === 'stripe');
-
-
+  }, []);
 
   const AddPaymentModal = ({ paymentMethod }) => (
-    
     <Modal
       isOpen={showAddModal}
       onClose={() => setShowAddModal(false)}
@@ -126,157 +132,140 @@ console.log("allPaymentMethods", allPaymentMethods);
     >
       {paymentMethod === 'stripe' ? (
         <Elements stripe={stripePromise}>
-          <StripePaymentForm onSuccess={() => setShowAddModal(false)}  />
+          <StripePaymentForm onSuccess={() => setShowAddModal(false)} />
         </Elements>
       ) : paymentMethod === 'paypal' ? (
-        <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, "intent": "authorize",  // <-- Add this
-    "vault": "true"}} >
-          <PayPalPaymentForm onSuccess={() => setShowAddModal(false)}  />
+        <PayPalScriptProvider options={{ 
+          "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, 
+          "intent": "authorize",
+          "vault": "true"
+        }}>
+          <PayPalPaymentForm onSuccess={() => setShowAddModal(false)} />
         </PayPalScriptProvider>
       ) : (
         renderPaymentForm(paymentMethod)
       )}
-      
     </Modal>
   );
 
   return (
-    
-      <div className="mt-4 sm:mt-6 md:mt-8">
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-6">
-      <h2 className="text-[#540A26] text-lg sm:text-xl font-medium">
-        All Payment Methods
-      </h2>
-      <div className="flex gap-2">
-        <button
-          onClick={() => setShowEditForm(!showEditForm)}
-          className="px-4 sm:px-6 py-1.5 sm:py-2 bg-primary text-white rounded-lg text-sm sm:text-base"
-        >
-          {showEditForm ? 'Hide Form' : 'Edit'}
-        </button>
+    <div className="mt-4 sm:mt-6 md:mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-6">
+        <h2 className="text-[#540A26] text-lg sm:text-xl font-medium">
+          All Payment Methods
+        </h2>
+        {defaultMethodId && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const defaultMethod = allPaymentMethods.find(
+                  (method) => method.details.paymentMethodId === defaultMethodId
+                );
+                if (defaultMethod) {
+                  handleEdit(defaultMethod.provider, defaultMethod.details.paymentMethodId);
+                }
+              }}
+              className="px-4 sm:px-6 py-1.5 sm:py-2 bg-primary text-white rounded-lg text-sm sm:text-base"
+            >
+              Edit Default
+            </button>
+          </div>
+        )}
       </div>
-    </div>
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
-      <div className="mt-2 sm:mt-4 lg:mt-6 w-full lg:w-1/3">
-        <div className="border rounded-lg p-3 sm:p-4">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <input type="radio" className="w-4 h-4 sm:w-5 sm:h-5" checked readOnly />
-            <div className="flex items-center gap-1 sm:gap-2">
-              <FaCreditCard className="text-[#FF5F00] text-xl sm:text-2xl" />
-              <div>
-                <p className="font-medium text-sm sm:text-base">Mastercard</p>
-                <p className="text-xs sm:text-sm text-gray-500">Ends 3456</p>
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+        <div className="mt-2 sm:mt-4 lg:mt-6 w-full lg:w-1/3">
+          {allPaymentMethods.map((method) => (
+            <div key={method.details.paymentMethodId} className="border rounded-lg p-3 mt-4 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <input 
+                  type="radio" 
+                  className="w-4 h-4 sm:w-5 sm:h-5" 
+                  checked={method.details.paymentMethodId === defaultMethodId}
+                  onChange={() => handleSetDefault(method.details.paymentMethodId)}
+                />
+                <div className="flex items-center gap-1 sm:gap-2">
+                  {method.provider === 'stripe' ? (
+                    <FaStripe className="text-[#635bff] text-xl sm:text-2xl" />
+                  ) : (
+                    <FaPaypal className="text-blue-500 text-xl sm:text-2xl" />
+                  )}
+                  <div>
+                    <p className="font-medium text-sm sm:text-base">
+                      {method.provider.charAt(0).toUpperCase() + method.provider.slice(1)}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                      {method.provider === 'stripe' 
+                        ? `Card ends in ${method.details.last4}`
+                        : method.details.email || 'user@example.com'}
+                    </p>
+                    {method.details.paymentMethodId === defaultMethodId && (
+                      <p className="text-xs sm:text-sm text-primary font-medium">
+                        Default
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <span
+                  onClick={() => showModal({
+                    title: 'Remove Payment?',
+                    text: "You won't be able to undo this action!",
+                    confirmText: 'Remove',
+                    onConfirm: () => handleRemovePayment(method.details.paymentMethodId)
+                  })}
+                  className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-red-500 font-medium"
+                >
+                  Remove
+                </span>
+                <button
+                  onClick={() => handleEdit(method.provider, method.details.paymentMethodId)}
+                  className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-blue-500 font-medium"
+                >
+                  Edit
+                </button>
               </div>
             </div>
-            <span className="ml-1 sm:ml-2 text-xs sm:text-sm text-primary font-medium">
-              Default
-            </span>
-          </div>
-        </div>
-        <div className="border rounded-lg p-3 mt-4 sm:p-4">
-  {lastStripeMethod && (
-  <div className="border rounded-lg p-3 mt-4 sm:p-4">
-    <div className="flex items-center gap-2 sm:gap-4">
-      <input type="radio" className="w-4 h-4 sm:w-5 sm:h-5" checked readOnly />
-      <div className="flex items-center gap-1 sm:gap-2">
-        <FaStripe className="text-[#635bff] text-xl sm:text-2xl" /> 
-        <div>
-          <p className="font-medium text-sm sm:text-base">
-            {lastStripeMethod.provider}
-          </p>
-          <p className="text-xs sm:text-sm text-gray-500">
-            Card ends in {lastStripeMethod.details.last4}
-          </p>
-        </div>
-      </div>
-      <span
-        onClick={() =>
-          showModal({
-            title: 'Remove Payment?',
-            text: "You won't be able to undo this action!",
-            confirmText: 'Remove',
-            onConfirm: () => handleRemovePayment(lastStripeMethod.details.paymentMethodId)
-          })
-        }
-        className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-red-500 font-medium"
-      >
-        Remove
-      </span>
-      <button
-        onClick={() => handleEdit("stripe")}
-        className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-blue-500 font-medium"
-      >
-        Edit
-      </button>
-    </div>
-  </div>
-)}
-
-</div>
-        <div className="border rounded-lg p-3 mt-4 sm:p-4">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <input type="radio" className="w-4 h-4 sm:w-5 sm:h-5" checked disabled />
-            <div className="flex items-center gap-1 sm:gap-2">
-  <FaPaypal className="text-blue-500 text-xl sm:text-2xl" />
-  <div>
-    <p className="font-medium text-sm sm:text-base">PayPal</p>
-    <p className="text-xs sm:text-sm text-gray-500">user@example.com</p>
-  </div>
-</div>
-            <span
-              onClick={() =>
-                showModal({
-                  title: 'Remove Card?',
-                  text: "You won't be able to undo this action!",
-                  confirmText: 'Remove',
-                  onConfirm: () => handleRemovePayment("paypal"),
-                })
-              }
-              className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-red-500 font-medium"
-            >
-              Remove
-            </span>
-            <button
-            onClick={(e)=>handleEdit("paypal")}
-            className="ml-1 cursor-pointer sm:ml-2 text-xs sm:text-sm text-blue-500 font-medium"
+          ))}
+          <button
+            onClick={() => setOpenModalPayment(true)}
+            className="px-4 sm:px-6 py-1.5 sm:py-2 text-[#540A26] rounded-lg text-sm sm:text-base mt-2 sm:mt-3"
           >
-            Edit
+            + Add Payment Method
           </button>
+        </div>
+        {showEditForm && (
+          <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8 w-full lg:w-2/3">
+            {editMethod === "stripe" ? (
+              <Elements stripe={stripePromise}>
+                <StripePaymentForm 
+                  onSuccess={() => setShowAddModal(false)} 
+                  isEditing={isEditing} 
+                  paymentMethodId={editMethod === 'stripe' ? defaultMethodId : undefined} 
+                />
+              </Elements>
+            ) : (
+              <PayPalScriptProvider options={{ 
+                "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, 
+                "intent": "authorize",
+                "vault": "true"
+              }}>
+                <PayPalPaymentForm 
+                  onSuccess={() => setShowAddModal(false)} 
+                  isEditing={isEditing} 
+                />
+              </PayPalScriptProvider>
+            )}
           </div>
-        </div>
-        <button
-          onClick={() => setOpenModalPayment(true)}
-          className="px-4 sm:px-6 py-1.5 sm:py-2 text-[#540A26] rounded-lg text-sm sm:text-base mt-2 sm:mt-3"
-        >
-          + Add Payment Method
-        </button>
+        )}
       </div>
-
-      {showEditForm && (
-        <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6 lg:mt-8 w-full lg:w-2/3">
-          {
-            // Will impliment selection of the specific method, now the default is CardPayment
-            editMethod === "card"? <CardPaymentForm isEditing={isEditing} /> : editMethod === "stripe" ? <Elements stripe={stripePromise}>
-            <StripePaymentForm onSuccess={() => setShowAddModal(false)} isEditing={isEditing} paymentMethodId={lastStripeMethod.details.paymentMethodId} />
-          </Elements>: <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID, "intent": "authorize",  // <-- Add this
-    "vault": "true"}} isEditing={isEditing}>
-          <PayPalPaymentForm onSuccess={() => setShowAddModal(false)} />
-        </PayPalScriptProvider>
-          }
-        </div>
+      {openModalPayment && (
+        <PaymentMethodModal
+          onClose={() => setOpenModalPayment(false)}
+          showNewModal={() => setShowAddModal(true)}
+          onPaymentMethodSelect={handlePaymentMethodSelect}
+        />
       )}
+      <AddPaymentModal paymentMethod={paymentMethod} />
     </div>
-    {openModalPayment && (
-      <PaymentMethodModal
-        onClose={() => setOpenModalPayment(false)}
-        showNewModal={() => setShowAddModal(true)}
-        onPaymentMethodSelect={handlePaymentMethodSelect}
-      />
-    )}
-    <AddPaymentModal paymentMethod={paymentMethod} />
-  </div>
-      
-    
   );
 };
 
