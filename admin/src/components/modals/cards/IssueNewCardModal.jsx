@@ -24,6 +24,8 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
   const [showUserList, setShowUserList] = useState(false)
   const [loadingUserDetails, setLoadingUserDetails] = useState(false)
   const [useExistingAddress, setUseExistingAddress] = useState(true)
+  const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
     dispatch(getAllUsers())
@@ -110,13 +112,16 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
     return Object.keys(errors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
 
     if (!validateForm()) return;
 
     setIsSubmitting(true);
 
+    try {
     const bulkCardData = selectedUsers.map((user) => {
       const cardData = {
         userId: user._id,
@@ -134,20 +139,38 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
       }
       return cardData;
     });
-    Promise.all(bulkCardData.map((cardData) => dispatch(issueNewCard(cardData)).unwrap()))
-      .then((responses) => {
-        onClose();
-        if (onCardIssued && responses.length > 0) {
+
+      const responses = await Promise.all(
+        bulkCardData.map((cardData) => dispatch(issueNewCard(cardData)).unwrap())
+      );
+
+      // Check for failed users in the response
+      const failedUsers = responses.flatMap(response => response.failedUsers || []);
+      const successfulCards = responses.flatMap(response => response.cards || []);
+
+      if (failedUsers.length > 0) {
+        setErrorMessage(
+          `Failed to issue cards for ${failedUsers.length} user(s): ${failedUsers.map(f => f.reason).join(", ")}`
+        );
+      }
+
+      if (successfulCards.length > 0) {
+        setSuccessMessage(`Successfully issued ${successfulCards.length} card(s)`);
+        if (onCardIssued) {
           onCardIssued(responses);
         }
-      })
-      .catch((error) => {
-        setFormErrors({ submit: error.toString() });
+        // Close modal after 2 seconds if there are no errors
+        if (failedUsers.length === 0) {
+          setTimeout(() => {
+            onClose();
+          }, 2000);
+        }
+      }
+    } catch (error) {
+      setErrorMessage(error.toString());
+    } finally {
         setIsSubmitting(false);
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+    }
   };
 
   const handleToggleAddressUse = () => {
@@ -172,6 +195,18 @@ const IssueNewCardModal = ({ onClose, onCardIssued  }) => {
           </svg>
         </button>
       </div>
+
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+          {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          {errorMessage}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         {/* User Selection */}

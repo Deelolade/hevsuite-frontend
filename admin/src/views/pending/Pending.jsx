@@ -66,22 +66,81 @@ const Pending = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Starting fetchData...'); // Debug log
         // Fetch both pending registrations and settings
-        await dispatch(fetchPendingRegistrations({
-      page: currentPage,
-      limit,
-      filter: selectedFilter,
-      sortBy: selectedSort,
-    }));
+        const response = await dispatch(fetchPendingRegistrations({
+          page: currentPage,
+          limit,
+          filter: selectedFilter,
+          sortBy: selectedSort,
+        })).unwrap();
+        
+        console.log('Fetched pending registrations:', response); // Debug log
+        
         const settingsResponse = await dispatch(getSettings());
         console.log('Settings fetch response:', settingsResponse); // Debug log
+        console.log('Required referral number:', requiredReferralNumber); // Debug log
+
+        // Check for auto-approval candidates
+        if (response && response.data && response.data.length > 0) {
+          console.log('Processing users for auto-approval...'); // Debug log
+          
+          const autoApproveCandidates = response.data.filter(user => {
+            console.log('Checking user:', user.forename, user.surname); // Debug log
+            console.log('User joinFeeStatus:', user.joinFeeStatus); // Debug log
+            console.log('User referredBy:', user.referredBy); // Debug log
+            
+            const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+            console.log('Approved supporters count:', approvedSupporters); // Debug log
+            
+            // If requiredReferralNumber is 0, only check for paid joining fee
+            if (requiredReferralNumber === 0) {
+              const shouldApprove = user.joinFeeStatus?.toLowerCase() === 'paid';
+              console.log('Should approve (fee only):', shouldApprove); // Debug log
+              return shouldApprove;
+            }
+            
+            // Otherwise check both criteria
+            const shouldApprove = approvedSupporters === requiredReferralNumber && user.joinFeeStatus?.toLowerCase() === 'paid';
+            console.log('Should approve (both criteria):', shouldApprove); // Debug log
+            return shouldApprove;
+          });
+
+          console.log('Auto-approve candidates:', autoApproveCandidates); // Debug log
+
+          // Auto-approve eligible users
+          for (const user of autoApproveCandidates) {
+            try {
+              console.log('Attempting to auto-approve user:', user.forename, user.surname); // Debug log
+              await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
+              toast.success(`User ${user.forename} ${user.surname} has been automatically approved`);
+              console.log('Successfully auto-approved user:', user.forename, user.surname); // Debug log
+            } catch (error) {
+              console.error('Error auto-approving user:', error);
+              toast.error(`Failed to auto-approve user ${user.forename} ${user.surname}`);
+            }
+          }
+
+          // Refresh the list after auto-approvals
+          if (autoApproveCandidates.length > 0) {
+            console.log('Refreshing list after auto-approvals...'); // Debug log
+            dispatch(fetchPendingRegistrations({
+              page: currentPage,
+              limit,
+              filter: selectedFilter,
+              sortBy: selectedSort,
+            }));
+          }
+        } else {
+          console.log('No users to process for auto-approval'); // Debug log
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error in fetchData:', error);
       }
     };
-    
+
     fetchData();
-  }, [dispatch, currentPage, limit, selectedFilter, selectedSort]);
+  }, [dispatch, currentPage, limit, selectedFilter, selectedSort, requiredReferralNumber]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -125,7 +184,7 @@ const Pending = () => {
         toast.error('User must have paid the joining fee before approval.');
         return;
       }
-      
+
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
       // Refresh the list after accepting a user
       dispatch(fetchPendingRegistrations({ page: currentPage, limit }));
@@ -141,7 +200,7 @@ const Pending = () => {
         toast.error('Invalid user data. Cannot reject user.');
         return;
       }
-      
+
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'declined' })).unwrap();
       // toast.success(`User ${user.forename || ''} ${user.surname || ''} has been rejected`);
       // Refresh the list after rejecting a user
@@ -158,17 +217,17 @@ const Pending = () => {
     const canBeApproved = approvedSupporters === requiredReferralNumber && user.joinFeeStatus?.toLowerCase() === 'paid';
 
     return {
-    id: user._id,
-    name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
-    registrationId: `ID#${user.membershipNumber || '00000000'}`,
-    email: user.primaryEmail || 'No email provided',
+      id: user._id,
+      name: `${user.forename || ''} ${user.surname || ''}`.trim() || 'Unknown User',
+      registrationId: `ID#${user.membershipNumber || '00000000'}`,
+      email: user.primaryEmail || 'No email provided',
       supportersStatus: `${approvedSupporters}/${requiredReferralNumber}`,
-    avatar: user.profilePhoto || avatar,
-    idCard: user.idCardPhoto || idcards,
-    photo: user.profilePhoto || avatar,
+      avatar: user.profilePhoto || avatar,
+      idCard: user.idCardPhoto || idcards,
+      photo: user.profilePhoto || avatar,
       canBeApproved, // Add this flag to control approval button state
-    // Add all the original user data for the ViewPending component
-    ...user
+      // Add all the original user data for the ViewPending component
+      ...user
     };
   });
 
@@ -176,56 +235,53 @@ const Pending = () => {
   const renderPaginationButtons = () => {
     const buttons = [];
     const { currentPage, totalPages } = pagination;
-    
+
     // Previous button
     buttons.push(
       <button
         key="prev"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className={`px-3 py-1 rounded ${
-          currentPage === 1
+        className={`px-3 py-1 rounded ${currentPage === 1
             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
             : "bg-primary text-white hover:bg-primary-dark"
-        }`}
+          }`}
       >
         Previous
       </button>
     );
-    
+
     // Page buttons
     for (let i = 1; i <= totalPages; i++) {
       buttons.push(
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-1 rounded ${
-            currentPage === i
+          className={`px-3 py-1 rounded ${currentPage === i
               ? "bg-primary text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
+            }`}
         >
           {i}
         </button>
       );
     }
-    
+
     // Next button
     buttons.push(
       <button
         key="next"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className={`px-3 py-1 rounded ${
-          currentPage === totalPages
+        className={`px-3 py-1 rounded ${currentPage === totalPages
             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
             : "bg-primary text-white hover:bg-primary-dark"
-        }`}
+          }`}
       >
         Next
       </button>
     );
-    
+
     return buttons;
   };
 
@@ -259,10 +315,10 @@ const Pending = () => {
         />
       ) : (
         <>
-        <DefaultPending
+          <DefaultPending
             pendingUsers={formattedUsers || []}
-          setShowViewPending={setShowViewPending}
-          setViewUser={setViewUser}
+            setShowViewPending={setShowViewPending}
+            setViewUser={setViewUser}
             onAccept={handleAcceptUser}
             onReject={handleRejectUser}
             selectedFilter={selectedFilter}
@@ -276,7 +332,7 @@ const Pending = () => {
             filterOptions={filterOptions}
             sortOptions={sortOptions}
           />
-          
+
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="flex justify-center items-center space-x-2 mt-6">

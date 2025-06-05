@@ -6,8 +6,6 @@ import Modal from 'react-modal';
 import avatar from '../../assets/user.avif';
 import authService from '../../store/auth/authService';
 import toast from 'react-hot-toast';
-import axios from 'axios';
-import { base_url } from '../../constants/axiosConfig';
 
 const AdminProfile = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,12 +16,6 @@ const AdminProfile = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [supportStats, setSupportStats] = useState({
-    total: 0,
-    pending: 0,
-    completed: 0,
-    assigned: 0
-  });
 
   const [profileData, setProfileData] = useState({
     fullName: '',
@@ -55,50 +47,11 @@ const AdminProfile = () => {
     fetchProfile();
   }, []);
 
-  // Fetch support request statistics
-  useEffect(() => {
-    const fetchSupportStats = async () => {
-      try {
-        // Get all requests
-        const allRequests = await axios.get(`${base_url}/api/support-requests`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        // Get assigned requests
-        const assignedRequests = await axios.get(`${base_url}/api/support-requests?assignedTo=me`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        const requests = allRequests.data;
-        const assigned = assignedRequests.data;
-
-        // Calculate statistics
-        const stats = {
-          total: requests.length,
-          pending: requests.filter(req => req.status === 'Pending').length,
-          completed: requests.filter(req => req.status === 'Approved' || req.status === 'Declined').length,
-          assigned: assigned.length
-        };
-
-        setSupportStats(stats);
-      } catch (error) {
-        console.error('Error fetching support stats:', error);
-        toast.error('Failed to fetch support statistics');
-      }
-    };
-
-    fetchSupportStats();
-  }, []);
-
-  const statsData = [
-    { title: 'Total Requests', count: supportStats.total },
-    { title: 'Pending Requests', count: supportStats.pending },
-    { title: 'Completed Requests', count: supportStats.completed },
-    { title: 'Assigned Requests', count: supportStats.assigned },
+  const supportStats = [
+    { title: 'Total Requests', count: '0' },
+    { title: 'Pending Requests', count: '0' },
+    { title: 'Completed Requests', count: '0' },
+    { title: 'Assigned Requests', count: '0' },
   ];
 
   const handleEditSave = () => {
@@ -356,7 +309,7 @@ const AdminProfile = () => {
               <span>Support Request</span>
             </div>
             <div className='flex items-center gap-2'>
-              <span className='text-red-500'>{supportStats.pending}</span>
+              <span className='text-red-500'>0</span>
               <svg
                 className={`w-4 h-4 text-gray-400 transform transition-transform ${
                   isDropdownOpen ? 'rotate-180' : ''
@@ -376,11 +329,11 @@ const AdminProfile = () => {
           {isDropdownOpen && (
             <>
               <div className='grid grid-cols-4 gap-4 mb-6'>
-                {statsData.map((stat, index) => (
+                {supportStats.map((stat, index) => (
                   <div key={index} className='bg-white p-4 rounded-lg border'>
                     <div className='flex items-center gap-2 mb-2'>
                       <span className='w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center'>
-                        {index === 0 ? '📊' : index === 1 ? '⏳' : index === 2 ? '✅' : '👤'}
+                        👤
                       </span>
                       <span className='text-gray-600 text-sm'>
                         {stat.title}

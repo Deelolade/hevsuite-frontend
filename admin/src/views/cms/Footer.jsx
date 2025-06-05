@@ -257,12 +257,12 @@ const Footer = () => {
       for (let i = 0; i < newPages.length; i++) {
         const page = newPages[i];
         await dispatch(
-          updatePage({
+        updatePage({
             id: page._id,
-            data: {
+          data: {
               order: i + 1
-            }
-          })
+          }
+        })
         );
       }
 

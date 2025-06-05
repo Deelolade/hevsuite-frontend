@@ -119,12 +119,12 @@ const Menu = () => {
       for (let i = 0; i < newPages.length; i++) {
         const page = newPages[i];
         await dispatch(
-          updatePage({
+        updatePage({
             id: page._id,
-            data: {
+          data: {
               order: i + 1
-            }
-          })
+          }
+        })
         );
       }
 
@@ -382,43 +382,43 @@ const Menu = () => {
   const confirmDeletePage = () => {
     if (!pageToDelete) return
 
-    // First check if the page is in menu items
+      // First check if the page is in menu items
     const menuItem = menuItems.find(item => item.pageId === pageToDelete || (item.pageId && item.pageId._id === pageToDelete))
-    
-    if (menuItem) {
-      // If page is in menu items, remove it from the menu
-      const updatedItems = menuItems.filter(item => 
-        item.pageId !== pageToDelete && (!item.pageId || item.pageId._id !== pageToDelete)
-      )
       
+      if (menuItem) {
+        // If page is in menu items, remove it from the menu
+        const updatedItems = menuItems.filter(item => 
+        item.pageId !== pageToDelete && (!item.pageId || item.pageId._id !== pageToDelete)
+        )
+        
+        dispatch(
+          editMenus({
+            id: selectedSection,
+            data: { items: updatedItems },
+          })
+        ).then(() => {
+          // Update local state
+          setMenuItems(updatedItems)
+          // Remove from menuPages
+        setMenuPages(prev => prev.filter(id => id !== pageToDelete))
+        })
+      }
+
+      // Then delete the page itself
       dispatch(
-        editMenus({
-          id: selectedSection,
-          data: { items: updatedItems },
+        updatePage({
+        id: pageToDelete,
+          data: {
+            visibility: false // Soft delete by setting visibility to false
+          }
         })
       ).then(() => {
-        // Update local state
-        setMenuItems(updatedItems)
-        // Remove from menuPages
-        setMenuPages(prev => prev.filter(id => id !== pageToDelete))
-      })
-    }
-
-    // Then delete the page itself
-    dispatch(
-      updatePage({
-        id: pageToDelete,
-        data: {
-          visibility: false // Soft delete by setting visibility to false
-        }
-      })
-    ).then(() => {
-      // Refresh pages
-      dispatch(getPages({ status: "active" }))
+        // Refresh pages
+        dispatch(getPages({ status: "active" }))
       // Close modal and reset state
       setIsDeleteModalOpen(false)
       setPageToDelete(null)
-    })
+      })
   }
 
   return (
@@ -555,52 +555,52 @@ const Menu = () => {
                   <tbody>
                     {orderedPages.length > 0 ? (
                       orderedPages.map((page, index) => (
-                        <tr 
-                          key={page._id} 
+                          <tr 
+                            key={page._id} 
                           className={`border-b transition-colors duration-200 ${
                             draggingPage === index ? 'opacity-50 bg-gray-50' : ''
                           } ${
                             dragPageOver === index ? 'border-t-2 border-primary bg-primary/5' : ''
                           }`}
-                          draggable={true}
-                          onDragStart={(e) => handleDragPageStart(e, index)}
-                          onDragOver={(e) => handleDragPageOver(e, index)}
-                          onDragEnd={handleDragPageEnd}
-                        >
-                          <td className="py-4 px-6 flex items-center gap-2">
+                            draggable={true}
+                            onDragStart={(e) => handleDragPageStart(e, index)}
+                            onDragOver={(e) => handleDragPageOver(e, index)}
+                            onDragEnd={handleDragPageEnd}
+                          >
+                            <td className="py-4 px-6 flex items-center gap-2">
                             <span className="p-1 border rounded cursor-move hover:bg-gray-50">
                               <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
                               </svg>
                             </span>
-                            {page.title}
-                          </td>
-                          <td className="py-4 px-6">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={page.visibility || false}
-                                className="sr-only peer"
-                                onChange={() => handlePageVisibilityChange(page._id, !page.visibility)}
-                              />
-                              <div className={`w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                                page.visibility ? "bg-primary" : "bg-gray-500"
-                              }`}></div>
-                            </label>
-                          </td>
-                          <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
-                          <td className="py-4 px-6 flex items-center gap-3">
-                            <button 
-                              className="text-primary hover:text-primary-dark"
-                              onClick={() => {
-                                setSelectedItem(page);
-                                setShowEditPage(true);
-                                setShowAddPage(true);
-                                window.history.pushState(null, "", `?tab=menu&edit=2`);
-                              }}
-                            >
-                              <FiEdit size={18} />
-                            </button>
+                              {page.title}
+                            </td>
+                            <td className="py-4 px-6">
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={page.visibility || false}
+                                  className="sr-only peer"
+                                  onChange={() => handlePageVisibilityChange(page._id, !page.visibility)}
+                                />
+                                <div className={`w-11 h-6 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                                  page.visibility ? "bg-primary" : "bg-gray-500"
+                                }`}></div>
+                              </label>
+                            </td>
+                            <td className="py-4 px-6 text-sm text-gray-600">{page.owner || "System"}</td>
+                            <td className="py-4 px-6 flex items-center gap-3">
+                              <button 
+                                className="text-primary hover:text-primary-dark"
+                                onClick={() => {
+                                  setSelectedItem(page);
+                                  setShowEditPage(true);
+                                  setShowAddPage(true);
+                                  window.history.pushState(null, "", `?tab=menu&edit=2`);
+                                }}
+                              >
+                                <FiEdit size={18} />
+                              </button>
                             {page.owner === "Admin" && (
                               <button 
                                 className="text-red-500 hover:text-red-700"
@@ -609,9 +609,9 @@ const Menu = () => {
                                 <FaTrash size={18} />
                               </button>
                             )}
-                          </td>
-                        </tr>
-                      ))
+                            </td>
+                          </tr>
+                        ))
                     ) : (
                       <tr>
                         <td colSpan="4" className="py-4 px-6 text-center text-gray-500">
@@ -855,12 +855,25 @@ const Menu = () => {
               setIsEditMenuModalOpen={setIsEditMenuModalOpen}
               selectedMenu={menus.find((f) => f._id === selectedSection)}
               onSave={(updatedMenu) => {
-                dispatch(
+                return dispatch(
                   editMenus({
                     id: selectedSection,
                     data: updatedMenu,
                   }),
-                )
+                ).then(() => {
+                  // If the menu was soft deleted (visibility set to false)
+                  if (updatedMenu.visibility === false) {
+                    // Update local state immediately
+                    setSections(prev => prev.filter(section => section.id !== selectedSection));
+                    // If there are other sections, select the first one
+                    if (sections.length > 1) {
+                      const nextSection = sections.find(section => section.id !== selectedSection);
+                      if (nextSection) {
+                        setSelectedSection(nextSection.id);
+                      }
+                    }
+                  }
+                });
               }}
             />
           </Modal>

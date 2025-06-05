@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BiSearch } from "react-icons/bi";
 import {
@@ -22,7 +22,6 @@ import Spinner from "../../components/Spinner";
 import { toast } from "react-toastify";
 import axios from 'axios';
 import { base_url } from '../../constants/axiosConfig';
-import debounce from 'lodash/debounce';
 
 const Evidence = () => {
   const dispatch = useDispatch();
@@ -35,28 +34,15 @@ const Evidence = () => {
   const { user } = useSelector((state) => state.auth);
   const { admin } = useSelector((state) => state.adminProfile);
   const [currentUser, setCurrentUser] = useState(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Cache for API responses
-  const [cache, setCache] = useState({
-    evidenceRequests: null,
-    adminUsers: null,
-    userProfile: null
-  });
-
-  // Fetch current user profile with caching
+  // Fetch current user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        if (cache.userProfile) {
-          setCurrentUser(cache.userProfile);
-          return;
-        }
-
         const response = await authService.getProfile();
+        console.log("Fetched user profile:", response);
         if (response && response.user) {
           setCurrentUser(response.user);
-          setCache(prev => ({ ...prev, userProfile: response.user }));
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -65,39 +51,27 @@ const Evidence = () => {
     };
 
     fetchProfile();
-  }, [cache.userProfile]);
+  }, []);
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((term) => {
-      setSearchTerm(term);
-    }, 500),
-    []
-  );
-
-  // Fetch evidence requests and admin users with caching
+  // Fetch evidence requests and admin users
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Only fetch if cache is empty or it's initial load
-        if (!cache.evidenceRequests || isInitialLoad) {
-          await dispatch(getEvidenceRequests()).unwrap();
-          setCache(prev => ({ ...prev, evidenceRequests: evidenceRequests }));
-        }
+        console.log('Fetching evidence requests...');
+        await dispatch(getEvidenceRequests()).unwrap();
+        console.log('Evidence requests fetched:', evidenceRequests);
         
-        if (!cache.adminUsers || isInitialLoad) {
-          await dispatch(getAdminUsers()).unwrap();
-          setCache(prev => ({ ...prev, adminUsers: adminUsers }));
-        }
-
-        setIsInitialLoad(false);
+        console.log('Fetching admin users...');
+        await dispatch(getAdminUsers()).unwrap();
+        console.log('Admin users fetched:', adminUsers);
       } catch (error) {
+        console.error('Error fetching data:', error);
         toast.error('Failed to fetch data');
       }
     };
 
     fetchData();
-  }, [dispatch, isInitialLoad]);
+  }, [dispatch]);
 
   const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -125,31 +99,29 @@ const Evidence = () => {
 
   const handleAssignToAdmin = async (requestId, adminId = null) => {
     try {
+      console.log('Assigning request:', { requestId, adminId, currentUser: currentUser?._id });
+      
+      // If no adminId is provided, assign to current user
       const targetAdminId = adminId || currentUser?._id;
       
+      // Update the request with the new assignment using PUT instead of PATCH
       const response = await axios.put(
         `${base_url}/api/support-requests/${requestId}`,
         { 
           assignedTo: targetAdminId,
-          status: 'Pending'
+          status: 'Pending' // Maintain the current status
         },
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}` // Add authorization header
           },
         }
       );
 
       if (response.data) {
-        // Update local cache instead of making a new API call
-        const updatedRequests = evidenceRequests.map(request => 
-          request._id === requestId 
-            ? { ...request, assignedTo: targetAdminId }
-            : request
-        );
-        
-        setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
+        // Refresh the evidence requests list
+        await dispatch(getEvidenceRequests()).unwrap();
         toast.success("Request assigned successfully");
         setShowAssignModal(false);
       }
@@ -157,23 +129,20 @@ const Evidence = () => {
       console.error('Error assigning request:', error);
       const errorMessage = error.response?.data?.message || "Failed to assign request";
       toast.error(errorMessage);
+      
+      // Log detailed error information for debugging
+      console.log('Error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
     }
   };
 
   const handleStatusUpdate = async (id, status) => {
     try {
       await dispatch(updateEvidenceStatus({ id, status })).unwrap();
-      
-      // Update local cache
-      const updatedRequests = evidenceRequests.map(request => 
-        request._id === id 
-          ? { ...request, status }
-          : request
-      );
-      
-      setCache(prev => ({ ...prev, evidenceRequests: updatedRequests }));
       toast.success(`Request ${status.toLowerCase()} successfully`);
-      
       if (status === "Approved") {
         setShowApproveModal(false);
       } else if (status === "Declined") {
@@ -197,6 +166,21 @@ const Evidence = () => {
 
     let filtered = [...evidenceRequests];
 
+    console.log('Filtering requests:', {
+      currentUser: currentUser?._id,
+      totalRequests: filtered.length,
+      activeTab,
+      statusFilter,
+      searchTerm,
+      requests: filtered.map(r => ({
+        id: r._id,
+        assignedTo: r.assignedTo?._id || r.assignedTo,
+        createdBy: r.createdBy?._id || r.createdBy,
+        status: r.status,
+        user: r.user?.forename
+      }))
+    });
+
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter((request) => {
@@ -205,11 +189,13 @@ const Evidence = () => {
         const matchesType = request.type?.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesName || matchesType;
       });
+      console.log('After search filter:', filtered.length);
     }
 
     // Filter by status if not "all"
     if (statusFilter !== "all") {
       filtered = filtered.filter((request) => request.status === statusFilter);
+      console.log('After status filter:', filtered.length);
     }
 
     // Filter by tab
@@ -218,15 +204,29 @@ const Evidence = () => {
       filtered = filtered.filter((request) => {
         const requestAssignedTo = request.assignedTo?._id || request.assignedTo;
         const isAssigned = requestAssignedTo === currentUser?._id;
+        console.log('Checking assignment:', {
+          requestId: request._id,
+          requestAssignedTo,
+          currentUserId: currentUser?._id,
+          isAssigned
+        });
         return isAssigned;
       });
+      console.log('After assigned filter:', filtered.length);
     } else if (activeTab === "other") {
       // Show requests created by the current user
       filtered = filtered.filter((request) => {
         const requestCreatedBy = request.createdBy?._id || request.createdBy;
         const isCreatedByMe = requestCreatedBy === currentUser?._id;
-              return isCreatedByMe;
+        console.log('Checking creator:', {
+          requestId: request._id,
+          requestCreatedBy,
+          currentUserId: currentUser?._id,
+          isCreatedByMe
+        });
+        return isCreatedByMe;
       });
+      console.log('After creator filter:', filtered.length);
     }
 
     return filtered;
@@ -262,7 +262,8 @@ const Evidence = () => {
                 type="text"
                 placeholder="Search by name or type"
                 className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
-                onChange={(e) => debouncedSearch(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <select

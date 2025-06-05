@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import financeService from "./financeService"
 import toast from "react-hot-toast"
+import axios from 'axios'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const initialState = {
   paymentMethods: [],
@@ -102,25 +105,53 @@ export const updateTransactionStatus = createAsyncThunk("finance/update-transact
 })
 
 // Pricing
-export const getPricingFees = createAsyncThunk("finance/get-pricing-fees", async (_, thunkAPI) => {
+export const getPricingFees = createAsyncThunk(
+  'finance/getPricingFees',
+  async (_, { rejectWithValue }) => {
   try {
-    return await financeService.getPricingFees()
-  } catch (error) {
-    const message = error.response?.data?.message || error.message || "Failed to fetch pricing fees"
-    toast.error(message)
-    return thunkAPI.rejectWithValue(message)
+      const response = await axios.get(`${API_URL}/api/pricing`)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch pricing fees')
+    }
   }
-})
+)
 
-export const updatePricingFee = createAsyncThunk("finance/update-pricing-fee", async (data, thunkAPI) => {
-  try {
-    return await financeService.updatePricingFee(data)
-  } catch (error) {
-    const message = error.response?.data?.message || error.message || "Failed to update pricing fee"
-    toast.error(message)
-    return thunkAPI.rejectWithValue(message)
+export const updatePricingFee = createAsyncThunk(
+  'finance/updatePricingFee',
+  async ({ id, feeData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/api/pricing/${id}`, feeData)
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update pricing fee')
+    }
   }
-})
+)
+
+export const addPricingFee = createAsyncThunk(
+  'finance/addPricingFee',
+  async (feeData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/pricing`, feeData)
+      return response.data
+  } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to add pricing fee')
+    }
+  }
+)
+
+export const deletePricingFee = createAsyncThunk(
+  'finance/deletePricingFee',
+  async (id, { rejectWithValue }) => {
+  try {
+      await axios.delete(`${API_URL}/api/pricing/${id}`)
+      return id
+  } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete pricing fee')
+    }
+  }
+)
 
 // Financial Summary
 export const getFinancialSummary = createAsyncThunk("finance/get-financial-summary", async (period, thunkAPI) => {
@@ -136,7 +167,11 @@ export const getFinancialSummary = createAsyncThunk("finance/get-financial-summa
 export const financeSlice = createSlice({
   name: "finance",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Payment Methods
@@ -252,6 +287,7 @@ export const financeSlice = createSlice({
       // Pricing
       .addCase(getPricingFees.pending, (state) => {
         state.isLoading = true
+        state.error = null
       })
       .addCase(getPricingFees.fulfilled, (state, action) => {
         state.isLoading = false
@@ -261,23 +297,54 @@ export const financeSlice = createSlice({
       })
       .addCase(getPricingFees.rejected, (state, action) => {
         state.isLoading = false
-        state.isError = true
-        state.message = action.payload
+        state.error = action.payload
       })
       .addCase(updatePricingFee.pending, (state) => {
         state.isLoading = true
+        state.error = null
       })
       .addCase(updatePricingFee.fulfilled, (state, action) => {
         state.isLoading = false
         state.isSuccess = true
         state.isError = false
-        state.pricingFees = state.pricingFees.map((fee) => (fee._id === action.payload._id ? action.payload : fee))
-        toast.success("Pricing fee updated successfully")
+        const index = state.pricingFees.findIndex(fee => fee._id === action.payload._id)
+        if (index !== -1) {
+          state.pricingFees[index] = action.payload
+        }
       })
       .addCase(updatePricingFee.rejected, (state, action) => {
         state.isLoading = false
-        state.isError = true
-        state.message = action.payload
+        state.error = action.payload
+      })
+      .addCase(addPricingFee.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(addPricingFee.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.isSuccess = true
+        state.isError = false
+        state.pricingFees.push(action.payload)
+        toast.success("Pricing fee added successfully")
+      })
+      .addCase(addPricingFee.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
+      })
+      .addCase(deletePricingFee.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(deletePricingFee.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.isSuccess = true
+        state.isError = false
+        state.pricingFees = state.pricingFees.filter(fee => fee._id !== action.payload)
+        toast.success("Pricing fee deleted successfully")
+      })
+      .addCase(deletePricingFee.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
       })
 
       // Financial Summary
@@ -298,4 +365,5 @@ export const financeSlice = createSlice({
   },
 })
 
+export const { clearError } = financeSlice.actions
 export default financeSlice.reducer

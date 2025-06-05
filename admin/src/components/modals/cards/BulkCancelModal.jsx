@@ -1,12 +1,52 @@
+
 import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { useDispatch } from "react-redux";
+import { bulkCancelCards } from "../../../store/cards/cardSlice";
+import { toast } from "react-toastify";
 
-const BulkCancelModal = ({ onClose, selectedCount, onConfirm, selectedCards }) => {
+const BulkCancelModal = ({ onClose, selectedCount, selectedCards, onBulkCancelSuccess }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+
+  const handleConfirm = async () => {
+    if (!password.trim()) {
+      setError("Please enter your password");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+    try {
+      const result = await dispatch(bulkCancelCards({
+        cardIds: selectedCards,
+        password,
+        reason: "Bulk cancellation by admin"
+      })).unwrap();
+
+      toast.success(result.message || "Cards cancelled successfully");
+      onBulkCancelSuccess?.();
+      onClose(false);
+    } catch (error) {
+      // Handle specific error messages from the backend
+      if (error.includes("Invalid password")) {
+        setError("Invalid password. Please try again.");
+      } else if (error.includes("Unauthorized")) {
+        setError("You are not authorized to perform this action.");
+      } else {
+        setError(error || "Failed to cancel cards. Please try again.");
+      }
+      toast.error(error || "Failed to cancel cards");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="p-6 ">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Bulk Cancel Cards</h2>
         <button onClick={() => onClose(false)} className="text-gray-400">
@@ -26,8 +66,17 @@ const BulkCancelModal = ({ onClose, selectedCount, onConfirm, selectedCards }) =
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 border rounded-lg text-sm pr-10"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError(""); // Clear error when user types
+              }}
+              className={`w-full px-3 py-2.5 border rounded-lg text-sm pr-10 ${
+                error ? "border-red-500" : ""
+              }`}
+              autoComplete="new-password"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
             />
             <button
               type="button"
@@ -41,40 +90,25 @@ const BulkCancelModal = ({ onClose, selectedCount, onConfirm, selectedCards }) =
               )}
             </button>
           </div>
+          {error && (
+            <p className="mt-1 text-sm text-red-500">{error}</p>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
           <button
             onClick={() => onClose(false)}
             className="px-6 py-2 border rounded-lg text-sm"
+            disabled={isLoading}
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              // Handle bulk cancel logic here
-              console.log("Bulk cancelling with password:", password);
-              // Ensure API call is made here
-              fetch('http://localhost:5000/admin/bulk-cancel', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ password, selectedCount, cardIds: selectedCards }),
-              })
-                .then(response => response.json())
-                .then(data => {
-                  console.log('Success:', data);
-                  onConfirm(password);
-                  onClose(false);
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                });
-            }}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm"
+            onClick={handleConfirm}
+            className="px-6 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+            disabled={isLoading || !password.trim()}
           >
-            Confirm Cancel
+            {isLoading ? "Processing..." : "Confirm Cancel"}
           </button>
         </div>
       </div>
