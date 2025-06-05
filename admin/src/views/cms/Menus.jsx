@@ -855,12 +855,25 @@ const Menu = () => {
               setIsEditMenuModalOpen={setIsEditMenuModalOpen}
               selectedMenu={menus.find((f) => f._id === selectedSection)}
               onSave={(updatedMenu) => {
-                dispatch(
+                return dispatch(
                   editMenus({
                     id: selectedSection,
                     data: updatedMenu,
                   }),
-                )
+                ).then(() => {
+                  // If the menu was soft deleted (visibility set to false)
+                  if (updatedMenu.visibility === false) {
+                    // Update local state immediately
+                    setSections(prev => prev.filter(section => section.id !== selectedSection));
+                    // If there are other sections, select the first one
+                    if (sections.length > 1) {
+                      const nextSection = sections.find(section => section.id !== selectedSection);
+                      if (nextSection) {
+                        setSelectedSection(nextSection.id);
+                      }
+                    }
+                  }
+                });
               }}
             />
           </Modal>

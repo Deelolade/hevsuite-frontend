@@ -82,7 +82,7 @@ const AddPage = ({ onBack, refreshData, menuId }) => {
       image: slide.image || "",
       link: slide.link || "",
       content: slide.content || "",
-      path: slide.link || "",
+      fileType: slide.fileType || "image",
     }))
 
     const formattedContents = editors.map((editor) => ({
