@@ -134,11 +134,11 @@ const History = () => {
                   </td>
                   <td className="py-4 flex items-center gap-3">
                     <img
-                      src={transaction.userId?.avatar || avatar}
-                      alt={transaction.userId?.forename || 'User'}
+                      src={transaction.user?.profilePhoto || avatar}
+                      alt={transaction.user?.forename || 'User'}
                       className="w-10 h-10 rounded-full object-cover"
                     />
-                    <span>{transaction.userId?.forename} {transaction.userId?.surname}</span>
+                    <span>{transaction.user?.forename} {transaction.user?.surname}</span>
                   </td>
                   <td className="py-4 capitalize">{transaction.paymentType}</td>
                   <td className="py-4">
@@ -171,7 +171,7 @@ const History = () => {
                         </div>
                         <div>
                           <label className="text-sm text-gray-500">Date</label>
-                          <p>{transaction.eventId?.date ? new Date(transaction.eventId.date).toLocaleDateString('en-GB') : 'N/A'}</p>
+                          <p>{transaction?.createdAt ? new Date(transaction.createdAt).toLocaleDateString('en-GB') : 'N/A'}</p>
                         </div>
                         <div>
                           <label className="text-sm text-gray-500">Time</label>

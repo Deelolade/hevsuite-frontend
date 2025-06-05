@@ -28,12 +28,15 @@ import HowItWorks from './views/how-it-works/HowItWorks';
 import News from './views/news/News';
 import NewsDetail from './views/news/NewsDetail';
 import axios from 'axios';
+import OneTimePayment from './views/account/settings/components/paymentChannels.js/oneTimePayments';
+import MakeSubscriptionPayment from './views/account/settings/components/paymentChannels.js/subscriptionPayments';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProfile } from './features/auth/authSlice';
 import { useEffect, useReducer, useState } from 'react';
 import MaintenancePage from './components/MaintainanceMode';
 import { fetchGeneralSettings } from './features/generalSettingSlice';
 import NotFound from './views/NotFound';
+
 
 axios.defaults.withCredentials = true;
 
@@ -185,7 +188,32 @@ const router = createBrowserRouter([
         path: 'ask',
         element: <Ask />,
       },
-    ], 
+      {
+        path: 'topics',
+        element: <Topics />,
+      },
+      {
+        path: 'topic-details/:id',
+        element: <TopicDetails />,
+      },
+      {
+        path: 'terms',
+        element: <Terms />,
+      },
+      {
+        path: 'how-it-works',
+        element: <HowItWorks />,
+      },
+      {
+        path: 'make-one-time-payment',
+        element: <OneTimePayment />,
+      }
+      ,
+      {
+        path: 'make-subscription-payment',
+        element: <MakeSubscriptionPayment />,
+      }
+    ],
   },
   { path: '*', element: <NotFound/> },
 ]);

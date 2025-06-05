@@ -20,6 +20,8 @@ const General = () => {
     maintenanceMode: false,
     requiredJoiningAge: 24,
     requiredReferralNumber: 0,
+    vipNonEngagementDays: 28,
+    standardNonEngagementDays: 28,
   })
 
   // UI state
@@ -56,6 +58,8 @@ const General = () => {
         maintenanceMode: generalSettings.maintenanceMode || false,
         requiredJoiningAge: generalSettings.requiredJoiningAge ?? 24,
         requiredReferralNumber: generalSettings.requiredReferralNumber ?? 0,
+        vipNonEngagementDays: generalSettings.vipNonEngagementDays ?? 28,
+        standardNonEngagementDays: generalSettings.standardNonEngagementDays ?? 28,
       })
 
       if (generalSettings.favicon) {
@@ -300,6 +304,40 @@ const General = () => {
               readOnly={!isEditing}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">yrs</span>
+          </div>
+        </div>
+
+        {/* Non Engagement Fee Days (VIP) */}
+        <div>
+          <h3 className="text-lg mb-4">VIP Non Engagement Days</h3>
+          <div className="relative inline-block">
+            <input
+              type="number"
+              name="vipNonEngagementDays"
+              value={formData.vipNonEngagementDays}
+              onChange={handleInputChange}
+              min="0"
+              className={`w-24 px-4 py-2 border rounded-lg ${!isEditing && "bg-gray-50"}`}
+              readOnly={!isEditing}
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">days</span>
+          </div>
+        </div>
+
+        {/* Non Engagement Fee Days (Standard) */}
+        <div>
+          <h3 className="text-lg mb-4">Standard Non Engagement Days</h3>
+          <div className="relative inline-block">
+            <input
+              type="number"
+              name="standardNonEngagementDays"
+              value={formData.standardNonEngagementDays}
+              onChange={handleInputChange}
+              min="0"
+              className={`w-24 px-4 py-2 border rounded-lg ${!isEditing && "bg-gray-50"}`}
+              readOnly={!isEditing}
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">days</span>
           </div>
         </div>
 

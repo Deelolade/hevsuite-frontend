@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { BiSearch } from "react-icons/bi";
 import {
   BsCheckCircleFill,
@@ -13,7 +13,6 @@ import ExportButton from "../ExportButton";
 import { useSelector, useDispatch } from "react-redux";
 import { getSupportRequests, updateSupportRequest } from "../../store/support/supportSlice";
 import Spinner from "../../components/Spinner";
-import debounce from 'lodash/debounce';
 
 const AssignedRequest = () => {
   const dispatch = useDispatch();
@@ -26,11 +25,6 @@ const AssignedRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [cache, setCache] = useState({
-    supportRequests: null,
-    lastFetchTime: null
-  });
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -38,34 +32,24 @@ const AssignedRequest = () => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((term) => {
-      setSearchTerm(term);
-    }, 500),
-    []
-  );
-
-  // Debounced status filter function
-  const debouncedStatusFilter = useCallback(
-    debounce((status) => {
-      setStatusFilter(status);
-    }, 300),
-    []
-  );
+  const [adminList] = useState([
+    { id: 1, name: "Admin 1" },
+    { id: 2, name: "Admin 2" },
+    { id: 3, name: "Admin 3" },
+  ]);
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        // Check if we have cached data and it's less than 30 seconds old
-        const now = Date.now();
-        const cacheAge = cache.lastFetchTime ? now - cache.lastFetchTime : Infinity;
+        console.log('Fetching assigned requests with params:', {
+          page: 1,
+          limit: 100,
+          search: searchTerm,
+          sortBy: "submissionDate",
+          filter: statusFilter,
+          assignedTo: "me"
+        });
         
-        if (cache.supportRequests && cacheAge < 30000) {
-          // Use cached data if it's less than 30 seconds old
-          return;
-        }
-
         const result = await dispatch(
           getSupportRequests({
             page: 1,
@@ -77,29 +61,40 @@ const AssignedRequest = () => {
           })
         ).unwrap();
         
-        // Update cache with new data
-        setCache({
-          supportRequests: result,
-          lastFetchTime: now
-        });
-        
-        setIsInitialLoad(false);
+        console.log('Fetched requests result:', result);
       } catch (error) {
         console.error('Failed to fetch assigned requests:', error);
       }
     };
 
     fetchRequests();
-  }, [dispatch, searchTerm, statusFilter, isInitialLoad]);
+  }, [dispatch, searchTerm, statusFilter]);
 
   const getFilteredRequests = () => {
     if (!supportRequests) return [];
     
+    console.log('Current user:', user);
+    console.log('All support requests:', supportRequests);
+    
     return supportRequests.filter((request) => {
+      console.log('Checking request:', {
+        id: request._id,
+        assignedTo: request.assignedTo,
+        user: request.user,
+        status: request.status
+      });
+      
       const matchesAssignedTo = request.assignedTo === user?._id;
       const matchesSearch = request.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            request.type?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "All" || request.status === statusFilter;
+      
+      console.log('Filter results:', {
+        matchesAssignedTo,
+        matchesSearch,
+        matchesStatus,
+        finalResult: matchesAssignedTo && matchesSearch && matchesStatus
+      });
       
       return matchesAssignedTo && matchesSearch && matchesStatus;
     });
@@ -141,7 +136,7 @@ const AssignedRequest = () => {
       setOpenDetails(true);
     }
     setSelectedRequest(request);
-    setCurrentMessageIndex(request.messages.length - 1);
+    setCurrentMessageIndex(request.messages.length - 1); //  latest message
     setOpenOptionsId(null);
   };
 
@@ -158,20 +153,18 @@ const AssignedRequest = () => {
           ...selectedRequest,
           status: "Approved"
         })).unwrap();
-        
-        // Update local cache instead of making a new API call
-        const updatedRequests = supportRequests.map(request => 
-          request._id === selectedRequest._id 
-            ? { ...request, status: "Approved" }
-            : request
-        );
-        
-        setCache(prev => ({
-          ...prev,
-          supportRequests: updatedRequests
-        }));
-        
         setIsApproveModalOpen(false);
+        // Refresh the requests list
+        dispatch(
+          getSupportRequests({
+            page: 1,
+            limit: 100,
+            search: searchTerm,
+            sortBy: "submissionDate",
+            filter: statusFilter,
+            assignedTo: "me"
+          })
+        );
       } catch (error) {
         console.error("Failed to approve request:", error);
       }
@@ -185,27 +178,25 @@ const AssignedRequest = () => {
           ...selectedRequest,
           status: "Declined"
         })).unwrap();
-        
-        // Update local cache instead of making a new API call
-        const updatedRequests = supportRequests.map(request => 
-          request._id === selectedRequest._id 
-            ? { ...request, status: "Declined" }
-            : request
-        );
-        
-        setCache(prev => ({
-          ...prev,
-          supportRequests: updatedRequests
-        }));
-        
         setIsDeclineModalOpen(false);
+        // Refresh the requests list
+        dispatch(
+          getSupportRequests({
+            page: 1,
+            limit: 100,
+            search: searchTerm,
+            sortBy: "submissionDate",
+            filter: statusFilter,
+            assignedTo: "me"
+          })
+        );
       } catch (error) {
         console.error("Failed to decline request:", error);
       }
     }
   };
 
-  if (isLoading && isInitialLoad) {
+  if (isLoading) {
     return <Spinner />;
   }
 
@@ -221,13 +212,14 @@ const AssignedRequest = () => {
                 type="text"
                 placeholder="Search"
                 className="md:pl-10 pl-1 md:pr-4 py-2 border md:w-96 rounded-lg"
-                onChange={(e) => debouncedSearch(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <select
               className="px-4 py-2 border w-44 rounded-lg font-primary text-[#343434] bg-white"
               value={statusFilter}
-              onChange={(e) => debouncedStatusFilter(e.target.value)}
+              onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="all">All</option>
               <option value="Pending">Pending</option>
@@ -265,88 +257,88 @@ const AssignedRequest = () => {
                 filteredRequests.map((request) => (
                   <tr key={request._id} className="border-b">
                     <td className="py-4">{request._id}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <img
+                  <td className="py-4">
+                    <div className="flex items-center gap-3">
+                      <img
                           src={request.user?.avatar || avatar}
                           alt={request.user?.name || 'User'}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <span className="font-primary w-32 md:w-fit text-[#323C47]">
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <span className="font-primary w-32 md:w-fit text-[#323C47]">
                           {request.user?.name || 'Unknown User'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <p className="py-4 w-32 md:w-fit">{request.type}</p>
-                    </td>
-                    <td className="py-4">
-                      <p className="py-4 w-32 md:w-fit">
-                        {new Date(request.submissionDate).toLocaleDateString()}
-                      </p>
-                    </td>
-                    <td className="py-4">
-                      <span
-                        className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
-                          request?.status === "Declined" ? "text-red-500" : ""
-                        }`}
-                      >
-                        {request.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {request.status === "Pending" && (
-                          <>
-                            <button
-                              className="p-1 text-green-600 hover:text-green-700"
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">{request.type}</p>
+                  </td>
+                  <td className="py-4">
+                    <p className="py-4 w-32 md:w-fit">
+                        {new Date(request.submissionDate).toLocaleDateString()}
+                    </p>
+                  </td>
+                  <td className="py-4">
+                    <span
+                      className={`px-3 py-1 bg-gray-100 rounded-full text-sm ${
+                        request?.status === "Declined" ? "text-red-500" : ""
+                      }`}
+                    >
+                      {request.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {request.status === "Pending" && (
+                        <>
+                          <button
+                            className="p-1 text-green-600 hover:text-green-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsApproveModalOpen(true);
                               }}
-                            >
-                              <BsCheckCircleFill size={24} />
-                            </button>
-                            <button
-                              className="p-1 text-red-600 hover:text-red-700"
+                          >
+                            <BsCheckCircleFill size={24} />
+                          </button>
+                          <button
+                            className="p-1 text-red-600 hover:text-red-700"
                               onClick={() => {
                                 setSelectedRequest(request);
                                 setIsDeclineModalOpen(true);
                               }}
-                            >
-                              <BsXCircleFill size={24} />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          className="p-1 text-gray-400 hover:text-gray-500"
-                          onClick={() => {
-                            setOpenOptionsId(
+                          >
+                            <BsXCircleFill size={24} />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="p-1 text-gray-400 hover:text-gray-500"
+                        onClick={() => {
+                          setOpenOptionsId(
                               openOptionsId === request._id ? null : request._id
-                            );
-                          }}
-                        >
-                          <BsThreeDots size={20} />
-                        </button>
+                          );
+                        }}
+                      >
+                        <BsThreeDots size={20} />
+                      </button>
                         {openOptionsId === request._id && (
-                          <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                            <button
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                              onClick={() => handleDetail(request)}
-                            >
-                              Detail
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                            onClick={() => handleDetail(request)}
+                          >
+                            Detail
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+          </div>
 
       {/* Detail Modal */}
       <Modal
@@ -396,26 +388,26 @@ const AssignedRequest = () => {
 
             {/* Preview Images */}
             {selectedRequest?.images && selectedRequest.images.length > 0 && (
-              <div className="flex gap-4">
+            <div className="flex gap-4">
                 {selectedRequest.images.map((image, index) => (
                   <div key={index} className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
                     <img
                       src={image}
                       alt={`Evidence ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                    />
+                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                />
                     <button
-                      className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                      onClick={() => {
-                        setShowPreviewModal(true);
+                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                  onClick={() => {
+                    setShowPreviewModal(true);
                         setSelectedPreviewImage(image);
-                      }}
-                    >
-                      Preview
+                  }}
+                >
+                  Preview
                     </button>
                   </div>
                 ))}
-              </div>
+                </div>
             )}
 
             {showPreviewModal && (

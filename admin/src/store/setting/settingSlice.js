@@ -25,7 +25,15 @@ export const updateGeneralSettings = createAsyncThunk(
 
 const initialState = {
   settings: {
-    general: null,
+    general: {
+      favicon: "",
+      siteTitle: "Hevsuite Club",
+      maintenanceMode: false,
+      requiredJoiningAge: 24,
+      requiredReferralNumber: 0,
+      vipNonEngagementDays: 28,
+      standardNonEngagementDays: 28,
+    },
   },
   isLoading: false,
   isSuccess: false,

@@ -277,73 +277,73 @@ const Topics = () => {
 
           <div className="flex gap-4 overflow-x-auto pb-4 flex-nowrap">
             {currentTopics.map((topic) => (
-              <div
-                key={topic._id}
+            <div
+              key={topic._id}
                 className={`flex-shrink-0 w-56 cursor-pointer ${
                   activeTopic === topic._id
-                    ? "border-4 border-primary rounded-t-3xl"
-                    : ""
+                  ? "border-4 border-primary rounded-t-3xl"
+                  : ""
                 }`}
-                onClick={() => {
-                  setActiveTopic(topic._id);
-                  setSelectedTopic(topic);
-                }}
-              >
-                <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
-                  <h3 className="text-white text-center font-secondary w-64">
-                    {topic.title}
-                  </h3>
-                  <button
-                    className="text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTopic(topic);
-                      setIsEditModalOpen(true);
-                    }}
-                  >
-                    <img src={edit_icon} alt="edit icon" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-3 w-56">
-                  <div className="flex items-center justify-between">
-                    <span>Visibility</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={topic.visibility}
-                        className="sr-only peer"
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleTopicVisibility(topic._id, topic.visibility);
-                        }}
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-                  <button
-                    className={`w-44 py-2 ${topic.archived ? 'bg-primary text-white' : 'bg-gray-200'} rounded-lg`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTopic(topic);
-                      setIsArchiveTopicOpen(true);
-                    }}
-                  >
-                    {topic.archived ? 'Unarchive' : 'Archive'}
-                  </button>
-                  <button
-                    className={`w-44 py-2 ${topic.deleted ? 'bg-primary text-white' : 'bg-primary text-white'} rounded-lg`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTopic(topic);
-                      setIsDeleteTopicOpen(true);
-                    }}
-                  >
-                    {topic.deleted ? 'Restore' : 'Delete'}
-                  </button>
-                </div>
+              onClick={() => {
+                setActiveTopic(topic._id);
+                setSelectedTopic(topic);
+              }}
+            >
+              <div className="bg-gradient-to-r from-[#540A26] to-[#0A5438] p-4 rounded-t-3xl flex justify-between items-center h-16">
+                <h3 className="text-white text-center font-secondary w-64">
+                  {topic.title}
+                </h3>
+                <button
+                  className="text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTopic(topic);
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  <img src={edit_icon} alt="edit icon" />
+                </button>
               </div>
-            ))}
-          </div>
+              <div className="p-5 space-y-3 w-56">
+                <div className="flex items-center justify-between">
+                  <span>Visibility</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={topic.visibility}
+                      className="sr-only peer"
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleTopicVisibility(topic._id, topic.visibility);
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                <button
+                  className={`w-44 py-2 ${topic.archived ? 'bg-primary text-white' : 'bg-gray-200'} rounded-lg`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTopic(topic);
+                    setIsArchiveTopicOpen(true);
+                  }}
+                >
+                  {topic.archived ? 'Unarchive' : 'Archive'}
+                </button>
+                <button
+                  className={`w-44 py-2 ${topic.deleted ? 'bg-primary text-white' : 'bg-primary text-white'} rounded-lg`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTopic(topic);
+                    setIsDeleteTopicOpen(true);
+                  }}
+                >
+                  {topic.deleted ? 'Restore' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
 
           <button 
             onClick={handleNextPage}
@@ -352,18 +352,18 @@ const Topics = () => {
           >
             <svg
               className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
         </div>
       )}
 

@@ -72,7 +72,7 @@ const Terms = ({ contents, title }) => {
           <div>
             {contents[0].content !== "" &&
               contents.map((r, index) => (
-                <div key={index}>
+                <div key={r.id || index} id={`content-${r.id || index}`}>
                   <div className="ql-editor bg-white rounded-lg [&_a]:text-blue-500 [&_a]:underline">
                     <div
                       dangerouslySetInnerHTML={{ __html: r.content }}
@@ -106,7 +106,7 @@ const Terms = ({ contents, title }) => {
                 {activeTab === "Terms of Policy" && (
                   <div className="terms-content">
                     {contents[0].title !== "" &&
-                      contents.map((r, index) => (
+                      contents.filter(r => r.showInToc).map((r, index) => (
                         <p
                           className={index === 0 && "text-secondary"}
                           id="termsofpolicy"
@@ -115,6 +115,7 @@ const Terms = ({ contents, title }) => {
                           {r.title}{" "}
                         </p>
                       ))}
+                   
                   </div>
                 )}
               </div>
@@ -144,7 +145,7 @@ const Terms = ({ contents, title }) => {
               {/* {JSON.stringify(contents)} */}
               {contents[0].content !== "" &&
                 contents.map((r, index) => (
-                  <div key={index}>
+                  <div key={r.id || index} id={`content-${r.id || index}`}>
                     <div className="ql-editor bg-white rounded-lg [&_a]:text-blue-500 [&_a]:underline">
                       <div
                         dangerouslySetInnerHTML={{ __html: r.content }}

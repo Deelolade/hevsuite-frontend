@@ -10,7 +10,7 @@ const DeleteMembershipSection = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const userId = "681bb32edcbec841ac85abc5"; // Replace with actual userId
+  const userId = "6824454697235380416bbbb3"; // Replace with actual userId
 
   const handleDeactivateMembership = async () => {
     if (!password) {

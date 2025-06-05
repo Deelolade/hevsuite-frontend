@@ -482,7 +482,8 @@ const Payment = () => {
                 onChange={handleAddInputChange}
               >
                 <option value="All Members">All Members</option>
-                <option value="Vip">Vip</option>
+                <option value="standard">Standard Members</option>
+                <option value="Vip">Vip Members</option>
               </select>
             </div>
 

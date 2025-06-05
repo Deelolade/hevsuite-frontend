@@ -35,12 +35,13 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
           title: item.title || `Content ${idx + 1}`,
           content: item.content || "",
           checked: true,
+          showInToc: item.showInToc || false,
         }))
       } else {
-        return [{ id: 1, title: "Main Content", content: selectedPage.content, checked: true }]
+        return [{ id: 1, title: "Main Content", content: selectedPage.content, checked: true, showInToc: false }]
       }
     }
-    return [{ id: 1, title: "Main Content", content: "", checked: true }]
+    return [{ id: 1, title: "Main Content", content: "", checked: true, showInToc: false }]
   })
 
   const [selectedEditor, setSelectedEditor] = useState(null)
@@ -72,6 +73,7 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
       title: editor.title || "",
       content: editor.content || "",
       checked: editor.checked,
+      showInToc: editor.showInToc || false
     }))
 
     // Save to sessionStorage with the keys the preview page expects
@@ -98,10 +100,11 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
               title: item.title || `Content ${idx + 1}`,
               content: item.content || "",
               checked: true,
+              showInToc: item.showInToc || false,
             })),
           )
         } else {
-          setEditors([{ id: 1, title: "Main Content", content: selectedPage.content, checked: true }])
+          setEditors([{ id: 1, title: "Main Content", content: selectedPage.content, checked: true, showInToc: false }])
         }
       }
     }
@@ -113,6 +116,7 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
       title: "",
       content: "",
       checked: true,
+      showInToc: false,
     }
     setEditors([...editors, newEditor])
   }
@@ -157,6 +161,7 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
           title: editor.title,
           content: editor.content,
           visibility: true,
+          showInToc: editor.showInToc,
         })),
       }
 
@@ -254,7 +259,7 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
                       setSelectedEditor(editor)
                     }}
                     className={`h-32 w-44 relative cursor-pointer transition-all duration-200 flex items-center justify-center flex-col space-y-2 text-center shadow-md rounded-lg bg-white hover:shadow-lg ${
-                      selectedEditor?.id === editor.id ? "ring-2 ring-blue-500" : ""
+                      selectedEditor?.id === editor.id ? "ring-2 ring-primary" : ""
                     }`}
                   >
                     <div className="p-4 text-center">
@@ -280,10 +285,10 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
           <div className="lg:col-span-1 p-4">
             <button
               onClick={handleAddContent}
-              className="h-32 w-full cursor-pointer transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border-2 border-blue-500 border-dashed rounded-lg hover:bg-blue-50"
+              className="h-32 w-full cursor-pointer transition-all duration-300 flex items-center justify-center flex-col space-y-2 text-center border-2 border-primary border-dashed rounded-lg hover:bg-blue-50"
             >
-              <Plus className="text-blue-500" size={24} />
-              <span className="text-blue-500 font-medium text-sm">Add Content</span>
+              <Plus className="text-primary" size={24} />
+              <span className="text-primary font-medium text-sm">Add Content</span>
             </button>
           </div>
         </div>
@@ -299,7 +304,7 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
               <label className="block text-sm font-medium mb-2">Content Title</label>
               <input
                 type="text"
-                className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter content title"
                 value={editors[selectedContentIndex]?.title || ""}
                 onChange={(e) => {
@@ -308,12 +313,32 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
               />
             </div>
 
+            <div className="mb-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={editors[selectedContentIndex]?.showInToc || false}
+                  onChange={(e) => {
+                    setEditors((prev) =>
+                      prev.map((editor) =>
+                        editor.id === editors[selectedContentIndex]?.id
+                          ? { ...editor, showInToc: e.target.checked }
+                          : editor
+                      )
+                    )
+                  }}
+                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm font-medium">Show in Table of Contents</span>
+              </label>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Content</label>
               <textarea
                 value={editors[selectedContentIndex]?.content || ""}
                 onChange={(e) => handleContentChange(editors[selectedContentIndex]?.id, e.target.value)}
-                className="w-full min-h-[200px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full min-h-[200px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 placeholder="Enter your content here..."
               />
             </div>
