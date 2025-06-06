@@ -19,9 +19,6 @@ const CodeVerification = () => {
   const handleVerify = async () => {
     try {
       const response = await authService.codeVerify({ code: code.join('') });
-      if (adminData) {
-        localStorage.setItem('admin', JSON.stringify(adminData));
-      }
       navigate('/success');
     } catch (error) {
       toast.error(
