@@ -18,11 +18,14 @@ const CodeVerification = () => {
 
   const handleVerify = async () => {
     try {
-      await authService.codeVerify({ code: code.join('') });
+      const response = await authService.codeVerify({ code: code.join('') });
+      if (adminData) {
+        localStorage.setItem('admin', JSON.stringify(adminData));
+      }
       navigate('/success');
     } catch (error) {
       toast.error(
-        error.response.data.message || 'Something went wrong. Please try again.'
+        error.response?.data?.message || 'Something went wrong. Please try again.'
       );
     }
   };
