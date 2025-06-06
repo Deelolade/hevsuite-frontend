@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/payment-methods`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/payment-methods`;
 
 // Get auth token from local storage
 const getAuthToken = () => {

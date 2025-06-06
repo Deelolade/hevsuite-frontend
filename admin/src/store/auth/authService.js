@@ -12,16 +12,28 @@ const login = async (data) => {
 
 const emailVerify = async (data) => {
   const response = await axios.post(`${base_url}/admin/email-verify`, data);
+  if (response.data) {
+    localStorage.setItem('admin', JSON.stringify(response.data));
+    console.log(response.data)
+  }
   return response.data;
 };
 
 const phoneVerify = async (data) => {
   const response = await axios.post(`${base_url}/admin/phone-verify`, data);
+  if (response.data) {
+    localStorage.setItem('admin', JSON.stringify(response.data));
+    console.log(response.data)
+  }
   return response.data;
 };
 
 const codeVerify = async (data) => {
   const response = await axios.post(`${base_url}/api/user/verify-2fa`, data);
+  if (response.data) {
+    localStorage.setItem('admin', JSON.stringify(response.data));
+    console.log(response.data)
+  }
   return response.data;
 };
 

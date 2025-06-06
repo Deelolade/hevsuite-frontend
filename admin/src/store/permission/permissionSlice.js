@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/permissions`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/permissions`;
 
 // Get all roles
 export const getAllRoles = createAsyncThunk(

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const API_URL = `${import.meta.env.VITE_API_URL}`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Get all transactions with pagination and filters
 export const getTransactions = async (page = 1, limit = 10, filters = {}) => {
