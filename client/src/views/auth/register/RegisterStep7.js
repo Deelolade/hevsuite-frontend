@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsCheck, BsCheckCircleFill } from 'react-icons/bs';
 import { FiDownload } from 'react-icons/fi';
@@ -14,6 +14,8 @@ import { persistor } from '../../../store/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../features/auth/authSlice';
 import toast from 'react-hot-toast';
+import constants from '../../../constants';
+import AuthModal from '../../../components/AuthModal';
 
 const RegisterStep7 = () => {
   const dispatch = useDispatch();
@@ -23,6 +25,7 @@ const RegisterStep7 = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [logOutLoading, setLogOutLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiry: '',
@@ -31,6 +34,7 @@ const RegisterStep7 = () => {
     postalCode: '',
   });
  const { user } = useSelector((state) => state.auth);
+ const { Settings } = useSelector((state) => state.generalSettings);
   const modalStyles = {
     content: {
       top: '50%',
@@ -87,18 +91,36 @@ const RegisterStep7 = () => {
     setMode(val);
   }
   const handleLogout = async () => {
+
+    setLogOutLoading(true);
+
     try {
       await dispatch(logout()).unwrap(); // unwrap to catch error
       await persistor.purge();           // clear redux-persist storage
       navigate('/');
-      window.location.reload();
+      setLogOutLoading(false);
     } catch (error) {
       toast.error("Logout failed. Please try again.");
       console.error('Logout failed:', error);
     }
   };
+
+  useEffect(() => {
+
+    if(Settings && user) {
+
+      if( !Settings.membershipFee || Settings.membershipFee && user.joinFeeStatus === constants.joinFeeStatus.paid){
+        navigate("/homepage", { replace:true });
+        return
+      }
+
+    }
+
+  } , [user, Settings])
+
   return (
     <div className='min-h-screen'>
+      <AuthModal loading open={logOutLoading} title="Logging Out" description="Sigining out your account..." />
       <div className='relative text-white'>
         <div className='absolute inset-0 z-0'>
           <img

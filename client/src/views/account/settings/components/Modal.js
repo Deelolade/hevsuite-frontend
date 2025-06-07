@@ -11,7 +11,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           onClick={onClose}
           className="absolute right-3 sm:right-4 top-3 sm:top-4"
         >
-          <IoClose size={20} className="sm:w-6 sm:h-6" />
+          {/* <IoClose size={20} className="sm:w-6 sm:h-6" /> */}
         </button>
         {title && (
           <h2 className="text-xl sm:text-2xl font-medium mb-4 sm:mb-6">

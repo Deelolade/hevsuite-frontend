@@ -1,46 +1,69 @@
-import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
-import Landing from './views/landing/Landing';
-import Login from './views/auth/login/Login';
-import ForgotPassword from './views/auth/login/ForgotPassword';
-import ResetPassword from './views/auth/login/ResetPassword';
-import ResetSuccess from './views/auth/login/ResetSuccess';
-import AuthLayout from './views/AuthLayout';
-import TwoFactorAuth from './views/auth/2FA/TwoFactorAuth';
-import CodeVerification from './views/auth/2FA/CodeVerification';
-import EmailVerification from './views/auth/2FA/EmailVerification';
-import PhoneVerification from './views/auth/2FA/PhoneVerification';
-import Success from './views/auth/2FA/Success';
-import Register from './views/auth/register/Register';
-import RegisterStep2 from './views/auth/register/RegisterStep2';
-import RegisterStep3 from './views/auth/register/RegisterStep3';
-import RegisterStep4 from './views/auth/register/RegisterStep4';
-import RegisterStep5 from './views/auth/register/RegisterStep5';
-import RegisterStep6 from './views/auth/register/RegisterStep6';
-import RegisterStep7 from './views/auth/register/RegisterStep7';
-import Homepage from './views/homepage/Homepage';
-import Events from './views/homepage/Events';
-import Ask from './views/ask/Ask';
-import Topics from './views/help/Topics';
-import TopicDetails from './views/help/TopicDetails';
-import Terms from './views/terms/Terms';
-import HowItWorks from './views/how-it-works/HowItWorks';
-import News from './views/news/News';
-import NewsDetail from './views/news/NewsDetail';
-import axios from 'axios';
-import OneTimePayment from './views/account/settings/components/paymentChannels.js/oneTimePayments';
-import MakeSubscriptionPayment from './views/account/settings/components/paymentChannels.js/subscriptionPayments';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProfile } from './features/auth/authSlice';
-import { useEffect, useReducer, useState } from 'react';
-import MaintenancePage from './components/MaintainanceMode';
-import { fetchGeneralSettings } from './features/generalSettingSlice';
-import NotFound from './views/NotFound';
-
+import Landing from "./views/landing/Landing";
+import Login from "./views/auth/login/Login";
+import ForgotPassword from "./views/auth/login/ForgotPassword";
+import ResetPassword from "./views/auth/login/ResetPassword";
+import ResetSuccess from "./views/auth/login/ResetSuccess";
+import AuthLayout from "./views/AuthLayout";
+import TwoFactorAuth from "./views/auth/2FA/TwoFactorAuth";
+import CodeVerification from "./views/auth/2FA/CodeVerification";
+import EmailVerification from "./views/auth/2FA/EmailVerification";
+import PhoneVerification from "./views/auth/2FA/PhoneVerification";
+import Success from "./views/auth/2FA/Success";
+import Register from "./views/auth/register/Register";
+import RegisterStep2 from "./views/auth/register/RegisterStep2";
+import RegisterStep3 from "./views/auth/register/RegisterStep3";
+import RegisterStep4 from "./views/auth/register/RegisterStep4";
+import RegisterStep5 from "./views/auth/register/RegisterStep5";
+import RegisterStep6 from "./views/auth/register/RegisterStep6";
+import RegisterStep7 from "./views/auth/register/RegisterStep7";
+import Homepage from "./views/homepage/Homepage";
+import Events from "./views/homepage/Events";
+import Ask from "./views/ask/Ask";
+import Topics from "./views/help/Topics";
+import TopicDetails from "./views/help/TopicDetails";
+import Terms from "./views/terms/Terms";
+import HowItWorks from "./views/how-it-works/HowItWorks";
+import News from "./views/news/News";
+import NewsDetail from "./views/news/NewsDetail";
+import axios from "axios";
+import OneTimePayment from "./views/account/settings/components/paymentChannels.js/oneTimePayments";
+import MakeSubscriptionPayment from "./views/account/settings/components/paymentChannels.js/subscriptionPayments";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProfile } from "./features/auth/authSlice";
+import { useEffect, useReducer, useState } from "react";
+import MaintenancePage from "./components/MaintainanceMode";
+import { fetchGeneralSettings } from "./features/generalSettingSlice";
+import NotFound from "./views/NotFound";
+import constants from "./constants";
 
 axios.defaults.withCredentials = true;
 
+const AuthenticatedOnly = ({ children }) => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { rehydrated } = useSelector((state) => state._persist);
+  const location = useLocation();
 
+  if (!rehydrated)
+    return (
+      <div className="min-h-screen max-w-xl m-auto w-full flex justify-center items-center">
+        <div className="w-12 h-12 border-l border-[#540A26] rounded-full animate-spin">
+          {" "}
+        </div>
+      </div>
+    );
+
+  if (!isAuthenticated && !user)
+    return <Navigate to="/login" state={{ from: location }} replace />;
+
+  return children;
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -52,12 +75,12 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Check membership status if user exists
-  if (user && user.membershipStatus !== 'accepted') {
-  return <Navigate to="/register-6" replace />;
-}
-if (user && user.joinFeeStatus !== 'paid') {
-  return <Navigate to="/register-6" replace />;
-}
+  if (user && user.membershipStatus !== "accepted") {
+    return <Navigate to="/register-6" replace />;
+  }
+  if (user && user.joinFeeStatus !== "paid") {
+    return <Navigate to="/register-6" replace />;
+  }
   // if (user && user.membershipStatus && user.membershipStatus !== 'accepted' || user.joinFeeStatus !== 'paid') {
   //   return <Navigate to="/register-6" state={{ from: location }} replace />;
   // }
@@ -67,109 +90,153 @@ if (user && user.joinFeeStatus !== 'paid') {
 // Add this new component
 const LoginRedirect = ({ children }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { Settings } = useSelector((state) => state.generalSettings);
   const location = useLocation();
 
-  if (isAuthenticated) {
-    // Redirect to homepage or wherever you want logged-in users to go
-    if (user && user.membershipStatus && user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
-      return <Navigate to="/homepage" state={{ from: location }} replace />;
-    } else if (user && user.membershipStatus && user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
-      return <Navigate to="/register-6" state={{ from: location }} replace />;
-    }
-    else if (user && user.membershipStatus && user.membershipStatus === 'pending') {
-      return <Navigate to="/register-6" state={{ from: location }} replace />;
-    }
+  if(isAuthenticated && user ) {
+
+      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
+          return <Navigate to="/homepage" state={{ from: location }} replace />;
+
+      // only membership is on
+      if (Settings.requiredReferralNumber <= 0 && Settings.membershipFee) {
+        if(user.joinFeeStatus === constants.joinFeeStatus.paid) return <Navigate to="/homepage" state={{ from: location }} replace />;
+        return <Navigate to="/register-7" state={{ from: location }} replace />;
+      }
+
+      // referrals on 
+      const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+      if (user.approvedByAdmin || allReferredByApproved) {
+        //if membeshipFee is on
+        if (Settings.membershipFee) return <Navigate to="/register-7" state={{ from: location }} replace />;
+        else return <Navigate to="/homepage" state={{ from: location }} replace />;
+
+      }
   }
+
+  // if (isAuthenticated) {
+  //   // Redirect to homepage or wherever you want logged-in users to go
+  //   if (
+  //     user &&
+  //     user.membershipStatus &&
+  //     user.membershipStatus === "accepted" &&
+  //     user.joinFeeStatus === "paid"
+  //   ) {
+  //     return <Navigate to="/homepage" state={{ from: location }} replace />;
+  //   } else if (
+  //     user &&
+  //     user.membershipStatus &&
+  //     user.membershipStatus === "accepted" &&
+  //     user.joinFeeStatus === "pending"
+  //   ) {
+  //     return <Navigate to="/register-6" state={{ from: location }} replace />;
+  //   } else if (
+  //     user &&
+  //     user.membershipStatus &&
+  //     user.membershipStatus === "pending"
+  //   ) {
+  //     return <Navigate to="/register-6" state={{ from: location }} replace />;
+  //   }
+  // }
 
   return children;
 };
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Landing />,
   },
   {
-    path: '/news',
+    path: "/news",
     element: <News />,
   },
   {
-    path: '/news-detail/:id',
+    path: "/news-detail/:id",
     element: <NewsDetail />,
   },
   {
-    path: 'login', element: (
+    path: "login",
+    element: (
       <LoginRedirect>
         <Login />
       </LoginRedirect>
-    )
+    ),
   },
-  { path: 'forgot-password', element: <ForgotPassword /> },
-  { path: 'reset-password', element: <ResetPassword /> },
-  { path: 'reset-success', element: <ResetSuccess /> },
-  { path: 'two-factor-auth', element: <TwoFactorAuth /> },
+  { path: "forgot-password", element: <ForgotPassword /> },
+  { path: "reset-password", element: <ResetPassword /> },
+  { path: "reset-success", element: <ResetSuccess /> },
+  { path: "two-factor-auth", element: <TwoFactorAuth /> },
   {
-    path: '/email-verification',
+    path: "/email-verification",
     element: <EmailVerification />,
   },
   {
-    path: '/phone-verification',
+    path: "/phone-verification",
     element: <PhoneVerification />,
   },
   {
-    path: '/code-verification',
+    path: "/code-verification",
     element: <CodeVerification />,
   },
   {
-    path: '/success',
+    path: "/success",
     element: <Success />,
   },
   {
-    path: 'topics',
+    path: "topics",
     element: <Topics />,
   },
   {
-    path: 'topic-details/:id',
+    path: "topic-details/:id",
     element: <TopicDetails />,
   },
   {
-    path: 'terms',
+    path: "terms",
     element: <Terms />,
   },
   {
-    path: 'how-it-works',
+    path: "how-it-works",
     element: <HowItWorks />,
   },
   {
-    path: '/register',
+    path: "/register",
     element: <Register />,
   },
   {
-    path: '/register-2',
+    path: "/register-2",
     element: <RegisterStep2 />,
   },
   {
-    path: '/register-3',
+    path: "/register-3",
     element: <RegisterStep3 />,
   },
   {
-    path: '/register-4',
+    path: "/register-4",
     element: <RegisterStep4 />,
   },
   {
-    path: '/register-5',
+    path: "/register-5",
     element: <RegisterStep5 />,
   },
   {
-    path: '/register-6',
-    element: <RegisterStep6 />,
+    path: "/register-6",
+    element: (
+      <AuthenticatedOnly>
+        <RegisterStep6 />,
+      </AuthenticatedOnly>
+    ),
   },
   {
-    path: '/register-7',
-    element: <RegisterStep7 />,
+    path: "/register-7",
+    element: (
+      <AuthenticatedOnly>
+        <RegisterStep7 />,
+      </AuthenticatedOnly>
+    ),
   },
 
   {
-    path: '/',
+    path: "/",
     element: (
       <ProtectedRoute>
         <AuthLayout />
@@ -177,58 +244,57 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: 'homepage',
+        path: "homepage",
         element: <Homepage />,
       },
       {
-        path: 'events',
+        path: "events",
         element: <Events />,
       },
       {
-        path: 'ask',
+        path: "ask",
         element: <Ask />,
       },
       {
-        path: 'topics',
+        path: "topics",
         element: <Topics />,
       },
       {
-        path: 'topic-details/:id',
+        path: "topic-details/:id",
         element: <TopicDetails />,
       },
       {
-        path: 'terms',
+        path: "terms",
         element: <Terms />,
       },
       {
-        path: 'how-it-works',
+        path: "how-it-works",
         element: <HowItWorks />,
       },
       {
-        path: 'make-one-time-payment',
+        path: "make-one-time-payment",
         element: <OneTimePayment />,
-      }
-      ,
+      },
       {
-        path: 'make-subscription-payment',
+        path: "make-subscription-payment",
         element: <MakeSubscriptionPayment />,
-      }
+      },
     ],
   },
-  { path: '*', element: <NotFound/> },
+  { path: "*", element: <NotFound /> },
 ]);
 
 function App() {
   const dispatch = useDispatch();
-  const { Settings} = useSelector((state) => state.generalSettings);
+  const { Settings } = useSelector((state) => state.generalSettings);
   const { isAuthenticated } = useSelector((state) => state.auth);
-   const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
   // useEffect(() => {
   //   if (isAuthenticated) {
   //     dispatch(fetchProfile());
   //   }
   // }, [dispatch, isAuthenticated]);
-    useEffect(() => {
+  useEffect(() => {
     const initializeApp = async () => {
       try {
         await dispatch(fetchGeneralSettings()).unwrap();
@@ -243,7 +309,7 @@ function App() {
     };
     initializeApp();
   }, [dispatch, isAuthenticated]);
-    if (Settings?.maintenanceMode) {
+  if (Settings?.maintenanceMode) {
     return <MaintenancePage />;
   }
   return <RouterProvider router={router} />;

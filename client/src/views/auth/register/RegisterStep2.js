@@ -15,6 +15,7 @@ import {
   updateStepData,
   reset,
 } from '../../../features/auth/registerSlice';
+import ProgressSteps from './ProgressSteps';
 
 const RegisterStep2 = () => {
   useEffect(() => {
@@ -108,35 +109,8 @@ const RegisterStep2 = () => {
       {/* Progress Steps */}
       <div className='container mx-auto px-4 py-6 mt-8'>
         <div className='flex flex-wrap justify-center gap-4 pb-6 md:pb-0'>
-          {[...Array(7)].map((_, index) => (
-            <div key={index} className='flex items-center flex-shrink-0 mb-4'>
-              <div className='relative'>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${index < 2
-                    ? 'bg-[#0A5440]'
-                    : 'bg-white border-2 border-gray-300'
-                    }`}
-                >
-                  {index < 1 ? (
-                    <BsCheckCircleFill className='text-white' />
-                  ) : index === 1 ? (
-                    <span className='text-white'>2</span>
-                  ) : (
-                    <span className='text-gray-500'>{`0${index + 1}`}</span>
-                  )}
-                </div>
-                <p className='absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs md:text-sm'>
-                  Step {index + 1}
-                </p>
-              </div>
-              {index < 6 && (
-                <div
-                  className={`w-12 md:w-32 h-[2px] ${index < 1 ? 'bg-[#0A5440]' : 'bg-gray-300'
-                    }`}
-                />
-              )}
-            </div>
-          ))}
+          <ProgressSteps />
+          
         </div>
       </div>
 

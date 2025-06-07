@@ -39,7 +39,6 @@ const HeaderOne = () => {
       document.body.classList.remove("overflow-hidden");
     }
   }, [isMenuOpen]);
-  console.log(menus)
 
 
   const handleLogout = async () => {
