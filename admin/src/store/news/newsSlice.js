@@ -62,11 +62,29 @@ export const deleteNews = createAsyncThunk(
   }
 );
 
+// Post news via email
+export const postNewsViaEmail = createAsyncThunk(
+  "news/postViaEmail",
+  async (data, thunkAPI) => {
+    try {
+      return await newsService.postNewsViaEmail(data);
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 const newsSlice = createSlice({
   name: "news",
   initialState,
   reducers: {
-    reset: (state) => initialState,
+    reset: (state) => {
+      state.isLoading = false;
+      state.isSuccess = false;
+      state.isError = false;
+      state.message = "";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -133,6 +151,20 @@ const newsSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         toast.error(action.payload);
+      })
+      // Post news via email
+      .addCase(postNewsViaEmail.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(postNewsViaEmail.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = action.payload.message;
+      })
+      .addCase(postNewsViaEmail.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   }, 
 });
