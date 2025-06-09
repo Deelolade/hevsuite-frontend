@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { getAllNews, createNews, updateNews, deleteNews, reset } from "../../store/news/newsSlice"
+import { getAllNews, createNews, updateNews, deleteNews, reset, postNewsViaEmail } from "../../store/news/newsSlice"
 import eventImage from "../../assets/event.png"
 import Profile from "../../components/Profile"
 import { BiSearch } from "react-icons/bi"
@@ -16,6 +16,7 @@ import star_icon from "../../assets/icons/star.png"
 import book_icon from "../../assets/icons/read.png"
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import toast from "react-hot-toast"
+import newsService from "../../store/news/newsService"
 
 // Set app element for Modal accessibility
 Modal.setAppElement("#root")
@@ -396,18 +397,28 @@ const News = () => {
   }
 
   // Handle post news
-  const handlePostNews = () => {
+  const handlePostNews = async () => {
     if (!receiverEmail || !password) {
       toast.error("Please fill all required fields")
       return
     }
 
-    // Here you would implement the post functionality
-    // For now we'll just show a success message
-    toast.success(`News posted to ${receiverEmail}`)
-    setIsPostModalOpen(false)
-    setReceiverEmail("")
-    setPassword("")
+    try {
+      await dispatch(postNewsViaEmail({
+        newsId: selectedNews._id,
+        receiverEmail,
+        password
+      })).unwrap()
+
+      toast.success("News posted successfully")
+      setIsPostModalOpen(false)
+      setReceiverEmail("")
+      setPassword("")
+    } catch (error) {
+      toast.error(error || "Failed to post news")
+    } finally {
+      dispatch(reset())
+    }
   }
 
   // Generate pagination buttons

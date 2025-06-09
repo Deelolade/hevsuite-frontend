@@ -13,9 +13,9 @@ const initialState = {
 // Get all evidence requests
 export const getEvidenceRequests = createAsyncThunk(
   "evidence/getAll",
-  async (_, thunkAPI) => {
+  async (params, thunkAPI) => {
     try {
-      return await evidenceService.getEvidenceRequests();
+      return await evidenceService.getEvidenceRequests(params);
     } catch (error) {
       const message = error.response?.data?.message || error.message || 'Failed to fetch requests';
       toast.error(message);

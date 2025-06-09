@@ -5,9 +5,14 @@ import { BiSearch } from 'react-icons/bi';
 import Modal from 'react-modal';
 import avatar from '../../assets/user.avif';
 import authService from '../../store/auth/authService';
+import { useDispatch, useSelector } from 'react-redux';
+import { getSupportRequestStats } from '../../store/support/supportSlice';
 import toast from 'react-hot-toast';
 
 const AdminProfile = () => {
+  const dispatch = useDispatch();
+  const supportState = useSelector((state) => state.support);
+  const { stats = { totalRequests: 0, pendingRequests: 0, completedRequests: 0, assignedRequests: 0 }, isLoading = false, isError = false } = supportState || {};
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -15,7 +20,6 @@ const AdminProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState({
     fullName: '',
@@ -47,11 +51,22 @@ const AdminProfile = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    if (isDropdownOpen) {
+      dispatch(getSupportRequestStats())
+        .unwrap()
+        .catch((error) => {
+          console.error('Failed to fetch support stats:', error);
+          toast.error('Failed to load support statistics');
+        });
+    }
+  }, [dispatch, isDropdownOpen]);
+
   const supportStats = [
-    { title: 'Total Requests', count: '0' },
-    { title: 'Pending Requests', count: '0' },
-    { title: 'Completed Requests', count: '0' },
-    { title: 'Assigned Requests', count: '0' },
+    { title: 'Total Requests', count: stats.totalRequests },
+    { title: 'Pending Requests', count: stats.pendingRequests },
+    { title: 'Completed Requests', count: stats.completedRequests },
+    { title: 'Assigned Requests', count: stats.assignedRequests },
   ];
 
   const handleEditSave = () => {
@@ -309,7 +324,7 @@ const AdminProfile = () => {
               <span>Support Request</span>
             </div>
             <div className='flex items-center gap-2'>
-              <span className='text-red-500'>0</span>
+              <span className='text-red-500'>{stats.pendingRequests}</span>
               <svg
                 className={`w-4 h-4 text-gray-400 transform transition-transform ${
                   isDropdownOpen ? 'rotate-180' : ''
@@ -339,7 +354,9 @@ const AdminProfile = () => {
                         {stat.title}
                       </span>
                     </div>
-                    <p className='text-xl font-semibold'>{stat.count}</p>
+                    <p className='text-xl font-semibold'>
+                      {isLoading ? '...' : isError ? 'Error' : stat.count}
+                    </p>
                   </div>
                 ))}
               </div>

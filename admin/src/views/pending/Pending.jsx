@@ -39,9 +39,7 @@ const Pending = () => {
 
   // Access settings from Redux store with proper null checking
   const settings = useSelector((state) => state.settings);
-  console.log('Settings from Redux:', settings); // Debug log
   const requiredReferralNumber = settings?.settings?.general?.requiredReferralNumber ?? 3; // Use nullish coalescing
-  console.log('Required Referral Number:', requiredReferralNumber); // Debug log
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -66,7 +64,6 @@ const Pending = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Starting fetchData...'); // Debug log
         // Fetch both pending registrations and settings
         const response = await dispatch(fetchPendingRegistrations({
           page: currentPage,
@@ -75,46 +72,30 @@ const Pending = () => {
           sortBy: selectedSort,
         })).unwrap();
         
-        console.log('Fetched pending registrations:', response); // Debug log
-        
         const settingsResponse = await dispatch(getSettings());
-        console.log('Settings fetch response:', settingsResponse); // Debug log
-        console.log('Required referral number:', requiredReferralNumber); // Debug log
 
         // Check for auto-approval candidates
         if (response && response.data && response.data.length > 0) {
-          console.log('Processing users for auto-approval...'); // Debug log
-          
           const autoApproveCandidates = response.data.filter(user => {
-            console.log('Checking user:', user.forename, user.surname); // Debug log
-            console.log('User joinFeeStatus:', user.joinFeeStatus); // Debug log
-            console.log('User referredBy:', user.referredBy); // Debug log
             
             const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
-            console.log('Approved supporters count:', approvedSupporters); // Debug log
-            
+  
             // If requiredReferralNumber is 0, only check for paid joining fee
             if (requiredReferralNumber === 0) {
               const shouldApprove = user.joinFeeStatus?.toLowerCase() === 'paid';
-              console.log('Should approve (fee only):', shouldApprove); // Debug log
               return shouldApprove;
             }
             
             // Otherwise check both criteria
             const shouldApprove = approvedSupporters === requiredReferralNumber && user.joinFeeStatus?.toLowerCase() === 'paid';
-            console.log('Should approve (both criteria):', shouldApprove); // Debug log
             return shouldApprove;
           });
-
-          console.log('Auto-approve candidates:', autoApproveCandidates); // Debug log
 
           // Auto-approve eligible users
           for (const user of autoApproveCandidates) {
             try {
-              console.log('Attempting to auto-approve user:', user.forename, user.surname); // Debug log
               await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
               toast.success(`User ${user.forename} ${user.surname} has been automatically approved`);
-              console.log('Successfully auto-approved user:', user.forename, user.surname); // Debug log
             } catch (error) {
               console.error('Error auto-approving user:', error);
               toast.error(`Failed to auto-approve user ${user.forename} ${user.surname}`);
@@ -123,7 +104,6 @@ const Pending = () => {
 
           // Refresh the list after auto-approvals
           if (autoApproveCandidates.length > 0) {
-            console.log('Refreshing list after auto-approvals...'); // Debug log
             dispatch(fetchPendingRegistrations({
               page: currentPage,
               limit,

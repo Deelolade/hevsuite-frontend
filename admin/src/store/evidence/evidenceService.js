@@ -10,9 +10,14 @@ const getAuthToken = () => {
 };
 
 // Get all evidence requests
-const getEvidenceRequests = async () => {
+const getEvidenceRequests = async (params = {}) => {
   try {
-    const response = await axios.get(API_URL);
+    const response = await axios.get(API_URL, {
+      params: params,
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`
+      }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -22,7 +27,15 @@ const getEvidenceRequests = async () => {
 // Update evidence status
 const updateEvidenceStatus = async (id, status) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, { status });
+    const response = await axios.put(
+      `${API_URL}/${id}`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`
+        }
+      }
+    );
     return response.data;
   } catch (error) {
     throw error;
@@ -32,7 +45,15 @@ const updateEvidenceStatus = async (id, status) => {
 // Assign request to admin
 const assignRequestToAdmin = async (requestId, adminId) => {
   try {
-    const response = await axios.put(`${API_URL}/${requestId}`, { adminId });
+    const response = await axios.put(
+      `${API_URL}/${requestId}`,
+      { adminId },
+      {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`
+        }
+      }
+    );
     return response.data;
   } catch (error) {
     throw error;

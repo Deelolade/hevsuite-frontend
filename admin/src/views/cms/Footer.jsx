@@ -88,7 +88,7 @@ const Footer = () => {
             _id: item?._id || Date.now().toString(),
             title: item?.title || 'Untitled Item',
             visibility: item?.visibility || false,
-            owner: item?.owner || 'System',
+            owner: item?.owner || 'Admin',
             createdAt: item?.createdAt || new Date().toISOString(),
             content: item?.content || [],
             slides: item?.slides || []
@@ -198,10 +198,8 @@ const Footer = () => {
   // Update the useEffect that maintains ordered pages
   useEffect(() => {
     if (pages && pages.length > 0) {
-      // Filter pages to only show Admin-owned pages
-      const adminPages = pages.filter(page => page.owner === "Admin");
-      
-      const sortedPages = [...adminPages].sort((a, b) => {
+      // Show all pages, not just Admin-owned ones
+      const sortedPages = [...pages].sort((a, b) => {
         const orderA = localPageOrder[a._id];
         const orderB = localPageOrder[b._id];
         
@@ -216,7 +214,13 @@ const Footer = () => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      setOrderedPages(sortedPages);
+      // Ensure each page has the owner property
+      const pagesWithOwner = sortedPages.map(page => ({
+        ...page,
+        owner: page.owner || "System"
+      }));
+
+      setOrderedPages(pagesWithOwner);
     }
   }, [pages, localPageOrder]);
 
@@ -340,44 +344,58 @@ const Footer = () => {
     setIsDeleteModalOpen(true)
   }
 
-  const confirmDeletePage = () => {
-    if (!pageToDelete) return
+  const confirmDeletePage = async () => {
+    if (!pageToDelete) return;
 
-    // First check if the page is in footer items
-    const footerItem = footerItems.find(item => item.pageId === pageToDelete || (item.pageId && item.pageId._id === pageToDelete))
-    
-    if (footerItem) {
-      // If page is in footer items, remove it from the footer
-      const updatedItems = footerItems.filter(item => 
-        item.pageId !== pageToDelete && (!item.pageId || item.pageId._id !== pageToDelete)
-      )
+    try {
+      // First check if the page is in footer items
+      const footerItem = footerItems.find(item => {
+        // Check both direct _id and pageId._id
+        return item._id === pageToDelete || 
+               (item.pageId && (typeof item.pageId === 'object' ? item.pageId._id === pageToDelete : item.pageId === pageToDelete));
+      });
       
-      dispatch(
-        editFooter({
-          id: selectedSection,
-          data: { items: updatedItems },
-        })
-      ).then(() => {
+      if (footerItem) {
+        // If page is in footer items, remove it from the list
+        const updatedItems = footerItems.filter(item => {
+          // Check both direct _id and pageId._id
+          return !(item._id === pageToDelete || 
+                  (item.pageId && (typeof item.pageId === 'object' ? item.pageId._id === pageToDelete : item.pageId === pageToDelete)));
+        });
+        
+        // Update footer in backend
+        await dispatch(
+          editFooter({
+            id: selectedSection,
+            data: { items: updatedItems },
+          })
+        );
+        
         // Update local state
-        setFooterItems(updatedItems)
-      })
-    }
+        setFooterItems(updatedItems);
+      }
 
-    // Then delete the page itself
-    dispatch(
-      updatePage({
-        id: pageToDelete,
-        data: {
-          visibility: false // Soft delete by setting visibility to false
-        }
-      })
-    ).then(() => {
-      // Refresh pages
-      dispatch(getPages({ status: "active" }))
+      // Then delete the page itself by setting visibility to false
+      await dispatch(
+        updatePage({
+          id: pageToDelete,
+          data: {
+            visibility: false // Soft delete by setting visibility to false
+          }
+        })
+      );
+
+      // Refresh both pages and footer data
+      await dispatch(getPages({ status: "active" }));
+      await dispatch(getAllFooters({ status: statusFilter }));
+
       // Close modal and reset state
-      setIsDeleteModalOpen(false)
-      setPageToDelete(null)
-    })
+      setIsDeleteModalOpen(false);
+      setPageToDelete(null);
+    } catch (error) {
+      console.error('Error deleting page:', error);
+      // You might want to show an error message to the user here
+    }
   }
 
   return (
@@ -571,7 +589,11 @@ const Footer = () => {
                                           }
                                         })
                                       ).then(() => {
-                                        dispatch(getPages({ status: "active" }))
+                                        // Update local state immediately
+                                        const updatedPages = orderedPages.map(p => 
+                                          p._id === page._id ? { ...p, visibility: !p.visibility } : p
+                                        );
+                                        setOrderedPages(updatedPages);
                                       })
                                     }}
                                   />
@@ -585,7 +607,8 @@ const Footer = () => {
                                 <button
                                   className="text-primary hover:text-primary-dark"
                                   onClick={() => {
-                                    setSelectedItem(page)
+                                    const fullPage = pages.find(p => p._id === page._id)
+                                    setSelectedItem(fullPage)
                                     setShowEditPage(true)
                                     setShowAddPage(true)
                                     window.history.pushState(null, "", `?tab=footer&edit=2&system=true`)
@@ -595,7 +618,7 @@ const Footer = () => {
                                 </button>
                                 {page.owner === "Admin" && (
                                   <button 
-                                    className="text-red-500 hover:text-red-700"
+                                    className="text-red-500 hover:text-red-700 ml-3"
                                     onClick={() => handleDeletePage(page._id)}
                                   >
                                     <FaTrash size={18} />
@@ -647,7 +670,8 @@ const Footer = () => {
                             <button
                               className="text-primary"
                               onClick={() => {
-                                setSelectedItem(item)
+                                const fullPage = pages.find(p => p._id === item._id)
+                                setSelectedItem(fullPage)
                                 setShowEditPage(true)
                                 setShowAddPage(true)
                                 window.history.pushState(null, "", `?tab=footer&edit=2&system=true`)
@@ -655,6 +679,14 @@ const Footer = () => {
                             >
                               <FiEdit size={18} />
                             </button>
+                            {item.owner === "Admin" && (
+                              <button 
+                                className="text-red-500 hover:text-red-700 ml-3"
+                                onClick={() => handleDeletePage(item._id)}
+                              >
+                                <FaTrash size={18} />
+                              </button>
+                            )}
                           </td>
                         </tr>
                           );

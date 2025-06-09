@@ -34,6 +34,17 @@ const Evidence = () => {
   const { user } = useSelector((state) => state.auth);
   const { admin } = useSelector((state) => state.adminProfile);
   const [currentUser, setCurrentUser] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openOptionsId, setOpenOptionsId] = useState(null);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
 
   // Fetch current user profile
   useEffect(() => {
@@ -58,7 +69,7 @@ const Evidence = () => {
     const fetchData = async () => {
       try {
         console.log('Fetching evidence requests...');
-        await dispatch(getEvidenceRequests()).unwrap();
+        await dispatch(getEvidenceRequests({ assignedTo: activeTab === "assigned" ? "me" : undefined })).unwrap();
         console.log('Evidence requests fetched:', evidenceRequests);
         
         console.log('Fetching admin users...');
@@ -71,19 +82,7 @@ const Evidence = () => {
     };
 
     fetchData();
-  }, [dispatch]);
-
-  const [activeTab, setActiveTab] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [openOptionsId, setOpenOptionsId] = useState(null);
-  const [openDetails, setOpenDetails] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [showApproveModal, setShowApproveModal] = useState(false);
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
+  }, [dispatch, activeTab]);
 
   const handleDetail = (request) => {
     setSelectedRequest(request);
@@ -121,7 +120,7 @@ const Evidence = () => {
 
       if (response.data) {
         // Refresh the evidence requests list
-        await dispatch(getEvidenceRequests()).unwrap();
+        await dispatch(getEvidenceRequests({ assignedTo: activeTab === "assigned" ? "me" : undefined })).unwrap();
         toast.success("Request assigned successfully");
         setShowAssignModal(false);
       }
@@ -200,33 +199,12 @@ const Evidence = () => {
 
     // Filter by tab
     if (activeTab === "assigned") {
-      // Show only requests assigned to current user
-      filtered = filtered.filter((request) => {
-        const requestAssignedTo = request.assignedTo?._id || request.assignedTo;
-        const isAssigned = requestAssignedTo === currentUser?._id;
-        console.log('Checking assignment:', {
-          requestId: request._id,
-          requestAssignedTo,
-          currentUserId: currentUser?._id,
-          isAssigned
-        });
-        return isAssigned;
-      });
-      console.log('After assigned filter:', filtered.length);
+      // The API already returns only assigned requests, so no need for additional filtering
+      console.log('Assigned tab selected - showing assigned requests:', filtered.length);
     } else if (activeTab === "other") {
-      // Show requests created by the current user
-      filtered = filtered.filter((request) => {
-        const requestCreatedBy = request.createdBy?._id || request.createdBy;
-        const isCreatedByMe = requestCreatedBy === currentUser?._id;
-        console.log('Checking creator:', {
-          requestId: request._id,
-          requestCreatedBy,
-          currentUserId: currentUser?._id,
-          isCreatedByMe
-        });
-        return isCreatedByMe;
-      });
-      console.log('After creator filter:', filtered.length);
+      // Show no requests in "Other Requests" tab
+      filtered = [];
+      console.log('Other tab selected - showing no requests');
     }
 
     return filtered;

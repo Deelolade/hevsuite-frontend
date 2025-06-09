@@ -18,6 +18,7 @@ import logo_red from "../../assets/logo_red.png";
 import "./forced.css";
 import axios from 'axios';
 import { base_url } from '../../constants/axiosConfig';
+import authService from '../../store/auth/authService';
 
 // Define menu items with their corresponding permissions
 const menuItems = [
@@ -175,10 +176,17 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+        await authService.logout();  // This will clear the cookies on the server
+        localStorage.clear();
+        navigate("/");
+    } catch (error) {
+        console.error('Logout failed:', error);
+        // Even if the API call fails, we should still clear local storage and redirect
+        localStorage.clear();
+        navigate("/");
+    }
   };
 
   // Filter menu items based on user permissions

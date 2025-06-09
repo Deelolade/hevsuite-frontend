@@ -56,11 +56,22 @@ const deleteNews = async (id) => {
   return { id }; // Return the ID of the deleted news
 };
 
+// Post news via email
+const postNewsViaEmail = async (data) => {
+  const response = await axios.post(`${base_url}/api/newsroom/post-email`, data, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+    },
+  });
+  return response.data;
+};
+
 const newsService = {
   getAllNews,
   createNews,
   updateNews,
   deleteNews,
+  postNewsViaEmail,
 };
 
 export default newsService;

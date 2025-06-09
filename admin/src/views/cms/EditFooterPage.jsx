@@ -12,22 +12,10 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
   const navigate = useNavigate()
   const { isLoading } = useSelector((state) => state.cms)
 
-  // Initialize state with selectedPage data or from sessionStorage
-  const [title, setTitle] = useState(() => {
-    const savedTitle = sessionStorage.getItem("editFooterPageTitle")
-    return savedTitle || selectedPage?.title || ""
-  })
+  // Initialize state with selectedPage data
+  const [title, setTitle] = useState(selectedPage?.title || "")
 
   const [editors, setEditors] = useState(() => {
-    const savedEditors = sessionStorage.getItem("editFooterPageEditors")
-    if (savedEditors) {
-      try {
-        return JSON.parse(savedEditors)
-      } catch (e) {
-        // Fall back to selectedPage data
-      }
-    }
-
     if (selectedPage?.content) {
       if (Array.isArray(selectedPage.content)) {
         return selectedPage.content.map((item, idx) => ({
@@ -47,20 +35,28 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
   const [selectedEditor, setSelectedEditor] = useState(null)
   const [selectedContentIndex, setSelectedContentIndex] = useState(null)
 
-  // Save to sessionStorage whenever state changes
+  // Update state when selectedPage changes
   useEffect(() => {
-    sessionStorage.setItem("editFooterPageTitle", title)
-  }, [title])
-
-  useEffect(() => {
-    sessionStorage.setItem("editFooterPageEditors", JSON.stringify(editors))
-  }, [editors])
+    setTitle(selectedPage?.title || "")
+    if (selectedPage?.content) {
+      if (Array.isArray(selectedPage.content)) {
+        setEditors(
+          selectedPage.content.map((item, idx) => ({
+            id: idx + 1,
+            title: item.title || `Content ${idx + 1}`,
+            content: item.content || "",
+            checked: true,
+            showInToc: item.showInToc || false,
+          })),
+        )
+      } else {
+        setEditors([{ id: 1, title: "Main Content", content: selectedPage.content, checked: true, showInToc: false }])
+      }
+    }
+  }, [selectedPage])
 
   // Clear sessionStorage when component unmounts
   const clearSessionData = () => {
-    sessionStorage.removeItem("editFooterPageTitle")
-    sessionStorage.removeItem("editFooterPageEditors")
-    // Also clear preview data
     sessionStorage.removeItem("slides")
     sessionStorage.removeItem("contents")
     sessionStorage.removeItem("mainText")
@@ -84,31 +80,6 @@ const EditFooterPage = ({ onBack, selectedFooter, selectedPage, refreshData }) =
     // Navigate to preview-system page
     navigate("./preview-system")
   }
-
-  useEffect(() => {
-    // Update state when selectedPage changes (only if no saved data exists)
-    if (!sessionStorage.getItem("editFooterPageTitle")) {
-      setTitle(selectedPage?.title || "")
-    }
-
-    if (!sessionStorage.getItem("editFooterPageEditors")) {
-      if (selectedPage?.content) {
-        if (Array.isArray(selectedPage.content)) {
-          setEditors(
-            selectedPage.content.map((item, idx) => ({
-              id: idx + 1,
-              title: item.title || `Content ${idx + 1}`,
-              content: item.content || "",
-              checked: true,
-              showInToc: item.showInToc || false,
-            })),
-          )
-        } else {
-          setEditors([{ id: 1, title: "Main Content", content: selectedPage.content, checked: true, showInToc: false }])
-        }
-      }
-    }
-  }, [selectedPage])
 
   const handleAddContent = () => {
     const newEditor = {
