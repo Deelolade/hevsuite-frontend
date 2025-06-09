@@ -64,6 +64,19 @@ const RegisterStep6 = () => {
     useEffect(() => {
 
     if (user && referredBy && Settings) {
+
+      // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
+      // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0)  {
+      if(user.membershipStatus === constants.membershipStatus.declined){
+        navigate("/application-declined", {replace: true });
+        return;
+      }
+
+      if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid ){
+        navigate("/homepage", {replace: true });
+        return
+      }
+            
       // if both referral and membership are off
       if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) {
         navigate("/homepage", {replace: true });
@@ -83,14 +96,21 @@ const RegisterStep6 = () => {
         return;
       }
 
-      // if there is any pending referredBy, that means the user is not approved yet.
-      const allReferredByApproved = referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-      if (user.approvedByAdmin || allReferredByApproved) {
-        //if membeshipFee is on
-        if (Settings.membershipFee) navigate("/register-7", { replace: true });
-        else navigate("/homepage", { replace: true });
-
+      // referrals are on, wait for acceptance
+      if(user.membershipStatus === constants.membershipStatus.accepted) {
+        navigate("/register-7", {replace: true });
+        return
       }
+
+
+      // if there is any pending referredBy, that means the user is not approved yet.
+      // const allReferredByApproved = referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+      // if (user.approvedByAdmin || allReferredByApproved) {
+      //   //if membeshipFee is on
+      //   if (Settings.membershipFee) navigate("/register-7", { replace: true });
+      //   else navigate("/homepage", { replace: true });
+
+      // }
     }
   }, [referredBy, Settings, user]);
 

@@ -167,7 +167,7 @@ const RegisterStep5 = () => {
     for (const key in finalData) {
       if (Array.isArray(finalData[key]))
         for (let value of finalData[key])
-          formDataToSend.append(`${key}[]`, value);
+          formDataToSend.append(`${key === "interests"?"userInterests":key}[]`, value.toLowerCase());
       else formDataToSend.append(key, finalData[key]);
     }
 

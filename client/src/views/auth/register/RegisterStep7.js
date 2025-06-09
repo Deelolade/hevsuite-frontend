@@ -16,8 +16,17 @@ import { logout } from '../../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 import constants from '../../../constants';
 import AuthModal from '../../../components/AuthModal';
+import { z } from 'zod';
 
-const RegisterStep7 = () => {
+const schema = z.object({
+    cardNumber: z.number(),
+    expiry: z.number(),
+    cvc: z.number() ,
+    country: z.string() ,
+    postalCode: z.string(),
+});
+
+const RegisterStep7 = () => { 
   const dispatch = useDispatch();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
@@ -45,10 +54,11 @@ const RegisterStep7 = () => {
       maxWidth: '500px',
       width: '90%',
       padding: '0',
-      height: '95vh',
+      height: 'min-content',
       border: 'none',
       borderRadius: '24px',
       backgroundColor: 'white',
+      
     },
     overlay: {
       backgroundColor: 'rgba(0, 0, 0, 0.75)',
@@ -109,10 +119,38 @@ const RegisterStep7 = () => {
 
     if(Settings && user) {
 
-      if( !Settings.membershipFee || Settings.membershipFee && user.joinFeeStatus === constants.joinFeeStatus.paid){
-        navigate("/homepage", { replace:true });
+        if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid ){
+          navigate("/homepage", {replace: true });
+          return
+        }
+
+      if(Settings.requiredReferralNumber > 0) {
+
+          // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
+          // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) {
+        if(user.membershipStatus === constants.membershipStatus.declined){
+            navigate("/application-declined", { replace: true });
+            return;
+          }
+
+        // const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+        //  if (user.approvedByAdmin || allReferredByApproved) {
+        if(user.membershipStatus === constants.membershipStatus.accepted){
+           //if membeshipFee is off
+           if (!Settings.membershipFee) {
+            navigate("/homepage", { replace:true });
+            return
+           }
+          
+           // stay here to proceed with payment
+           return;
+         }
+
+        navigate("/register-6", { replace:true });
         return
+
       }
+
 
     }
 
@@ -432,16 +470,24 @@ const RegisterStep7 = () => {
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
-        style={modalStyles}
+        style={{content: {...modalStyles.content, background: "none", backgroundColor: "none !important"}, overlay: modalStyles.overlay }}
         contentLabel='Payment Success Modal'
       >
-        <div className='relative p-8'>
-          {/* Success Icon */}
-          <div className=' flex justify-center'>
-            <div className='w-16 h-16 rounded-full bg-black flex items-center justify-center'>
-              <BsCheckCircleFill className='w-8 h-8 text-[#540A26]' />
+         
+
+          
+          <div className='left-0 top-6 z-50 relative w-full' >
+
+            <div className=' flex justify-center w-full relative'>
+              <div className='w-14 h-14  rounded-full bg-black flex items-center justify-center'>
+              </div>
+                <BsCheckCircleFill className='w-8 h-8 text-[#900C3F] z-0 absolute top-3' />
+              
             </div>
+
           </div>
+        <div className='relative pt-5 pb-8 px-8 z-10 rounded-2xl bg-white'>
+          {/* Success Icon */} 
 
           {/* Modal Content */}
           <div className='text-center mt-6'>
@@ -449,6 +495,8 @@ const RegisterStep7 = () => {
             <p className='text-gray-600 mb-8'>
               Your payment has been successfully done.
             </p>
+
+            <hr className='mb-4' />
 
             <div className='mb-8'>
               <h3 className='text-gray-500 mb-2'>Total Payment</h3>

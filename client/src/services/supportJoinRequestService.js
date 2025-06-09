@@ -85,7 +85,7 @@ const processMultipleSupportDecision = async ({referredUserIds, decision}) => {
     };
   }
 }
-const supportRequestService = {
+const supportJoinRequestService = {
   deleteSupportRequest,
   createSupportRequest,
   fetchMySupportRequest,
@@ -94,4 +94,4 @@ const supportRequestService = {
   processMultipleSupportDecision
 };
 
-export default supportRequestService;
+export default supportJoinRequestService;

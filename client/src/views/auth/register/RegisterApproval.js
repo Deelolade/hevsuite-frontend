@@ -23,7 +23,6 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
 
   const menuRef = useRef(null);
   const [ logOutLoading, setLogOutLoading ] = useState(false);
-  const [isUserApproved, setIsUserApproved] = useState(false);
   const [pendingDropdown, setPendingDropdown] = useState(-1);
   const [referredByUsers, setReferredByUsers] = useState(referrals);
   const [referredByToDecline, setReferredByToDecline] = useState(null);
@@ -60,20 +59,6 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
     })
   };
 
-  useEffect(() => {
-    const checkIfApproved = async () => {
-      referralService.checkReferral().then((res) => {
-        const allReferredByApproved = res.referredBy.every(
-          (r) => r.status.toLowerCase() === constants.referredByStatus.approved
-        );
-        if (user.approvedByAdmin || allReferredByApproved)
-          setIsUserApproved(true);
-        else setIsUserApproved(false);
-      });
-    };
-
-    if (user) checkIfApproved();
-  }, [user]);
 
   // Close on click outside
   useEffect(() => {
@@ -257,7 +242,7 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
               </svg>
               Add other referral
             </button>
-            {isUserApproved ? (
+            { user && user.membershipStatus === constants.membershipStatus.accepted ? (
               <Link
                 to="/register-7"
                 className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
