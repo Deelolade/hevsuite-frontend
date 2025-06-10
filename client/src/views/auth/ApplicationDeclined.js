@@ -75,9 +75,9 @@ const ApplicationDeclined = () => {
           <button onClick={handleLogout} className="bg-[#540A26] hover:bg-[#540A26]/90 text-white py-2 px-4 rounded">
             Logout
           </button>
-          <button className="border border-gray-300 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded">
+          {/* <button className="border border-gray-300 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded">
             Contact Support
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

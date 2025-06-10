@@ -7,11 +7,13 @@ import authService from '../../../services/authService';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProfile, login } from '../../../features/auth/authSlice';
+import AuthModal from '../../../components/AuthModal';
 
 const Login = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate();
   const { isLoading, isError, message } = useSelector((state) => state.auth);
+  const [ showVerifyModal, setShowVerifyModal ] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -38,12 +40,20 @@ const Login = () => {
       console.log("response in login",response)
     } catch (error) {
       // toast.error(error.message);
-      console.log(error.message);
+      // if(error)
+      console.log(error);
+      if(error.includes("Email not verified")) setShowVerifyModal(true);
     }
   };
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
+      <AuthModal 
+        open={showVerifyModal}
+        title="Email Verification Required" 
+        description="We've sent a verification email to your inbox. Please check your email and click the verification link to continue"
+        onClose={() => setShowVerifyModal(false)}
+      />
       {/* Background Image - Visible on all screens */}
       <div className='absolute inset-0 md:relative md:block'>
         <div className='absolute inset-0'>
@@ -198,7 +208,7 @@ const Login = () => {
               <button
                 type='submit'
                 disabled={isLoading}
-                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${isLoading
+                className={`w-full py-3 bg-gradient-to-r ${isLoading? "from-[#540A26]/50 to-[#0A5440]/50": "from-[#540A26] to-[#0A5440]"}  text-white rounded-3xl font-secondary text-lg font-medium ${isLoading
                     ? 'cursor-not-allowed'
                     : ''
                   }`}

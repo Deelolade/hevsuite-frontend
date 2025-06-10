@@ -18,11 +18,17 @@ import {
   BsBell
 } from 'react-icons/bs';
 import { PiCirclesThreeDuotone } from "react-icons/pi";
+import AuthModal from './AuthModal';
+import useUserIdentificationApproved from '../hooks/useIdentificationApproved';
+import toast from 'react-hot-toast';
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
+  const [logOutLoading, setLogOutLoading] = useState(false);
+
   const { user, isLoading } = useSelector(
     (state) => state.auth
   );
@@ -30,6 +36,8 @@ const Header = () => {
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
 
+  const { userIdentificationApproved } = useUserIdentificationApproved();
+  
 
   const notRef = React.useRef(false);
   useEffect(() => {
@@ -46,16 +54,38 @@ const Header = () => {
     }
   }, [dispatch, isLoggedIn]);
 
-  console.log(menus)
   const handleLogout = async () => {
-    dispatch(logout()).then(() => {
+    setLogOutLoading(true);
+    dispatch(logout()).unwarap().then(() => {
       persistor.purge(); // safely purge after logout completes
-    });
-    navigate("/");
+      setLogOutLoading(false);
+      navigate("/");
+    })
+    .catch(ex => {
+      toast.error(ex);
+    })
   };
+
+  const onCloseDocumentReviewModal = ( ) => {
+    setShowDocumentReviewModal(false);
+  }
+
+  const AskButton = React.memo(({children , isMobile = false }) =>  (
+      user && user.isEmailVerified && userIdentificationApproved ? <> {children} </>  :
+     isMobile ?
+      <button onClick={() => setShowDocumentReviewModal(true)} className="flex w-full text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]">
+        <BsChatFill className="text-xl mr-2" /> 
+         <span>Ask</span>
+      </button> 
+        : 
+      <button onClick={() => setShowDocumentReviewModal(true)} > Ask  </button> 
+  ))
 
   return (
     <header className='absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40'>
+     <AuthModal open={showDocumentReviewModal} onClose={onCloseDocumentReviewModal} title="Document Verification Process " description="Verification is ongoing before you can start attending events"  />
+      <AuthModal loading open={logOutLoading} title="Logging Out" description="Sigining out your account..." />
+      
       <nav className='container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center'>
         {/* Logo - Fixed on left */}
         <div className='md:fixed left-4 sm:left-8 md:left-12 md:z-50 top-6'>
@@ -78,7 +108,7 @@ const Header = () => {
         <div className='hidden top-6 fixed z-50 bg-black bg-opacity-40  backdrop-blur-md right-10 md:flex sm:gap-2 md:gap-6 items-center  p-1 sm:p-2 md:p-2 px-6 sm:px-1 md:px-6 rounded-l-3xl rounded-r-3xl pr-2 sm:pr-3 font-primary text-white text-sm sm:text-base'>
           <Link to='/how-it-works'>How it works</Link>
           <Link to='/topics'>Help centre</Link>
-          <Link to='/ask'>Ask</Link>
+          <AskButton> <Link to='/ask'>Ask</Link> </AskButton>
           {!menusLoading && menus?.map((menu) => (
             <Link
               key={menu._id}
@@ -149,7 +179,7 @@ const Header = () => {
             <div className='flex justify-between items-center mb-8'>
               <div className='flex items-center gap-2'>
                 <img src={logo} alt='Logo' className='h-8' />
-                <span className='text-white text-xl'>evsuite Club</span>
+                <span className='text-white text-xl'>Hevsuite Club</span>
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
@@ -177,14 +207,20 @@ const Header = () => {
                   <span>How it Works</span>
                 </Link>
                 {isLoggedIn && (
-                  <Link
-                    to="/ask"
-                    className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                  >
-                    <BsChatFill className="text-xl mr-2" />
-                    <span>Ask</span>
-                  </Link>
-                )}
+
+                  <AskButton isMobile >
+
+                      <Link
+                        to="/ask"
+                        className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      >
+                        <BsChatFill className="text-xl mr-2" />
+                        <span>Ask</span>
+                      </Link>
+
+                  </AskButton>
+                )} 
+               
                 <Link
                   to="/topics"
                   className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"

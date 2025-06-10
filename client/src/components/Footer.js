@@ -17,9 +17,9 @@ const Footer = () => {
     dispatch(fetchFooterData());
   }, [dispatch]);
 
-  console.log({ footerData, socialMedia });
+  // console.log({ footerData, socialMedia });
 
-  if (error || !loading)
+  if (error || loading)
     return (
       <footer
         className="py-8 border-t bg-gray-50  hidden sm:block"

@@ -16,8 +16,15 @@ const joinFeeStatus = {
   pending: "pending",
 };
 
+const supportRequestStatus = {
+  pending: "Pending",
+  approved: "Approved",
+  declined: "Declined"
+}
+
 export default {
   membershipStatus,
   referredByStatus,
   joinFeeStatus,
+  supportRequestStatus
 };

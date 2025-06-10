@@ -29,14 +29,12 @@ const RegisterStep4 = () => {
 
   const [formData, setFormData] = useState({ ...data.step4 });
   const [errors, setErrors] = useState({});
-  const interests = [
-    ['Art & Design', 'Cigars', 'Country Pursuits'],
-    ['Dance', 'Family Entertainment', 'Fashion'],
-    ['Film', 'Food', 'Literature'],
-    ['Music/Dj', 'Politics', 'Sport'],
-    ['Technology', 'Theatre', 'Travel'],
-    ['Wellness & Beauty', 'Wine & Spirits', 'Yoga'],
-  ];
+  const interests =   [
+    ["Art & Design", "Dance", "Film"],
+    ["Music/DJ", "Cigars", "Family Entertainment"],
+    ["Food", "Politics", "Country Pursuit"],
+    ["Fashion", "Literature", "Sport"]
+];
 
   const handleInterestToggle = (interest) => {
     const newInterests = formData.interests.includes(interest)

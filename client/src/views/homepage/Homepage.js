@@ -19,11 +19,8 @@ import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { fetchEvents } from '../../features/eventSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDateWithSuffix, formatTime } from '../../utils/formatDate';
-import AuthModal from '../../components/AuthModal';
-import supportJoinRequestService from '../../services/supportJoinRequestService';
-import referralService from '../../services/referralService';
-import toast from 'react-hot-toast';
-import constants from '../../constants';
+import useUserMembership from '../../hooks/useUserMembership';
+
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -38,6 +35,7 @@ const Homepage = () => {
   const { user }  = useSelector(s => s.auth);
   const { Settings }  = useSelector(s => s.generalSettings);
 
+  useUserMembership();
 
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
@@ -50,7 +48,6 @@ const Homepage = () => {
   // Add this function to filter events by date
   const filterEvents = () => {
     if (!events) return [];
-    console.log(events)
     return events
       .filter(event => {
         if (selectedAudience && event.audienceType !== selectedAudience) return false;
@@ -82,58 +79,9 @@ const Homepage = () => {
   };
 
 
-  useEffect(( ) => {
-
-    const sendSupportRequest = async () => {
-      try {
-
-        const { data: mySupportRequests } = await supportJoinRequestService.fetchMySupportRequest()
-        // already support request was sent
-        if(mySupportRequests.length > 0 ) return;
-
-        const { referredBy } = await referralService.checkReferral();
-
-        // nothing to send
-        if(referredBy.length === 0 ) return;
-
-        const referredByIds = referredBy.map(r => r.userId._id);
-
-       const {data:response} = await supportJoinRequestService.createSupportRequest(referredByIds);
-
-        toast.success(response.message);
-        
-       }
-      catch(ex) {
-        toast.error(ex);
-      }
-        
-    }
-
-    // if both are on
-    if(Settings && Settings.requiredReferralNumber > 0 && user ) {
-
-      const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-      
-      if( user.referredBy >= Settings.requiredReferralNumber && allReferredByApproved || user.approvedByAdmin ){
-        if(Settings.membershipFee) {
-          if(user.joinFeeStatus === constants.joinFeeStatus.paid) sendSupportRequest();
-          return
-        } 
-        // fee not required
-        sendSupportRequest();
-
-      }
-
-    }
-
-    // sendSupportRequest();
-
-  }, [])
-
 
   return (
     <div className='min-h-screen'>
-      <AuthModal open={false} title="Document Verification Process " description="Verification is ongoing before you can start attending events"  />
       {/* Header */}
       <header className='relative text-white min-h-screen'>
         <div className='absolute inset-0 z-0'>

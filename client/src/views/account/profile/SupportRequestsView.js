@@ -69,7 +69,8 @@ const SupportRequestsView = ({ onBack }) => {
       setIsLoading(true);
       try {
         const response = await supportRequestService.getSupportRequests();
-        setRequests(response.data);
+        console.log({response});
+        setRequests(response);
       } catch (error) {
         console.error("Failed to fetch requests:", error);
       } finally {
@@ -153,7 +154,7 @@ const SupportRequestsView = ({ onBack }) => {
   };
   const renderCardView = () => {
     const currentData = getCurrentData();
-    console.log("currentData", currentData);
+    
     if (isLoading) {
       return <div className="text-center py-8">Loading requests...</div>;
     }
