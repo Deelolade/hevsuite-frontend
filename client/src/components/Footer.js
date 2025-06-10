@@ -5,13 +5,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchFooterData } from "../features/footerSlice";
 
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
-import { FaXTwitter  } from 'react-icons/fa6'
+import { FaXTwitter } from "react-icons/fa6";
 
 const Footer = () => {
   const dispatch = useDispatch();
   const { footerData, socialMedia, loading, error } = useSelector(
     (state) => state.footer
   );
+
+  console.log(footerData);
 
   useEffect(() => {
     dispatch(fetchFooterData());
@@ -78,6 +80,7 @@ const Footer = () => {
 
     return styles[platform] || styles.default;
   };
+
   return (
     <footer
       className="py-8 border-t bg-gray-50 hidden sm:block"
@@ -110,7 +113,7 @@ const Footer = () => {
               </div>
             )} */}
             {socialMedia.length > 0 && (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 self-start">
                 <span className="font-medium text-gray-700">Follow us</span>
                 <div className="flex gap-3">
                   {socialMedia.map((item) => (
@@ -136,25 +139,29 @@ const Footer = () => {
             )}
 
             {/* Footer Links */}
-            <div className="flex gap-8 sm:gap-4 font-bold">
+            <div className="flex  sm:gap-4 gap-8 space-x-8 font-bold ">
               {footerData?.map((section) => (
                 <div key={section._id}>
-                  {section.items.map((item) => (
-                    <Link
-                      key={item._id}
-                      to={item.link}
-                      className="hover:text-black transition-colors block mb-2"
-                    >
-                      {item.title}
-                    </Link>
-                  ))}
+                  {section.visibility && <span className="mb-3 inline-block" > {section.title} </span>}
+                  {/* <div className="flex flex-col gap-0" >
+                    {section.items.map((item) => (
+                      <Link
+                        key={item._id}
+                        to={item.link}
+                        className="hover:text-black transition-colors text-sm block mb-2"
+                      >
+                        {item.title}
+                      </Link>
+
+                    ))}
+                  </div> */}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Copyright */}
-          <div className="text-sm sm:text-base text-right font-black">
+          <div className="text-sm sm:text-base text-right font-black self-start">
             &copy; {new Date().getFullYear()} Hazor Group (Trading as HH Club)
           </div>
         </div>
