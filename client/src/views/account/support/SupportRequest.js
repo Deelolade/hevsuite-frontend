@@ -141,6 +141,39 @@ const SupportRequest = () => {
       setIsDeclineModalOpen(true);
     }
   };
+
+  const handleAcceptSupportJoinRequest = async () => {
+    try {
+
+        const response =
+          await supportJoinRequestService.processMultipleSupportDecision(
+            {
+              referredUserIds: selectedRequests,
+              decision: "approve",
+            }
+          );
+
+        if (response.success) {
+          toast.success("Requests approved successfully");
+          // Refresh the requests list
+          const res =
+            await supportJoinRequestService.fetchSupportRequestsForDecision();
+          if (res.success) {
+            setRequests(res.data.referrals || []);
+          }
+        } else {
+          toast.error(response.error || "Failed to approve requests");
+        }
+    } catch (err) {
+        toast.error(
+          "An error occurred while processing your request"
+        );
+        console.error(err);
+      } finally {
+        setSelectedRequests([]);
+        setIsAcceptModalOpen(false);
+      }
+  }
   console.log(selectedRequests);
   return (
     <div className="p-2 sm:p-3 md:p-4 max-w-full">
@@ -297,37 +330,7 @@ const SupportRequest = () => {
               Cancel
             </button>
             <button
-              onClick={async () => {
-                try {
-                  const response =
-                    await supportJoinRequestService.processMultipleSupportDecision(
-                      {
-                        referredUserIds: selectedRequests,
-                        decision: "approve",
-                      }
-                    );
-
-                  if (response.success) {
-                    toast.success("Requests approved successfully");
-                    // Refresh the requests list
-                    const res =
-                      await supportJoinRequestService.fetchSupportRequestsForDecision();
-                    if (res.success) {
-                      setRequests(res.data.referrals || []);
-                    }
-                  } else {
-                    toast.error(response.error || "Failed to approve requests");
-                  }
-                } catch (err) {
-                  toast.error(
-                    "An error occurred while processing your request"
-                  );
-                  console.error(err);
-                } finally {
-                  setSelectedRequests([]);
-                  setIsAcceptModalOpen(false);
-                }
-              }}
+              onClick={handleAcceptSupportJoinRequest}
               className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#0E5B31] text-white rounded-lg text-xs sm:text-sm"
             >
               Accept

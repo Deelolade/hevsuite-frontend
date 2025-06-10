@@ -119,6 +119,11 @@ const RegisterStep7 = () => {
 
     if(Settings && user) {
 
+       if(user.membershipStatus === constants.membershipStatus.declined){
+            navigate("/application-declined", { replace: true });
+            return;
+          }
+
         if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid ){
           navigate("/homepage", {replace: true });
           return
@@ -128,14 +133,8 @@ const RegisterStep7 = () => {
 
           // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
           // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) {
-        if(user.membershipStatus === constants.membershipStatus.declined){
-            navigate("/application-declined", { replace: true });
-            return;
-          }
-
-        // const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-        //  if (user.approvedByAdmin || allReferredByApproved) {
-        if(user.membershipStatus === constants.membershipStatus.accepted){
+        const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+        if(user.membershipStatus === constants.membershipStatus.accepted || user.approvedByAdmin || allReferredByApproved ){
            //if membeshipFee is off
            if (!Settings.membershipFee) {
             navigate("/homepage", { replace:true });

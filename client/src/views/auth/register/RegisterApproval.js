@@ -26,6 +26,8 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
   const [pendingDropdown, setPendingDropdown] = useState(-1);
   const [referredByUsers, setReferredByUsers] = useState(referrals);
   const [referredByToDecline, setReferredByToDecline] = useState(null);
+  const [userApprovedToMakePayment, setUserApprovedToMakePayment] = useState(false);
+  
   const [declineReferredByModalOpen, setDeclineReferredByModalOpen] =
     useState(false);
   const [declineReferredRequestLoading, setDeclineReferredRequestLoading] =
@@ -81,6 +83,18 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  useEffect(() => {
+
+    if(user && referredByUsers) {
+      
+      const allReferredByApproved = referredByUsers.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+      if(allReferredByApproved || user.approvedByAdmin || user.membershipStatus === constants.membershipStatus.accepted  ){
+        setUserApprovedToMakePayment(true);
+      }
+    }
+
+  },[referredByUsers, user])
 
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: "smooth" });
@@ -242,7 +256,7 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
               </svg>
               Add other referral
             </button>
-            { user && user.membershipStatus === constants.membershipStatus.accepted ? (
+            { userApprovedToMakePayment ? (
               <Link
                 to="/register-7"
                 className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"

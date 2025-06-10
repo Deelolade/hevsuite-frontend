@@ -108,7 +108,7 @@ const LoginRedirect = ({ children }) => {
     if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
       return <Navigate to="/homepage" state={{ from: location }} replace />;
    
-    console.log("Hdadasd ====>")
+    
     return <Navigate to="/register-6" state={{ from: location }} replace />;
 
 
