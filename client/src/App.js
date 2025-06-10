@@ -102,13 +102,16 @@ const LoginRedirect = ({ children }) => {
     if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid )
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
-     if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending )
+     if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending && Settings.membershipFee)
       return <Navigate to="/register-7" state={{ from: location }} replace />;
 
     if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
       return <Navigate to="/homepage" state={{ from: location }} replace />;
    
-    
+    const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+    if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted ) 
+      return <Navigate to="/homepage" state={{ from: location }} replace />;
+
     return <Navigate to="/register-6" state={{ from: location }} replace />;
 
 

@@ -26,8 +26,12 @@ const useUserMembership = ( ) => {
                 return;
             }
 
+            const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+            if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted)return;
+               
            if (Settings.requiredReferralNumber > 0) {
               
+            
                if(user.membershipStatus !== constants.membershipStatus.accepted) {
                   navigate("/register-6")
                   return;

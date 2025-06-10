@@ -42,14 +42,20 @@ const handleSkipForNow = async () => {
       navigate('/login');
     } else if (user.membershipStatus === constants.membershipStatus.accepted  && user.joinFeeStatus === constants.joinFeeStatus.paid) {
       navigate('/homepage', {replace:true});
-    } else if (user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending) {
+    } else if (user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending && Settings.membershipFee) {
       navigate('/register-7', {replace:true});
     } else {
 
       if(Settings.requiredReferralNumber <= 0 && !Settings.membershipStatus)
         return navigate('/homepage', {replace: true});
+
       else if(Settings.requiredReferralNumber <= 0 && Settings.membershipStatus)
        return navigate('/register-7'); 
+
+      const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+      if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted ) 
+        return navigate('/homepage', { replace: true });
+
 
        navigate('/register-6');   // fallback
       // console.log(user.membershipStatus)
