@@ -21,6 +21,7 @@ import cmsReducer from "./cms/cmsSlice"
 import pageReducer from "./page/pageSlice";
 import notificationReducer from './notifications/notificationSlice';
 import financeReducer from './finance/financeSlice'
+import supportReducer from "./support/supportSlice";
 
 export const store = configureStore({
   reducer: {
@@ -46,7 +47,8 @@ export const store = configureStore({
     cms: cmsReducer,
     pages: pageReducer,
     notifications: notificationReducer,
-    finance: financeReducer
+    finance: financeReducer,
+    support: supportReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

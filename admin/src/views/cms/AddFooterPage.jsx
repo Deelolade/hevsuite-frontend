@@ -3,9 +3,17 @@
 import { useState } from "react"
 import { ArrowLeft, Plus, X } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
-import { editFooter } from "../../store/cms/cmsSlice"
+import { editFooter, getPages } from "../../store/cms/cmsSlice"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
+import axios from "axios"
+import { base_url } from "../../constants/axiosConfig"
+
+const getAuthToken = () => {
+  const adminData = localStorage.getItem("admin")
+  const admin = adminData ? JSON.parse(adminData) : null
+  return admin?.token || ""
+}
 
 const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
   const dispatch = useDispatch()
@@ -111,26 +119,45 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
     }
 
     try {
-      // Create new page object
-      const newPage = {
-        _id: Date.now().toString(),
-        title,
-        visibility: true,
-        owner: "System",
-        createdAt: new Date().toISOString(),
-        slides: [], // No slides for footer
-        content: editors.map((editor) => ({
-          title: editor.title,
-          content: editor.content,
-          visibility: true,
-          showInToc: editor.showInToc,
-        })),
-      }
+      // Create FormData for the new page
+      const formData = new FormData()
+      formData.append('title', title)
+      formData.append('visibility', true)
+      formData.append('owner', 'Admin')
+      formData.append('type', 'footer')
 
-      // Add the new page to the footer's items array
-      const updatedItems = [...(selectedFooter.items || []), newPage]
+      // Format content as JSON
+      const contentData = editors.map((editor) => ({
+        title: editor.title,
+        content: editor.content,
+        visibility: editor.checked,
+        showInToc: editor.showInToc
+      }))
+      formData.append('content', JSON.stringify(contentData))
 
-      // Prepare data for API call
+      // Add empty slides array since footer pages don't have slides
+      formData.append('slides', JSON.stringify([]))
+
+      // First create the page
+      const response = await axios.post(`${base_url}/api/cms/pages`, formData, {
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true,
+      })
+
+      const newPage = response.data
+
+      // Add the new page reference to the footer's items array
+      const updatedItems = [...(selectedFooter.items || []), {
+        _id: newPage._id,
+        title: newPage.title,
+        type: 'page',
+        owner: 'Admin'
+      }]
+
+      // Prepare data for API call to update footer
       const data = {
         id: selectedFooter._id,
         data: {
@@ -140,6 +167,9 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
 
       // Dispatch the action to update footer
       await dispatch(editFooter(data)).unwrap()
+
+      // Refresh pages list
+      await dispatch(getPages({ status: "active" }))
 
       // Clear all session data after successful save
       clearSessionData()

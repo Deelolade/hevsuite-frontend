@@ -63,11 +63,26 @@ const deleteSupportRequest = async (id) => {
   return response.data;
 };
 
+const getSupportRequestStats = async () => {
+  const token = getAuthToken();
+  const response = await axios.get(
+    `${base_url}/api/support-requests/stats`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
 const supportService = {
   getSupportRequests,
   getSupportRequestDetails,
   updateSupportRequest,
   deleteSupportRequest,
+  getSupportRequestStats,
 };
 
 export default supportService;

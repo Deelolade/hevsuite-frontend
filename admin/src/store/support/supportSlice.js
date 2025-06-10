@@ -9,6 +9,12 @@ const initialState = {
   isError: false,
   isLoading: false,
   message: "",
+  stats: {
+    totalRequests: 0,
+    pendingRequests: 0,
+    completedRequests: 0,
+    assignedRequests: 0
+  }
 };
 
 export const getSupportRequests = createAsyncThunk(
@@ -55,6 +61,17 @@ export const deleteSupportRequest = createAsyncThunk(
   }
 );
 
+export const getSupportRequestStats = createAsyncThunk(
+  "support/get-stats",
+  async (_, thunkAPI) => {
+    try {
+      return await supportService.getSupportRequestStats();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const supportSlice = createSlice({
   name: "support",
   initialState,
@@ -69,7 +86,7 @@ export const supportSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.message = "success";
-        state.supportRequests = action.payload.supportRequests;
+        state.supportRequests = action.payload;
       })
       .addCase(getSupportRequests.rejected, (state, action) => {
         state.isLoading = false;
@@ -134,6 +151,29 @@ export const supportSlice = createSlice({
         state.isError = true;
         state.message = action.error.message;
         toast.error(state.message);
+      })
+      .addCase(getSupportRequestStats.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getSupportRequestStats.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "success";
+        if (action.payload && action.payload.data) {
+          state.stats = {
+            totalRequests: action.payload.data.totalRequests || 0,
+            pendingRequests: action.payload.data.pendingRequests || 0,
+            completedRequests: action.payload.data.completedRequests || 0,
+            assignedRequests: action.payload.data.assignedRequests || 0
+          };
+        }
+      })
+      .addCase(getSupportRequestStats.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error;
       });
   },
 });
