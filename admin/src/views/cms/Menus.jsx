@@ -601,14 +601,12 @@ const Menu = () => {
                               >
                                 <FiEdit size={18} />
                               </button>
-                            {page.owner === "Admin" && (
                               <button 
                                 className="text-red-500 hover:text-red-700"
                                 onClick={() => handleDeletePage(page._id)}
                               >
                                 <FaTrash size={18} />
                               </button>
-                            )}
                             </td>
                           </tr>
                         ))

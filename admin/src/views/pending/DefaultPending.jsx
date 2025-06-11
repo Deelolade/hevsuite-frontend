@@ -225,18 +225,14 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button
-                      className={`p-1 ${
-                        user.canBeApproved 
-                          ? 'text-green-600 hover:text-green-700' 
-                          : 'text-gray-400 cursor-not-allowed'
-                      }`}
+                      className='p-1 text-green-600 hover:text-green-700' 
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (user.canBeApproved) {
+
                           handleActionClick("accept", user, e);
-                        }
+                        
                       }}
-                      title={!user.canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
+                      // title={!user.canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
                     >
                       <FaCheck />
                     </button>

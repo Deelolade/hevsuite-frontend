@@ -128,8 +128,8 @@ const AddFooterPage = ({ onBack, selectedFooter, refreshData }) => {
 
       // Format content as JSON
       const contentData = editors.map((editor) => ({
-        title: editor.title,
-        content: editor.content,
+          title: editor.title,
+          content: editor.content,
         visibility: editor.checked,
         showInToc: editor.showInToc
       }))
