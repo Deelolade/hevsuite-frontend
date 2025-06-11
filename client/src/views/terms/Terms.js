@@ -6,6 +6,7 @@ import CookiePolicy from "./CookiePolicy";
 import bg_image from "../../assets/header-bg.jpg";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { motion } from 'framer-motion'
 
 const Terms = () => {
   const [activeTab, setActiveTab] = useState("Terms of Policy");
@@ -34,7 +35,7 @@ const Terms = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-none ">
       {/* Mobile View (hidden on md and larger screens) */}
       <div className="md:hidden flex flex-col min-h-screen">
         <div className="relative text-white">
@@ -98,10 +99,26 @@ const Terms = () => {
 
       {/* Desktop View (hidden on smaller screens) */}
       <div className="hidden md:block">
-        <Header className="absolute top-0 left-0 w-full z-50" />
+
+        <motion.div
+        initial={{  opacity: 0, y: -100 }}
+        animate= {{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 , delay: 0.6 }}
+        >
+          <Header className="absolute top-0 left-0 w-full z-50" />
+        </motion.div>
+
         <div className="flex">
           {/* Left Side - Dark Background with Content */}
-          <div className="w-1/2 sticky top-0 left-0 h-screen">
+          <motion.div
+           className="sticky top-0 left-0 h-screen"
+           initial={{ width: "100%" }}
+           animate={{ width: "50%" }}
+           transition={{
+               width: { duration: 2, type: "spring",  }, 
+            }}
+          >
+          {/* <div className="w-full sticky top-0 left-0 h-screen"> */}
             <div className="absolute inset-0 z-0">
               <img
                 src={bg_image}
@@ -110,7 +127,12 @@ const Terms = () => {
               />
               <div className="absolute inset-0 bg-black/50" />
             </div>
-            <div className="relative z-10 min-h-screen p-16 lg:p-24 xl:p-32 font-secondary text-white">
+            <motion.div 
+            className="relative z-10 min-h-screen p-16 lg:p-24 xl:p-32 font-secondary text-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 , duration: 0.8 }}
+            >
               <h2 className="title text-3xl md:mt-20 lg:text-4xl xl:text-5xl font-semibold mb-8">
                 {activeTab}
               </h2>
@@ -144,11 +166,21 @@ const Terms = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </motion.div>
+          {/* </div> */}
+         </motion.div>
 
           {/* Right Side - White Background with Content */}
-          <div className="w-1/2 min-h-screen p-12 lg:p-16 xl:p-20 sm:mt-12">
+          <motion.div
+            className="absolute top-0 right-0 h-full z-30 bg-white overflow-y-auto p-16 xl:p-20 "
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0, width: "50%" }}
+            transition={{ 
+              x: { delay:0.2, duration: 1 },
+              opacity: { delay: 0.4, duration: 0.3, },
+             }}
+          >
+          {/* <div className="w-1/2 absolute hidden min-h-screen p-12 lg:p-16 xl:p-20 sm:mt-12 "> */}
             <h1 className="text-3xl lg:text-4xl xl:text-5xl font-semibold mb-6">
               Policies
             </h1>
@@ -183,14 +215,20 @@ const Terms = () => {
             </div>
 
             {/* Content */}
-            <div className="pr-8">
+            <motion.div className="pr-8 "
+             initial={{ opacity: 0 }}
+             animate={{ opacity : 1 }}
+             transition={{ duration: 1 }}
+            >
               {activeTab === "Terms of Policy" && <TermsOfPolicy searchQuery={searchQuery}/>}
               {activeTab === "Terms of Use" && <TermsOfUse searchQuery={searchQuery}/>}
               {activeTab === "Cookies Policy" && <CookiePolicy searchQuery={searchQuery} />}
-            </div>
-          </div>
+            </motion.div>
+          {/* </div> */}
+         </motion.div>
+
         </div>
-        <Footer/>
+        {/* <Footer/> */}
       </div>
     </div>
   );

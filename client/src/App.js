@@ -43,6 +43,7 @@ import { fetchGeneralSettings } from "./features/generalSettingSlice";
 import NotFound from "./views/NotFound";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
+import PageWrapper from "./components/PageWrapper";
 
 axios.defaults.withCredentials = true;
 
@@ -221,7 +222,9 @@ const router = createBrowserRouter([
   },
   {
     path: "terms",
-    element: <Terms />,
+    element:  <PageWrapper>
+       <Terms />
+    </PageWrapper>
   },
   {
     path: "how-it-works",

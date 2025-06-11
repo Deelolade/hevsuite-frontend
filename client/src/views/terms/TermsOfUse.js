@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+
 const highlight = (text, query) => {
   if (!query) return text;
   const parts = text.split(new RegExp(`(${query})`, "gi"));
@@ -12,7 +14,7 @@ const highlight = (text, query) => {
 };
 const TermsOfUse = ({ searchQuery}) => {
   return (
-    <div className="max-w-4xl">
+    <motion.div className="max-w-4xl">
       <h1 className="text-3xl font-semibold mb-8">
         {highlight('Terms of Use', searchQuery)}
       </h1>
@@ -84,7 +86,7 @@ const TermsOfUse = ({ searchQuery}) => {
           </p>
         </section>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

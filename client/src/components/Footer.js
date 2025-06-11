@@ -88,7 +88,7 @@ const Footer = () => {
     >
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-8 sm:gap-0">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
+          <div className="flex flex-col sm:flex-row justify-center items-center sm:items-center gap-8">
             {/* Social Media Links */}
             {/* {socialMedia.length > 0 && (
               <div className="flex items-center gap-4">
@@ -113,8 +113,8 @@ const Footer = () => {
               </div>
             )} */}
             {socialMedia.length > 0 && (
-              <div className="flex items-center gap-4 self-start">
-                <span className="font-medium text-gray-700">Follow us</span>
+              <div className="flex items-center gap-4 ">
+                <span className="font-semibold">Follow us</span>
                 <div className="flex gap-3">
                   {socialMedia.map((item) => (
                     <Link
@@ -122,9 +122,7 @@ const Footer = () => {
                       to={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-8 h-8 rounded-3xl flex items-center justify-center transition-all duration-300 ${getPlatformStyle(
-                        item.socialName
-                      )} shadow-md hover:shadow-lg hover:scale-105`}
+                      className={`w-8 h-8 rounded-3xl flex items-center justify-center transition-all duration-300  shadow-md hover:shadow-lg hover:scale-105`}
                       aria-label={`Follow us on ${item.socialName}`}
                     >
                       <img
@@ -139,10 +137,26 @@ const Footer = () => {
             )}
 
             {/* Footer Links */}
-            <div className="flex  sm:gap-4 gap-8 space-x-8 font-bold ">
+            <div className="flex border sm:gap-4 gap-8 space-x-8 font-bold lg:top-1 relative ">
               {footerData?.map((section) => (
                 <div key={section._id}>
-                  {section.visibility && <span className="mb-3 inline-block" > {section.title} </span>}
+                  {section.visibility && 
+                    <>
+
+                    {section.title?.toLowerCase().includes("policies") ? 
+                    <Link
+                        to="/terms"
+                        className="hover:text-black transition-colors text-sm block mb-2"
+                      >
+                        {section.title}
+                      </Link>
+                      :
+                      <span className="mb-3 inline-block" > {section.title} </span>
+                    }
+
+                    </>
+                }   
+
                   {/* <div className="flex flex-col gap-0" >
                     {section.items.map((item) => (
                       <Link
@@ -161,7 +175,7 @@ const Footer = () => {
           </div>
 
           {/* Copyright */}
-          <div className="text-sm sm:text-base text-right font-black self-start">
+          <div className="text-sm sm:text-base text-right font-black ">
             &copy; {new Date().getFullYear()} Hazor Group (Trading as HH Club)
           </div>
         </div>

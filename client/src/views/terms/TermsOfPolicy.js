@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from 'framer-motion';
 
 const highlight = (text, query) => {
   if (!query) return text;
@@ -14,7 +15,7 @@ const highlight = (text, query) => {
 
 const TermsOfPolicy = ({ searchQuery }) => {
   return (
-    <div className="max-w-4xl">
+    <motion.div className="max-w-4xl">
       <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">
         {highlight("1. WHAT IS THIS PRIVACY POLICY IS FOR?", searchQuery)}
       </h2>
@@ -77,7 +78,7 @@ const TermsOfPolicy = ({ searchQuery }) => {
           )}
         </li>
       </ul>
-    </div>
+    </motion.div>
   );
 };
 
