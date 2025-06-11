@@ -7,20 +7,25 @@ import { Provider } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import { PersistGate } from 'redux-persist/integration/react';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-      <App />
-      <Toaster
-        toastOptions={{
-          position: 'top-right',
-          style: {
-            background: 'white',
-            color: 'black',
-          },
-        }}
-      />
-    </PersistGate>
-  </Provider>
-);
+persistor.purge().then(()=> {
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+        <Toaster
+          toastOptions={{
+            position: 'top-right',
+            style: {
+              background: 'white',
+              color: 'black',
+            },
+          }}
+        />
+      </PersistGate>
+    </Provider>
+  );
+
+  }
+)
