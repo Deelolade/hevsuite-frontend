@@ -257,32 +257,46 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
               </svg>
               Add other referral
             </button>
-            { userApprovedToMakePayment ? Settings.membershipFee ?  (
-              <Link
-                to="/register-7"
-                className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
-              >
-                Go to payment
-                <span className="ml-1">→</span>
-              </Link>
-            ) :  (
-              <Link
-                to="/homepage"
-                className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
-              >
-                Go to Homepage
-                <span className="ml-1">→</span>
-              </Link>
-            )
             
-            : (
+            { userApprovedToMakePayment ?
+
+            <div className=" flex gap-4 items-center" > 
+
+              { Settings?.membershipFee ? 
+                <Link
+                  to="/register-7"
+                  className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
+                >
+                  Go to payment
+                  <span className="ml-1">→</span>
+                </Link>
+              :   
+                <Link
+                    to="/homepage"
+                    className="px-4 md:px-6 py-1 md:py-2 text-white bg-gradient-to-r from-gradient_r to-gradient_g rounded-3xl font-secondary inline-flex items-center gap-2 text-sm md:text-base hover:bg-opacity-90 transition-colors"
+                  >
+                  Go to Homepage
+                  <span className="ml-1">→</span>
+                </Link>
+
+              }
+
+               <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
+
+            </div>
+            : 
               <button
                 onClick={handleLogout}
                 className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
               >
                 Logout
               </button>
-            )}
+          }
           </div>
         </div>
       </div>
