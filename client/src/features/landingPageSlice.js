@@ -10,7 +10,6 @@ export const fetchLandingPageData = createAsyncThunk(
   'landingPage/fetchData',
   async () => {
     const response = await axios.get(`${API_URL}`);
-    console.log('Landing Page Data:', response);
     return response.data;
   }
 );

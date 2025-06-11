@@ -15,6 +15,7 @@ const SupportRequestsView = ({ onBack }) => {
   const fileInputRef = useRef(null);
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
   // const requestData = {
   //   all: [
   //     {
@@ -63,13 +64,20 @@ const SupportRequestsView = ({ onBack }) => {
   //     },
   //   ],
   // };
+
+  useEffect(() => {
+
+    if(showModal) setSubmitLoading(false);
+
+  }, [showModal])
   // Fetch requests when component mounts or tab changes
   useEffect(() => {
     const fetchRequests = async () => {
       setIsLoading(true);
       try {
         const response = await supportRequestService.getSupportRequests();
-        setRequests(response.data);
+        console.log({response});
+        setRequests(response);
       } catch (error) {
         console.error("Failed to fetch requests:", error);
       } finally {
@@ -112,7 +120,10 @@ const SupportRequestsView = ({ onBack }) => {
 
   const handleSubmit = async () => {
     try {
-  const formData = new FormData();
+
+    setSubmitLoading(true);
+
+    const formData = new FormData();
     formData.append('type', requestType);
     formData.append('description', requestDescription);
     
@@ -121,20 +132,24 @@ const SupportRequestsView = ({ onBack }) => {
       formData.append('image', imageFile);
     }
 
-      const newRequest = await supportRequestService.createSupportRequest(formData);
+      const {request} = await supportRequestService.createSupportRequest(formData);
       
-      setRequests([...requests, newRequest.data]);
-      
+      setRequests([...requests, request]);
+        
       // Reset form
       setRequestType("");
       setRequestDescription("");
       setUploadedImage(null);
       setShowModal(false);
+
       toast.success("Support request created successfully.")
       
     } catch (error) {
       toast.error(error.message || 'Failed to submit request:')
       console.error("Failed to submit request:", error);
+    }
+    finally{
+      setSubmitLoading(false);
     }
   };
   const handleDeleteRequest = async (id) => {
@@ -153,7 +168,7 @@ const SupportRequestsView = ({ onBack }) => {
   };
   const renderCardView = () => {
     const currentData = getCurrentData();
-    console.log("currentData", currentData);
+    
     if (isLoading) {
       return <div className="text-center py-8">Loading requests...</div>;
     }
@@ -383,6 +398,8 @@ const SupportRequestsView = ({ onBack }) => {
                       Type of Request
                     </option>
                     <option value="Evidence Review">Evidence Review</option>
+                    <option value="Document Review">Document Review</option>
+                    <option value="Identity Verification">Identity Verification</option>
                     <option value="Card Request">Card Request</option>
                     <option value="Membership Upgrade">
                       Membership Upgrade
@@ -483,10 +500,12 @@ const SupportRequestsView = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="px-4 py-2 sm:px-6 sm:py-2.5 bg-[#540A26] text-white rounded-lg text-sm sm:text-base hover:bg-[#6b0d31] transition-colors"
-                  disabled={!requestType || !requestDescription}
+                 className="px-4 md:px-6 py-2  bg-[#540A26] disabled:bg-[#540A26]/10 text-white rounded-lg text-sm md:text-base order-1 sm:order-2 disabled:border-[#540A26]/40 transition-colors disabled:text-[#540A26]/40 disabled:hover:bg-[#540A26]/10 disabled:cursor-not-allowed"
+                  // className="px-4 py-2 sm:px-6 sm:py-2.5 bg-[#540A26] text-white rounded-lg text-sm sm:text-base hover:bg-[#6b0d31] transition-colors"
+                  disabled={!requestType || !requestDescription || submitLoading }
                 >
-                  Submit Request
+                  { submitLoading? "Submitting...": "Submit Request" }
+                  
                 </button>
               </div>
             </div>

@@ -1,14 +1,14 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import authService from '../../services/authService';
-import userService from '../../services/userService';
-import toast from 'react-hot-toast';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import authService from "../../services/authService";
+import userService from "../../services/userService";
+import toast from "react-hot-toast";
 
 const initialState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
   isError: false,
-  message: '',
+  message: "",
 };
 
 // // Login thunk
@@ -25,65 +25,74 @@ const initialState = {
 //     }
 //   }
 // );
+
+export const register = createAsyncThunk('auth/register', async (data, thunkAPI) => {
+  try {
+    const response = await authService.register(data);
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || error.message || "Login failed";
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
 export const login = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (userData, thunkAPI) => {
     try {
       const response = await authService.loginUser(userData);
       return response;
     } catch (error) {
-      const message = 
-        error.response?.data?.message || 
-        error.message || 
-        'Login failed';
+      const message =
+        error.response?.data?.message || error.message || "Login failed";
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 // Fetch profile thunk
 export const fetchProfile = createAsyncThunk(
-  'auth/fetchProfile',
+  "auth/fetchProfile",
   async (_, thunkAPI) => {
     try {
       const response = await userService.getUserProfile();
       return response.user;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch profile'
+        error.response?.data?.message || "Failed to fetch profile"
       );
     }
   }
 );
 // update user profile
 export const updateProfile = createAsyncThunk(
-  'auth/updateProfile',
+  "auth/updateProfile",
   async ({ userData, confirmPassword }, thunkAPI) => {
     try {
-      const updatedUser = await authService.updateProfile(userData, confirmPassword);
+      const updatedUser = await authService.updateProfile(
+        userData,
+        confirmPassword
+      );
       return updatedUser;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.message || 'Failed to update profile'
+        error.message || "Failed to update profile"
       );
     }
   }
 );
 
-export const logout = createAsyncThunk(
-  'auth/logout',
-  async (_, thunkAPI) => {
-    try {
-      await authService.logout(); // backend clears cookie
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Logout failed'
-      );
-    }
+export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
+  try {
+    await authService.logout(); // backend clears cookie
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || "Logout failed"
+    );
   }
-);
+});
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -91,7 +100,7 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
-        state.message = '';
+        state.message = "";
       })
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -101,7 +110,23 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload; 
+        state.message = action.payload;
+        toast.error(state.message);
+      })
+      .addCase(register.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = "";
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
         toast.error(state.message);
       })
       .addCase(fetchProfile.pending, (state) => {
@@ -132,7 +157,7 @@ const authSlice = createSlice({
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload; // Update the user in state
-        toast.success('Profile updated successfully!');
+        toast.success("Profile updated successfully!");
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;

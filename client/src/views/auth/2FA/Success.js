@@ -5,13 +5,50 @@ import image from '../../../assets/image.jpg';
 import { BsCheck2Circle } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProfile } from '../../../features/auth/authSlice';
+import constants from '../../../constants';
 
 const Success = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isLoading } = useSelector(
-    (state) => state.auth
-  );
+  const { user, isLoading } = useSelector((state) => state.auth);
+  const {  Settings } = useSelector((state) => state.generalSettings);
+
+  const handleSkipForNow = async () => {
+      // await dispatch(fetchProfile()).unwrap();
+      // if (!user) {
+      //   navigate('/login');
+      // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
+      //   navigate('/homepage');
+      // } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
+      //   navigate('/register-6');
+      // }
+      // else {
+      //   navigate('/register-6'); // Or your membership registration page
+      // }
+        await dispatch(fetchProfile()).unwrap();
+          console.log("user in 2fa",user)
+      if (!user) {
+        navigate('/login');
+      } else if (user.membershipStatus === constants.membershipStatus.accepted  && user.joinFeeStatus === constants.joinFeeStatus.paid) {
+        navigate('/homepage', {replace:true});
+      } else if (user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending) {
+        navigate('/register-7', {replace:true});
+      } else {
+  
+        if(Settings.requiredReferralNumber <= 0 && !Settings.membershipStatus)
+          return navigate('/homepage', {replace: true});
+        else if(Settings.requiredReferralNumber <= 0 && Settings.membershipStatus)
+         return navigate('/register-7'); 
+
+        const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+        if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted ) 
+          return navigate('/homepage', { replace: true });
+        
+  
+         navigate('/register-6');   // fallback
+        // console.log(user.membershipStatus)
+      }
+  }
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
@@ -71,30 +108,7 @@ const Success = () => {
 
               <button
                 // onClick={() => navigate('/homepage')}
-                onClick={async () => {
-                  // await dispatch(fetchProfile()).unwrap();
-                  // if (!user) {
-                  //   navigate('/login');
-                  // } else if (user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'paid') {
-                  //   navigate('/homepage');
-                  // }else if(user.membershipStatus === 'accepted'&& user.joinFeeStatus === 'pending'){
-                  //   navigate('/register-6');
-                  // }
-                  //  else {
-                  //   navigate('/register-6'); // Or your membership registration page
-                  // }
-                   await dispatch(fetchProfile()).unwrap()
-                    console.log("user in sucess", user);
-                  if (!user) {
-                    navigate('/login');
-                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'paid') {
-                    navigate('/homepage');
-                  } else if (user.membershipStatus === 'accepted' && user.joinFeeStatus === 'pending') {
-                    navigate('/register-6');
-                  } else {
-                    navigate('/register-6'); // fallback
-                  }
-                }}
+                onClick={handleSkipForNow}
 
                 className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium'
               >

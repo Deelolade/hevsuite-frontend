@@ -18,19 +18,25 @@ import { fetchAttendingMembers, removeSavedEvent, saveEvent } from "../../../fea
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
 import toast from "react-hot-toast";
+import AuthModal from "../../../components/AuthModal";
+import useUserIdentificationApproved from "../../../hooks/useIdentificationApproved";
 
 const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 
   const dispatch = useDispatch();
+  const { user } = useSelector(s => s.auth);
   const { savedEvents, saveEventLoading, removeSavedEventLoading } =
     useSelector(state => state.events);
 
-  const isSaved = savedEvents.some(saved => saved._id === event._id);
+  const isSaved = savedEvents?.some(saved => saved._id === event._id);
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [modalPage, setModalPage] = useState(1);
   const { attendingMembers, membersLoading } = useSelector((state) => state.events);
+  const [ showDocumentReviewModal, setShowDocumentReviewModal ] = useState(false);
+
+  const { userIdentificationApproved } = useUserIdentificationApproved();
 
   // Get attendees for the current event
   const attendees = attendingMembers[event._id] || [];
@@ -79,12 +85,20 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
       prevIndex === 0 ? currentEvent.images.length - 1 : prevIndex - 1
     );
   };
-
+ 
+  const isUserVerifiedAndApproved = user && user?.isEmailVerified && userIdentificationApproved;
 
   const currentEvent = events[currentEventIndex];
 
   return (
     <div className="fixed inset-0 z-50  superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
+      <AuthModal 
+        open={showDocumentReviewModal} 
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start attending events" 
+        onClose={() =>setShowDocumentReviewModal(false)}
+      />
+      
       <div className="bg-white h-full sm:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-y-auto">
 
         <div className="flex flex-col md:flex-row md:h-full">
@@ -174,7 +188,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                     : `Note: You can buy up to ${currentEvent.numberOfTicket} tickets`}
                 </p>
                 <button
-                  onClick={() => setShowPaymentModal(true)}
+                  onClick={() => !isUserVerifiedAndApproved ? setShowDocumentReviewModal(true) : setShowPaymentModal(true)}
                   className="w-full opacity-70 py-2 sm:py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-base sm:text-lg font-medium"
                 >
                   Attend

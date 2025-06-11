@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsCheck, BsCheckCircleFill } from 'react-icons/bs';
 import { FiDownload } from 'react-icons/fi';
@@ -14,8 +14,19 @@ import { persistor } from '../../../store/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../features/auth/authSlice';
 import toast from 'react-hot-toast';
+import constants from '../../../constants';
+import AuthModal from '../../../components/AuthModal';
+import { z } from 'zod';
 
-const RegisterStep7 = () => {
+const schema = z.object({
+    cardNumber: z.number(),
+    expiry: z.number(),
+    cvc: z.number() ,
+    country: z.string() ,
+    postalCode: z.string(),
+});
+
+const RegisterStep7 = () => { 
   const dispatch = useDispatch();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
@@ -23,6 +34,7 @@ const RegisterStep7 = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [logOutLoading, setLogOutLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiry: '',
@@ -31,6 +43,7 @@ const RegisterStep7 = () => {
     postalCode: '',
   });
  const { user } = useSelector((state) => state.auth);
+ const { Settings } = useSelector((state) => state.generalSettings);
   const modalStyles = {
     content: {
       top: '50%',
@@ -41,10 +54,11 @@ const RegisterStep7 = () => {
       maxWidth: '500px',
       width: '90%',
       padding: '0',
-      height: '95vh',
+      height: 'min-content',
       border: 'none',
       borderRadius: '24px',
       backgroundColor: 'white',
+      
     },
     overlay: {
       backgroundColor: 'rgba(0, 0, 0, 0.75)',
@@ -87,18 +101,63 @@ const RegisterStep7 = () => {
     setMode(val);
   }
   const handleLogout = async () => {
+
+    setLogOutLoading(true);
+
     try {
       await dispatch(logout()).unwrap(); // unwrap to catch error
       await persistor.purge();           // clear redux-persist storage
       navigate('/');
-      window.location.reload();
+      setLogOutLoading(false);
     } catch (error) {
       toast.error("Logout failed. Please try again.");
       console.error('Logout failed:', error);
     }
   };
+
+  useEffect(() => {
+
+    if(Settings && user) {
+
+       if(user.membershipStatus === constants.membershipStatus.declined){
+            navigate("/application-declined", { replace: true });
+            return;
+          }
+
+        if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid ){
+          navigate("/homepage", {replace: true });
+          return
+        }
+
+      if(Settings.requiredReferralNumber > 0) {
+
+          // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
+          // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) {
+        const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+        if(user.membershipStatus === constants.membershipStatus.accepted || user.approvedByAdmin || allReferredByApproved ){
+           //if membeshipFee is off
+           if (!Settings.membershipFee) {
+            navigate("/homepage", { replace:true });
+            return
+           }
+          
+           // stay here to proceed with payment
+           return;
+         }
+
+        navigate("/register-6", { replace:true });
+        return
+
+      }
+
+
+    }
+
+  } , [user, Settings])
+
   return (
     <div className='min-h-screen'>
+      <AuthModal loading open={logOutLoading} title="Logging Out" description="Sigining out your account..." />
       <div className='relative text-white'>
         <div className='absolute inset-0 z-0'>
           <img
@@ -410,16 +469,24 @@ const RegisterStep7 = () => {
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
-        style={modalStyles}
+        style={{content: {...modalStyles.content, background: "none", backgroundColor: "none !important"}, overlay: modalStyles.overlay }}
         contentLabel='Payment Success Modal'
       >
-        <div className='relative p-8'>
-          {/* Success Icon */}
-          <div className=' flex justify-center'>
-            <div className='w-16 h-16 rounded-full bg-black flex items-center justify-center'>
-              <BsCheckCircleFill className='w-8 h-8 text-[#540A26]' />
+         
+
+          
+          <div className='left-0 top-6 z-50 relative w-full' >
+
+            <div className=' flex justify-center w-full relative'>
+              <div className='w-14 h-14  rounded-full bg-black flex items-center justify-center'>
+              </div>
+                <BsCheckCircleFill className='w-8 h-8 text-[#900C3F] z-0 absolute top-3' />
+              
             </div>
+
           </div>
+        <div className='relative pt-5 pb-8 px-8 z-10 rounded-2xl bg-white'>
+          {/* Success Icon */} 
 
           {/* Modal Content */}
           <div className='text-center mt-6'>
@@ -427,6 +494,8 @@ const RegisterStep7 = () => {
             <p className='text-gray-600 mb-8'>
               Your payment has been successfully done.
             </p>
+
+            <hr className='mb-4' />
 
             <div className='mb-8'>
               <h3 className='text-gray-500 mb-2'>Total Payment</h3>

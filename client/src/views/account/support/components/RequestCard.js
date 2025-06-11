@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { BsCheckLg, BsX } from "react-icons/bs";
 import Modal from "react-modal";
-import { formatDateWithSuffix } from "../../../../utils/formatDate"
-import supportRequestService from "../../../../services/supportJoinRequestService";
+import { formatDateWithSuffix } from "../../../../utils/formatDate";
+import supportJoinRequestService from "../../../../services/supportJoinRequestService";
 import toast from "react-hot-toast";
 const RequestCard = ({
   request,
@@ -10,7 +10,7 @@ const RequestCard = ({
   index,
   isSelected,
   handleSelect,
-  setRequests
+  setRequests,
 }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
@@ -55,7 +55,9 @@ const RequestCard = ({
               <h3 className="font-medium text-base sm:text-lg">
                 {request.name}
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600">{formatDateWithSuffix(request.referDate)}</p>
+              <p className="text-xs sm:text-sm text-gray-600">
+                {formatDateWithSuffix(request.referDate)}
+              </p>
             </div>
           </div>
           <p className="text-sm sm:text-base text-gray-600">
@@ -74,32 +76,32 @@ const RequestCard = ({
           <button
             onClick={async () => {
               try {
-                const response = await supportRequestService.processSupportDecision({
-                  requestId: request.userId,
-                  decision: type == "accept" ? "approve" : "decline", // "accept" or "decline"
-                });
+                const response =
+                  await supportJoinRequestService.processSupportDecision({
+                    requestId: request.userId,
+                    decision: type == "accept" ? "approve" : "decline", // "accept" or "decline"
+                  });
 
                 if (response.success) {
-                  toast.success(`${type}ed successfully`)
-                  const res = await supportRequestService.fetchSupportRequestsForDecision();
+                  toast.success(`${type}ed successfully`);
+                  const res =
+                    await supportJoinRequestService.fetchSupportRequestsForDecision();
                   if (res.success) {
                     setRequests(res.data.assignedSupportRequests || []);
                   }
-
                 } else {
-                  toast.error(response.error || `Failed to ${type}ed `)
+                  toast.error(response.error || `Failed to ${type}ed `);
                   console.error("Failed:", response.error || "Unknown error");
                 }
               } catch (err) {
-
                 console.error("Request error:", err.message);
               } finally {
                 onClose();
               }
             }}
-
-            className={`px-4 sm:px-6 py-1.5 sm:py-2 text-white rounded-lg text-xs sm:text-sm ${type === "accept" ? "bg-[#0E5B31]" : "bg-red-500"
-              }`}
+            className={`px-4 sm:px-6 py-1.5 sm:py-2 text-white rounded-lg text-xs sm:text-sm ${
+              type === "accept" ? "bg-[#0E5B31]" : "bg-red-500"
+            }`}
           >
             {type === "accept" ? "Accept" : "Decline"}
           </button>
@@ -171,10 +173,10 @@ const RequestCard = ({
           type="checkbox"
           className="w-4 h-4 sm:w-5 sm:h-5"
           checked={isSelected}
-           onChange={(e) => {
-              e.stopPropagation();
-              handleSelect(request.userId); // Use userId here
-            }}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleSelect(request.userId); // Use userId here
+          }}
         />
         <img
           src={request.image}
@@ -185,7 +187,9 @@ const RequestCard = ({
           <h3 className="font-medium text-sm sm:text-base truncate">
             {request.name}
           </h3>
-          <p className="text-xs sm:text-sm text-gray-600">{formatDateWithSuffix(request.referDate)}</p>
+          <p className="text-xs sm:text-sm text-gray-600">
+            {formatDateWithSuffix(request.referDate)}
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
           <button

@@ -19,6 +19,8 @@ import { fetchNonExpiredNews, setSelectedNews } from '../../features/newsSlice';
 import { fetchEvents } from '../../features/eventSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDateWithSuffix, formatTime } from '../../utils/formatDate';
+import useUserMembership from '../../hooks/useUserMembership';
+
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -30,6 +32,10 @@ const Homepage = () => {
 
   const dispatch = useDispatch();
 
+  const { user }  = useSelector(s => s.auth);
+  const { Settings }  = useSelector(s => s.generalSettings);
+
+  useUserMembership();
 
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
@@ -42,7 +48,6 @@ const Homepage = () => {
   // Add this function to filter events by date
   const filterEvents = () => {
     if (!events) return [];
-    console.log(events)
     return events
       .filter(event => {
         if (selectedAudience && event.audienceType !== selectedAudience) return false;
@@ -72,6 +77,8 @@ const Homepage = () => {
   const handleNextSlide = () => {
     setActiveSlide((prev) => (prev === events.length - 1 ? 0 : prev + 1));
   };
+
+
 
   return (
     <div className='min-h-screen'>
@@ -276,7 +283,7 @@ const Homepage = () => {
                             alt={event.name}
                             className='w-full h-full  object-cover bg-cover bg-center '
                           />
-                          <div className='absolute bottom-0 left-0 right-0 p-4 '>
+                          <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gradient_r via-gradient_r to-gradient_r/30'>
                             <h3 className='text-xl font-semibold'>
                               {event.name}
                             </h3>

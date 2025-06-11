@@ -1,49 +1,59 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import registerReducer from '../features/auth/registerSlice';
-import authReducer from '../features/auth/authSlice';
-import newsReducer from '../features/newsSlice';
-import eventReducer from '../features/eventSlice';
-import askReducer from '../features/askSlice'
-import notificationReducer from '../features/notificationSlice';
-import landingPageReducer from '../features/landingPageSlice';
-import generalSettingReducer from '../features/generalSettingSlice'
-import footerReducer from '../features/footerSlice'
-import menusReducer from '../features/menuSlice'
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import registerReducer from "../features/auth/registerSlice";
+import authReducer from "../features/auth/authSlice";
+import newsReducer from "../features/newsSlice";
+import eventReducer from "../features/eventSlice";
+import askReducer from "../features/askSlice";
+import notificationReducer from "../features/notificationSlice";
+import landingPageReducer from "../features/landingPageSlice";
+import generalSettingReducer from "../features/generalSettingSlice";
+import footerReducer from "../features/footerSlice";
+import menusReducer from "../features/menuSlice";
 // Persist configuration for the register slice
-const registerPersistConfig = {
-  key: 'register',
-  storage,
-};
+// const registerPersistConfig = {
+//   key: 'register',
+//   storage,
+// };
 
-// Persist configuration for the auth slice
-const authPersistConfig = {
-  key: 'auth',
+// // Persist configuration for the auth slice
+// const authPersistConfig = {
+//   key: 'auth',
+//   storage,
+//   whitelist: ['isAuthenticated']
+// };
+
+const persistConfig = {
+  key: "root",
   storage,
-  whitelist: ['isAuthenticated'] 
+  whitelist: ["auth", "register"], // optional: persist only selected slices
 };
 
 // Create persisted reducers
-const persistedRegisterReducer = persistReducer(registerPersistConfig, registerReducer);
-const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
+// const persistedRegisterReducer = persistReducer(registerPersistConfig, registerReducer);
+// const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
+
+const rootReducer = combineReducers({
+  register: registerReducer, // Persisted register slice
+  auth: authReducer, // Persisted auth slice
+  news: newsReducer,
+  events: eventReducer,
+  ask: askReducer,
+  notifications: notificationReducer,
+  landingPage: landingPageReducer,
+  generalSettings: generalSettingReducer,
+  footer: footerReducer,
+  menus: menusReducer,
+});
+
+const persistedRootReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: {
-    register: persistedRegisterReducer, // Persisted register slice
-    auth: persistedAuthReducer,        // Persisted auth slice
-    news: newsReducer,
-    events: eventReducer,
-    ask:askReducer,
-    notifications: notificationReducer,
-    landingPage:landingPageReducer,
-    generalSettings:generalSettingReducer,
-    footer:footerReducer,
-    menus:menusReducer,
-  },
+  reducer: persistedRootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, 
+      serializableCheck: false,
     }),
 });
 
@@ -75,4 +85,3 @@ export const persistor = persistStore(store);
 // });
 
 // export const persistor = persistStore(store);
-

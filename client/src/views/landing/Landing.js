@@ -32,6 +32,7 @@ import { fetchFooterData } from "../../features/footerSlice";
   } = useSelector((state) => state.landingPage);
   
   const { newsItems, loading, error } = useSelector((state) => state.news);
+
   
   // useEffect(() => {
   //   dispatch(fetchNonExpiredNews());
@@ -98,7 +99,7 @@ useEffect(() => {
               {landingPages?.map((page, index) => (
                 <SwiperSlide key={index}>
                   <img
-                    src={page.image}
+                    src={page.file}
                     alt={`Image ${index}`}
                     onClick={() => handleImageClick(page.link)}
                     className='w-full h-[100vh]  object-cover brightness-50'

@@ -5,7 +5,7 @@ import ViewToggle from "./components/ViewToggle";
 import RequestCard from "./components/RequestCard";
 import Pagination from "./components/Pagination";
 import Modal from "react-modal";
-import supportRequestService from '../../../services/supportJoinRequestService';
+import supportJoinRequestService from "../../../services/supportJoinRequestService";
 import toast from "react-hot-toast";
 Modal.setAppElement("#root");
 
@@ -19,13 +19,13 @@ const SupportRequest = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-
   // Fetch support requests on mount
   useEffect(() => {
     const getRequests = async () => {
       setLoading(true);
-      const res = await supportRequestService.fetchSupportRequestsForDecision();
-      console.log(res)
+      const res =
+        await supportJoinRequestService.fetchSupportRequestsForDecision();
+      console.log(res);
       if (res.success) {
         setRequests(res.data.referrals || []);
         setError("");
@@ -37,24 +37,30 @@ const SupportRequest = () => {
     getRequests();
   }, []);
 
-const handleSelectAll = () => {
-  const currentPageIds = currentRequests.map(request => request.userId);
-  const allSelected = currentPageIds.every(id => selectedRequests.includes(id));
-  
-  if (allSelected) {
-    setSelectedRequests(prev => prev.filter(id => !currentPageIds.includes(id)));
-  } else {
-    setSelectedRequests(prev => [...new Set([...prev, ...currentPageIds])]);
-  }
-};
+  const handleSelectAll = () => {
+    const currentPageIds = currentRequests.map((request) => request.userId);
+    const allSelected = currentPageIds.every((id) =>
+      selectedRequests.includes(id)
+    );
 
-const handleSelect = (id) => {
-  if (selectedRequests.includes(id)) {
-    setSelectedRequests(selectedRequests.filter(requestId => requestId !== id));
-  } else {
-    setSelectedRequests([...selectedRequests, id]);
-  }
-};
+    if (allSelected) {
+      setSelectedRequests((prev) =>
+        prev.filter((id) => !currentPageIds.includes(id))
+      );
+    } else {
+      setSelectedRequests((prev) => [...new Set([...prev, ...currentPageIds])]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    if (selectedRequests.includes(id)) {
+      setSelectedRequests(
+        selectedRequests.filter((requestId) => requestId !== id)
+      );
+    } else {
+      setSelectedRequests([...selectedRequests, id]);
+    }
+  };
 
   // const requests = [
   //   {
@@ -108,7 +114,7 @@ const handleSelect = (id) => {
   //     image: avatar,
   //   },
   // ];
-  console.log(requests)
+  console.log(requests);
   const itemsPerPage = 6;
   const totalPages = Math.ceil(requests.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -119,8 +125,8 @@ const handleSelect = (id) => {
     setCurrentPage(page);
     setSelectedRequests([]);
     window.scrollTo({
-      top: document.querySelector('.requests-container').offsetTop - 100,
-      behavior: 'smooth'
+      top: document.querySelector(".requests-container").offsetTop - 100,
+      behavior: "smooth",
     });
   };
 
@@ -135,13 +141,47 @@ const handleSelect = (id) => {
       setIsDeclineModalOpen(true);
     }
   };
-console.log(selectedRequests)
+
+  const handleAcceptSupportJoinRequest = async () => {
+    try {
+
+        const response =
+          await supportJoinRequestService.processMultipleSupportDecision(
+            {
+              referredUserIds: selectedRequests,
+              decision: "approve",
+            }
+          );
+
+        if (response.success) {
+          toast.success("Requests approved successfully");
+          // Refresh the requests list
+          const res =
+            await supportJoinRequestService.fetchSupportRequestsForDecision();
+          if (res.success) {
+            setRequests(res.data.referrals || []);
+          }
+        } else {
+          toast.error(response.error || "Failed to approve requests");
+        }
+    } catch (err) {
+        toast.error(
+          "An error occurred while processing your request"
+        );
+        console.error(err);
+      } finally {
+        setSelectedRequests([]);
+        setIsAcceptModalOpen(false);
+      }
+  }
+  console.log(selectedRequests);
   return (
     <div className="p-2 sm:p-3 md:p-4 max-w-full">
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-0 mb-3 sm:mb-4">
           <h2 className="text-lg sm:text-xl font-semibold font-secondary text-black">
-            Join Request <span className="text-gray-500">({requests.length})</span>
+            Join Request{" "}
+            <span className="text-gray-500">({requests.length})</span>
           </h2>
           <div className="flex items-center gap-3 sm:gap-4">
             <button
@@ -151,8 +191,9 @@ console.log(selectedRequests)
             >
               <BsCheckLg
                 size={18}
-                className={`text-gray-600 ${selectedRequests.length === 0 ? "opacity-50" : ""
-                  }`}
+                className={`text-gray-600 ${
+                  selectedRequests.length === 0 ? "opacity-50" : ""
+                }`}
               />
             </button>
             <button
@@ -162,8 +203,9 @@ console.log(selectedRequests)
             >
               <BsX
                 size={18}
-                className={`text-gray-600 ${selectedRequests.length === 0 ? "opacity-50" : ""
-                  }`}
+                className={`text-gray-600 ${
+                  selectedRequests.length === 0 ? "opacity-50" : ""
+                }`}
               />
             </button>
           </div>
@@ -171,10 +213,11 @@ console.log(selectedRequests)
         <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={handleSelectAll}
-            className={`p-1.5 sm:p-2 rounded shadow-md sm:shadow-lg ${selectedRequests.length === currentRequests.length
-              ? "bg-gray-200"
-              : "bg-[#E2F6F766]"
-              } hover:bg-gray-100 transition-colors`}
+            className={`p-1.5 sm:p-2 rounded shadow-md sm:shadow-lg ${
+              selectedRequests.length === currentRequests.length
+                ? "bg-gray-200"
+                : "bg-[#E2F6F766]"
+            } hover:bg-gray-100 transition-colors`}
           >
             {/* <input
               type="checkbox"
@@ -183,19 +226,27 @@ console.log(selectedRequests)
               onChange={handleSelectAll}
             /> */}
             <input
-  type="checkbox"
-  className="w-4 h-4 sm:w-5 sm:h-5"
-  checked={currentRequests.length > 0 && 
-           currentRequests.every(request => selectedRequests.includes(request.userId))}
-  ref={(el) => {
-    if (el) {
-      el.indeterminate = 
-        currentRequests.some(request => selectedRequests.includes(request.userId)) &&
-        !currentRequests.every(request => selectedRequests.includes(request.userId));
-    }
-  }}
-  onChange={handleSelectAll}
-/>
+              type="checkbox"
+              className="w-4 h-4 sm:w-5 sm:h-5"
+              checked={
+                currentRequests.length > 0 &&
+                currentRequests.every((request) =>
+                  selectedRequests.includes(request.userId)
+                )
+              }
+              ref={(el) => {
+                if (el) {
+                  el.indeterminate =
+                    currentRequests.some((request) =>
+                      selectedRequests.includes(request.userId)
+                    ) &&
+                    !currentRequests.every((request) =>
+                      selectedRequests.includes(request.userId)
+                    );
+                }
+              }}
+              onChange={handleSelectAll}
+            />
           </button>
           <ViewToggle view={view} setView={setView} />
         </div>
@@ -279,31 +330,7 @@ console.log(selectedRequests)
               Cancel
             </button>
             <button
-              onClick={async () => {
-                try {
-                  const response = await supportRequestService.processMultipleSupportDecision({
-                    referredUserIds: selectedRequests,
-                    decision: "approve",
-                  });
-
-                  if (response.success) {
-                    toast.success("Requests approved successfully");
-                    // Refresh the requests list
-                    const res = await supportRequestService.fetchSupportRequestsForDecision();
-                    if (res.success) {
-                      setRequests(res.data.referrals || []);
-                    }
-                  } else {
-                    toast.error(response.error || "Failed to approve requests");
-                  }
-                } catch (err) {
-                  toast.error("An error occurred while processing your request");
-                  console.error(err);
-                } finally {
-                  setSelectedRequests([]);
-                  setIsAcceptModalOpen(false);
-                }
-              }}
+              onClick={handleAcceptSupportJoinRequest}
               className="px-4 sm:px-6 py-1.5 sm:py-2 bg-[#0E5B31] text-white rounded-lg text-xs sm:text-sm"
             >
               Accept
@@ -351,15 +378,19 @@ console.log(selectedRequests)
             <button
               onClick={async () => {
                 try {
-                  const response = await supportRequestService.processMultipleSupportDecision({
-                    referredUserIds: selectedRequests,
-                    decision: "decline",
-                  });
+                  const response =
+                    await supportJoinRequestService.processMultipleSupportDecision(
+                      {
+                        referredUserIds: selectedRequests,
+                        decision: "decline",
+                      }
+                    );
 
                   if (response.success) {
                     toast.success("Requests declined successfully");
                     // Refresh the requests list
-                    const res = await supportRequestService.fetchSupportRequestsForDecision();
+                    const res =
+                      await supportJoinRequestService.fetchSupportRequestsForDecision();
                     if (res.success) {
                       setRequests(res.data.referrals || []);
                     }
@@ -367,7 +398,9 @@ console.log(selectedRequests)
                     toast.error(response.error || "Failed to decline requests");
                   }
                 } catch (err) {
-                  toast.error("An error occurred while processing your request");
+                  toast.error(
+                    "An error occurred while processing your request"
+                  );
                   console.error(err);
                 } finally {
                   setSelectedRequests([]);

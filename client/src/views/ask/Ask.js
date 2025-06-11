@@ -22,6 +22,10 @@ import {
 import { formatDateWithSuffix } from '../../utils/formatDate';
 import { FaSpinner } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import useUserMembership from '../../hooks/useUserMembership';
+import useUserIdentificationApproved from '../../hooks/useIdentificationApproved';
+import AuthModal from '../../components/AuthModal';
+
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
@@ -37,6 +41,15 @@ const Ask = () => {
   const dispatch = useDispatch();
   const { asks, currentAsk, loading, error, message } = useSelector((state) => state.ask);
   const { user: currentUser } = useSelector((state) => state.auth);
+
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
+  
+  const { userIdentificationApproved } = useUserIdentificationApproved();
+
+ useUserMembership();
+
+ const isUserVerifiedAndApproved = currentUser && currentUser?.isEmailVerified && userIdentificationApproved
+
   // Fetch asks on component mount
   useEffect(() => {
     dispatch(fetchOpenAsks());
@@ -284,6 +297,13 @@ const Ask = () => {
 
   return (
     <div className='min-h-screen bg-white z-0'>
+      <AuthModal
+        open={showDocumentReviewModal}
+        onClose={() =>setShowDocumentReviewModal(false)} 
+        title="Document Verification Process " 
+        description="Verification is ongoing before you can start using this feature"  
+      />
+      
       <div className='relative text-white'>
         <div className='absolute inset-0'>
           <img
@@ -309,6 +329,8 @@ const Ask = () => {
         <div className='px-0 md:px-44 flex justify-between md:justify-center items-center mb-6 md:mb-8'>
           <button
             onClick={(e) => {
+              if(!isUserVerifiedAndApproved) return setShowDocumentReviewModal(true)
+              
               e.stopPropagation();
               setIsModalOpen(true);
             }}
