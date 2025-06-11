@@ -348,14 +348,14 @@ const Footer = () => {
     if (!pageToDelete) return;
 
     try {
-      // First check if the page is in footer items
+    // First check if the page is in footer items
       const footerItem = footerItems.find(item => {
         // Check both direct _id and pageId._id
         return item._id === pageToDelete || 
                (item.pageId && (typeof item.pageId === 'object' ? item.pageId._id === pageToDelete : item.pageId === pageToDelete));
       });
-      
-      if (footerItem) {
+    
+    if (footerItem) {
         // If page is in footer items, remove it from the list
         const updatedItems = footerItems.filter(item => {
           // Check both direct _id and pageId._id
@@ -365,24 +365,24 @@ const Footer = () => {
         
         // Update footer in backend
         await dispatch(
-          editFooter({
-            id: selectedSection,
-            data: { items: updatedItems },
-          })
+        editFooter({
+          id: selectedSection,
+          data: { items: updatedItems },
+        })
         );
         
         // Update local state
         setFooterItems(updatedItems);
-      }
+    }
 
       // Then delete the page itself by setting visibility to false
       await dispatch(
-        updatePage({
-          id: pageToDelete,
-          data: {
-            visibility: false // Soft delete by setting visibility to false
-          }
-        })
+      updatePage({
+        id: pageToDelete,
+        data: {
+          visibility: false // Soft delete by setting visibility to false
+        }
+      })
       );
 
       // Refresh both pages and footer data
@@ -616,14 +616,12 @@ const Footer = () => {
                                 >
                                   <FiEdit size={18} />
                                 </button>
-                                {page.owner === "Admin" && (
-                                  <button 
-                                    className="text-red-500 hover:text-red-700 ml-3"
-                                    onClick={() => handleDeletePage(page._id)}
-                                  >
-                                    <FaTrash size={18} />
-                                  </button>
-                                )}
+                                <button 
+                                  className="text-red-500 hover:text-red-700 ml-3"
+                                  onClick={() => handleDeletePage(page._id)}
+                                >
+                                  <FaTrash size={18} />
+                                </button>
                               </td>
                             </tr>
                           );
@@ -679,14 +677,12 @@ const Footer = () => {
                             >
                               <FiEdit size={18} />
                             </button>
-                            {item.owner === "Admin" && (
-                              <button 
-                                className="text-red-500 hover:text-red-700 ml-3"
-                                onClick={() => handleDeletePage(item._id)}
-                              >
-                                <FaTrash size={18} />
-                              </button>
-                            )}
+                            <button 
+                              className="text-red-500 hover:text-red-700 ml-3"
+                              onClick={() => handleDeletePage(item._id)}
+                            >
+                              <FaTrash size={18} />
+                            </button>
                           </td>
                         </tr>
                           );
@@ -802,6 +798,44 @@ const Footer = () => {
                   />
                 </div>
 
+                {/* Page Selection */}
+                <div>
+                  <label className="block text-sm mb-2">Select Pages</label>
+                  <select
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    onChange={(e) => handlePageSelection(e.target.value)}
+                    value=""
+                  >
+                    <option value="">Select a page</option>
+                    {pages?.filter(page => !selectedPages.some(selectedPage => selectedPage.pageId === page._id))
+                      .map((page) => (
+                        <option key={page._id} value={page._id}>
+                          {page.title}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Selected Pages List */}
+                {selectedPages.length > 0 && (
+                  <div className="mt-2">
+                    <label className="block text-sm mb-2">Selected Pages</label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPages.map((page) => (
+                        <div key={page.pageId} className="flex items-center justify-between bg-gray-50 p-2 rounded" style={{ width: 'fit-content' }}>
+                          <span className="text-sm">{page.title}</span>
+                          <button
+                            onClick={() => handleRemovePage(page.pageId)}
+                            className="text-red-500 hover:text-red-700 ml-2"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Visibility */}
                 <div>
                   <label className="block text-sm mb-2">Visibility</label>
@@ -826,7 +860,7 @@ const Footer = () => {
                       dispatch(
                         addNewFooter({
                           title: footerTitle,
-                          items: [],
+                          items: selectedPages,
                           visibility: footerVisibility,
                           link: footerLink,
                         }),
@@ -835,6 +869,7 @@ const Footer = () => {
                         setFooterTitle("")
                         setFooterLink("")
                         setFooterVisibility(false)
+                        setSelectedPages([])
                       })
                     }}
                     className="px-6 py-2 bg-primary text-white rounded-lg text-sm"

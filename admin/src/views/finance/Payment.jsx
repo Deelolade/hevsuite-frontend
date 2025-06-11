@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { BsGear } from "react-icons/bs"
 import Modal from "react-modal"
+import toast from "react-hot-toast"
 import {
   getProcessors,
   updateProcessor,
@@ -48,6 +49,7 @@ const Payment = () => {
     secretKey: "",
     authKey: "",
     currency: "USD",
+    allowedMembers: "All Members",
   })
 
   // Drag and drop state
@@ -84,6 +86,7 @@ const Payment = () => {
         secretKey: selectedProcessor.secretKey || "",
         authKey: selectedProcessor.authKey || "",
         currency: selectedProcessor.currency || "USD",
+        allowedMembers: selectedProcessor.allowedMembers || "All Members",
       })
       setLogoPreview(selectedProcessor.logo || null)
     }
@@ -118,23 +121,26 @@ const Payment = () => {
   // Handle drag end
   const handleDragEnd = () => {
     if (dragging !== null && dragOver !== null && dragging !== dragOver) {
-      // Create a new array with the reordered processors
-      const reorderedProcessors = [...processors]
-      const [movedProcessor] = reorderedProcessors.splice(dragging, 1)
-      reorderedProcessors.splice(dragOver, 0, movedProcessor)
+      const reorderedProcessors = [...processors];
+      const [movedProcessor] = reorderedProcessors.splice(dragging, 1);
+      reorderedProcessors.splice(dragOver, 0, movedProcessor);
 
-      // Update the order property for each processor
       const updatedProcessors = reorderedProcessors.map((processor, index) => ({
         ...processor,
         order: index,
-      }))
+      }));
 
-      // Dispatch the reorder action
-      dispatch(reorderProcessors(updatedProcessors))
+      dispatch(reorderProcessors(updatedProcessors)).then((result) => {
+        if (result.meta.requestStatus === "fulfilled") {
+          toast.success("Payment processors reordered successfully!");
+        } else if (result.meta.requestStatus === "rejected") {
+          toast.error(result.payload?.message || "Failed to reorder payment processors");
+        }
+      });
     }
-    setDragging(null)
-    setDragOver(null)
-  }
+    setDragging(null);
+    setDragOver(null);
+  };
 
   // Handle settings click
   const handleSettingsClick = (processor) => {
@@ -165,9 +171,15 @@ const Payment = () => {
     const updatedProcessor = {
       ...processor,
       enabled: !processor.enabled,
-      provider: processor.provider // Ensure provider is included
+      provider: processor.provider
     };
-    dispatch(updateProcessor(updatedProcessor));
+    dispatch(updateProcessor(updatedProcessor)).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        toast.success(`Payment processor ${processor.enabled ? 'disabled' : 'enabled'} successfully!`);
+      } else if (result.meta.requestStatus === "rejected") {
+        toast.error(result.payload?.message || "Failed to update payment processor status");
+      }
+    });
   };
 
   // Handle move processor up
@@ -177,13 +189,13 @@ const Payment = () => {
       const temp = reorderedProcessors[index];
       reorderedProcessors[index] = reorderedProcessors[index - 1];
       reorderedProcessors[index - 1] = temp;
-  
+
       const updatedProcessors = reorderedProcessors.map((processor, idx) => ({
         ...processor,
         order: idx,
         provider: processor.provider // Ensure provider is included
       }));
-  
+
       dispatch(reorderProcessors(updatedProcessors));
     }
   };
@@ -233,6 +245,9 @@ const Payment = () => {
       formData.append(key, newProcessor[key])
     })
 
+    // Ensure allowedMembers is explicitly set
+    formData.set('allowedMembers', newProcessor.allowedMembers)
+
     // Append logo file if exists
     if (logoFile) {
       formData.append("logo", logoFile)
@@ -241,6 +256,9 @@ const Payment = () => {
     dispatch(addProcessor(formData)).then((result) => {
       if (result.meta.requestStatus === "fulfilled") {
         setIsAddModalOpen(false)
+        toast.success("Payment processor added successfully!")
+      } else if (result.meta.requestStatus === "rejected") {
+        toast.error(result.payload?.message || "Failed to add payment processor")
       }
     })
   }
@@ -249,21 +267,24 @@ const Payment = () => {
   const handleUpdateProcessor = () => {
     const formData = new FormData();
     formData.append('provider', selectedProcessor.provider);
-    
+
     Object.keys(editedProcessor).forEach((key) => {
       if (key !== 'provider') {
         formData.append(key, editedProcessor[key]);
       }
     });
-  
+
     if (logoFile) {
       formData.append("logo", logoFile);
     }
-  
+
     dispatch(updateProcessor(formData)).then((result) => {
       if (result.meta.requestStatus === "fulfilled") {
         setLogoFile(null);
         setIsEditModalOpen(false);
+        toast.success("Payment processor updated successfully!");
+      } else if (result.meta.requestStatus === "rejected") {
+        toast.error(result.payload?.message || "Failed to update payment processor");
       }
     });
   };
@@ -275,6 +296,9 @@ const Payment = () => {
         if (result.meta.requestStatus === "fulfilled") {
           setIsRemoveModalOpen(false)
           dispatch(getProcessors())
+          toast.success("Payment processor removed successfully!");
+        } else if (result.meta.requestStatus === "rejected") {
+          toast.error(result.payload?.message || "Failed to remove payment processor");
         }
       })
     }
@@ -296,6 +320,11 @@ const Payment = () => {
 
   return (
     <div className="p-6">
+      {/* Toast Container */}
+      <div className="fixed top-4 right-4 z-50">
+        <div className="toast-container"></div>
+      </div>
+
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-medium">Payment Processors</h2>
@@ -482,8 +511,8 @@ const Payment = () => {
                 onChange={handleAddInputChange}
               >
                 <option value="All Members">All Members</option>
-                <option value="standard">Standard Members</option>
-                <option value="Vip">Vip Members</option>
+                <option value="Standard Members">Standard Members</option>
+                <option value="Vip Members">Vip Members</option>
               </select>
             </div>
 
@@ -588,6 +617,20 @@ const Payment = () => {
                   disabled
                 />
                 <p className="text-xs text-gray-500 mt-1">Provider name cannot be changed</p>
+              </div>
+
+              <div>
+                <label className="block mb-2">Allowed Members</label>
+                <select
+                  className="w-full px-4 py-2 border rounded-lg"
+                  name="allowedMembers"
+                  value={editedProcessor.allowedMembers}
+                  onChange={handleEditInputChange}
+                >
+                  <option value="All Members">All Members</option>
+                  <option value="Standard Members">Standard Members</option>
+                  <option value="Vip Members">Vip Members</option>
+                </select>
               </div>
 
               <div>

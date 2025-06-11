@@ -152,18 +152,18 @@ const Pending = () => {
         return;
       }
 
-      // Check supporters status
-      const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
-      if (approvedSupporters < requiredReferralNumber) {
-        toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
-        return;
-      }
+      // // Check supporters status
+      // const approvedSupporters = user.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+      // if (approvedSupporters < requiredReferralNumber) {
+      //   toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
+      //   return;
+      // }
 
-      // Check joining fee status
-      if (user.joinFeeStatus?.toLowerCase() !== 'paid') {
-        toast.error('User must have paid the joining fee before approval.');
-        return;
-      }
+      // // Check joining fee status
+      // if (user.joinFeeStatus?.toLowerCase() !== 'paid') {
+      //   toast.error('User must have paid the joining fee before approval.');
+      //   return;
+      // }
 
       await dispatch(updateUserMembershipStatus({ userId: user._id, status: 'accepted' })).unwrap();
       // Refresh the list after accepting a user
