@@ -24,10 +24,18 @@ import menusReducer from "../features/menuSlice";
 //   whitelist: ['isAuthenticated']
 // };
 
+const CURRENT_STORE_VERSION = 0;
+
+/**@type { import("redux-persist").PersistConfig } */
 const persistConfig = {
   key: "root",
   storage,
+  version: CURRENT_STORE_VERSION,
   whitelist: ["auth", "register"], // optional: persist only selected slices
+  migrate: (state, version) => {
+    if(version !== CURRENT_STORE_VERSION) return undefined; // reset everything
+    return state; // return peristed-state
+  }
 };
 
 // Create persisted reducers
