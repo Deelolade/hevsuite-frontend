@@ -283,7 +283,7 @@ const Homepage = () => {
                             alt={event.name}
                             className='w-full h-full  object-cover bg-cover bg-center '
                           />
-                          <div className='absolute bottom-0 left-0 right-0 p-4 '>
+                          <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gradient_r via-gradient_r to-gradient_r/30'>
                             <h3 className='text-xl font-semibold'>
                               {event.name}
                             </h3>

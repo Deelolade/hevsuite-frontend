@@ -136,9 +136,10 @@ const Terms = () => {
               <h2 className="title text-3xl md:mt-20 lg:text-4xl xl:text-5xl font-semibold mb-8">
                 {activeTab}
               </h2>
+              <hr  className=" border-gray-300 my-5" />
               <div className="content">
                 {activeTab === "Terms of Policy" && (
-                  <div className="terms-content text-xl md:text-3xl">
+                  <div className="terms-content text-xl md:text-3xl space-y-4 ">
                     <p className="text-secondary" id="termsofpolicy">
                       1. What is this privacy Policy For?
                     </p>
@@ -148,7 +149,7 @@ const Terms = () => {
                   </div>
                 )}
                 {activeTab === "Terms of Use" && (
-                  <div className="terms-content text-xl md:text-3xl">
+                  <div className="terms-content text-xl md:text-3xl space-y-4">
                     <p className="text-secondary" id="termsofuse">
                       1. Content on this SITE
                     </p>
@@ -158,7 +159,7 @@ const Terms = () => {
                   </div>
                 )}
                 {activeTab === "Cookies Policy" && (
-                  <div className="terms-content text-xl md:text-3xl">
+                  <div className="terms-content text-xl md:text-3xl space-y-4">
                     <p className="text-secondary" id="cookiespolicy">
                       1. Cookies: what they are and How to remove them?
                     </p>
