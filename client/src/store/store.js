@@ -34,7 +34,7 @@ const persistConfig = {
   whitelist: ["auth", "register"], // optional: persist only selected slices
   migrate: (state, version) => {
     if(version !== CURRENT_STORE_VERSION) return undefined; // reset everything
-    return state; // return peristed-state
+    return Promise.resolve(state); // return peristed-state
   }
 };
 

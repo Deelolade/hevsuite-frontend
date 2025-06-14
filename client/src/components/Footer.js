@@ -138,7 +138,7 @@ const Footer = () => {
 
             {/* Footer Links */}
             <div className="flex sm:gap-4 gap-8 space-x-8 font-bold lg:top-1 relative ">
-              {footerData?.map((section) => (
+              {footerData?.data?.map((section) => (
                 <div key={section._id}>
                   {section.visibility && 
                     <>

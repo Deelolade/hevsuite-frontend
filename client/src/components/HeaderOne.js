@@ -90,7 +90,7 @@ const HeaderOne = () => {
           <Link to="/register">Become a member</Link>
           <Link to="/how-it-works">How it works</Link>
           <Link to="/topics">Help centre</Link>
-          {!menusLoading && menus?.map((menu) => (
+          {!menusLoading && menus?.data?.map((menu) => (
             <Link
               key={menu._id}
               to={menu.link}
@@ -206,7 +206,7 @@ const HeaderOne = () => {
                   <BsQuestionCircle className="text-xl mr-2" />
                   <span>Help Centre</span>
                 </Link>
-                {!menusLoading && menus?.map((menu) => (
+                {!menusLoading && menus?.data?.map((menu) => (
                   <Link
                     key={menu._id}
                     to={menu.link}
