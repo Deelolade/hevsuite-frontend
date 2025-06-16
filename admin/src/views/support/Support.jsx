@@ -33,40 +33,6 @@ const Support = () => {
         <Profile />
       </div>
 
-      {/* Tabs */}
-      {/* <div className="flex flex-row md:ml-0 -ml-2 gap-4">
-        <button
-          className={`px-6 py-3 rounded-lg flex-1 ${
-            activeTab === "evidence"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-          }`}
-          onClick={() => setActiveTab("evidence")}
-        >
-          Evidence Review
-        </button>
-        <button
-          className={`px-6 py-3 rounded-lg flex-1 ${
-            activeTab === "other"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-          }`}
-          onClick={() => setActiveTab("other")}
-        >
-          Other Requests
-        </button>
-        <button
-          className={`px-6 py-3 rounded-lg flex-1 ${
-            activeTab === "assigned"
-              ? "bg-primary text-white"
-              : "bg-white border text-gray-700"
-          }`}
-          onClick={() => setActiveTab("assigned")}
-        >
-          Your Assigned Requests
-        </button>
-      </div> */}
-
       {renderTabContent()}
     </div>
   );

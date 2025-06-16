@@ -3,10 +3,10 @@ import { IoArrowBack } from "react-icons/io5";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Modal from 'react-modal';
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import idCardPlaceholder from "../../assets/Id.jpg";
-import avatarPlaceholder from "../../assets/user.avif";
+import avatarPlaceholder from "../../assets/defualtuser.webp";
 // import moment from 'moment';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
@@ -30,17 +30,17 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
 
   const handleAccept = () => {
     // Check supporters status
-    const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
-    if (approvedSupporters < requiredReferralNumber) {
-      toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
-      return;
-    }
+    // const approvedSupporters = viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0;
+    // if (approvedSupporters < requiredReferralNumber) {
+    //   toast.error(`User needs exactly ${requiredReferralNumber} approved supporters. Current: ${approvedSupporters}`);
+    //   return;
+    // }
 
     // Check joining fee status
-    if (viewUser.joinFeeStatus?.toLowerCase() !== 'paid') {
-      toast.error('User must have paid the joining fee before approval.');
-      return;
-    }
+    // if (viewUser.joinFeeStatus?.toLowerCase() !== 'paid') {
+    //   toast.error('User must have paid the joining fee before approval.');
+    //   return;
+    // }
 
     onAccept(viewUser);
   };
@@ -62,6 +62,15 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Calculate supporters status
+  const referralCount = viewUser.referralCount || 0;
+  const referrals = viewUser.referrals?.length || 0;
+  const supportersPercentage = referralCount > 0 ? (referrals / referralCount) * 100 : 0;
+
+  const isUserDeclined = () => {
+    return viewUser?.membershipStatus?.toLowerCase() === 'declined';
   };
 
   return (
@@ -94,19 +103,17 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleReject}
-              className="p-2 text-red-500 hover:bg-red-50 rounded-full"
+              className={`p-2 ${isUserDeclined() ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-50'} rounded-full`}
+              disabled={isUserDeclined()}
+              title={isUserDeclined() ? 'User is already declined' : 'Reject user'}
             >
               <FaTimes size={18} />
             </button>
             <button
               onClick={handleAccept}
-              disabled={!canBeApproved}
-              className={`p-2 rounded-full ${
-                canBeApproved 
-                  ? 'text-green-500 hover:bg-green-50' 
-                  : 'text-gray-400 cursor-not-allowed'
-              }`}
-              title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
+              className={`p-2 rounded-full ${isUserDeclined() ? 'text-gray-400 cursor-not-allowed' : 'text-green-500 hover:bg-green-50'}`}
+              disabled={isUserDeclined()}
+              title={isUserDeclined() ? 'User is already declined' : 'Accept user'}
             >
               <FaCheck size={18} />
             </button>
@@ -356,24 +363,27 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                   <div>
                     <label className="text-sm text-gray-500">Join Fee Status</label>
                     <div className="mt-1">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${viewUser.joinFeeStatus === "Paid"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                        {viewUser.joinFeeStatus === "paid" ? "Paid" : "Pending"}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        viewUser.membershipFee === true
+                          ? viewUser.joinFeeStatus?.toLowerCase() === 'paid'
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}>
+                        {viewUser.membershipFee === true
+                          ? viewUser.joinFeeStatus?.toLowerCase() === 'paid' ? "Paid" : "Pending"
+                          : "Off"}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-center">
                     <h3 className="text-lg font-semibold">Supporters Status</h3>
-                    {/* Use requiredReferralNumber for the target number */}
-                    <p className="text-gray-600">{viewUser.referredBy?.filter(ref => ref.status === 'approved').length || 0} / {requiredReferralNumber} Approved Supporters</p>
+                    <p className="text-gray-600">{referrals} / {referralCount} Referrals</p>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                      {/* Calculate width based on requiredReferralNumber */}
-                        <div
+                      <div
                         className="bg-green-500 h-2.5 rounded-full"
-                        style={{ width: `${(viewUser.referredBy?.filter(ref => ref.status === 'approved').length / requiredReferralNumber) * 100}%` }}
-                        ></div>
+                        style={{ width: `${supportersPercentage}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -390,7 +400,7 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                     <label className="text-sm text-gray-500">Membership Status</label>
                     <div className="mt-1">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                      {viewUser.membershipStatus}
+                        {viewUser.membershipStatus}
                       </span>
                     </div>
                   </div>
@@ -402,26 +412,38 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end gap-4 mt-6">
         <button
-          onClick={handleReject}
-          className="px-6 py-2 bg-red-500 text-white rounded-lg flex items-center space-x-2 hover:bg-red-600"
+          className={`px-4 py-2 rounded-lg ${
+            isUserDeclined() 
+              ? 'bg-gray-300 cursor-not-allowed' 
+              : 'bg-green-600 hover:bg-green-700'
+          } text-white`}
+          onClick={() => {
+            if (!isUserDeclined()) {
+              onAccept(viewUser);
+            }
+          }}
+          disabled={isUserDeclined()}
+          title={isUserDeclined() ? 'User is already declined' : 'Accept user'}
         >
-          <FaTimes />
-          <span>Reject</span>
+          Accept
         </button>
         <button
-          onClick={handleAccept}
-          disabled={!canBeApproved}
-          className={`px-6 py-2 rounded-lg flex items-center space-x-2 ${
-            canBeApproved 
-              ? 'bg-[#0A5438] text-white hover:bg-[#084433]' 
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-          title={!canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
+          className={`px-4 py-2 rounded-lg ${
+            isUserDeclined() 
+              ? 'bg-gray-300 cursor-not-allowed' 
+              : 'bg-red-600 hover:bg-red-700'
+          } text-white`}
+          onClick={() => {
+            if (!isUserDeclined()) {
+              onReject(viewUser);
+            }
+          }}
+          disabled={isUserDeclined()}
+          title={isUserDeclined() ? 'User is already declined' : 'Reject user'}
         >
-          <FaCheck />
-          <span>Accept</span>
+          Reject
         </button>
       </div>
 

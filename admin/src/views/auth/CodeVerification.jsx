@@ -7,6 +7,7 @@ import authService from '../../store/auth/authService';
 
 const CodeVerification = () => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [isResending, setIsResending] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const verificationType = location.state?.type || 'email';
@@ -26,6 +27,21 @@ const CodeVerification = () => {
       );
     }
   };
+
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      const response = await authService.resend2FACode();
+      toast.success(response.message || 'New code sent successfully');
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Failed to resend code. Please try again.'
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return false;
 
@@ -77,7 +93,7 @@ const CodeVerification = () => {
 
             <button
               onClick={handleVerify}
-              className='w-full py-3.5 rounded-3xl text-white text-sm font-secondary'
+              className='w-full py-3.5 text-white text-sm font-secondary border rounded-3xl'
               style={{
                 background: 'linear-gradient(to right, #540A26, #0A5438)',
               }}
@@ -85,12 +101,18 @@ const CodeVerification = () => {
               Verify
             </button>
 
-            <button
-              onClick={() => navigate(-1)}
-              className="w-full text-center text-gray-500 text-sm font-['Lato']"
-            >
-              Cancel
-            </button>
+            <div className='text-center mt-4'>
+              <p className='text-gray-500 text-sm'>
+                Didn't receive the code?{' '}
+                <button
+                  onClick={handleResend}
+                  disabled={isResending}
+                  className='text-[#540A26] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  {isResending ? 'Sending...' : 'Resend Code'}
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>

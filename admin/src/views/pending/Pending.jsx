@@ -8,7 +8,7 @@ import { getSettings } from "../../store/setting/settingSlice";
 import Profile from "../../components/Profile";
 import ViewPending from "./ViewPending";
 import DefaultPending from "./DefaultPending";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 
 const filterOptions = [

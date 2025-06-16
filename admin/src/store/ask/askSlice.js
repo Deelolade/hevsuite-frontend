@@ -184,7 +184,9 @@ export const askSlice = createSlice({
         state.isSuccess = true
         state.isError = false
         state.top_asks = state.top_asks.map((user) =>
-          user._id === action.payload.id ? { ...user, memberStatus: action.payload.memberStatus } : user,
+          user._id === action.payload.user._id 
+            ? { ...user, membershipType: action.payload.user.membershipType }
+            : user
         )
         toast.success("User promoted successfully")
       })

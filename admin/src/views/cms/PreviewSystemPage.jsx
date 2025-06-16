@@ -36,7 +36,7 @@ export default function PageSystemPreview() {
     <div className="relative md:p-6 md:-mr-10">
       <div className="flex items-center mb-4 justify-between">
         <div
-          className="p-2 rounded-full flex items-center gap-2  px-6 border border-gray-500 cursor-pointer"
+          className="p-2 rounded-full flex items-center gap-2 px-6 border border-gray-500 cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => navigate(-1)}
         >
           <BiArrowBack /> Back

@@ -7,7 +7,7 @@ import {
   BsXCircleFill,
 } from "react-icons/bs";
 import Modal from "react-modal";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
 import {
@@ -45,6 +45,55 @@ const Evidence = () => {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get user role from localStorage
+  const userRole = JSON.parse(localStorage.getItem('admin'))?.role;
+
+  // Fetch user permissions
+  useEffect(() => {
+    const fetchRolesAndPermissions = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${base_url}/api/permissions`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+                
+        // Find the user's role and get its permissions
+        const userRoleData = response.data.find(role => role.role === userRole);
+
+        if (userRoleData) {
+          setUserPermissions(userRoleData.permissions);
+          // If user has "Your Support Request" permission, set active tab to assigned
+          if (userRoleData.permissions.includes("Your Support Request")) {
+            setActiveTab("assigned");
+          }
+        } else {
+          // If no specific role found, set default permissions for superadmin
+          if (userRole === 'superadmin') {
+            setUserPermissions([]);
+          } else {
+            setUserPermissions([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+        setUserPermissions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userRole) {
+      fetchRolesAndPermissions();
+    } else {
+      setUserPermissions([]);
+      setLoading(false);
+    }
+  }, [userRole]);
 
   // Fetch current user profile
   useEffect(() => {
@@ -68,9 +117,22 @@ const Evidence = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching evidence requests...');
-        await dispatch(getEvidenceRequests({ assignedTo: activeTab === "assigned" ? "me" : undefined })).unwrap();
-        console.log('Evidence requests fetched:', evidenceRequests);
+        console.log('Fetching evidence requests with activeTab:', activeTab);
+        let typeFilter;
+        
+        if (activeTab === "assigned") {
+          typeFilter = undefined; // Show all types for assigned requests
+        } else if (activeTab === "other") {
+          typeFilter = ["Document Review", "Identity Verification", "Other Support", "Card Request", "Membership Upgrade"]; // Show these types for other requests
+        } else {
+          typeFilter = "Evidence Review"; // Show only evidence review for main tab
+        }
+
+        await dispatch(getEvidenceRequests({ 
+          assignedTo: activeTab === "assigned" ? "me" : undefined,
+          type: typeFilter
+        })).unwrap();
+        console.log('Evidence requests AFTER fetch:', evidenceRequests);
         
         console.log('Fetching admin users...');
         await dispatch(getAdminUsers()).unwrap();
@@ -103,7 +165,7 @@ const Evidence = () => {
       // If no adminId is provided, assign to current user
       const targetAdminId = adminId || currentUser?._id;
       
-      // Update the request with the new assignment using PUT instead of PATCH
+      // Update the request with the new assignment
       const response = await axios.put(
         `${base_url}/api/support-requests/${requestId}`,
         { 
@@ -113,14 +175,27 @@ const Evidence = () => {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}` // Add authorization header
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
         }
       );
 
       if (response.data) {
-        // Refresh the evidence requests list
-        await dispatch(getEvidenceRequests({ assignedTo: activeTab === "assigned" ? "me" : undefined })).unwrap();
+        // Refresh the evidence requests list with current tab settings
+        let typeFilter;
+        if (activeTab === "assigned") {
+          typeFilter = undefined;
+        } else if (activeTab === "other") {
+          typeFilter = ["Document Review", "Identity Verification", "Other Support", "Card Request", "Membership Upgrade"];
+        } else {
+          typeFilter = "Evidence Review";
+        }
+
+        await dispatch(getEvidenceRequests({ 
+          assignedTo: activeTab === "assigned" ? "me" : undefined,
+          type: typeFilter
+        })).unwrap();
+        
         toast.success("Request assigned successfully");
         setShowAssignModal(false);
       }
@@ -128,14 +203,12 @@ const Evidence = () => {
       console.error('Error assigning request:', error);
       const errorMessage = error.response?.data?.message || "Failed to assign request";
       toast.error(errorMessage);
-      
-      // Log detailed error information for debugging
-      console.log('Error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers
-      });
     }
+  };
+
+  // Add this function to handle "Assign to me" action
+  const handleAssignToMe = async (requestId) => {
+    await handleAssignToAdmin(requestId, currentUser?._id);
   };
 
   const handleStatusUpdate = async (id, status) => {
@@ -164,21 +237,21 @@ const Evidence = () => {
     }
 
     let filtered = [...evidenceRequests];
+    
+    // Apply type filtering based on active tab
+    if (activeTab === "assigned") {
+      // No type filtering for assigned tab
+    } else if (activeTab === "other") {
+      // Filter for Document Review and Identity Verification
+      filtered = filtered.filter(request => 
+        request.type === "Document Review" || request.type === "Identity Verification" || request.type === "Other Support" || request.type === "Card Request" || request.type === "Membership Upgrade"
+      );
+    } else {
+      // Filter for Evidence Review in main tab
+      filtered = filtered.filter(request => request.type === "Evidence Review");
+    }
 
-    console.log('Filtering requests:', {
-      currentUser: currentUser?._id,
-      totalRequests: filtered.length,
-      activeTab,
-      statusFilter,
-      searchTerm,
-      requests: filtered.map(r => ({
-        id: r._id,
-        assignedTo: r.assignedTo?._id || r.assignedTo,
-        createdBy: r.createdBy?._id || r.createdBy,
-        status: r.status,
-        user: r.user?.forename
-      }))
-    });
+    console.log('getFilteredRequests - Initial evidenceRequests:', filtered.length, filtered.map(r => r.type));
 
     // Apply search filter
     if (searchTerm) {
@@ -197,20 +270,11 @@ const Evidence = () => {
       console.log('After status filter:', filtered.length);
     }
 
-    // Filter by tab
-    if (activeTab === "assigned") {
-      // The API already returns only assigned requests, so no need for additional filtering
-      console.log('Assigned tab selected - showing assigned requests:', filtered.length);
-    } else if (activeTab === "other") {
-      // Show no requests in "Other Requests" tab
-      filtered = [];
-      console.log('Other tab selected - showing no requests');
-    }
-
     return filtered;
   };
 
   const filteredRequests = getFilteredRequests();
+  console.log('Final filteredRequests before rendering:', filteredRequests.length, filteredRequests.map(r => r.type));
 
   const formattedRequests = filteredRequests.map((request) => ({
     ID: request._id,
@@ -263,16 +327,18 @@ const Evidence = () => {
 
         {/* Tabs */}
         <div className="flex flex-row md:ml-0 -ml-2 gap-4">
-          <button
-            className={`px-6 py-3 rounded-lg flex-1 ${
-              activeTab === "all"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
-            onClick={() => setActiveTab("all")}
-          >
-            Evidence Review
-          </button>
+          {!userPermissions.includes("Your Support Request") && (
+            <button
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "all"
+                  ? "bg-primary text-white"
+                  : "bg-white border text-gray-700"
+              }`}
+              onClick={() => setActiveTab("all")}
+            >
+              Evidence Review
+            </button>
+          )}
           <button
             className={`px-6 py-3 rounded-lg flex-1 ${
               activeTab === "assigned"
@@ -283,16 +349,18 @@ const Evidence = () => {
           >
             Your Assigned Requests
           </button>
-          <button
-            className={`px-6 py-3 rounded-lg flex-1 ${
-              activeTab === "other"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
-            onClick={() => setActiveTab("other")}
-          >
-            Other Requests
-          </button>
+          {!userPermissions.includes("Your Support Request") && (
+            <button
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "other"
+                  ? "bg-primary text-white"
+                  : "bg-white border text-gray-700"
+              }`}
+              onClick={() => setActiveTab("other")}
+            >
+              Other Requests
+            </button>
+          )}
         </div>
 
         {/* Requests Table */}
@@ -652,8 +720,8 @@ const Evidence = () => {
               </p>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                <button
-                  onClick={() => handleAssignToAdmin(selectedRequest._id)}
+                {/* <button
+                  onClick={() => handleAssignToMe(selectedRequest._id)}
                   className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 flex items-center gap-3"
                 >
                   <img
@@ -662,7 +730,7 @@ const Evidence = () => {
                     className="w-8 h-8 rounded-full"
                   />
                   <span>Assign to myself</span>
-                </button>
+                </button> */}
 
                 {isLoadingAdmins ? (
                   <div className="text-center py-4">

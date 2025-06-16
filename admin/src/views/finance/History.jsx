@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BiChevronDown } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTransactions, updateStatus } from "../../store/transactions/transactionSlice"
-import avatar from "../../assets/user.avif";
+import { getTransactions, updateTransactionStatus } from "../../store/finance/financeSlice"
+import avatar from "../../assets/defualtuser.webp";
 
 const History = () => {
   const dispatch = useDispatch();
   const {
-    transactions = [],
-    currentPage,
-    totalPages,
-    totalItems,
-    loading,
-    error,
-  } = useSelector((state) => state.transactions);
+    transactions: { data: transactions = [], currentPage, totalPages, totalItems },
+    isLoading: loading,
+    isError: error,
+  } = useSelector((state) => state.finance);
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [localCurrentPage, setLocalCurrentPage] = useState(1);
@@ -21,15 +18,57 @@ const History = () => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const searchTimeoutRef = useRef(null);
+  const isInitialMount = useRef(true);
 
+  // Debounced search function
+  const debouncedSearch = (value) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      dispatch(getTransactions({ 
+        page: localCurrentPage, 
+        limit: rowsPerPage,
+        search: value.trim(),
+        filter: statusFilter,
+        sortBy: "createdAt"
+      }));
+    }, 500);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSearch(value);
+  };
+
+  // Cleanup timeout on component unmount
   useEffect(() => {
-    dispatch(fetchTransactions({ 
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Initial fetch and handle filter changes
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    dispatch(getTransactions({ 
       page: localCurrentPage, 
       limit: rowsPerPage,
-      search: searchQuery,
-      filter: statusFilter
+      search: searchQuery.trim(),
+      filter: statusFilter,
+      sortBy: "createdAt"
     }));
-  }, [dispatch, localCurrentPage, rowsPerPage, searchQuery, statusFilter]);
+  }, [dispatch, localCurrentPage, rowsPerPage, statusFilter]);
 
   const toggleRow = (id) => {
     setExpandedRows((prev) =>
@@ -52,7 +91,7 @@ const History = () => {
   };
 
   const handleStatusUpdate = (transactionId, status) => {
-    dispatch(updateStatus({ transactionId, status }));
+    dispatch(updateTransactionStatus({ id: transactionId, status }));
   };
 
   const handlePageChange = (newPage) => {
@@ -78,7 +117,7 @@ const History = () => {
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="border rounded-lg px-4 py-2 w-full"
           />
         </div>

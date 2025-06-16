@@ -73,6 +73,11 @@ const setup2FA = async (data) => {
   return response.data;
 };
 
+const resend2FACode = async () => {
+  const response = await axios.get(`${base_url}/api/user/resend-2fa-code`);
+  return response.data;
+};
+
 const authService = {
   login,
   emailVerify,
@@ -84,7 +89,7 @@ const authService = {
   getProfile,
   updateProfile,
   setup2FA,
-  
+  resend2FACode,
 };
 
 export default authService;
