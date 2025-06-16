@@ -8,7 +8,7 @@ import Modal from "react-modal"
 import ExportButton from "../ExportButton";
 import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin } from "../../store/admins/adminSlice"
 import { toast } from "react-toastify"
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 // import { Loader } from "lucide-react"
 import LoadingSpinner from '../../components/Spinner';
 
@@ -83,8 +83,13 @@ const AdminUsers = () => {
     }
 
     try {
-      await dispatch(createAdmin(newAdmin)).unwrap()
+      // Make the API call and unwrap the response
+      const response = await dispatch(createAdmin(newAdmin)).unwrap()
+      
+      // Close modal only on success
       setIsAddModalOpen(false)
+      
+      // Reset form
       setNewAdmin({
         forename: "",
         surname: "",
@@ -92,9 +97,17 @@ const AdminUsers = () => {
         role: "admin",
         password: "",
       })
+
+      // Show success toast with backend message
       toast.success("Admin created successfully")
+      
+      // Refresh admin list
+      dispatch(getAllAdmins())
     } catch (error) {
-      toast.error(error.message || "Failed to create admin")
+      // Show error toast with the error message from the backend
+      toast.error(error)
+      // Keep modal open on error
+      setIsAddModalOpen(true)
     }
   }
 
@@ -102,22 +115,26 @@ const AdminUsers = () => {
     if (!selectedAdmin) return
 
     try {
-      await dispatch(
-        updateAdmin({
-          id: selectedAdmin._id,
-          data: {
-            forename: selectedAdmin.forename,
-            surname: selectedAdmin.surname,
-            primaryEmail: selectedAdmin.primaryEmail,
-            role: selectedAdmin.role,
-            password: selectedAdmin.password || undefined,
-          },
-        }),
-      ).unwrap()
+      // Close modal first
       setIsEditModalOpen(false)
-      toast.success("Admin updated successfully")
+      
+      // Make the API call and unwrap the response
+      const response = await dispatch(updateAdmin({
+        id: selectedAdmin._id,
+        adminData: selectedAdmin
+      })).unwrap()
+
+      // Show success toast with backend message
+      toast.success(response?.message || "Admin updated successfully")
+      
+      // Refresh admin list
+      dispatch(getAllAdmins())
     } catch (error) {
-      toast.error(error.message || "Failed to update admin")
+      // Show error toast
+      toast.error(error || "Failed to update admin")
+      
+      // Reopen modal on error
+      setIsEditModalOpen(true)
     }
   }
 
@@ -125,11 +142,23 @@ const AdminUsers = () => {
     if (!selectedAdmin) return
 
     try {
-      await dispatch(deleteAdmin(selectedAdmin._id)).unwrap()
+      // Close modal first
       setIsDeleteModalOpen(false)
-      toast.success("Admin deleted successfully")
+      
+      // Make the API call and unwrap the response
+      const response = await dispatch(deleteAdmin(selectedAdmin._id)).unwrap()
+
+      // Show success toast with backend message
+      toast.success(response?.message || "Admin deleted successfully")
+      
+      // Refresh admin list
+      dispatch(getAllAdmins())
     } catch (error) {
-      toast.error(error.message || "Failed to delete admin")
+      // Show error toast
+      toast.error(error || "Failed to delete admin")
+      
+      // Reopen modal on error
+      setIsDeleteModalOpen(true)
     }
   }
 

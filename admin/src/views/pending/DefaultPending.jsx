@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import Modal from "react-modal";
 import { useSelector } from "react-redux";
 
@@ -59,35 +59,27 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
   };
 
   const getSupportersStatusColor = (user) => {
-    const [current, required] = user.supportersStatus.split('/').map(Number);
+    const referralCount = user.referralCount || 0;
+    const referrals = user.referrals?.length || 0;
     
-    // If current equals required, it's complete (green)
-    if (current === required) return "bg-green-500";
+    // If referrals match referralCount exactly, show green
+    if (referrals === referralCount) return "bg-green-500";
     
-    // If current is 0, it's no supporters (red)
-    if (current === 0) return "bg-red-500";
+    // If the difference is only 1, show yellow
+    if (Math.abs(referrals - referralCount) === 1) return "bg-yellow-500";
     
-    // If current is less than required, it's in progress (yellow)
-    if (current < required) return "bg-yellow-500";
-    
-    // If current is more than required (shouldn't happen but just in case)
-    return "bg-green-500";
+    // For all other cases, show red
+    return "bg-red-500";
   };
 
   const getSupportersStatusText = (user) => {
-    const [current, required] = user.supportersStatus.split('/').map(Number);
-    
-    // If current equals required, it's complete
-    if (current === required) return "Complete";
-    
-    // If current is 0, it's no supporters
-    if (current === 0) return "No Supporters";
-    
-    // If current is less than required, show progress
-    if (current < required) return `${current}/${required} Supporters`;
-    
-    // If current is more than required (shouldn't happen but just in case)
-    return "Complete";
+    const referralCount = user.referralCount || 0;
+    const referrals = user.referrals?.length || 0;
+    return `${referrals}/${referralCount}`;
+  };
+
+  const isUserDeclined = (user) => {
+    return user.membershipStatus?.toLowerCase() === 'declined';
   };
 
   return (
@@ -204,41 +196,48 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
                   {user.email}
                 </td>
                 <td className="px-6 py-4 text-sm">
-                  {/* <div className="flex flex-col gap-1"> */}
-                    <span className={`px-2 py-1 rounded text-white ${getSupportersStatusColor(user)}`}>
-                      {user.supportersStatus}
-                    </span>
-                    {/* <span className="text-xs text-gray-500">
-                      {getSupportersStatusText(user)}
-                    </span> */}
-                  {/* </div> */}
+                  <span className={`px-2 py-1 rounded text-white ${getSupportersStatusColor(user)}`}>
+                    {getSupportersStatusText(user)}
+                  </span>
                 </td>
                 <td className="px-6 py-4 text-gray-500 text-sm">
                   <span className={`px-2 py-1 rounded ${
-                    user.joinFeeStatus?.toLowerCase() === 'paid' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
+                    user.membershipFee === true
+                      ? user.joinFeeStatus?.toLowerCase() === 'paid'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {user.joinFeeStatus === "paid" ? "Paid" : "Pending"}
+                    {user.membershipFee === true 
+                      ? user.joinFeeStatus?.toLowerCase() === 'paid' ? "Paid" : "Pending"
+                      : "Off"}
                   </span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button
-                      className='p-1 text-green-600 hover:text-green-700' 
+                      className={`p-1 ${isUserDeclined(user) ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-700'}`}
                       onClick={(e) => {
                         e.stopPropagation();
-
+                        if (!isUserDeclined(user)) {
                           handleActionClick("accept", user, e);
-                        
+                        }
                       }}
-                      // title={!user.canBeApproved ? 'Cannot approve: Requirements not met' : 'Approve user'}
+                      disabled={isUserDeclined(user)}
+                      title={isUserDeclined(user) ? 'User is already declined' : 'Accept user'}
                     >
                       <FaCheck />
                     </button>
                     <button
-                      className="p-1 text-red-600 hover:text-red-700"
-                      onClick={(e) => handleActionClick("reject", user, e)}
+                      className={`p-1 ${isUserDeclined(user) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isUserDeclined(user)) {
+                          handleActionClick("reject", user, e);
+                        }
+                      }}
+                      disabled={isUserDeclined(user)}
+                      title={isUserDeclined(user) ? 'User is already declined' : 'Reject user'}
                     >
                       <FaTimes />
                     </button>

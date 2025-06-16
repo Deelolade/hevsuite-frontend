@@ -13,7 +13,7 @@ const getAuthToken = () => {
 const getEvidenceRequests = async (params = {}) => {
   try {
     const response = await axios.get(API_URL, {
-      params: params,
+      params: { ...params, type: params.type || undefined },
       headers: {
         Authorization: `Bearer ${getAuthToken()}`
       }

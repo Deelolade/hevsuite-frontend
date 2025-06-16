@@ -6,7 +6,7 @@ import { BsPencil } from 'react-icons/bs';
 import { IoMdAdd } from 'react-icons/io';
 import Profile from '../../components/Profile';
 import InviteUsers from '../../components/modals/users/InviteUsers';
-import avatar from '../../assets/user.avif';
+import avatar from '../../assets/defualtuser.webp';
 import idcards from '../../assets/Id.jpg';
 import edit_icon from '../../assets/icons/edit3.png';
 import Pagination from '../../components/Pagination';
@@ -67,9 +67,11 @@ const UserManagement = () => {
   // Filter users based on status
   const filteredUsers = member_users?.filter(user => {
     if (selectedFilter === 'All') return true;
-    if (selectedFilter === 'Active') return !user.isBanned && !user.isRestricted;
+    if (selectedFilter === 'Active') return !user.isBanned && !user.isRestricted && !user.isDeactivated && !user.isClosed;
     if (selectedFilter === 'Restricted') return user.isRestricted;
     if (selectedFilter === 'Banned') return user.isBanned;
+    if (selectedFilter === 'Deactivated') return user.isDeactivated;
+    if (selectedFilter === 'Closed Account') return user.isClosed;
     return true;
   });
 
@@ -211,6 +213,8 @@ const UserManagement = () => {
   const getUserStatusDisplay = (user) => {
     if (user.isBanned) return 'Banned';
     if (user.isRestricted) return 'Restricted';
+    if (user.isDeactivated) return 'Deactivated';
+    if (user.isClosed) return 'Closed Account';
     return 'Active';
   };
 
@@ -218,6 +222,8 @@ const UserManagement = () => {
   const getStatusBadgeColor = (user) => {
     if (user.isBanned) return 'bg-red-100 text-red-800';
     if (user.isRestricted) return 'bg-yellow-100 text-yellow-800';
+    if (user.isDeactivated) return 'bg-orange-100 text-orange-800';
+    if (user.isClosed) return 'bg-gray-100 text-gray-800';
     return 'bg-green-100 text-green-800';
   };
 
@@ -583,23 +589,23 @@ const UserManagement = () => {
           </button>
           {showFilterDropdown && (
             <div className='absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10'>
-              {['All', 'Active', 'Restricted', 'Banned'].map((status) => (
-                  <button
+              {['All', 'Active', 'Restricted', 'Banned', 'Deactivated', 'Closed Account'].map((status) => (
+                <button
                   key={status}
-                    onClick={() => {
+                  onClick={() => {
                     setSelectedFilter(status);
-                      setShowFilterDropdown(false);
-                      setCurrentPage(1); // Reset to first page when changing filters
-                    }}
+                    setShowFilterDropdown(false);
+                    setCurrentPage(1); // Reset to first page when changing filters
+                  }}
                   className={`block w-full text-left px-4 py-2 text-sm ${
                     selectedFilter === status
                       ? 'bg-primary text-white'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
-                  >
+                >
                   {status}
-                  </button>
-                ))}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -686,7 +692,7 @@ const UserManagement = () => {
                         </span>
                   </td>
                   <td className='px-6 py-4 text-sm text-gray-600 capitalize'>
-                  Standard Member
+                  {user.membershipType}
                   </td>
                   <td className='px-6 py-4'>
                         {expandedUser === user._id ? (

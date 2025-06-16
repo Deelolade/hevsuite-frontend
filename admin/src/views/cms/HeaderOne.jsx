@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo_white.png";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import { BsBell } from "react-icons/bs";
 import { BsTwitterX, BsInstagram } from "react-icons/bs";
 

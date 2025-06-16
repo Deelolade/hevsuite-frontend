@@ -7,7 +7,7 @@ import {
   BsXCircleFill,
 } from "react-icons/bs";
 import Modal from "react-modal";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
 

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllAsks, deleteAsk } from "../../store/ask/askSlice";
 import AllAskDetails from "../../components/modals/ask/AllAskDetails";
 import AllAskRemove from "../../components/modals/ask/AllAskRemove";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import toast from "react-hot-toast";
 // import Pagination from "../../components/common/Pagination";
 import Pagination from "../../components/Pagination"

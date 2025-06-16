@@ -31,12 +31,18 @@ const logout = async () => {
   return response.data;
 };
 
+const resend2FACode = async () => {
+  const response = await axios.get(API_URL + 'resend-2fa-code');
+  return response.data;
+};
+
 const authService = {
   register,
   loginUser,
   setup2FA,
   logout,
   verify2FA,
+  resend2FACode,
 };
 
 export default authService;

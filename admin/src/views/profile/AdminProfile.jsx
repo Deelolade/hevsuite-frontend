@@ -3,7 +3,7 @@ import { BsCamera } from 'react-icons/bs';
 import Profile from '../../components/Profile';
 import { BiSearch } from 'react-icons/bi';
 import Modal from 'react-modal';
-import avatar from '../../assets/user.avif';
+import avatar from '../../assets/defualtuser.webp';
 import authService from '../../store/auth/authService';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSupportRequestStats } from '../../store/support/supportSlice';
@@ -63,10 +63,30 @@ const AdminProfile = () => {
   }, [dispatch, isDropdownOpen]);
 
   const supportStats = [
-    { title: 'Total Requests', count: stats.totalRequests },
-    { title: 'Pending Requests', count: stats.pendingRequests },
-    { title: 'Completed Requests', count: stats.completedRequests },
-    { title: 'Assigned Requests', count: stats.assignedRequests },
+    { 
+      title: 'Total Requests', 
+      count: stats.totalRequests, 
+      description: 'Active requests not actioned',
+      icon: '📋'
+    },
+    { 
+      title: 'Pending Requests', 
+      count: stats.pendingRequests, 
+      description: 'Active-assigned requests not actioned',
+      icon: '⏳'
+    },
+    { 
+      title: 'Completed Requests', 
+      count: stats.completedRequests, 
+      description: 'Lifetime completed requests',
+      icon: '✅'
+    },
+    { 
+      title: 'Assigned Requests', 
+      count: stats.assignedRequests, 
+      description: 'Lifetime assigned requests',
+      icon: '👤'
+    },
   ];
 
   const handleEditSave = () => {
@@ -348,7 +368,7 @@ const AdminProfile = () => {
                   <div key={index} className='bg-white p-4 rounded-lg border'>
                     <div className='flex items-center gap-2 mb-2'>
                       <span className='w-8 h-8 rounded-full bg-primary bg-opacity-10 flex items-center justify-center'>
-                        👤
+                        {stat.icon}
                       </span>
                       <span className='text-gray-600 text-sm'>
                         {stat.title}
@@ -357,6 +377,7 @@ const AdminProfile = () => {
                     <p className='text-xl font-semibold'>
                       {isLoading ? '...' : isError ? 'Error' : stat.count}
                     </p>
+                    <p className='text-xs text-gray-500 mt-1'>{stat.description}</p>
                   </div>
                 ))}
               </div>

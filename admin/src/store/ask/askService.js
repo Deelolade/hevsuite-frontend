@@ -75,9 +75,9 @@ const deleteReport = async (data) => {
 
 const promoteAsks = async (data) => {
   const token = getAuthToken()
-  const response = await axios.post(
-    `${base_url}/api/users/promote/${data.id}`,
-    { memberStatus: data.memberStatus },
+  const response = await axios.put(
+    `${base_url}/api/user/promote/${data.id}`,
+    { membershipType: data.memberStatus },
     {
       headers: {
         Authorization: `Bearer ${token}`,
