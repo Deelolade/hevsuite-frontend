@@ -88,7 +88,6 @@ const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
             >
               <option value="Standard Member">Standard Member</option>
               <option value="VIP Member">VIP Member</option>
-              <option value="Premium Member">Premium Member</option>
             </select>
           </div>
         </div>

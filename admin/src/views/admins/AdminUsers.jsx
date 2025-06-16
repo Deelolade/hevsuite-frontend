@@ -7,7 +7,7 @@ import { BsPencil, BsTrash, BsEyeSlash, BsEye } from "react-icons/bs"
 import Modal from "react-modal"
 import ExportButton from "../ExportButton";
 import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin } from "../../store/admins/adminSlice"
-import { toast } from "react-toastify"
+import toast from "react-hot-toast"
 import avatar from "../../assets/defualtuser.webp";
 // import { Loader } from "lucide-react"
 import LoadingSpinner from '../../components/Spinner';
@@ -99,13 +99,13 @@ const AdminUsers = () => {
       })
 
       // Show success toast with backend message
-      toast.success("Admin created successfully")
+      toast.success(response?.message || "Admin created successfully")
       
       // Refresh admin list
       dispatch(getAllAdmins())
     } catch (error) {
       // Show error toast with the error message from the backend
-      toast.error(error)
+      toast.error(error || "Failed to create admin")
       // Keep modal open on error
       setIsAddModalOpen(true)
     }
@@ -131,7 +131,7 @@ const AdminUsers = () => {
       dispatch(getAllAdmins())
     } catch (error) {
       // Show error toast
-      toast.error(error || "Failed to update admin")
+      toast.error(error?.message || "Failed to update admin")
       
       // Reopen modal on error
       setIsEditModalOpen(true)
@@ -155,7 +155,7 @@ const AdminUsers = () => {
       dispatch(getAllAdmins())
     } catch (error) {
       // Show error toast
-      toast.error(error || "Failed to delete admin")
+      toast.error(error?.message || "Failed to delete admin")
       
       // Reopen modal on error
       setIsDeleteModalOpen(true)
