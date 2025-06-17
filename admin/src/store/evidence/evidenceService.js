@@ -3,21 +3,19 @@ import axios from "axios";
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/support-requests`;
 
 // Get auth token from localStorage
-const getAuthToken = () => {
-  const adminData = localStorage.getItem("admin");
-  const admin = adminData ? JSON.parse(adminData) : null;
-  return admin?.token || "";
-};
+// const getAuthToken = () => {
+//   const adminData = localStorage.getItem("admin");
+//   const admin = adminData ? JSON.parse(adminData) : null;
+//   return admin?.token || "";
+// };
 
 // Get all evidence requests
 const getEvidenceRequests = async (params = {}) => {
   try {
-    const response = await axios.get(API_URL, {
-      params: params,
-      headers: {
-        Authorization: `Bearer ${getAuthToken()}`
-      }
+    const response = await axios.get(`${API_URL}`, {
+      withCredentials: true,
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     throw error;
@@ -31,9 +29,7 @@ const updateEvidenceStatus = async (id, status) => {
       `${API_URL}/${id}`,
       { status },
       {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`
-        }
+        withCredentials: true,
       }
     );
     return response.data;
@@ -49,9 +45,7 @@ const assignRequestToAdmin = async (requestId, adminId) => {
       `${API_URL}/${requestId}`,
       { adminId },
       {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`
-        }
+        withCredentials: true,
       }
     );
     return response.data;
@@ -66,4 +60,4 @@ const evidenceService = {
   assignRequestToAdmin,
 };
 
-export default evidenceService; 
+export default evidenceService;
