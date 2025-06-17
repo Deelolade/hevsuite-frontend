@@ -4,7 +4,6 @@ import {
   Navigate,
   useLocation,
   useSearchParams,
-  useNavigate,
 } from "react-router-dom";
 
 import Landing from "./views/landing/Landing";
@@ -46,7 +45,7 @@ import NotFound from "./views/NotFound";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
-import { activateCard, getCardByUserId } from "./features/clubCardSlice";
+import UpcomingEvents from "./views/account/events/UpcomingEvents";
 
 axios.defaults.withCredentials = true;
 
@@ -72,69 +71,8 @@ const AuthenticatedOnly = ({ children }) => {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user, isLoading } = useSelector(
-    (state) => state.auth
-  );
-  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const location = useLocation();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [tokenProcessed, setTokenProcessed] = useState(false);
-  const [isProcessingToken, setIsProcessingToken] = useState(false);
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-
-    if (token && !tokenProcessed && !isProcessingToken) {
-      setIsProcessingToken(true);
-      localStorage.setItem("authToken", token);
-
-      const processTokenAndActivateCard = async () => {
-        try {
-          // First, fetch the user profile
-          const userProfile = await dispatch(fetchProfile()).unwrap();
-          const userId = userProfile.id;
-          console.log("Profile fetched, userId:", userId);
-
-          if (userId) {
-            try {
-              const cardResponse = await dispatch(
-                getCardByUserId(userId)
-              ).unwrap();
-              const cardId = cardResponse._id;
-
-              await dispatch(activateCard(cardId, userId)).unwrap();
-              console.log("Card activated successfully");
-
-              // Navigate to homepage with profile modal open and Events tab selected
-              navigate("/homepage?openProfile=true&goToEvents=true", {
-                replace: true,
-              });
-            } catch (cardError) {
-              console.error("Card activation failed:", cardError);
-              // Even if card activation fails, still navigate to homepage
-              navigate("/homepage?openProfile=true&goToEvents=true", {
-                replace: true,
-              });
-            }
-          }
-        } catch (error) {
-          console.error("Error during token processing:", error);
-          localStorage.removeItem("authToken");
-
-          // Navigate to login or handle error appropriately
-          navigate("/login", { replace: true });
-        } finally {
-          setTokenProcessed(true);
-          setIsProcessingToken(false);
-        }
-      };
-
-      processTokenAndActivateCard();
-    } else if (!token) {
-      setTokenProcessed(true);
-    }
-  }, [searchParams, dispatch, tokenProcessed, isProcessingToken, navigate]);
 
   if (!isAuthenticated && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -382,6 +320,10 @@ const router = createBrowserRouter([
       {
         path: "events",
         element: <Events />,
+      },
+      {
+        path: "upcoming-events",
+        element: <UpcomingEvents />,
       },
       {
         path: "ask",
