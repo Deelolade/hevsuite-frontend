@@ -13,7 +13,7 @@ const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
         id: selectedUser._id,
         memberStatus
       })).unwrap();
-      
+
       setIsPromoteModalOpen(false);
     } catch (error) {
       toast.error(error || "Failed to promote user");
@@ -81,14 +81,12 @@ const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
 
           <div>
             <label className="block text-sm mb-1">Promote to</label>
-            <select 
+            <select
               className="w-full px-4 py-2 border rounded-lg text-quatr"
               value={memberStatus}
               onChange={(e) => setMemberStatus(e.target.value)}
             >
-              <option value="Standard Member">Standard Member</option>
               <option value="VIP Member">VIP Member</option>
-              <option value="Premium Member">Premium Member</option>
             </select>
           </div>
         </div>

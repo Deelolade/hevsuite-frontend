@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { BiChevronDown } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { getTransactions, updateTransactionStatus } from "../../store/finance/financeSlice"
@@ -16,34 +16,81 @@ const History = () => {
   const [localCurrentPage, setLocalCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedRows, setExpandedRows] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const savedQuery = sessionStorage.getItem('financeSearchQuery');
+    return savedQuery || '';
+  });
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const savedFilter = sessionStorage.getItem('financeStatusFilter');
+    return savedFilter || '';
+  });
   const searchTimeoutRef = useRef(null);
+  const searchInputRef = useRef(null);
   const isInitialMount = useRef(true);
 
+  // Memoized search function
+  const performSearch = useCallback((value) => {
+    dispatch(getTransactions({ 
+      page: localCurrentPage, 
+      limit: rowsPerPage,
+      search: value.trim(),
+      filter: statusFilter,
+      sortBy: "createdAt"
+    }));
+  }, [dispatch, localCurrentPage, rowsPerPage, statusFilter]);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const savedQuery = sessionStorage.getItem('financeSearchQuery');
+      const savedFilter = sessionStorage.getItem('financeStatusFilter');
+      
+      if (savedQuery !== searchQuery) {
+        setSearchQuery(savedQuery || '');
+      }
+      if (savedFilter !== statusFilter) {
+        setStatusFilter(savedFilter || '');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [searchQuery, statusFilter]);
+
   // Debounced search function
-  const debouncedSearch = (value) => {
+  const debouncedSearch = useCallback((value) => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      dispatch(getTransactions({ 
-        page: localCurrentPage, 
-        limit: rowsPerPage,
-        search: value.trim(),
-        filter: statusFilter,
-        sortBy: "createdAt"
-      }));
+      performSearch(value);
     }, 500);
-  };
+  }, [performSearch]);
 
   // Handle search input change
-  const handleSearchChange = (e) => {
+  const handleSearchChange = useCallback((e) => {
     const value = e.target.value;
     setSearchQuery(value);
+    sessionStorage.setItem('financeSearchQuery', value);
     debouncedSearch(value);
-  };
+  }, [debouncedSearch]);
+
+  // Handle status filter change
+  const handleStatusFilterChange = useCallback((e) => {
+    const value = e.target.value;
+    setStatusFilter(value);
+    sessionStorage.setItem('financeStatusFilter', value);
+    performSearch(searchQuery);
+  }, [performSearch, searchQuery]);
+
+  // Initial fetch and handle filter changes
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      performSearch(searchQuery);
+    }
+  }, [performSearch, searchQuery]);
 
   // Cleanup timeout on component unmount
   useEffect(() => {
@@ -53,22 +100,6 @@ const History = () => {
       }
     };
   }, []);
-
-  // Initial fetch and handle filter changes
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    dispatch(getTransactions({ 
-      page: localCurrentPage, 
-      limit: rowsPerPage,
-      search: searchQuery.trim(),
-      filter: statusFilter,
-      sortBy: "createdAt"
-    }));
-  }, [dispatch, localCurrentPage, rowsPerPage, statusFilter]);
 
   const toggleRow = (id) => {
     setExpandedRows((prev) =>
@@ -114,6 +145,7 @@ const History = () => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div className="flex-1">
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search transactions..."
             value={searchQuery}
@@ -124,7 +156,7 @@ const History = () => {
         <div className="flex gap-4">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={handleStatusFilterChange}
             className="border rounded-lg px-4 py-2"
           >
             <option value="">All Statuses</option>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { getAllActivities } from "../../store/activities/activitySlice"
 import ExportButton from "../ExportButton";
-import { format } from "date-fns"
+import { format, parseISO } from "date-fns"
 // import { Loader } from "lucide-react"
 import LoadingSpinner from '../../components/Spinner';
 
@@ -23,14 +23,14 @@ const Activities = () => {
     }))
   }, [dispatch, currentPage, itemsPerPage, searchTerm])
 
-  // Format activities for export
+  // Format activities for export - using parseISO to handle ISO string dates
   const exportData = activities.map((activity) => ({
-    Timestamp: format(new Date(activity.timestamp), "MMM d, yyyy - h:mma"),
+    Timestamp: format(parseISO(activity.timestamp), "MMM dd, yyyy HH:mm:ss"),
     Admin: activity.adminName,
     Action: activity.action,
   }))
 
-  if (loading && activities.length === 0) {
+  if (loading && activities.length === 0) { 
     return <LoadingSpinner />;
   }
 
@@ -108,7 +108,7 @@ const Activities = () => {
               activities.map((activity, index) => (
                 <tr key={activity._id || index} className="border-b">
                   <td className="py-4 px-6 text-gray-600">
-                    {format(new Date(activity.timestamp), "MMM d, yyyy - h:mma")}
+                    {format(parseISO(activity.timestamp), "MMM dd, yyyy HH:mm:ss")}
                   </td>
                   <td className="py-4 px-6">{activity.adminName}</td>
                   <td className="py-4 px-6 italic">{activity.action}</td>
