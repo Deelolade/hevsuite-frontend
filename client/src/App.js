@@ -3,6 +3,8 @@ import {
   RouterProvider,
   Navigate,
   useLocation,
+  useSearchParams,
+  useNavigate,
 } from "react-router-dom";
 
 import Landing from "./views/landing/Landing";
@@ -37,13 +39,14 @@ import OneTimePayment from "./views/account/settings/components/paymentChannels.
 import MakeSubscriptionPayment from "./views/account/settings/components/paymentChannels.js/subscriptionPayments";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "./features/auth/authSlice";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import MaintenancePage from "./components/MaintainanceMode";
 import { fetchGeneralSettings } from "./features/generalSettingSlice";
 import NotFound from "./views/NotFound";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
+import { activateCard, getCardByUserId } from "./features/clubCardSlice";
 
 axios.defaults.withCredentials = true;
 
@@ -69,8 +72,69 @@ const AuthenticatedOnly = ({ children }) => {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, isLoading } = useSelector(
+    (state) => state.auth
+  );
+  const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [tokenProcessed, setTokenProcessed] = useState(false);
+  const [isProcessingToken, setIsProcessingToken] = useState(false);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+
+    if (token && !tokenProcessed && !isProcessingToken) {
+      setIsProcessingToken(true);
+      localStorage.setItem("authToken", token);
+
+      const processTokenAndActivateCard = async () => {
+        try {
+          // First, fetch the user profile
+          const userProfile = await dispatch(fetchProfile()).unwrap();
+          const userId = userProfile.id;
+          console.log("Profile fetched, userId:", userId);
+
+          if (userId) {
+            try {
+              const cardResponse = await dispatch(
+                getCardByUserId(userId)
+              ).unwrap();
+              const cardId = cardResponse._id;
+
+              await dispatch(activateCard(cardId, userId)).unwrap();
+              console.log("Card activated successfully");
+
+              // Navigate to homepage with profile modal open and Events tab selected
+              navigate("/homepage?openProfile=true&goToEvents=true", {
+                replace: true,
+              });
+            } catch (cardError) {
+              console.error("Card activation failed:", cardError);
+              // Even if card activation fails, still navigate to homepage
+              navigate("/homepage?openProfile=true&goToEvents=true", {
+                replace: true,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error during token processing:", error);
+          localStorage.removeItem("authToken");
+
+          // Navigate to login or handle error appropriately
+          navigate("/login", { replace: true });
+        } finally {
+          setTokenProcessed(true);
+          setIsProcessingToken(false);
+        }
+      };
+
+      processTokenAndActivateCard();
+    } else if (!token) {
+      setTokenProcessed(true);
+    }
+  }, [searchParams, dispatch, tokenProcessed, isProcessingToken, navigate]);
 
   if (!isAuthenticated && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -91,37 +155,65 @@ const ProtectedRoute = ({ children }) => {
 };
 // Add this new component
 const LoginRedirect = ({ children }) => {
+  const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { Settings } = useSelector((state) => state.generalSettings);
   const location = useLocation();
 
-  if(isAuthenticated && user ) {
+  const [searchParams] = useSearchParams();
 
-    if(user.membershipStatus === constants.membershipStatus.declined )
-      return <Navigate to="/application-declined" state={{ from: location }} replace />;
+  useEffect(() => {
+    dispatch(fetchGeneralSettings());
+  }, [dispatch]);
 
-    if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid )
+  const hasToken = searchParams.get("token");
+  if (hasToken) {
+    return children;
+  }
+
+  if (isAuthenticated && user) {
+    if (user.membershipStatus === constants.membershipStatus.declined)
+      return (
+        <Navigate
+          to="/application-declined"
+          state={{ from: location }}
+          replace
+        />
+      );
+
+    if (
+      user.membershipStatus === constants.membershipStatus.accepted &&
+      user.joinFeeStatus === constants.joinFeeStatus.paid
+    )
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
-     if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending && Settings.membershipFee)
+    if (
+      user.membershipStatus === constants.membershipStatus.accepted &&
+      user.joinFeeStatus === constants.joinFeeStatus.pending &&
+      Settings?.membershipFee
+    )
       return <Navigate to="/register-7" state={{ from: location }} replace />;
 
-    if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
+    if (Settings?.requiredReferralNumber <= 0 && !Settings?.membershipFee)
       return <Navigate to="/homepage" state={{ from: location }} replace />;
-   
-    const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-    if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted ) 
+
+    const allReferredByApproved = user.referredBy.every(
+      (r) => r.status.toLowerCase() === constants.referredByStatus.approved
+    );
+    if (
+      user.approvedByAdmin ||
+      allReferredByApproved ||
+      user.membershipStatus === constants.membershipStatus.accepted
+    )
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;
 
-
     //  // all referredBy declined
     //   const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
     //   if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) return <Navigate to="/application-declined" state={{from: location}} replace />
-      
 
-    //   if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
+    //   if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee)
     //       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     //   // only membership is on
@@ -130,7 +222,7 @@ const LoginRedirect = ({ children }) => {
     //     return <Navigate to="/register-7" state={{ from: location }} replace />;
     //   }
 
-    //   // referrals on 
+    //   // referrals on
     //   const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
     //   if (user.approvedByAdmin || allReferredByApproved) {
     //     //if membeshipFee is on
@@ -139,10 +231,8 @@ const LoginRedirect = ({ children }) => {
 
     //   }
 
-     
     //   // not approved
     //   return <Navigate to="/register-6" state={{ from: location }} replace />;
-       
   }
 
   // if (isAuthenticated) {
@@ -222,9 +312,11 @@ const router = createBrowserRouter([
   },
   {
     path: "terms",
-    element:  <PageWrapper>
-       <Terms />
-    </PageWrapper>
+    element: (
+      <PageWrapper>
+        <Terms />
+      </PageWrapper>
+    ),
   },
   {
     path: "how-it-works",

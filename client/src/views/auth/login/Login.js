@@ -69,29 +69,24 @@ const Login = () => {
               const cardData = await dispatch(getCardByUserId(userId)).unwrap();
               const cardId = cardData._id;
               await dispatch(activateCard({ cardId, userId })).unwrap();
-              console.log("Card activated via backend");
+              console.log("Card activated via backend successfully");
+              navigate("/homepage?openProfile=true&goToEvents=true", {
+                replace: true,
+              });
             } catch (cardError) {
               console.log(
                 "Backend activation failed, using token activation:",
                 cardError
               );
-
-              // Set token activated flag - this prevents backend data from overwriting
               dispatch(setTokenActivated(true));
+              navigate("/homepage?openProfile=true&goToEvents=true", {
+                replace: true,
+              });
             }
           }
-
-          navigate("/homepage?openProfile=true&goToEvents=true", {
-            replace: true,
-          });
         } catch (error) {
           console.error("Error during token processing:", error);
-
-          // Fallback: set token activated flag
-          dispatch(setTokenActivated(true));
-          navigate("/homepage?openProfile=true&goToEvents=true", {
-            replace: true,
-          });
+          navigate("/login", { replace: true });
         }
       };
 
