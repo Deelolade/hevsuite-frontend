@@ -1,5 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
+
 const highlight = (text, query) => {
   if (!query) return text;
   const parts = text.split(new RegExp(`(${query})`, "gi"));
@@ -14,7 +14,7 @@ const highlight = (text, query) => {
   );
 };
 
-const CookiePolicy = ({ policyData, searchQuery }) => {
+const CodeOfConduct = ({ policyData, searchQuery }) => {
   return (
     <motion.div className="max-w-4xl">
       {policyData.content.map((item, index) => (
@@ -33,4 +33,4 @@ const CookiePolicy = ({ policyData, searchQuery }) => {
   );
 };
 
-export default CookiePolicy;
+export default CodeOfConduct;

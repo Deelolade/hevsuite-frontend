@@ -17,7 +17,7 @@ const TopicDetails = () => {
 
   const location = useLocation();
   const { id } = useParams();
-        console.log(id,location.state)
+  console.log(id, location.state);
   useEffect(() => {
     const fetchTopic = async () => {
       try {
@@ -26,15 +26,15 @@ const TopicDetails = () => {
         if (location.state?.topic) {
           setTopic(location.state.topic);
         } else {
-            const response = await topicsService.fetchVisibleTopicById(id);
-        if (response.success) {
-          console.log(response.data)
-          setTopic(response.data);
-        } else {
-          setError(response.error);
+          const response = await topicsService.fetchVisibleTopicById(id);
+          if (response.success) {
+            console.log(response.data);
+            setTopic(response.data);
+          } else {
+            setError(response.error);
+          }
         }
-        }
-        
+
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch topic details");
@@ -45,17 +45,29 @@ const TopicDetails = () => {
 
     fetchTopic();
   }, [id, location.state]);
-  console.log(topic)
-    if (loading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>;
+  console.log(topic);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
   }
 
   if (!topic) {
-    return <div className="min-h-screen bg-white flex items-center justify-center">Topic not found</div>;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Topic not found
+      </div>
+    );
   }
   // const questions = [
   //   {
@@ -85,11 +97,12 @@ const TopicDetails = () => {
   //   },
   // ];
 
-// Filter QAs based on search query
-const questions = topic.QAs.filter(qa =>
-  qa.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  qa.answer.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  // Filter QAs based on search query
+  const questions = topic.QAs.filter(
+    (qa) =>
+      qa.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      qa.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   return (
     <div className="min-h-screen bg-white">
       {/* Background Image */}
@@ -140,24 +153,22 @@ const questions = topic.QAs.filter(qa =>
             Popular Topics
           </Link>
           <span className="text-black text-2xl sm:text-3xl">›</span>
-          <span className="text-[#222222] font-medium">
-            About Hazor Hevsuite (HH) Club
-          </span>
+          <span className="text-[#222222] font-medium">{topic?.title}</span>
         </div>
 
         {/* Title */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center bg-gray-50">
             <img src={logo} alt="logo" className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-secondary">
-            About Hazor Hevsuite (HH) Club
+            {topic?.title}
           </h1>
         </div>
 
         {/* Questions */}
         <div className="space-y-4">
-          {questions?.map((item,index) => (
+          {questions?.map((item, index) => (
             <div key={item._id} className="border rounded-lg overflow-hidden">
               {/* Question Toggle Button */}
               <button
@@ -172,7 +183,7 @@ const questions = topic.QAs.filter(qa =>
                   <span
                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white text-xs sm:text-sm`}
                   >
-                    {index+1}
+                    {index + 1}
                   </span>
                   <span className="font-semibold font-primary text-base sm:text-lg">
                     {item.question}
