@@ -226,23 +226,23 @@ const StandardProfile = () => {
     }
   };
 
-  const handleToggleCardStatus = async () => {
+  const handleSaveCardStatus = async () => {
     try {
       const userId = user?.id;
       const cardId = clubCard.cardId;
-      const currentIsActive = clubCard.isActive;
 
       if (!userId || !cardId) {
         toast.error("User ID or Card ID not found");
         return;
       }
-      console.log("Toggling card status for user:", userId);
-      console.log(currentIsActive);
 
-      if (currentIsActive) {
+      console.log("Saving card status for user:", userId);
+      console.log("Disable current setting:", cardRequest.disableCurrent);
+
+      if (cardRequest.disableCurrent === "Yes") {
         // Deactivate the card
         await dispatch(deactivateCard({ cardId, userId })).unwrap();
-        console.log("deactivate");
+        console.log("Card deactivated");
         toast.success("Card deactivated successfully!");
 
         showModal({
@@ -254,8 +254,8 @@ const StandardProfile = () => {
       } else {
         // Activate the card
         await dispatch(activateCard({ cardId, userId })).unwrap();
+        console.log("Card activated");
         toast.success("Card activated successfully!");
-        console.log("activate");
 
         showModal({
           title: "Success",
@@ -267,7 +267,7 @@ const StandardProfile = () => {
 
       setIsEditingFullName(false);
     } catch (error) {
-      console.error("Error toggling card status:", error);
+      console.error("Error updating card status:", error);
       toast.error(error || "Failed to update card status");
 
       showModal({
@@ -277,7 +277,6 @@ const StandardProfile = () => {
       });
     }
   };
-
   const PaymentMethodModal = ({ onClose }) => {
     const paymentMethods = [
       { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
@@ -1131,16 +1130,22 @@ const StandardProfile = () => {
                     <div className="md:col-span-2 mt-6 flex-1">
                       <div className="flex justify-end gap-3">
                         <button
-                          className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg"
+                          className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={
-                            cardRequest.disableCurrent === "Yes" ||
-                            activating ||
-                            deactivating ||
-                            !clubCard.cardId
+                            activating || deactivating || !clubCard.cardId
                           }
-                          onClick={handleToggleCardStatus}
+                          onClick={handleSaveCardStatus}
                         >
-                          Save
+                          {activating || deactivating ? (
+                            <span className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#540A26] rounded-full animate-spin"></div>
+                              {cardRequest.disableCurrent === "Yes"
+                                ? "Deactivating..."
+                                : "Activating..."}
+                            </span>
+                          ) : (
+                            "Save"
+                          )}
                         </button>
                         <button
                           className="text-sm sm:text-base px-2 sm:px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
