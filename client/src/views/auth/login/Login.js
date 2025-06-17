@@ -34,34 +34,20 @@ const Login = () => {
         toast.error("Please enter both email and password");
         return;
       }
+
       const response = await dispatch(login(formData)).unwrap();
-      // const response = await authService.loginUser(formData);
-      // console.log(response)
-      if (response.message === "2FA required") {
-        navigate("/code-verification");
-      } else {
-        navigate("/two-factor-auth");
-      }
       console.log("response in login", response);
-    } catch (error) {
-      // toast.error(error.message);
-      // if(error)
-      console.log(error);
-      if (error.includes("Email not verified")) setShowVerifyModal(true);
-    }
-  };
 
-  useEffect(() => {
-    const token = searchParams.get("token");
+      const token = searchParams.get("token");
 
-    if (token) {
-      console.log("Token found in URL:", token);
-      localStorage.setItem("authToken", token);
+      if (token) {
+        console.log("Token found in URL:", token);
+        localStorage.setItem("authToken", token);
 
-      const processTokenAndActivateCard = async () => {
+        // Process token and activate card after successful login
         try {
           const userProfile = await dispatch(fetchProfile()).unwrap();
-          const userId = userProfile.id || userProfile._id;
+          const userId = userProfile.id;
           console.log("Profile fetched, userId:", userId);
 
           if (userId) {
@@ -70,29 +56,78 @@ const Login = () => {
               const cardId = cardData._id;
               await dispatch(activateCard({ cardId, userId })).unwrap();
               console.log("Card activated via backend successfully");
-              navigate("/homepage?openProfile=true&goToEvents=true", {
-                replace: true,
-              });
             } catch (cardError) {
               console.log(
                 "Backend activation failed, using token activation:",
                 cardError
               );
               dispatch(setTokenActivated(true));
-              navigate("/homepage?openProfile=true&goToEvents=true", {
-                replace: true,
-              });
             }
           }
+
+          // Navigate to upcoming-events for token users
+          navigate("/upcoming-events", { replace: true });
+          return;
         } catch (error) {
           console.error("Error during token processing:", error);
-          navigate("/login", { replace: true });
+          // If token processing fails, fall back to normal flow
         }
-      };
+      }
 
-      processTokenAndActivateCard();
+      // Normal login flow (without token)
+      if (response.message === "2FA required") {
+        navigate("/code-verification");
+      } else {
+        navigate("/two-factor-auth");
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.includes("Email not verified")) setShowVerifyModal(true);
     }
-  }, [searchParams, navigate, dispatch]);
+  };
+
+  // useEffect(() => {
+  //   const token = searchParams.get("token");
+
+  //   if (token) {
+  //     console.log("Token found in URL:", token);
+  //     localStorage.setItem("authToken", token);
+
+  //     const processTokenAndActivateCard = async () => {
+  //       try {
+  //         const userProfile = await dispatch(fetchProfile()).unwrap();
+  //         const userId = userProfile.id || userProfile._id;
+  //         console.log("Profile fetched, userId:", userId);
+
+  //         if (userId) {
+  //           try {
+  //             const cardData = await dispatch(getCardByUserId(userId)).unwrap();
+  //             const cardId = cardData._id;
+  //             await dispatch(activateCard({ cardId, userId })).unwrap();
+  //             console.log("Card activated via backend successfully");
+  //             navigate("/homepage?openProfile=true&goToEvents=true", {
+  //               replace: true,
+  //             });
+  //           } catch (cardError) {
+  //             console.log(
+  //               "Backend activation failed, using token activation:",
+  //               cardError
+  //             );
+  //             dispatch(setTokenActivated(true));
+  //             navigate("/homepage?openProfile=true&goToEvents=true", {
+  //               replace: true,
+  //             });
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error during token processing:", error);
+  //         navigate("/login", { replace: true });
+  //       }
+  //     };
+
+  //     processTokenAndActivateCard();
+  //   }
+  // }, [searchParams, navigate, dispatch]);
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-2 relative">
