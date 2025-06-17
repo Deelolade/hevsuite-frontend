@@ -7,6 +7,7 @@ import { BsPencil, BsTrash, BsEyeSlash, BsEye } from "react-icons/bs"
 import Modal from "react-modal"
 import ExportButton from "../ExportButton";
 import { getAllAdmins, createAdmin, updateAdmin, deleteAdmin } from "../../store/admins/adminSlice"
+import { getAllRoles } from "../../store/permission/permissionSlice"
 import toast from "react-hot-toast"
 import avatar from "../../assets/defualtuser.webp";
 // import { Loader } from "lucide-react"
@@ -18,6 +19,7 @@ Modal.setAppElement("#root")
 const AdminUsers = () => {
   const dispatch = useDispatch()
   const { admins, loading } = useSelector((state) => state.admins)
+  const { roles } = useSelector((state) => state.permissions)
 
   const [selectedRows, setSelectedRows] = useState([])
   const [rowsPerPage, setRowsPerPage] = useState(6)
@@ -33,12 +35,13 @@ const AdminUsers = () => {
     forename: "",
     surname: "",
     primaryEmail: "",
-    role: "admin",
+    role: "",
     password: "",
   })
 
   useEffect(() => {
     dispatch(getAllAdmins())
+    dispatch(getAllRoles())
   }, [dispatch])
 
   // Filter admins based on search query
@@ -94,7 +97,7 @@ const AdminUsers = () => {
         forename: "",
         surname: "",
         primaryEmail: "",
-        role: "admin",
+        role: "",
         password: "",
       })
 
@@ -428,8 +431,12 @@ const AdminUsers = () => {
                 onChange={handleNewAdminChange}
                 className="w-full px-4 py-2 border rounded-lg text-gray-600"
               >
-                <option value="admin">Admin</option>
-                <option value="superadmin">Super Admin</option>
+                <option value="">Select a role</option>
+                {roles.map((role) => (
+                  <option key={role._id} value={role.role}>
+                    {role.role}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -524,8 +531,12 @@ const AdminUsers = () => {
                   value={selectedAdmin.role}
                   onChange={(e) => setSelectedAdmin({ ...selectedAdmin, role: e.target.value })}
                 >
-                  <option value="admin">Admin</option>
-                  <option value="superadmin">Super Admin</option>
+                  <option value="">Select a role</option>
+                  {roles.map((role) => (
+                    <option key={role._id} value={role.role}>
+                      {role.role}
+                    </option>
+                  ))}
                 </select>
               </div>
 

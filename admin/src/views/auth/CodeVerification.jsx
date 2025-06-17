@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import logo_white from '../../assets/logo_white.png';
 import authImage from '../../assets/image.jpg';
 import toast from 'react-hot-toast';
@@ -64,7 +64,12 @@ const CodeVerification = () => {
         }}
       >
         <div className='text-center'>
-          <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+          <Link
+            to='/'
+            className='text-primary hover:text-[#0A5440] font-primary'
+          >
+            <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+          </Link>
           <h1 className='text-white text-[40px] font-primary'>Hevsuite Club</h1>
         </div>
       </div>
@@ -112,6 +117,14 @@ const CodeVerification = () => {
                   {isResending ? 'Sending...' : 'Resend Code'}
                 </button>
               </p>
+            </div>
+            <div className='text-center'>
+              <Link
+                to='/'
+                className='text-primary hover:text-[#0A5440] font-primary'
+              >
+                Back to Login
+              </Link>
             </div>
           </div>
         </div>
