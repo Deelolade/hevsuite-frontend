@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import Modal from "react-modal";
 import { IoChatboxEllipsesOutline, IoClose } from "react-icons/io5";
 import Header from "../../components/Header";
@@ -10,7 +9,6 @@ import { AiOutlineSend } from "react-icons/ai";
 import avatar from "../../assets/user.avif";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchOpenAsks,
   createAsk,
   claimAsk,
   abandonAsk,
@@ -18,6 +16,7 @@ import {
   chat,
   setCurrentAsk,
   reset,
+  fetchUserAsks,
 } from "../../features/askSlice";
 import { formatDateWithSuffix } from "../../utils/formatDate";
 import { FaSpinner } from "react-icons/fa";
@@ -39,9 +38,7 @@ const Ask = () => {
   const [newMessage, setNewMessage] = useState("");
 
   const dispatch = useDispatch();
-  const { asks, currentAsk, loading, error, message } = useSelector(
-    (state) => state.ask
-  );
+  const { asks, currentAsk, loading } = useSelector((state) => state.ask);
   const { user: currentUser } = useSelector((state) => state.auth);
 
   const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
@@ -55,7 +52,7 @@ const Ask = () => {
 
   // Fetch asks on component mount
   useEffect(() => {
-    dispatch(fetchOpenAsks());
+    dispatch(fetchUserAsks());
     return () => {
       dispatch(reset());
     };
@@ -72,7 +69,7 @@ const Ask = () => {
   useEffect(() => {
     if (selectedRequest) {
       const askFromRedux =
-        asks.find((a) => a._id === selectedRequest.id) || currentAsk;
+        asks.find((a) => a._id === selectedRequest._id) || currentAsk;
       if (askFromRedux?.chat) {
         // In your message transformation effect
         setMessages((prev) => ({
@@ -85,12 +82,12 @@ const Ask = () => {
             }),
             isUser:
               currentUser &&
-              msg.sender?.toString() === currentUser._id?.toString(),
+              msg.sender?.toString() === currentUser.id?.toString(),
           })),
         }));
       }
     }
-  }, [selectedRequest, asks, currentAsk]);
+  }, [selectedRequest, asks, currentAsk, currentUser]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRequest || !currentUser) return;
@@ -276,32 +273,51 @@ const Ask = () => {
       setIsSubmitting(false);
     }
   };
+
   // Handle claim ask
   const handleClaimAsk = async (askId) => {
     try {
-      // Find the ask in the asks array
       const askToClaim = asks.find((ask) => ask._id === askId);
 
       // Check if current user is the creator of the ask
-      if (currentUser?.id?.toString() === askToClaim?.createdBy?.toString()) {
+      if (
+        currentUser?.id?.toString() === askToClaim?.createdBy?._id?.toString()
+      ) {
         toast.error("You cannot claim your own ask");
         return;
       }
-      await dispatch(claimAsk(askId));
-      const selected = asks.find((ask) => ask.id === askId);
-      dispatch(setCurrentAsk(selected));
+      if (askToClaim.status !== "open") {
+        toast.error("This ask is no longer available");
+        return;
+      }
+      const result = await dispatch(claimAsk(askId)).unwrap();
+      setSelectedRequest(result);
+      dispatch(setCurrentAsk(result));
       setIsChatModalOpen(true);
+
+      dispatch(fetchUserAsks());
     } catch (error) {
       toast.error(error.messages || "Failed to claim ask:");
       console.error("Failed to claim ask:", error);
     }
   };
+
   // Handle claim ask
   const handleAbandonAsk = async (askId) => {
     try {
       await dispatch(abandonAsk(askId));
-      const selected = asks.find((ask) => ask.id === askId);
-      dispatch(setCurrentAsk(selected));
+      setIsChatModalOpen(false);
+      setShowAbandonModal(false);
+      setMinimized(false);
+      setSelectedRequest(null);
+      setMessages((prev) => {
+        const updated = { ...prev };
+        delete updated[askId];
+        return updated;
+      });
+      dispatch(setCurrentAsk(null));
+      dispatch(fetchUserAsks());
+      toast.success("Ask abandoned successfully");
     } catch (error) {
       toast.error(error.messages || "Failed to abandon ask:");
       console.error("Failed to abandon ask:", error);
@@ -311,12 +327,42 @@ const Ask = () => {
   const requestsPerPage = 6;
   const totalPages = Math.ceil(18 / requestsPerPage);
 
-  const availableAsks = asks?.filter((ask) => ask.status !== "claimed");
-
+  const availableAsks = asks?.filter((ask) => {
+    // Show only open asks that don't belong to current user
+    return ask.status === "open";
+  });
   const paginatedRequests = availableAsks?.slice(
     (currentPage - 1) * requestsPerPage,
     currentPage * requestsPerPage
   );
+
+  const hasUnreadMessages = (ask) => {
+    if (!ask.chat || !currentUser) return false;
+
+    // If current user is the ask creator and there are messages from others
+    const isCreator =
+      ask.createdBy === currentUser.id || ask.createdBy === currentUser._id;
+    if (!isCreator) return false;
+
+    // Check if there are messages from the claimer that are newer than creator's last read
+    const lastMessage = ask.chat[ask.chat.length - 1];
+    return (
+      lastMessage &&
+      lastMessage.sender !== currentUser._id &&
+      lastMessage.sender !== currentUser.id
+    );
+  };
+
+  const userOwnAsks =
+    asks?.filter((ask) => {
+      const isUserCreator =
+        ask.createdBy?._id?.toString() === currentUser?.id.toString();
+      const isUserClaimer =
+        ask.claimedBy?._id.toString() === currentUser?.id.toString();
+      const isClaimed = ask.status === "claimed";
+
+      return (isUserCreator || isUserClaimer) && isClaimed;
+    }) || [];
 
   return (
     <div className="min-h-screen bg-white z-0">
@@ -363,74 +409,185 @@ const Ask = () => {
             <span>Add Ask</span>
           </button>
         </div>
-
         {/* Requests Grid */}
-        <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-0">
-          {paginatedRequests?.map((request) => (
-            <div
-              key={request._id}
-              className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-xl"
-            >
-              <button
-                className="absolute top-4 md:top-3 right-3 md:right-3"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowReportModal(true);
-                  setSelectedRequest(request);
-                }}
+        {!availableAsks || availableAsks.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-black text-lg">
+              No available asks at the moment
+            </p>
+            <p className="text-black text-sm">
+              Check back later or create your own ask!
+            </p>
+          </div>
+        ) : (
+          <div className="px-0 md:px-44 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-0">
+            {paginatedRequests?.map((request) => (
+              <div
+                key={request._id}
+                className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-xl"
               >
-                <BiErrorCircle className="text-gray-400 w-5 h-5 md:w-6 md:h-6" />
-              </button>
-              <div className="mb-3 md:mb-4">
-                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
-                  {request.title} {request.id}
-                </h3>
-                <p className="text-[#979797] font-primary text-sm ">
-                  {request.description}
-                </p>
-              </div>
-              <div className="space-y-1 md:space-y-2">
-                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
-                  <span>Created By:</span>
-                  <span className="text-[#979797]">
-                    {" "}
-                    {request.createdByName}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
-                  <span>Date:</span>
-                  <span className="text-[#979797]">
-                    {formatDateWithSuffix(request.createdAt)}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 md:mt-4">
-                <div className="flex flex-wrap gap-1 md:gap-2">
-                  {request.isUrgent && (
-                    <span className="px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2">
-                      #Urgent
-                    </span>
-                  )}
-                  {request.status == "open" && (
-                    <span className="px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2">
-                      #Open
-                    </span>
-                  )}
-                </div>
                 <button
-                  className="ml-auto px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm"
-                  onClick={() => {
+                  className="absolute top-4 md:top-3 right-3 md:right-3"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowReportModal(true);
                     setSelectedRequest(request);
-                    handleClaimAsk(request._id);
                   }}
                 >
-                  Claim Ask
+                  <BiErrorCircle className="text-gray-400 w-5 h-5 md:w-6 md:h-6" />
                 </button>
+                <div className="mb-3 md:mb-4">
+                  <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
+                    {request.title} {request.id}
+                  </h3>
+                  <p className="text-[#979797] font-primary text-sm ">
+                    {request.description}
+                  </p>
+                </div>
+                <div className="space-y-1 md:space-y-2">
+                  <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
+                    <span>Created By:</span>
+                    <span className="text-[#979797]">
+                      {" "}
+                      {request.createdByName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
+                    <span>Date:</span>
+                    <span className="text-[#979797]">
+                      {formatDateWithSuffix(request.createdAt)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 md:mt-4">
+                  <div className="flex flex-wrap gap-1 md:gap-2">
+                    {request.isUrgent && (
+                      <span className="px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2">
+                        #Urgent
+                      </span>
+                    )}
+                    {request.status === "open" && (
+                      <span className="px-2 py-0.5 rounded-full text-xs md:text-sm text-primary border border-primary md:border-2">
+                        #Open
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="ml-auto px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm"
+                    onClick={() => {
+                      setSelectedRequest(request);
+                      handleClaimAsk(request._id);
+                    }}
+                  >
+                    Claim Ask
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+        {/* User's Own Asks Section */}
+        {userOwnAsks && userOwnAsks.length > 0 ? (
+          <div className="px-0 md:px-44 mt-12">
+            <h2 className="text-xl font-semibold mb-6 text-gray-800">
+              Your Active Asks ({userOwnAsks.length})
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {userOwnAsks.map((ask, index) => (
+                <div
+                  key={`${ask._id}-${index}`} // Ensure unique keys for multiple asks
+                  className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 relative group shadow-xl"
+                >
+                  {/* Chat notification icon */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <button
+                      className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      onClick={() => {
+                        console.log("Opening chat for ask:", ask._id);
+                        setSelectedRequest(ask);
+                        setIsChatModalOpen(true);
+                        setMinimized(false);
+                      }}
+                      title="Open chat"
+                    >
+                      <IoChatboxEllipsesOutline
+                        className={`w-6 h-6 ${
+                          hasUnreadMessages(ask)
+                            ? "text-green-500 animate-pulse"
+                            : "text-gray-600 hover:text-primary"
+                        }`}
+                      />
+                      {hasUnreadMessages(ask) && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                      )}
+                    </button>
+                  </div>
 
+                  <div className="mb-3 md:mb-4 pr-12">
+                    <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gradient_r font-secondary">
+                      {ask.title}
+                    </h3>
+                    <p className="text-[#979797] font-primary text-sm line-clamp-3">
+                      {ask.description}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 md:space-y-2">
+                    <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
+                      <span>Created:</span>
+                      <span className="text-[#979797]">
+                        {formatDateWithSuffix(ask.createdAt)}
+                      </span>
+                    </div>
+
+                    {ask.deadline && (
+                      <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-600">
+                        <span>Deadline:</span>
+                        <span className="text-[#979797]">
+                          {formatDateWithSuffix(ask.deadline)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-3 md:mt-4">
+                    <button
+                      className="px-3 md:px-4 py-1 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg text-xs md:text-sm flex items-center gap-2 hover:opacity-90 transition-opacity"
+                      onClick={() => {
+                        console.log("Chat button clicked for ask:", ask._id);
+                        setSelectedRequest(ask);
+                        setIsChatModalOpen(true);
+                        setMinimized(false);
+                      }}
+                    >
+                      <IoChatboxEllipsesOutline className="w-4 h-4" />
+                      Chat
+                      {hasUnreadMessages(ask) && (
+                        <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          // Show when no active asks
+          <div className="px-0 md:px-44 mt-12">
+            <h2 className="text-xl font-semibold mb-6 text-gray-800">
+              Your Active Asks
+            </h2>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <IoChatboxEllipsesOutline className="w-12 h-12 mx-auto" />
+              </div>
+              <p className="text-gray-600 mb-2">No active asks found</p>
+              <p className="text-sm text-gray-500">
+                Create an ask and wait for someone to claim it to see it here.
+              </p>
+            </div>
+          </div>
+        )}
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-8 md:mt-12 mb-6 md:mb-8">
           <button
