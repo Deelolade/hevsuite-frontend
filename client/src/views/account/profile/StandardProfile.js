@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  BsPencil,
-  BsChevronUp,
-  BsChevronDown,
-  BsChatDots,
-} from "react-icons/bs";
+import { BsChevronUp, BsChevronDown, BsChatDots } from "react-icons/bs";
 import avatar from "../../../assets/user.avif";
 import mastercard from "../../../assets/Mastercard.png";
 
@@ -15,7 +10,6 @@ import { useDispatch, useSelector } from "react-redux";
 import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
 import { updateProfile } from "../../../features/auth/authSlice";
-import { requestClubCard } from "../../../services/clubCardService";
 import { CountrySelect, StateSelect } from "react-country-state-city";
 import {
   activateCard,
@@ -58,8 +52,6 @@ const StandardProfile = () => {
     additionalNationality: user?.additionalNationality || "",
   });
   const clubCard = useSelector(selectClubCard);
-  console.log(clubCard);
-  const cardStatus = useSelector(selectCardStatus);
   const { activating, deactivating } = useSelector(selectLoadingStates);
 
   useEffect(() => {
@@ -200,31 +192,74 @@ const StandardProfile = () => {
     }
   };
 
+  const [showRequestConfirmModal, setShowRequestConfirmModal] = useState(false);
+
   const handleRequestCard = async () => {
     try {
       const userId = user?.id;
-      const isReplacement = cardRequest.disableCurrent === "Yes";
 
-      const result = await requestClubCard({ userId, isReplacement });
-      if (result.success) {
-        toast.success("Your club card request has been submitted.");
+      if (!userId) {
+        toast.error("User ID not found");
+        return;
       }
 
-      // Optionally clear form or update UI
-      setCardRequest({
-        fullName: "",
-        cardType: "Standard",
-        disableCurrent: "No",
-      });
-      setIsEditingFullName(false);
+      // Show confirmation modal
+      setShowRequestConfirmModal(true);
     } catch (error) {
+      console.error("Error in handleRequestCard:", error);
+      const errorMessage =
+        error?.message || error || "Failed to request club card";
+      toast.error(errorMessage);
+    }
+  };
+
+  const confirmCardRequest = async () => {
+    try {
+      const userId = user?.id;
+      const isReplacement = cardRequest.disableCurrent === "Deactivate";
+      const cardId = clubCard.cardId;
+
+      console.log("Requesting club card for user:", userId);
+      console.log("Is replacement:", isReplacement);
+
+      const result = await dispatch(activateCard({ cardId, userId })).unwrap();
+
+      if (result.success) {
+        toast.success("Your club card request has been submitted.");
+
+        // Optionally clear form or update UI
+        setCardRequest({
+          fullName: "",
+          cardType: "Standard",
+          disableCurrent: "Activate",
+        });
+        setIsEditingFullName(false);
+      }
+
+      setShowRequestConfirmModal(false);
+    } catch (error) {
+      console.error("Error requesting card:", error);
+      const errorMessage =
+        error?.message || error || "Failed to request club card";
+      toast.error(errorMessage);
+
+      setShowRequestConfirmModal(false);
+
       showModal({
         title: "Error",
-        text: error.message || "Failed to request club card.",
+        text: errorMessage,
         confirmText: "Try Again",
       });
     }
   };
+
+  const cancelCardRequest = () => {
+    console.log("Card request cancelled by user");
+    setShowRequestConfirmModal(false);
+  };
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   const handleSaveCardStatus = async () => {
     try {
@@ -236,47 +271,62 @@ const StandardProfile = () => {
         return;
       }
 
+      const action =
+        cardRequest.disableCurrent === "Deactivate" ? "Deactivate" : "Activate";
+
+      // Set pending action and show confirmation modal
+      setPendingAction(action);
+      setShowConfirmModal(true);
+    } catch (error) {
+      console.error("Error in handleSaveCardStatus:", error);
+      const errorMessage =
+        error?.message || error || "Failed to update card status";
+      toast.error(errorMessage);
+    }
+  };
+
+  const confirmCardAction = async () => {
+    try {
+      const userId = user?.id;
+      const cardId = clubCard.cardId;
+
       console.log("Saving card status for user:", userId);
       console.log("Disable current setting:", cardRequest.disableCurrent);
 
-      if (cardRequest.disableCurrent === "Yes") {
+      if (pendingAction === "Deactivate") {
         // Deactivate the card
         await dispatch(deactivateCard({ cardId, userId })).unwrap();
         console.log("Card deactivated");
         toast.success("Card deactivated successfully!");
-
-        showModal({
-          title: "Success",
-          text: "Card deactivated successfully!",
-          confirmText: "Ok",
-          onConfirm: () => {},
-        });
       } else {
         // Activate the card
         await dispatch(activateCard({ cardId, userId })).unwrap();
         console.log("Card activated");
         toast.success("Card activated successfully!");
-
-        showModal({
-          title: "Success",
-          text: "Card activated successfully!",
-          confirmText: "Ok",
-          onConfirm: () => {},
-        });
+        localStorage.removeItem("authToken");
       }
 
       setIsEditingFullName(false);
+      setShowConfirmModal(false);
+      setPendingAction(null);
     } catch (error) {
       console.error("Error updating card status:", error);
-      toast.error(error || "Failed to update card status");
 
-      showModal({
-        title: "Error",
-        text: error || "Failed to update card status",
-        confirmText: "Try Again",
-      });
+      const errorMessage =
+        error?.message || error || "Failed to update card status";
+      toast.error(errorMessage);
+
+      setShowConfirmModal(false);
+      setPendingAction(null);
     }
   };
+
+  const cancelCardAction = () => {
+    console.log("Card action cancelled by user");
+    setShowConfirmModal(false);
+    setPendingAction(null);
+  };
+
   const PaymentMethodModal = ({ onClose }) => {
     const paymentMethods = [
       { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
@@ -1017,7 +1067,99 @@ const StandardProfile = () => {
               </div>
             </div>
           </div>
+          {showConfirmModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg w-full max-w-md p-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Confirm Card Action
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to {pendingAction} your club card? This
+                  action will{" "}
+                  {pendingAction === "Deactivate" ? "disable" : "enable"} your
+                  card access.
+                </p>
 
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={cancelCardAction}
+                    className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmCardAction}
+                    disabled={activating || deactivating}
+                    className="px-4 py-2 bg-[#540A26] text-white rounded-lg hover:bg-opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {activating || deactivating ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {pendingAction === "Deactivate"
+                          ? "Deactivating..."
+                          : "Activating..."}
+                      </span>
+                    ) : (
+                      `Yes, ${pendingAction}`
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {showRequestConfirmModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg w-full max-w-md p-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Confirm Card Request
+                </h3>
+                <div className="text-gray-600 mb-6">
+                  <p className="mb-3">
+                    Are you sure you want to request a new club card?
+                  </p>
+
+                  {/* Show current card status information */}
+                  {clubCard.isActive && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                      <p className="text-blue-800 text-sm">
+                        <strong>Note:</strong> You currently have an active
+                        card.
+                        {cardRequest.disableCurrent === "Deactivate"
+                          ? " This request will disable your current card and issue a replacement."
+                          : " You will have both cards active until you choose to disable one."}
+                      </p>
+                    </div>
+                  )}
+
+                  {!clubCard.isActive && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                      <p className="text-green-800 text-sm">
+                        <strong>Note:</strong> Your current card is inactive.
+                        This new card will become your active card.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* <p className="font-semibold">Total cost: £15</p> */}
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={cancelCardRequest}
+                    className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmCardRequest}
+                    className="px-4 py-2 bg-[#540A26] text-white rounded-lg hover:bg-opacity-90 transition-opacity"
+                  >
+                    Yes, Request Card
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Request a New Club Card */}
           <div className="mt-8">
             <h3 className="font-semibold mb-4">Request a New Club Card</h3>
@@ -1094,7 +1236,7 @@ const StandardProfile = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block mb-2">Disable Current Card</label>
+                  <label className="block mb-2">Club Card Status</label>
                   <div className="flex flex-col sm:flex-row items-center">
                     <div className="relative flex-1 ">
                       <select
@@ -1107,8 +1249,8 @@ const StandardProfile = () => {
                           })
                         }
                       >
-                        <option>No</option>
-                        <option>Yes</option>
+                        <option>Activate</option>
+                        <option>Deactivate</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <svg
@@ -1139,7 +1281,7 @@ const StandardProfile = () => {
                           {activating || deactivating ? (
                             <span className="flex items-center gap-2">
                               <div className="w-4 h-4 border-2 border-gray-300 border-t-[#540A26] rounded-full animate-spin"></div>
-                              {cardRequest.disableCurrent === "Yes"
+                              {cardRequest.disableCurrent === "Deactivate"
                                 ? "Deactivating..."
                                 : "Activating..."}
                             </span>
@@ -1149,7 +1291,6 @@ const StandardProfile = () => {
                         </button>
                         <button
                           className="text-sm sm:text-base px-2 sm:px-6 py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg"
-                          disabled={cardRequest.disableCurrent === "No"}
                           onClick={handleRequestCard}
                         >
                           Request New Club Card

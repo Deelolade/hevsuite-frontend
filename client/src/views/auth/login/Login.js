@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../../../assets/logo_white.png";
 import image from "../../../assets/image.jpg";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProfile, login } from "../../../features/auth/authSlice";
+import { login } from "../../../features/auth/authSlice";
+import { fetchProfile } from "../../../features/auth/authSlice";
+import { getCardByUserId } from "../../../features/clubCardSlice";
 import AuthModal from "../../../components/AuthModal";
-import {
-  activateCard,
-  getCardByUserId,
-  setTokenActivated,
-} from "../../../features/clubCardSlice";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -44,34 +41,29 @@ const Login = () => {
         console.log("Token found in URL:", token);
         localStorage.setItem("authToken", token);
 
-        // Process token and activate card after successful login
         try {
           const userProfile = await dispatch(fetchProfile()).unwrap();
-          const userId = userProfile.id;
-          console.log("Profile fetched, userId:", userId);
+          const userId = userProfile.id || userProfile._id;
 
           if (userId) {
-            try {
-              const cardData = await dispatch(getCardByUserId(userId)).unwrap();
-              const cardId = cardData._id;
-              await dispatch(activateCard({ cardId, userId })).unwrap();
-              console.log("Card activated via backend successfully");
-            } catch (cardError) {
+            const cardData = await dispatch(getCardByUserId(userId)).unwrap();
+
+            // If card is already active, clear token and redirect to homepage
+            if (cardData.isActive) {
+              localStorage.removeItem("authToken");
               console.log(
-                "Backend activation failed, using token activation:",
-                cardError
+                "AuthToken cleared - card already active during login"
               );
-              dispatch(setTokenActivated(true));
+              navigate("/homepage", { replace: true });
+              return;
             }
           }
-
-          // Navigate to upcoming-events for token users
-          navigate("/upcoming-events", { replace: true });
-          return;
         } catch (error) {
-          console.error("Error during token processing:", error);
-          // If token processing fails, fall back to normal flow
+          console.log("Error checking card status:", error);
         }
+
+        navigate("/upcoming-events", { replace: true });
+        return;
       }
 
       // Normal login flow (without token)
