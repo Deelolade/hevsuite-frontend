@@ -9,13 +9,17 @@ import { showModal } from "../../../components/FireModal";
 import { useDispatch, useSelector } from "react-redux";
 import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
-import { updateProfile } from "../../../features/auth/authSlice";
+import {
+  disable2FA,
+  fetchProfile,
+  setup2FA,
+  updateProfile,
+} from "../../../features/auth/authSlice";
 import { CountrySelect, StateSelect } from "react-country-state-city";
 import {
   activateCard,
   deactivateCard,
   getCardByUserId,
-  selectCardStatus,
   selectClubCard,
   selectLoadingStates,
 } from "../../../features/clubCardSlice";
@@ -25,8 +29,9 @@ const StandardProfile = () => {
     contactDetails: true,
     occupation: true,
     referrals: true,
+    twoFA: true,
   });
-  const { user } = useSelector((state) => state.auth);
+  const { user, isLoading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -51,12 +56,68 @@ const StandardProfile = () => {
     nationality: user?.nationality || "",
     additionalNationality: user?.additionalNationality || "",
   });
+
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [twoFAAction, setTwoFAAction] = useState(null); // 'enable' or 'disable'
+  const [selectedMethod, setSelectedMethod] = useState("");
+  const [password, setPassword] = useState("");
   const clubCard = useSelector(selectClubCard);
   const { activating, deactivating } = useSelector(selectLoadingStates);
 
+  const handle2FAChange = (method) => {
+    if (user?.is2FAEnabled) {
+      // If 2FA is enabled, check if user is selecting a different method
+      if (user?.twoFactorPreference === method) {
+        // If clicking the same method that's currently enabled, do nothing or show info
+        // Don't disable, just ignore the click or show a message
+        return;
+      } else {
+        // If clicking a different method, change to that method (keep 2FA enabled)
+        setSelectedMethod(method);
+        setTwoFAAction("change");
+        setShow2FAModal(true);
+      }
+    } else {
+      // If 2FA is not enabled, enable it with selected method
+      setSelectedMethod(method);
+      setTwoFAAction("enable");
+      setShow2FAModal(true);
+    }
+  };
+
+  const confirm2FAAction = async () => {
+    try {
+      if (twoFAAction === "enable" || twoFAAction === "change") {
+        const data = {
+          method: selectedMethod,
+          [selectedMethod]:
+            selectedMethod === "email"
+              ? user?.twoFAEmail || user?.primaryEmail
+              : user?.primaryPhone,
+        };
+        await dispatch(setup2FA(data)).unwrap();
+      } else if (twoFAAction === "disable") {
+        await dispatch(disable2FA({ password })).unwrap();
+      }
+
+      await dispatch(fetchProfile());
+      setShow2FAModal(false);
+      setPassword("");
+      setSelectedMethod("");
+    } catch (error) {
+      console.error(error);
+      toast.error(error || "Failed to update 2FA");
+    }
+  };
+  const cancel2FAAction = () => {
+    setShow2FAModal(false);
+    setPassword("");
+    setSelectedMethod("");
+    setTwoFAAction(null);
+  };
+
   useEffect(() => {
     if (user?.id) {
-      console.log("Fetching club card for user:", user.id);
       dispatch(getCardByUserId(user.id))
         .unwrap()
         .catch((error) => {
@@ -390,6 +451,75 @@ const StandardProfile = () => {
     "Sport",
   ];
 
+  console.log(user);
+
+  const TwoFAModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96">
+        <h3 className="text-lg font-semibold mb-4">
+          {twoFAAction === "enable"
+            ? "Enable"
+            : twoFAAction === "change"
+            ? "Change"
+            : "Disable"}{" "}
+          Two-Factor Authentication
+        </h3>
+
+        {twoFAAction === "enable" || twoFAAction === "change" ? (
+          <div>
+            <p className="text-gray-600 mb-4">
+              You are about to{" "}
+              {twoFAAction === "change"
+                ? "change your 2FA method to"
+                : "enable 2FA using"}{" "}
+              {selectedMethod === "email" ? "email" : "phone"}:{" "}
+              <strong>
+                {selectedMethod === "email"
+                  ? user?.twoFAEmail || user?.primaryEmail
+                  : `+${user?.primaryPhone}`}
+              </strong>
+              {twoFAAction === "change" && (
+                <span className="block mt-2 text-sm text-gray-500">
+                  Your 2FA will remain enabled with the new method.
+                </span>
+              )}
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-gray-600 mb-4">
+              Please enter your password to disable two-factor authentication.
+            </p>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+              className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+            />
+          </div>
+        )}
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={cancel2FAAction}
+            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirm2FAAction}
+            disabled={isLoading || (twoFAAction === "disable" && !password)}
+            className="px-4 py-2 bg-[#540A26] text-white rounded-lg hover:bg-[#6B0D32] disabled:opacity-50"
+          >
+            {isLoading ? "Processing..." : "Confirm"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
   return (
     <div className="text-black">
       {/* Profile Header */}
@@ -400,6 +530,7 @@ const StandardProfile = () => {
           {showPaymentModal && (
             <PaymentMethodModal onClose={() => setShowPaymentModal(false)} />
           )}
+          {show2FAModal && <TwoFAModal />}
           <div className="flex items-start gap-4 mb-6">
             <img
               src={user?.profilePhoto || avatar}
@@ -1010,10 +1141,48 @@ const StandardProfile = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="twoFAMethod"
+                    value="disabled"
+                    checked={!user?.is2FAEnabled}
+                    onChange={() => {
+                      if (user?.is2FAEnabled) {
+                        setTwoFAAction("disable");
+                        setShow2FAModal(true);
+                      }
+                    }}
+                    className="w-4 h-4 accent-[#540A26]"
+                    readOnly
+                  />
+                  <span>Two-factor authentication disabled</span>
+                </div>
+                <span className="text-gray-500 text-sm">
+                  {user?.is2FAEnabled
+                    ? `2FA Enabled ${
+                        user?.updatedAt
+                          ? new Date(user.updatedAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )
+                          : "recently"
+                      }`
+                    : "2FA Not enabled"}
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="twoFAMethod"
+                    value="email"
                     checked={
-                      user?.is2FAEnabled && user?.twoFAMethod === "email"
+                      user?.is2FAEnabled &&
+                      user?.twoFactorPreference === "email"
                     }
+                    onChange={() => handle2FAChange("email")}
                     className="w-4 h-4 accent-[#540A26]"
                     readOnly
                   />
@@ -1022,7 +1191,7 @@ const StandardProfile = () => {
                   </span>
                 </div>
                 <span className="text-gray-500 text-sm">
-                  {user?.is2FAEnabled && user?.twoFAMethod === "email"
+                  {user?.is2FAEnabled && user?.twoFactorPreference === "email"
                     ? `Enabled ${
                         user?.updatedAt
                           ? new Date(user.updatedAt).toLocaleDateString(
@@ -1040,17 +1209,21 @@ const StandardProfile = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="twoFAMethod"
+                    value="phone"
                     checked={
-                      user?.is2FAEnabled && user?.twoFAMethod === "phone"
+                      user?.is2FAEnabled &&
+                      user?.twoFactorPreference === "phone"
                     }
+                    onChange={() => handle2FAChange("phone")}
                     className="w-4 h-4 accent-[#540A26]"
                     readOnly
                   />
                   <span>{`+${user?.primaryPhone}` || "No phone set"}</span>
                 </div>
                 <span className="text-gray-500 text-sm">
-                  {user?.is2FAEnabled && user?.twoFAMethod === "phone"
+                  {user?.is2FAEnabled && user?.twoFactorPreference === "phone"
                     ? `Enabled ${
                         user?.updatedAt
                           ? new Date(user.updatedAt).toLocaleDateString(
