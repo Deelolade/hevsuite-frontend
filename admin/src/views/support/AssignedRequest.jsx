@@ -11,7 +11,7 @@ import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
 import { useSelector, useDispatch } from "react-redux";
-import { getSupportRequests, updateSupportRequest } from "../../store/support/supportSlice";
+import { getSupportRequests, updateSupportRequest, addMessageToSupportRequest } from "../../store/support/supportSlice";
 import Spinner from "../../components/Spinner";
 
 const AssignedRequest = () => {
@@ -31,6 +31,8 @@ const AssignedRequest = () => {
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   const [adminList] = useState([
     { id: 1, name: "Admin 1" },
@@ -196,6 +198,53 @@ const AssignedRequest = () => {
     }
   };
 
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedRequest) return;
+    
+    setIsSendingMessage(true);
+    // Optimistically update local message history
+    const optimisticMsg = {
+      text: newMessage.trim(),
+      sender: "admin",
+      date: new Date().toISOString(),
+      _id: Math.random().toString(36).substr(2, 9), // temp id
+    };
+    setSelectedRequest(prev => ({
+      ...prev,
+      messages: [...(prev?.messages || []), optimisticMsg]
+    }));
+    setNewMessage("");
+    try {
+      await dispatch(addMessageToSupportRequest({
+        requestId: selectedRequest._id,
+        messageData: {
+          text: optimisticMsg.text,
+          sender: "admin"
+        }
+      })).unwrap();
+      // Optionally, refresh from server here if you want to sync
+      dispatch(
+        getSupportRequests({
+          page: 1,
+          limit: 100,
+          search: searchTerm,
+          sortBy: "submissionDate",
+          filter: statusFilter,
+          assignedTo: "me"
+        })
+      );
+    } catch (error) {
+      // Remove the optimistic message if API fails
+      setSelectedRequest(prev => ({
+        ...prev,
+        messages: prev.messages.filter(m => m._id !== optimisticMsg._id)
+      }));
+      console.error("Failed to send message:", error);
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -344,97 +393,141 @@ const AssignedRequest = () => {
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl w-[600px] shadow-lg focus:outline-none"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Request Details</h2>
-            <button
-              onClick={() => setOpenDetails(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* User Info */}
-            <div className="flex items-center justify-between">
+        <div className="p-8">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Request Details</h2>
               <div className="flex items-center gap-3">
                 <img
                   src={selectedRequest?.user?.avatar || avatar}
                   alt={selectedRequest?.user?.name || 'User'}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full border"
                 />
-                <span className="font-medium">
-                  {selectedRequest?.user?.name || 'Unknown User'}
-                </span>
+                <span className="font-semibold text-lg">{selectedRequest?.user?.name || 'Unknown User'}</span>
               </div>
-              <span className="text-gray-600">
-                {selectedRequest?.user?.email || 'No email provided'}
-              </span>
             </div>
-
-            {/* Request Type */}
-            <div>
-              <select
-                className="w-full px-4 py-2 border rounded-lg text-gray-600"
-                disabled
+            <div className="flex flex-col items-end gap-2">
+              <span className="text-gray-500 text-sm">{selectedRequest?.user?.email || 'No email provided'}</span>
+              <button
+                onClick={() => setOpenDetails(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
-                <option>{selectedRequest?.type}</option>
-              </select>
+                ×
+              </button>
             </div>
+          </div>
 
-            {/* Preview Images */}
-            {selectedRequest?.images && selectedRequest.images.length > 0 && (
-            <div className="flex gap-4">
-                {selectedRequest.images.map((image, index) => (
-                  <div key={index} className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <img
-                      src={image}
-                      alt={`Evidence ${index + 1}`}
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                    <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                        setSelectedPreviewImage(image);
-                  }}
-                >
-                  Preview
-                    </button>
-                  </div>
-                ))}
+          {/* Dropdown */}
+          <select
+            className="w-full px-4 py-2 border rounded-lg text-gray-600 mb-6 bg-gray-50 cursor-not-allowed"
+            disabled
+          >
+            <option>{selectedRequest?.type}</option>
+          </select>
+
+          {/* Images */}
+          {selectedRequest?.images && selectedRequest.images.length > 0 && (
+            <div className="flex gap-4 mb-8">
+              {selectedRequest.images.map((image, index) => (
+                <div key={index} className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img
+                    src={image}
+                    alt={`Evidence ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+                  />
+                  <button
+                    className="absolute inset-0 text-white hover:bg-black/20 rounded-lg font-semibold text-lg"
+                    onClick={() => {
+                      setShowPreviewModal(true);
+                      setSelectedPreviewImage(image);
+                    }}
+                  >
+                    Preview
+                  </button>
                 </div>
-            )}
-
-            {showPreviewModal && (
-              <div
-                className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
-                onClick={() => setShowPreviewModal(false)}
-              >
-                <img
-                  src={selectedPreviewImage}
-                  alt="Preview"
-                  className="max-w-[80%] max-h-[80%] object-contain"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-
-            {/* Request Message */}
-            <div className="p-4 border rounded-lg">
-              <p className="text-gray-600">
-                {selectedRequest?.messages?.[currentMessageIndex]?.text || 'No message available'}
-              </p>
-              <p className="text-sm text-gray-400 mt-2">
-                {selectedRequest?.messages?.[currentMessageIndex]?.date ? 
-                  new Date(selectedRequest.messages[currentMessageIndex].date).toLocaleDateString() : 
-                  'No date available'}
-              </p>
+              ))}
             </div>
+          )}
+
+          {showPreviewModal && (
+            <div
+              className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
+              onClick={() => setShowPreviewModal(false)}
+            >
+              <img
+                src={selectedPreviewImage}
+                alt="Preview"
+                className="max-w-[80%] max-h-[80%] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          {/* User Message Section */}
+          <div className="mb-6">
+            <label className="font-bold text-base mb-2 block">Messages</label>
+            <div className="max-h-48 overflow-y-auto space-y-3">
+              {selectedRequest?.messages?.map((msg, idx) => (
+                <div
+                  key={msg._id?.$oid || idx}
+                  className={`p-3 rounded-lg w-fit max-w-[80%] ${
+                    msg.sender === 'admin'
+                      ? 'ml-auto bg-blue-100 text-right'
+                      : 'mr-auto bg-gray-100 text-left'
+                  }`}
+                >
+                  <div className="text-sm text-gray-700">{msg.text}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(msg.date?.$date || msg.date).toLocaleString()} - {msg.sender === 'admin' ? 'Admin' : 'User'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Response Section */}
+          {selectedRequest?.status === 'Declined' ? (
+            <div className="mb-8 text-center text-gray-400 font-semibold">
+              Messaging is disabled for declined requests.
+            </div>
+          ) : (
+            <div className="mb-8">
+              <label className="font-bold text-base mb-2 block">Response</label>
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write Your Response"
+                className="w-full p-4 border rounded-lg resize-none min-h-[80px] text-gray-700"
+                disabled={isSendingMessage}
+              />
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setOpenDetails(false)}
+              className="px-6 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            {selectedRequest?.status !== 'Declined' && (
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || isSendingMessage}
+                className={`px-6 py-2 rounded-lg text-white font-semibold ${
+                  !newMessage.trim() || isSendingMessage
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-[#A80036] hover:bg-[#8a0030]'
+                }`}
+              >
+                {isSendingMessage ? 'Sending...' : 'Send'}
+              </button>
+            )}
           </div>
         </div>
       </Modal>

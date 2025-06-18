@@ -77,12 +77,28 @@ const getSupportRequestStats = async () => {
   return response.data;
 };
 
+const addMessageToSupportRequest = async (requestId, messageData) => {
+  const token = getAuthToken();
+  const response = await axios.post(
+    `${base_url}/api/support-requests/${requestId}/messages`,
+    messageData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+};
+
 const supportService = {
   getSupportRequests,
   getSupportRequestDetails,
   updateSupportRequest,
   deleteSupportRequest,
   getSupportRequestStats,
+  addMessageToSupportRequest,
 };
 
 export default supportService;
