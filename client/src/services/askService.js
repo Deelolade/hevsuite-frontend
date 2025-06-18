@@ -102,6 +102,16 @@ const fetchAcceptedAsks = async () => {
     throw new Error(error.response?.data?.message || error.message);
   }
 };
+
+const fetchUserAsks = async () => {
+  try {
+    const response = await api.get("users");
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message);
+  }
+};
+
 const askService = {
   fetchOpenAsks,
   createAsk,
@@ -113,6 +123,7 @@ const askService = {
   chat,
   fetchCurrentUserAsks,
   fetchAcceptedAsks,
+  fetchUserAsks,
 };
 
 export default askService;
