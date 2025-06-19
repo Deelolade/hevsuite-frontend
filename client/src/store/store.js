@@ -12,6 +12,7 @@ import generalSettingReducer from "../features/generalSettingSlice";
 import footerReducer from "../features/footerSlice";
 import menusReducer from "../features/menuSlice";
 import clubCardReducer from "../features/clubCardSlice";
+import supportRequestReducer from "../features/supportRequestSlice";
 // Persist configuration for the register slice
 // const registerPersistConfig = {
 //   key: 'register',
@@ -55,6 +56,7 @@ const rootReducer = combineReducers({
   footer: footerReducer,
   menus: menusReducer,
   clubCard: clubCardReducer,
+  supportRequest: supportRequestReducer,
 });
 
 const persistedRootReducer = persistReducer(persistConfig, rootReducer);

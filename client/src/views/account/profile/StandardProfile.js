@@ -23,6 +23,7 @@ import {
   selectClubCard,
   selectLoadingStates,
 } from "../../../features/clubCardSlice";
+import { createSupportRequest } from "../../../features/supportRequestSlice";
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
     personalInfo: true,
@@ -125,6 +126,7 @@ const StandardProfile = () => {
         });
     }
   }, [dispatch, user]);
+  console.log(user);
 
   const [contactDetails, setContactDetails] = useState({
     addressLine1: user?.addressLine1 || "",
@@ -232,19 +234,41 @@ const StandardProfile = () => {
         },
       });
 
+      // if (confirmPassword.isConfirmed) {
+      //   const resultAction = await dispatch(
+      //     updateProfile({
+      //       userData: formData,
+      //       confirmPassword: confirmPassword.value,
+      //     })
+      //   );
+
+      //   if (updateProfile.fulfilled.match(resultAction)) {
+      //     toast.success("Profile updated successfully");
+      //     setIsEditing(false);
+      //   } else {
+      //     throw new Error(resultAction.payload || "Update failed");
+      //   }
+      // }
+
       if (confirmPassword.isConfirmed) {
+        const supportRequestData = {
+          type: "Profile Update",
+          description: `Profile update request containing changes to personal information/ contact details/ and occupation/interests.`,
+          confirmPassword: confirmPassword.value,
+          requestData: formData, // Include the actual form data for processing
+        };
+
         const resultAction = await dispatch(
-          updateProfile({
-            userData: formData,
-            confirmPassword: confirmPassword.value,
-          })
+          createSupportRequest(supportRequestData)
         );
 
-        if (updateProfile.fulfilled.match(resultAction)) {
-          toast.success("Profile updated successfully");
+        if (createSupportRequest.fulfilled.match(resultAction)) {
+          toast.success(
+            "Profile update request submitted successfully! An admin will review your changes."
+          );
           setIsEditing(false);
         } else {
-          throw new Error(resultAction.payload || "Update failed");
+          throw new Error(resultAction.payload || "Failed to submit request");
         }
       }
     } catch (error) {
