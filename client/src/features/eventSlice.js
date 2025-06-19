@@ -112,6 +112,19 @@ export const removeSavedEvent = createAsyncThunk(
   }
 );
 
+export const getSavedEvents = createAsyncThunk(
+  "savedEvents/getAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await eventService.getSavedEvents();
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch saved events"
+      );
+    }
+  }
+);
+
 const eventSlice = createSlice({
   name: "events",
   initialState: {
@@ -286,6 +299,18 @@ const eventSlice = createSlice({
       .addCase(removeSavedEvent.rejected, (state, action) => {
         state.removeSavedEventLoading = false;
         state.removeSavedEventError = action.payload;
+      })
+      .addCase(getSavedEvents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSavedEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.savedEvents = action.payload.events;
+      })
+      .addCase(getSavedEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -293,4 +318,14 @@ const eventSlice = createSlice({
 export const { clearAttendingMembers, resetUpdateStatus, syncEvents } =
   eventSlice.actions;
 
+export const selectSavedEvents = (state) => state.savedEvents || [];
+export const selectIsEventSaved = (eventId) => (state) => {
+  const savedEvents = state.events.savedEvents || [];
+
+  const isFound = savedEvents.some((event) => {
+    return event.event._id === eventId;
+  });
+
+  return isFound;
+};
 export default eventSlice.reducer;
