@@ -68,7 +68,7 @@ const StandardProfile = () => {
   const handle2FAChange = (method) => {
     if (user?.is2FAEnabled) {
       // If 2FA is enabled, check if user is selecting a different method
-      if (user?.twoFactorPreference === method) {
+      if (user?.twoFAMethod === method) {
         // If clicking the same method that's currently enabled, do nothing or show info
         // Don't disable, just ignore the click or show a message
         return;
@@ -1203,8 +1203,7 @@ const StandardProfile = () => {
                     name="twoFAMethod"
                     value="email"
                     checked={
-                      user?.is2FAEnabled &&
-                      user?.twoFactorPreference === "email"
+                      user?.is2FAEnabled && user?.twoFAMethod === "email"
                     }
                     onChange={() => handle2FAChange("email")}
                     className="w-4 h-4 accent-[#540A26]"
@@ -1215,7 +1214,7 @@ const StandardProfile = () => {
                   </span>
                 </div>
                 <span className="text-gray-500 text-sm">
-                  {user?.is2FAEnabled && user?.twoFactorPreference === "email"
+                  {user?.is2FAEnabled && user?.twoFAMethod === "email"
                     ? `Enabled ${
                         user?.updatedAt
                           ? new Date(user.updatedAt).toLocaleDateString(
@@ -1237,8 +1236,7 @@ const StandardProfile = () => {
                     name="twoFAMethod"
                     value="phone"
                     checked={
-                      user?.is2FAEnabled &&
-                      user?.twoFactorPreference === "phone"
+                      user?.is2FAEnabled && user?.twoFAMethod === "phone"
                     }
                     onChange={() => handle2FAChange("phone")}
                     className="w-4 h-4 accent-[#540A26]"
@@ -1247,7 +1245,7 @@ const StandardProfile = () => {
                   <span>{`+${user?.primaryPhone}` || "No phone set"}</span>
                 </div>
                 <span className="text-gray-500 text-sm">
-                  {user?.is2FAEnabled && user?.twoFactorPreference === "phone"
+                  {user?.is2FAEnabled && user?.twoFAMethod === "phone"
                     ? `Enabled ${
                         user?.updatedAt
                           ? new Date(user.updatedAt).toLocaleDateString(
