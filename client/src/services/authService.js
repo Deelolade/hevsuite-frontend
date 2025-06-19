@@ -173,6 +173,11 @@ const updateProfile = async (userData, confirmPassword) => {
   }
 };
 
+// const resend2FACode = async () => {
+//   const response = await axios.get(API_URL + 'resend-2fa-code');
+//   return response.data;
+// };
+
 const authService = {
   register,
   updateProfile,

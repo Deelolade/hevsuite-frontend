@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { toast } from "react-toastify";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/user`;
 
@@ -33,8 +32,7 @@ export const getAllAdmins = createAsyncThunk(
 
       return formattedData;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error fetching admin users");
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Error fetching admin users");
     }
   }
 );
@@ -56,11 +54,12 @@ export const createAdmin = createAsyncThunk(
       const response = await axios.post(`${API_URL}/admin-users`, dataToSend, {
         withCredentials: true
       });
-      toast.success("Admin user created successfully");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error creating admin user");
-      return rejectWithValue(error.response.data);
+      // Extract the error message from the response
+      const errorMessage = error.response?.data?.message || "Error creating admin user";
+      // Return the error message directly
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -68,24 +67,22 @@ export const createAdmin = createAsyncThunk(
 // Update admin user
 export const updateAdmin = createAsyncThunk(
   "admins/updateAdmin",
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, adminData }, { rejectWithValue }) => {
     try {
       const dataToSend = {
-        fullName: `${data.forename} ${data.surname}`,
-        email: data.primaryEmail,
-        role: data.role || 'admin',
-        roleName: data.role === 'admin' ? 'Administrator' : 'Super Administrator',
-        password: data.password
+        fullName: `${adminData.forename} ${adminData.surname}`,
+        email: adminData.primaryEmail,
+        role: adminData.role || 'admin',
+        roleName: adminData.role === 'admin' ? 'Administrator' : 'Super Administrator',
+        password: adminData.password
       };
       
       const response = await axios.put(`${API_URL}/admin-users/${id}`, dataToSend, {
         withCredentials: true
       });
-      toast.success("Admin user updated successfully");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error updating admin user");
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Error updating admin user");
     }
   }
 );
@@ -95,14 +92,12 @@ export const deleteAdmin = createAsyncThunk(
   "admins/deleteAdmin",
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/admin-users/${id}`, {
+      const response = await axios.delete(`${API_URL}/admin-users/${id}`, {
         withCredentials: true
       });
-      toast.success("Admin user deleted successfully");
-      return id;
+      return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error deleting admin user");
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Error deleting admin user");
     }
   }
 );
@@ -174,7 +169,7 @@ const adminSlice = createSlice({
       })
       .addCase(deleteAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.admins = state.admins.filter((admin) => admin._id !== action.payload);
+        state.admins = state.admins.filter((admin) => admin._id !== action.payload._id);
       })
       .addCase(deleteAdmin.rejected, (state, action) => {
         state.loading = false;

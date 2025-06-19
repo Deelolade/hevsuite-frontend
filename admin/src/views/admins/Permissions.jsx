@@ -40,6 +40,7 @@ const Permissions = () => {
     { name: "Ask", id: "Ask" },
     { name: "Help Center", id: "Help Center" },
     { name: "Support Request", id: "Support Request" },
+    { name: "Your Support Request", id: "Your Support Request" },
     { name: "Finance Management", id: "Finance Management" },
     { name: "Admin Users", id: "Admin Users" },
     { name: "Site Settings", id: "Site Settings" },

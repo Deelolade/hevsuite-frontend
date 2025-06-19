@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import logo_white from "../../assets/logo_white.png";
 import { BsTelephone } from "react-icons/bs";
 import authImage from "../../assets/image.jpg";
@@ -25,9 +25,14 @@ const PhoneVerification = () => {
           backgroundPosition: "center",
         }}
       >
-        <div className="text-center">
-          <img src={logo_white} alt="logo" className="w-32 h-32 mx-auto mb-6" />
-          <h1 className="text-white text-[40px] font-primary">Hevsuite Club</h1>
+         <div className='text-center'>
+          <Link
+            to='/'
+            className='text-primary hover:text-[#0A5440] font-primary'
+          >
+            <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+          </Link>
+          <h1 className='text-white text-[40px] font-primary'>Hevsuite Club</h1>
         </div>
       </div>
       <div className="flex-1 mt-10 flex flex-col justify-center px-[52px] bg-white">

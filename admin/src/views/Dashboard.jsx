@@ -13,7 +13,7 @@ import Profile from '../components/Profile';
 import { BiSearch } from 'react-icons/bi';
 import { BsCalendar } from 'react-icons/bs';
 import Modal from 'react-modal';
-import avat from '../assets/user.avif';
+import avat from '../assets/defualtuser.webp';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import Chart from 'react-apexcharts';
@@ -39,13 +39,105 @@ const Dashboard = () => {
   const [audienceType, setAudienceType] = useState('all');
   const [price, setPrice] = useState('');
   const [noOfTickets, setNoOfTickets] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('all');
+  const [users, setUsers] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
 
   const [files, setFiles] = useState([]);
   const [removedFiles, setRemovedFiles] = useState([]);
 
+  // Generate year options for the dropdown
+  const yearOptions = Array.from({ length: 5 }, (_, i) => {
+    const year = new Date().getFullYear() - i;
+    return year.toString();
+  });
+
   useEffect(() => {
     dispatch(getDashboardStats());
   }, [dispatch]);
+
+  // Process data for charts based on filtered users
+  const processChartData = (data) => {
+    console.log('Processing chart data:', JSON.stringify(data, null, 2));
+    if (!data) return { monthlyData: Array(12).fill(0), eventTypeDistribution: [] };
+
+    // Process monthly users data
+    const monthlyData = Array(12).fill(0);
+    if (data.monthlyUsers && Array.isArray(data.monthlyUsers)) {
+      // First, group data by month across all years
+      const monthlyTotals = {};
+      
+      data.monthlyUsers.forEach(item => {
+        if (item && typeof item._id.month === 'number') {
+          const month = item._id.month;
+          if (!monthlyTotals[month]) {
+            monthlyTotals[month] = 0;
+          }
+
+          if (!statusFilter || statusFilter === '') {
+            // For "All Status", sum all statuses
+            const totalCount = item.statusCounts.reduce((sum, status) => sum + status.count, 0);
+            monthlyTotals[month] += totalCount;
+            console.log(`Month ${month} (${item._id.year}) adding ${totalCount} users (all statuses)`);
+          } else {
+            // For specific status, find matching status count
+            const statusCount = item.statusCounts.find(s => 
+              s.status.toLowerCase() === statusFilter.toLowerCase()
+            );
+            const count = statusCount ? statusCount.count : 0;
+            monthlyTotals[month] += count;
+            console.log(`Month ${month} (${item._id.year}) adding ${count} users (status: ${statusFilter})`);
+          }
+        }
+      });
+
+      // Fill the monthlyData array with the totals
+      Object.entries(monthlyTotals).forEach(([month, total]) => {
+        monthlyData[parseInt(month) - 1] = total;
+      });
+    }
+
+    // Process event type distribution
+    const eventTypeDistribution = Array.isArray(data.eventTypeDistribution) 
+      ? data.eventTypeDistribution 
+      : [];
+
+    console.log('Processed monthly data:', monthlyData);
+    console.log('Processed event type distribution:', eventTypeDistribution);
+
+    return {
+      monthlyData,
+      eventTypeDistribution
+    };
+  };
+
+  // Filter dashboard data based on status and year
+  useEffect(() => {
+    console.log('Dashboard stats:', dashboardStats);
+    if (dashboardStats) {
+      let filtered = { ...dashboardStats };
+      
+      // Apply year filter only if a specific year is selected
+      if (yearFilter && yearFilter !== 'all') {
+        if (filtered.monthlyUsers && Array.isArray(filtered.monthlyUsers)) {
+          const selectedYear = parseInt(yearFilter);
+          console.log('Filtering for year:', selectedYear);
+          filtered.monthlyUsers = filtered.monthlyUsers.filter(user => {
+            const yearMatch = user._id.year === selectedYear;
+            console.log(`Month ${user._id.month}, Year ${user._id.year}, Match: ${yearMatch}`);
+            return yearMatch;
+          });
+        }
+      }
+      
+      console.log('Filtered dashboard data:', filtered);
+      setDashboardData(filtered);
+    }
+  }, [dashboardStats, yearFilter]);
+
+  // Update chart data based on filtered dashboard data
+  const chartData = processChartData(dashboardData || dashboardStats);
 
   const handleRemoveImage = (index) => {
     // Mark file as removed
@@ -118,27 +210,6 @@ const Dashboard = () => {
     }
   };
 
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    if (isAddEventOpen) {
-      const getUsers = async () => {
-        const response = await userService.userSearch(searchQuery);
-        const newData = response.users.map((user) => ({
-          id: user._id,
-          name: user.forename + ' ' + user.surname,
-          avatar: user.avatar || avat,
-        }));
-        setUsers(newData);
-      };
-      getUsers();
-    }
-  }, [searchQuery, isAddEventOpen]);
-
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const handleCheckboxChange = (user) => {
@@ -152,6 +223,7 @@ const Dashboard = () => {
   const removeUser = (userId) => {
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
   };
+
   const options = {
     chart: {
       type: 'area',
@@ -162,21 +234,10 @@ const Dashboard = () => {
     },
     xaxis: {
       categories: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
       ],
     },
-
     stroke: {
       curve: 'smooth',
       colors: ['#900C3F'],
@@ -212,7 +273,7 @@ const Dashboard = () => {
   const series = [
     {
       name: 'Users',
-      data: dashboardStats?.monthlyUsers?.map(item => item.count) || [],
+      data: chartData.monthlyData,
     },
   ];
 
@@ -229,10 +290,12 @@ const Dashboard = () => {
     },
   };
 
-  // const seriesDonut = [33, 67];
-  const seriesDonut = dashboardStats?.eventTypeDistribution?.map(type =>
-    parseFloat(type.percentage)
-  ) || [];
+  const seriesDonut = chartData.eventTypeDistribution.map(type =>
+    parseFloat(type.percentage || 0)
+  );
+
+  console.log('Chart series:', series);
+  console.log('Donut series:', seriesDonut);
 
   const optionsColumn = {
     chart: {
@@ -283,6 +346,10 @@ const Dashboard = () => {
       })
     },
   ];
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (statsLoading) {
     return (
@@ -377,28 +444,36 @@ const Dashboard = () => {
         <div className='col-span-2 bg-white rounded-lg p-6 shadow-xl'>
           <div className='flex items-center justify-between mb-6'>
             <div>
-              <h2 className='text-xl font-semibold'>Analytics</h2>
-              <p className='text-gray-400 text-sm'>
-                Lorem ipsum dolor sit amet, consectetur adip
-              </p>
+              <h2 className='text-xl font-semibold'>User Management</h2>
             </div>
             <div className='flex items-center gap-3'>
-              <button className='border rounded-lg px-3 py-1 text-sm bg-white flex items-center gap-2'>
-                Users
-                <BsChevronDown className='text-red-500 font-bold' />
-              </button>
-              <select className='border rounded-lg px-3 py-1 text-sm bg-white'>
-                <option>2025</option>
-                <option>2024</option>
-                <option>2023</option>
-              </select>
-              <button className='p-1'>
-                <BsThreeDotsVertical className='text-gray-400' />
-              </button>
+              <div className="flex items-center space-x-4">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="banned">Banned</option>
+                  <option value="restricted">Restricted</option>
+                  <option value="deactivated">Deactivated</option>
+                  <option value="closed">Closed Account</option>
+                </select>
+                <select
+                  value={yearFilter}
+                  onChange={(e) => setYearFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Time</option>
+                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           <div className='h-[350px] bg-white rounded-lg'>
-            {/* Chart placeholder */}
             <Chart options={options} series={series} type='area' height={350} />
           </div>
         </div>
@@ -409,7 +484,6 @@ const Dashboard = () => {
           </div>
           <div className='h-[350px]'>
             <div className='mb-6'>
-              {/* Donut chart placeholder */}
               <Chart
                 options={optionsDonut}
                 series={seriesDonut}
@@ -418,7 +492,7 @@ const Dashboard = () => {
               />
             </div>
             <div className='space-y-3'>
-              {dashboardStats?.eventTypeDistribution?.map((type, index) => (
+              {chartData.eventTypeDistribution.map((type, index) => (
                 <EventTypeRow
                   key={index}
                   color={index === 0 ? '#900C3F' : '#FFD700'}
@@ -446,7 +520,7 @@ const Dashboard = () => {
             />
           </div>
           <div className='space-y-3'>
-            {dashboardStats?.eventTypeDistribution?.map((type, index) => (
+            {chartData.eventTypeDistribution.map((type, index) => (
               <EventTypeRow
                 key={index}
                 color={index === 0 ? '#900C3F' : '#FFD700'}

@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ImageSlides } from "./ImageSlides";
+import Profile from "../../components/Profile";
+import { BiArrowBack } from "react-icons/bi";
 
 const PagePreviewContent = ({ slides = [], editors = [], title = "" }) => {
+  const navigate = useNavigate();
   const [previewData, setPreviewData] = useState({
     slides: [],
     editors: [],
@@ -22,7 +26,21 @@ const PagePreviewContent = ({ slides = [], editors = [], title = "" }) => {
   }, []);
 
   return (
-    <div className="relative p-6">
+    <div className="relative md:p-6 md:-mr-10">
+      {/* Header with Back Button */}
+      <div className="flex items-center mb-4 justify-between">
+        <div
+          className="p-2 rounded-full flex items-center gap-2 px-6 border border-gray-500 cursor-pointer"
+          onClick={() => navigate(-1)}
+        >
+          <BiArrowBack /> Back
+        </div>
+        <div className="flex-1 max-w-2xl mx-auto px-4">
+          <div className="relative"></div>
+        </div>
+        <Profile />
+      </div>
+
       {/* Page Title */}
       {previewData.title && (
         <div className="text-center mb-8">

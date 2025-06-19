@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BsBell, BsChevronDown } from 'react-icons/bs';
 import { useNavigate, Link } from 'react-router-dom';
-import avatar from '../assets/user.avif';
+import avatar from '../assets/defualtuser.webp';
 import authService from '../store/auth/authService';
 import axios from 'axios';
 import { base_url } from '../constants/axiosConfig';

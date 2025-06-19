@@ -69,6 +69,20 @@ const CodeVerification = () => {
     }
   };
 
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      const response = await authService.resend2FACode();
+      toast.success(response.message || 'New code sent successfully');
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Failed to resend code. Please try again.'
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
       {/* Background Image - Visible on all screens */}
@@ -128,7 +142,7 @@ const CodeVerification = () => {
               </p>
             </div>
 
-            <form className='space-y-6 md:space-y-8' onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
               <div className='flex justify-center gap-2 md:gap-4'>
                 {code.map((digit, index) => (
                   <input
@@ -144,7 +158,7 @@ const CodeVerification = () => {
                 ))}
               </div>
 
-              <div className='text-center'>
+              <div className='text-center mt-6'>
                 <p className='text-gray-600 mb-4 text-sm md:text-base'>
                   Didn't receive code?{' '}
                   <button

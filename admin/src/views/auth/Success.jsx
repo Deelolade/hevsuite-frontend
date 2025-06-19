@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import logo_white from '../../assets/logo_white.png';
 import { BsCheck2Circle } from 'react-icons/bs';
 import authImage from '../../assets/image.jpg';
@@ -17,8 +17,13 @@ const Success = () => {
           backgroundPosition: 'center',
         }}
       >
-        <div className='text-center'>
-          <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+         <div className='text-center'>
+          <Link
+            to='/'
+            className='text-primary hover:text-[#0A5440] font-primary'
+          >
+            <img src={logo_white} alt='logo' className='w-32 h-32 mx-auto mb-6' />
+          </Link>
           <h1 className='text-white text-[40px] font-primary'>Hevsuite Club</h1>
         </div>
       </div>

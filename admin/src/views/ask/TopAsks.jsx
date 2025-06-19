@@ -69,7 +69,7 @@ const TopAsks = () => {
                     </td>
                     <td className="py-4 px-6 text-gray-600">{asker.asksClaimed || 0}</td>
                     <td className="py-4 px-6 text-gray-600">{asker.asksDelivered || 0}</td>
-                    <td className="py-4 px-6 text-gray-600">{asker.memberStatus || "Standard Member"}</td>
+                    <td className="py-4 px-6 text-gray-600">{asker.membershipType || "Standard Member"}</td>
                     <td className="py-4 px-6">
                       <button
                         className="px-4 py-2 bg-primary text-white rounded-lg"

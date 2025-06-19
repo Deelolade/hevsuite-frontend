@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BiSearch } from "react-icons/bi";
 import { BsCheckCircleFill, BsThreeDots, BsXCircleFill } from "react-icons/bs";
 import Modal from "react-modal";
-import avatar from "../../assets/user.avif";
+import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
 import {
@@ -42,6 +42,59 @@ const Evidence = () => {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+
+  // Get user role from localStorage
+  const userRole = JSON.parse(localStorage.getItem("admin"))?.role;
+
+  // Fetch user permissions
+  useEffect(() => {
+    const fetchRolesAndPermissions = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${base_url}/api/permissions`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        // Find the user's role and get its permissions
+        const userRoleData = response.data.find(
+          (role) => role.role === userRole
+        );
+
+        if (userRoleData) {
+          setUserPermissions(userRoleData.permissions);
+          // If user has "Your Support Request" permission, set active tab to assigned
+          if (userRoleData.permissions.includes("Your Support Request")) {
+            setActiveTab("assigned");
+          }
+        } else {
+          // If no specific role found, set default permissions for superadmin
+          if (userRole === "superadmin") {
+            setUserPermissions([]);
+          } else {
+            setUserPermissions([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+        setUserPermissions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userRole) {
+      fetchRolesAndPermissions();
+    } else {
+      setUserPermissions([]);
+      setLoading(false);
+    }
+  }, [userRole]);
 
   // Fetch current user profile
   useEffect(() => {
@@ -65,13 +118,30 @@ const Evidence = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching evidence requests...");
+        console.log("Fetching evidence requests with activeTab:", activeTab);
+        let typeFilter;
+
+        if (activeTab === "assigned") {
+          typeFilter = undefined; // Show all types for assigned requests
+        } else if (activeTab === "other") {
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ]; // Show these types for other requests
+        } else {
+          typeFilter = "Evidence Review"; // Show only evidence review for main tab
+        }
+
         await dispatch(
           getEvidenceRequests({
             assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
           })
         ).unwrap();
-        console.log("Evidence requests fetched:", evidenceRequests);
+        console.log("Evidence requests AFTER fetch:", evidenceRequests);
 
         console.log("Fetching admin users...");
         await dispatch(getAdminUsers()).unwrap();
@@ -105,10 +175,16 @@ const Evidence = () => {
         currentUser: currentUser?._id,
       });
 
+      console.log("Assigning request:", {
+        requestId,
+        adminId,
+        currentUser: currentUser?._id,
+      });
+
       // If no adminId is provided, assign to current user
       const targetAdminId = adminId || currentUser?._id;
 
-      // Update the request with the new assignment using PUT instead of PATCH
+      // Update the request with the new assignment
       const response = await axios.put(
         `${base_url}/api/support-requests/${requestId}`,
         {
@@ -118,18 +194,35 @@ const Evidence = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Add authorization header
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       if (response.data) {
-        // Refresh the evidence requests list
+        // Refresh the evidence requests list with current tab settings
+        let typeFilter;
+        if (activeTab === "assigned") {
+          typeFilter = undefined;
+        } else if (activeTab === "other") {
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ];
+        } else {
+          typeFilter = "Evidence Review";
+        }
+
         await dispatch(
           getEvidenceRequests({
             assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
           })
         ).unwrap();
+
         toast.success("Request assigned successfully");
         setShowAssignModal(false);
       }
@@ -138,13 +231,82 @@ const Evidence = () => {
       const errorMessage =
         error.response?.data?.message || "Failed to assign request";
       toast.error(errorMessage);
+    }
+  };
 
-      // Log detailed error information for debugging
-      console.log("Error details:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers,
-      });
+  // Add this function to handle "Assign to me" action
+  const handleAssignToMe = async (requestId) => {
+    await handleAssignToAdmin(requestId, currentUser?._id);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedRequest) return;
+
+    setIsSendingMessage(true);
+    // Optimistically update local message history
+    const optimisticMsg = {
+      text: newMessage.trim(),
+      sender: "admin",
+      date: new Date().toISOString(),
+      _id: Math.random().toString(36).substr(2, 9), // temp id
+    };
+    setSelectedRequest((prev) => ({
+      ...prev,
+      messages: [...(prev?.messages || []), optimisticMsg],
+    }));
+    setNewMessage("");
+    try {
+      const response = await axios.post(
+        `${base_url}/api/support-requests/${selectedRequest._id}/messages`,
+        {
+          text: optimisticMsg.text,
+          sender: "admin",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        toast.success("Message sent successfully");
+        // Optionally, refresh from server here if you want to sync
+        let typeFilter;
+        if (activeTab === "assigned") {
+          typeFilter = undefined;
+        } else if (activeTab === "other") {
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ];
+        } else {
+          typeFilter = "Evidence Review";
+        }
+
+        await dispatch(
+          getEvidenceRequests({
+            assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
+          })
+        ).unwrap();
+      }
+    } catch (error) {
+      // Remove the optimistic message if API fails
+      setSelectedRequest((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m._id !== optimisticMsg._id),
+      }));
+      console.error("Error sending message:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to send message";
+      toast.error(errorMessage);
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -175,20 +337,31 @@ const Evidence = () => {
 
     let filtered = [...evidenceRequests];
 
-    console.log("Filtering requests:", {
-      currentUser: currentUser?._id,
-      totalRequests: filtered.length,
-      activeTab,
-      statusFilter,
-      searchTerm,
-      requests: filtered.map((r) => ({
-        id: r._id,
-        assignedTo: r.assignedTo?._id || r.assignedTo,
-        createdBy: r.createdBy?._id || r.createdBy,
-        status: r.status,
-        user: r.user?.forename,
-      })),
-    });
+    // Apply type filtering based on active tab
+    if (activeTab === "assigned") {
+      // No type filtering for assigned tab
+    } else if (activeTab === "other") {
+      // Filter for Document Review and Identity Verification
+      filtered = filtered.filter(
+        (request) =>
+          request.type === "Document Review" ||
+          request.type === "Identity Verification" ||
+          request.type === "Other Support" ||
+          request.type === "Card Request" ||
+          request.type === "Membership Upgrade"
+      );
+    } else {
+      // Filter for Evidence Review in main tab
+      filtered = filtered.filter(
+        (request) => request.type === "Evidence Review"
+      );
+    }
+
+    console.log(
+      "getFilteredRequests - Initial evidenceRequests:",
+      filtered.length,
+      filtered.map((r) => r.type)
+    );
 
     // Apply search filter
     if (searchTerm) {
@@ -214,23 +387,15 @@ const Evidence = () => {
       console.log("After status filter:", filtered.length);
     }
 
-    // Filter by tab
-    if (activeTab === "assigned") {
-      // The API already returns only assigned requests, so no need for additional filtering
-      console.log(
-        "Assigned tab selected - showing assigned requests:",
-        filtered.length
-      );
-    } else if (activeTab === "other") {
-      // Show no requests in "Other Requests" tab
-      filtered = [];
-      console.log("Other tab selected - showing no requests");
-    }
-
     return filtered;
   };
 
   const filteredRequests = getFilteredRequests();
+  console.log(
+    "Final filteredRequests before rendering:",
+    filteredRequests.length,
+    filteredRequests.map((r) => r.type)
+  );
 
   const formattedRequests = filteredRequests.map((request) => ({
     ID: request._id,
@@ -288,16 +453,18 @@ const Evidence = () => {
 
         {/* Tabs */}
         <div className="flex flex-row md:ml-0 -ml-2 gap-4">
-          <button
-            className={`px-6 py-3 rounded-lg flex-1 ${
-              activeTab === "all"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
-            onClick={() => setActiveTab("all")}
-          >
-            Evidence Review
-          </button>
+          {!userPermissions.includes("Your Support Request") && (
+            <button
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "all"
+                  ? "bg-primary text-white"
+                  : "bg-white border text-gray-700"
+              }`}
+              onClick={() => setActiveTab("all")}
+            >
+              Evidence Review
+            </button>
+          )}
           <button
             className={`px-6 py-3 rounded-lg flex-1 ${
               activeTab === "assigned"
@@ -308,16 +475,18 @@ const Evidence = () => {
           >
             Your Assigned Requests
           </button>
-          <button
-            className={`px-6 py-3 rounded-lg flex-1 ${
-              activeTab === "other"
-                ? "bg-primary text-white"
-                : "bg-white border text-gray-700"
-            }`}
-            onClick={() => setActiveTab("other")}
-          >
-            Other Requests
-          </button>
+          {!userPermissions.includes("Your Support Request") && (
+            <button
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "other"
+                  ? "bg-primary text-white"
+                  : "bg-white border text-gray-700"
+              }`}
+              onClick={() => setActiveTab("other")}
+            >
+              Other Requests
+            </button>
+          )}
         </div>
 
         {/* Requests Table */}
@@ -397,32 +566,42 @@ const Evidence = () => {
                           </button>
                         </>
                       )}
-                      <button
-                        className="p-1 text-gray-400 hover:text-gray-500"
-                        onClick={() => {
-                          setOpenOptionsId(
-                            openOptionsId === request._id ? null : request._id
-                          );
-                        }}
-                      >
-                        <BsThreeDots size={20} />
-                      </button>
+                      {request.status === "Approved" ? (
+                        <span className="text-gray-400 font-semibold">
+                          Closed
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            className="p-1 text-gray-400 hover:text-gray-500"
+                            onClick={() => {
+                              setOpenOptionsId(
+                                openOptionsId === request._id
+                                  ? null
+                                  : request._id
+                              );
+                            }}
+                          >
+                            <BsThreeDots size={20} />
+                          </button>
 
-                      {openOptionsId === request._id && (
-                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
-                          <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            onClick={() => handleDetail(request)}
-                          >
-                            Detail
-                          </button>
-                          <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            onClick={() => handleAssign(request)}
-                          >
-                            Assign Admin
-                          </button>
-                        </div>
+                          {openOptionsId === request._id && (
+                            <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                onClick={() => handleDetail(request)}
+                              >
+                                Detail
+                              </button>
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                onClick={() => handleAssign(request)}
+                              >
+                                Assign Admin
+                              </button>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
@@ -437,56 +616,53 @@ const Evidence = () => {
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[450px] w-[96vw]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl w-[600px] shadow-lg focus:outline-none max-h-[90vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-primary font-semibold">
-              Request Details
-            </h2>
-            <button
-              onClick={() => setOpenDetails(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* User Info */}
-            <div className="flex items-center justify-between">
+        <div className="p-8">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Request Details</h2>
               <div className="flex items-center gap-3">
-                {/* src={selectedRequest.user?.profilePhoto || avatar}
-              alt={selectedRequest.user?.forename || 'User'} */}
                 <img
                   src={selectedRequest?.user?.profilePhoto || avatar}
                   alt={selectedRequest?.user?.forename || "User"}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full border"
                 />
-                <span className="font-medium text-[#323C47]">
-                  {/* {selectedRequest.user?.forename} {selectedRequest.user?.surname}  */}
-                </span>
+                <span className="font-semibold text-lg">{`${
+                  selectedRequest?.user?.forename || ""
+                } ${selectedRequest?.user?.surname || "Unknown User"}`}</span>
               </div>
-              <br />
             </div>
-
-            {/* Request Type */}
-            <div>
-              <select
-                className="w-full px-4 py-2 border rounded-lg text-gray-600"
-                disabled
+            <div className="flex flex-col items-end gap-2">
+              <button
+                onClick={() => setOpenDetails(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
-                <option>{selectedRequest?.type}</option>
-              </select>
+                ×
+              </button>
+              <span className="text-gray-500 text-sm">
+                {selectedRequest?.user?.primaryEmail || "No Email"}
+              </span>
             </div>
+          </div>
 
-            {/* Preview Images */}
-            <div className="flex gap-4">
-              {selectedRequest?.images?.map((image, index) => (
+          {/* Dropdown */}
+          <select
+            className="w-full px-2 py-2 border rounded-lg text-gray-600 mb-6 bg-gray-50 cursor-not-allowed"
+            disabled
+          >
+            <option>{selectedRequest?.type}</option>
+          </select>
+
+          {/* Images */}
+          {selectedRequest?.images && selectedRequest.images.length > 0 && (
+            <div className="flex gap-4 mb-8">
+              {selectedRequest.images.map((image, index) => (
                 <div
                   key={index}
-                  className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center"
+                  className="relative w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
                 >
                   <img
                     src={image}
@@ -494,7 +670,7 @@ const Evidence = () => {
                     className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
                   />
                   <button
-                    className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
+                    className="absolute inset-0 text-white hover:bg-black/20 rounded-lg font-semibold text-lg"
                     onClick={() => {
                       setShowPreviewModal(true);
                       setSelectedPreviewImage(image);
@@ -505,27 +681,84 @@ const Evidence = () => {
                 </div>
               ))}
             </div>
+          )}
 
-            {showPreviewModal && (
-              <div
-                className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
-                onClick={() => setShowPreviewModal(false)}
-              >
-                <img
-                  src={selectedPreviewImage}
-                  alt="Preview"
-                  className="max-w-[80%] max-h-[80%] object-contain"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-
-            {/* Request Message */}
-            <div className="p-4 border rounded-lg">
-              <p className="text-gray-600">
-                {selectedRequest?.messages?.[0]?.text || "No message provided"}
-              </p>
+          {showPreviewModal && (
+            <div
+              className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
+              onClick={() => setShowPreviewModal(false)}
+            >
+              <img
+                src={selectedPreviewImage}
+                alt="Preview"
+                className="max-w-[80%] max-h-[80%] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
+          )}
+
+          {/* User Message Section */}
+          <div className="mb-6">
+            <label className="font-bold text-base mb-2 block">Messages</label>
+            <div className="max-h-68 overflow-y-auto space-y-3">
+              {selectedRequest?.messages?.map((msg, idx) => (
+                <div
+                  key={msg._id?.$oid || idx}
+                  className={`p-3 rounded-lg w-fit max-w-[80%] ${
+                    msg.sender === "admin"
+                      ? "ml-auto bg-blue-100 text-right"
+                      : "mr-auto bg-gray-100 text-left"
+                  }`}
+                >
+                  <div className="text-sm text-gray-700">{msg.text}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(msg.date?.$date || msg.date).toLocaleString()} -{" "}
+                    {msg.sender === "admin" ? "Admin" : "User"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Response Section */}
+          {selectedRequest?.status === "Declined" ? (
+            <div className="mb-4 text-center text-gray-400 font-semibold">
+              Messaging is disabled for declined requests.
+            </div>
+          ) : (
+            <div className="mb-4">
+              <label className="font-bold text-base mb-2 block">Response</label>
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write Your Response"
+                className="w-full p-2 border rounded-lg resize-none min-h-[50px] text-gray-700"
+                disabled={isSendingMessage}
+              />
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setOpenDetails(false)}
+              className="px-6 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            {selectedRequest?.status !== "Declined" && (
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || isSendingMessage}
+                className={`px-6 py-2 rounded-lg text-white font-semibold ${
+                  !newMessage.trim() || isSendingMessage
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#A80036] hover:bg-[#8a0030]"
+                }`}
+              >
+                {isSendingMessage ? "Sending..." : "Send"}
+              </button>
+            )}
           </div>
         </div>
       </Modal>
@@ -692,8 +925,8 @@ const Evidence = () => {
               </p>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                <button
-                  onClick={() => handleAssignToAdmin(selectedRequest._id)}
+                {/* <button
+                  onClick={() => handleAssignToMe(selectedRequest._id)}
                   className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 flex items-center gap-3"
                 >
                   <img
@@ -702,7 +935,7 @@ const Evidence = () => {
                     className="w-8 h-8 rounded-full"
                   />
                   <span>Assign to myself</span>
-                </button>
+                </button> */}
 
                 {isLoadingAdmins ? (
                   <div className="text-center py-4">

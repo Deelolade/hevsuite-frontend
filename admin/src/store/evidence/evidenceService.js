@@ -12,10 +12,12 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/support-requests`;
 // Get all evidence requests
 const getEvidenceRequests = async (params = {}) => {
   try {
-    const response = await axios.get(`${API_URL}`, {
-      withCredentials: true,
+    const response = await axios.get(API_URL, {
+      params: { ...params, type: params.type || undefined },
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
     });
-    console.log(response);
     return response.data;
   } catch (error) {
     throw error;
