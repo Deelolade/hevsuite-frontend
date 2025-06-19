@@ -46,6 +46,7 @@ import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
 import UpcomingEvents from "./views/account/events/UpcomingEvents";
+import SelectedEvent from "./views/homepage/SelectedEvent";
 
 axios.defaults.withCredentials = true;
 
@@ -320,6 +321,10 @@ const router = createBrowserRouter([
       {
         path: "events",
         element: <Events />,
+      },
+      {
+        path: "events/:id",
+        element: <SelectedEvent />,
       },
       {
         path: "upcoming-events",
