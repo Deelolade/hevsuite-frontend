@@ -3,11 +3,11 @@ import axios from "axios";
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/support-requests`;
 
 // Get auth token from localStorage
-// const getAuthToken = () => {
-//   const adminData = localStorage.getItem("admin");
-//   const admin = adminData ? JSON.parse(adminData) : null;
-//   return admin?.token || "";
-// };
+const getAuthToken = () => {
+  const adminData = localStorage.getItem("admin");
+  const admin = adminData ? JSON.parse(adminData) : null;
+  return admin?.token || "";
+};
 
 // Get all evidence requests
 const getEvidenceRequests = async (params = {}) => {
