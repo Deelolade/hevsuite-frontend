@@ -356,9 +356,9 @@ const Ask = () => {
   const userOwnAsks =
     asks?.filter((ask) => {
       const isUserCreator =
-        ask.createdBy?._id?.toString() === currentUser?.id.toString();
+        ask.createdBy?._id?.toString() === currentUser?.id?.toString();
       const isUserClaimer =
-        ask.claimedBy?._id.toString() === currentUser?.id.toString();
+        ask.claimedBy?._id.toString() === currentUser?.id?.toString();
       const isClaimed = ask.status === "claimed";
 
       return (isUserCreator || isUserClaimer) && isClaimed;
