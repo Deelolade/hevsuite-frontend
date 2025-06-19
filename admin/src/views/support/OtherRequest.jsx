@@ -10,6 +10,7 @@ import Modal from "react-modal";
 import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
 import ExportButton from "../ExportButton";
+import { toast } from "react-hot-toast";
 
 const OtherRequest = () => {
   const [statusFilter, setStatusFilter] = useState("Pending");
@@ -26,6 +27,8 @@ const OtherRequest = () => {
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   const [adminList] = useState([
     { id: 1, name: "Admin 1" },
@@ -95,6 +98,40 @@ const OtherRequest = () => {
     setIsAssignModalOpen(true);
     setOpenOptionsId(null);
   };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedRequest) return;
+    
+    setIsSendingMessage(true);
+    // Optimistically update local message history
+    const optimisticMsg = {
+      id: Date.now(),
+      text: newMessage.trim(),
+      date: new Date().toLocaleDateString(),
+      sender: "admin"
+    };
+    setSelectedRequest(prev => ({
+      ...prev,
+      messages: [...(prev?.messages || []), optimisticMsg]
+    }));
+    setNewMessage("");
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Message sent successfully");
+    } catch (error) {
+      // Remove the optimistic message if API fails
+      setSelectedRequest(prev => ({
+        ...prev,
+        messages: prev.messages.filter(m => m.id !== optimisticMsg.id)
+      }));
+      console.error("Failed to send message:", error);
+      toast.error("Failed to send message");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
   const formattedRequests = requests.map((request) => ({
     ID: request.id,
     Name: request.user.name,
@@ -206,31 +243,37 @@ const OtherRequest = () => {
                           </button>
                         </>
                       )}
-                      <button
-                        className="p-1 text-gray-400 hover:text-gray-500"
-                        onClick={() => {
-                          setOpenOptionsId(
-                            openOptionsId === request.id ? null : request.id
-                          );
-                        }}
-                      >
-                        <BsThreeDots size={20} />
-                      </button>
-                      {openOptionsId === request.id && (
-                        <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                      {request.status === "Approved" ? (
+                        <span className="text-gray-400 font-semibold">Closed</span>
+                      ) : (
+                        <>
                           <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            onClick={() => handleDetail(request)}
+                            className="p-1 text-gray-400 hover:text-gray-500"
+                            onClick={() => {
+                              setOpenOptionsId(
+                                openOptionsId === request.id ? null : request.id
+                              );
+                            }}
                           >
-                            Detail
+                            <BsThreeDots size={20} />
                           </button>
-                          <button
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
-                            onClick={() => handleAssign(request)}
-                          >
-                            Assign Admin
-                          </button>
-                        </div>
+                          {openOptionsId === request.id && (
+                            <div className="absolute right-6 mt-2 w-32 bg-white rounded-lg shadow-lg border py-1 z-10">
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                onClick={() => handleDetail(request)}
+                              >
+                                Detail
+                              </button>
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 "
+                                onClick={() => handleAssign(request)}
+                              >
+                                Assign Admin
+                              </button>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
@@ -294,105 +337,153 @@ const OtherRequest = () => {
       <Modal
         isOpen={openDetails}
         onRequestClose={() => setOpenDetails(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[600px]"
-        overlayClassName="fixed inset-0 bg-black/50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl w-[600px] shadow-lg focus:outline-none"
+        overlayClassName="fixed inset-0 bg-black/50 z-50"
       >
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Request Details</h2>
-            <button
-              onClick={() => setOpenDetails(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {/* User Info */}
-            <div className="flex items-center justify-between">
+        <div className="p-8">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Request Details</h2>
               <div className="flex items-center gap-3">
                 <img
                   src={selectedRequest?.user?.avatar}
                   alt={selectedRequest?.user?.name}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full border"
                 />
-                <span className="font-medium">
-                  {selectedRequest?.user?.name}
-                </span>
-              </div>
-              <span className="text-gray-600">
-                {selectedRequest?.user?.email || "Andrew@gmail.com"}
-              </span>
-            </div>
-
-            {/* Request Type */}
-            <div>
-              <select className="w-full px-4 py-2 border rounded-lg text-gray-600">
-                <option>Evidence Review</option>
-                <option>Document Review</option>
-                <option>Identity Verification</option>
-              </select>
-            </div>
-
-            {/* Preview Images */}
-            <div className="flex gap-4">
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={idcards}
-                  alt="Evidence 1"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg "
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(idcards);
-                  }}
-                >
-                  Preview
-                </button>
-              </div>
-              <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                <img
-                  src={avatar}
-                  alt="Evidence 2"
-                  className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
-                />
-                <button
-                  className="absolute inset-0 text-white hover:bg-black/20 rounded-lg"
-                  onClick={() => {
-                    setShowPreviewModal(true);
-                    setSelectedPreviewImage(avatar);
-                  }}
-                >
-                  Preview
-                </button>
+                <span className="font-semibold text-lg">{selectedRequest?.user?.name}</span>
               </div>
             </div>
-
-            {showPreviewModal && (
-              <div
-                className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
-                onClick={() => setShowPreviewModal(false)}
+            <div className="flex flex-col items-end gap-2">
+              <span className="text-gray-500 text-sm">{selectedRequest?.user?.email || "Andrew@gmail.com"}</span>
+              <button
+                onClick={() => setOpenDetails(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
-                <img
-                  src={selectedPreviewImage}
-                  alt="Preview"
-                  className="max-w-[80%] max-h-[80%] object-contain"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-
-            {/* Request Message */}
-            <div className="p-4 border rounded-lg">
-              <p className="text-gray-600">
-                I want You to review my document of residence I want You to
-                review my document of residence I want You to review my document
-                of residence...
-              </p>
+                ×
+              </button>
             </div>
+          </div>
+
+          {/* Dropdown */}
+          <select
+            className="w-full px-4 py-2 border rounded-lg text-gray-600 mb-6 bg-gray-50 cursor-not-allowed"
+            disabled
+          >
+            <option>{selectedRequest?.type || "Evidence Review"}</option>
+          </select>
+
+          {/* Images */}
+          <div className="flex gap-4 mb-8">
+            <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              <img
+                src={idcards}
+                alt="Evidence 1"
+                className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+              />
+              <button
+                className="absolute inset-0 text-white hover:bg-black/20 rounded-lg font-semibold text-lg"
+                onClick={() => {
+                  setShowPreviewModal(true);
+                  setSelectedPreviewImage(idcards);
+                }}
+              >
+                Preview
+              </button>
+            </div>
+            <div className="relative w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              <img
+                src={avatar}
+                alt="Evidence 2"
+                className="w-full h-full object-cover rounded-lg brightness-50 contrast-50"
+              />
+              <button
+                className="absolute inset-0 text-white hover:bg-black/20 rounded-lg font-semibold text-lg"
+                onClick={() => {
+                  setShowPreviewModal(true);
+                  setSelectedPreviewImage(avatar);
+                }}
+              >
+                Preview
+              </button>
+            </div>
+          </div>
+
+          {showPreviewModal && (
+            <div
+              className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50"
+              onClick={() => setShowPreviewModal(false)}
+            >
+              <img
+                src={selectedPreviewImage}
+                alt="Preview"
+                className="max-w-[80%] max-h-[80%] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          {/* User Message Section */}
+          <div className="mb-6">
+            <label className="font-bold text-base mb-2 block">Messages</label>
+            <div className="max-h-48 overflow-y-auto space-y-3">
+              {selectedRequest?.messages?.map((msg, idx) => (
+                <div
+                  key={msg._id?.$oid || idx}
+                  className={`p-3 rounded-lg w-fit max-w-[80%] ${
+                    msg.sender === 'admin'
+                      ? 'ml-auto bg-blue-100 text-right'
+                      : 'mr-auto bg-gray-100 text-left'
+                  }`}
+                >
+                  <div className="text-sm text-gray-700">{msg.text}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {msg.date ? msg.date : ''} - {msg.sender === 'admin' ? 'Admin' : 'User'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Response Section */}
+          {selectedRequest?.status === 'Declined' ? (
+            <div className="mb-8 text-center text-gray-400 font-semibold">
+              Messaging is disabled for declined requests.
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-medium mb-2">Response</h3>
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Write Your Response"
+                className="w-full p-4 border rounded-lg resize-none min-h-[100px]"
+                disabled={isSendingMessage}
+              />
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setOpenDetails(false)}
+              className="px-6 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            {selectedRequest?.status !== 'Declined' && (
+              <button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || isSendingMessage}
+                className={`px-6 py-2 rounded-lg text-white ${
+                  !newMessage.trim() || isSendingMessage
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-primary hover:bg-primary/90'
+                }`}
+              >
+                {isSendingMessage ? 'Sending...' : 'Send'}
+              </button>
+            )}
           </div>
         </div>
       </Modal>
@@ -537,13 +628,22 @@ const OtherRequest = () => {
             </div>
 
             {/* Response Section */}
-            <div>
-              <h3 className="font-medium mb-2">Response</h3>
-              <textarea
-                placeholder="Write Your Response"
-                className="w-full p-4 border rounded-lg resize-none min-h-[100px]"
-              />
-            </div>
+            {selectedRequest?.status === 'Declined' ? (
+              <div className="mb-8 text-center text-gray-400 font-semibold">
+                Messaging is disabled for declined requests.
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-medium mb-2">Response</h3>
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Write Your Response"
+                  className="w-full p-4 border rounded-lg resize-none min-h-[100px]"
+                  disabled={isSendingMessage}
+                />
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3">
@@ -553,9 +653,19 @@ const OtherRequest = () => {
               >
                 Cancel
               </button>
-              <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
-                Send
-              </button>
+              {selectedRequest?.status !== 'Declined' && (
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || isSendingMessage}
+                  className={`px-6 py-2 rounded-lg text-white ${
+                    !newMessage.trim() || isSendingMessage
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-primary hover:bg-primary/90'
+                  }`}
+                >
+                  {isSendingMessage ? 'Sending...' : 'Send'}
+                </button>
+              )}
             </div>
           </div>
         </div>

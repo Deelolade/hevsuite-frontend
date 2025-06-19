@@ -78,7 +78,7 @@ const AdminProfile = () => {
     { 
       title: 'Completed Requests', 
       count: stats.completedRequests, 
-      description: 'Lifetime completed requests',
+      description: 'Requests you have approved/declined',
       icon: '✅'
     },
     { 

@@ -72,6 +72,17 @@ export const getSupportRequestStats = createAsyncThunk(
   }
 );
 
+export const addMessageToSupportRequest = createAsyncThunk(
+  "support/add-message",
+  async ({ requestId, messageData }, thunkAPI) => {
+    try {
+      return await supportService.addMessageToSupportRequest(requestId, messageData);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const supportSlice = createSlice({
   name: "support",
   initialState,
@@ -174,6 +185,30 @@ export const supportSlice = createSlice({
         state.isSuccess = false;
         state.isError = true;
         state.message = action.error;
+      })
+      .addCase(addMessageToSupportRequest.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addMessageToSupportRequest.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.message = "Message added successfully";
+        // Update the specific request in the list with the new message
+        const index = state.supportRequests.findIndex(
+          (request) => request._id === action.payload._id
+        );
+        if (index !== -1) {
+          state.supportRequests[index] = action.payload;
+        }
+        toast.success(state.message);
+      })
+      .addCase(addMessageToSupportRequest.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = false;
+        state.isError = true;
+        state.message = action.error.message;
+        toast.error(state.message);
       });
   },
 });
