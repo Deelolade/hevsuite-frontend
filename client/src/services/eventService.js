@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API_URL = `${process.env.REACT_APP_API_BASE_URL}/api/events`;
 
@@ -6,40 +6,48 @@ const eventService = {
   // Get all visible events for logged-in user
   getVisibleEvents: async () => {
     try {
-      const response = await axios.get(`${API_URL}/user`, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/user`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch events';
+      throw error.response?.data?.message || "Failed to fetch events";
     }
   },
 
   // Get attending events
   getAttendingEvents: async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/attending`, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/user/attending`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch attending events';
+      throw error.response?.data?.message || "Failed to fetch attending events";
     }
   },
 
   // Get invited events
   getInvitedEvents: async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/invited`, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/user/invited`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch invited events';
+      throw error.response?.data?.message || "Failed to fetch invited events";
     }
   },
 
   // Get past attended events
   getPastEvents: async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/attended`, { withCredentials: true });
+      const response = await axios.get(`${API_URL}/user/attended`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch past events';
+      throw error.response?.data?.message || "Failed to fetch past events";
     }
   },
 
@@ -53,12 +61,14 @@ const eventService = {
       );
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch attending members';
+      throw (
+        error.response?.data?.message || "Failed to fetch attending members"
+      );
     }
   },
 
   // Update invite status
-  updateInviteStatus: async ({eventId, status}) => {
+  updateInviteStatus: async ({ eventId, status }) => {
     try {
       const response = await axios.put(
         `${API_URL}/invite/status/update`,
@@ -67,7 +77,7 @@ const eventService = {
       );
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to update invite status';
+      throw error.response?.data?.message || "Failed to update invite status";
     }
   },
 
@@ -81,23 +91,23 @@ const eventService = {
       );
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to invite users';
+      throw error.response?.data?.message || "Failed to invite users";
     }
   },
-  
+
   // Cancel event attendance
-cancelEventAttendance: async (eventId) => {  
-  try {
-    const response = await axios.post(
-      `${API_URL}/cancel-attendance`,
-      { eventId },
-      { withCredentials: true }
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.message || 'Failed to cancel attendance';
-  }
-},
+  cancelEventAttendance: async (eventId) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/cancel-attendance`,
+        { eventId },
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || "Failed to cancel attendance";
+    }
+  },
   // Save an event
   saveEvent: async (eventId) => {
     try {
@@ -108,7 +118,7 @@ cancelEventAttendance: async (eventId) => {
       );
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Failed to save event' };
+      throw error.response?.data || { message: "Failed to save event" };
     }
   },
 
@@ -122,22 +132,21 @@ cancelEventAttendance: async (eventId) => {
       );
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to remove saved event';
+      throw error.response?.data?.message || "Failed to remove saved event";
     }
   },
 
   // Get saved events
   getSavedEvents: async () => {
     try {
-      const response = await axios.get(
-        `${API_URL}/saved-events`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/saved-events`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Failed to fetch saved events';
+      throw error.response?.data?.message || "Failed to fetch saved events";
     }
-  }
+  },
 };
 
 export default eventService;

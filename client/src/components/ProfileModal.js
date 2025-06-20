@@ -10,12 +10,12 @@ import Referrals from "../views/account/referral/Referrals";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { persistor } from '../store/store';
+import { persistor } from "../store/store";
 import toast from "react-hot-toast";
 import AuthModal from "./AuthModal";
 import supportRequestService from "../services/supportRequestService";
 import useUserIdentificationApproved from "../hooks/useIdentificationApproved";
-const ProfileModal = ({ onClose, forNotification }) => {
+const ProfileModal = ({ onClose, forNotification, moveToEvents }) => {
   const { user } = useSelector((state) => state.auth);
   const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
   const [logOutLoading, setLogOutLoading] = useState(false);
@@ -59,23 +59,24 @@ const ProfileModal = ({ onClose, forNotification }) => {
     "Support Join Request",
     "Your Asks",
     // "Settings",
-  ]
+  ];
 
-  const handleProtectedTab = useCallback((tab) =>{
-      if(user){
+  const handleProtectedTab = useCallback(
+    (tab) => {
+      if (user) {
+        if (!protectedtabs.includes(tab)) return () => setActiveTab(tab);
 
-        if(!protectedtabs.includes(tab)) return () => setActiveTab(tab);
+        if (!userIdentificationApproved)
+          return () => setShowDocumentReviewModal(true);
 
-        if(!userIdentificationApproved) return () => setShowDocumentReviewModal(true)
-        
         return () => setActiveTab(tab);
-
       }
 
       // nothing
-      return () => {}
-     
-  }, [user, userIdentificationApproved])
+      return () => {};
+    },
+    [user, userIdentificationApproved]
+  );
   //   const tabs = [
   //   "Account Profile",
   //   ...(user?.approvedByAdmin ? ["Your Events"] : []),
@@ -91,20 +92,25 @@ const ProfileModal = ({ onClose, forNotification }) => {
     forNotification && forNotification.current ? tabs[5] : tabs[0]
   );
 
+  useEffect(() => {
+    console.log("moveToEvents changed:", moveToEvents);
+    if (moveToEvents) {
+      setActiveTab("Your Events");
+    }
+  }, [moveToEvents]);
 
   const handleLogout = async () => {
     try {
       setLogOutLoading(true);
 
       await dispatch(logout()).unwrap(); // unwrap to catch error
-      await persistor.purge();           // clear redux-persist storage
+      await persistor.purge(); // clear redux-persist storage
 
       setLogOutLoading(false);
-      navigate('/');
-      
+      navigate("/");
     } catch (error) {
       toast.error("Logout failed. Please try again.");
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -235,14 +241,19 @@ const ProfileModal = ({ onClose, forNotification }) => {
   // }
   return (
     <div className="relative bg-transparent rounded-3xl overflow-hidden">
-      <AuthModal 
-      open={showDocumentReviewModal} 
-      title="Document Verification Process " 
-      description="Verification is ongoing before you can start using this feature"
-      onClose={()=>setShowDocumentReviewModal(false)}  
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
       />
-      <AuthModal loading open={logOutLoading} title="Logging Out" description="Sigining out your account..." />
-      
+      <AuthModal
+        loading
+        open={logOutLoading}
+        title="Logging Out"
+        description="Sigining out your account..."
+      />
+
       <div className="p-4 md:p-6 border-b border-transparent relative">
         <div className="absolute top-4 right-4 flex items-center gap-2">
           <button
@@ -274,10 +285,11 @@ const ProfileModal = ({ onClose, forNotification }) => {
                 key={tab}
                 // onClick={() => protectedtabs.includes(tab) ? handleProtectedTab():setActiveTab(tab)}
                 onClick={() => handleProtectedTab(tab)()}
-                className={`px-2  py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap  w-auto sm:w-[165px] transition-colors border border-transparent ${activeTab === tab
+                className={`px-2  py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap  w-auto sm:w-[165px] transition-colors border border-transparent ${
+                  activeTab === tab
                     ? "bg-[#540A26] text-white"
                     : "hover:bg-gray-100 text-gray-700 bg-white"
-                  }`}
+                }`}
               >
                 {tab}
               </button>

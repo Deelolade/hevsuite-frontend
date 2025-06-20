@@ -11,6 +11,8 @@ import landingPageReducer from "../features/landingPageSlice";
 import generalSettingReducer from "../features/generalSettingSlice";
 import footerReducer from "../features/footerSlice";
 import menusReducer from "../features/menuSlice";
+import clubCardReducer from "../features/clubCardSlice";
+import supportRequestReducer from "../features/supportRequestSlice";
 // Persist configuration for the register slice
 // const registerPersistConfig = {
 //   key: 'register',
@@ -33,9 +35,9 @@ const persistConfig = {
   version: CURRENT_STORE_VERSION,
   whitelist: ["auth", "register"], // optional: persist only selected slices
   migrate: (state, version) => {
-    if(version !== CURRENT_STORE_VERSION) return undefined; // reset everything
+    if (version !== CURRENT_STORE_VERSION) return undefined; // reset everything
     return Promise.resolve(state); // return peristed-state
-  }
+  },
 };
 
 // Create persisted reducers
@@ -53,6 +55,8 @@ const rootReducer = combineReducers({
   generalSettings: generalSettingReducer,
   footer: footerReducer,
   menus: menusReducer,
+  clubCard: clubCardReducer,
+  supportRequest: supportRequestReducer,
 });
 
 const persistedRootReducer = persistReducer(persistConfig, rootReducer);

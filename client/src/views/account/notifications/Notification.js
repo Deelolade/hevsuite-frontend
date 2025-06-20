@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { BsFilter } from "react-icons/bs";
 import Modal from "react-modal";
-import { useDispatch, useSelector } from 'react-redux';
-import { markAsRead,
-   fetchNotifications,
+import { useDispatch, useSelector } from "react-redux";
+import {
+  markAsRead,
+  fetchNotifications,
   markAllAsRead,
   deleteNotification,
   clearAllNotifications,
   selectFilteredNotifications,
-  setFilter } from "../../../features/notificationSlice";
+  setFilter,
+} from "../../../features/notificationSlice";
 Modal.setAppElement("#root");
 
 const NotificationItem = ({ notification, onRemove }) => {
@@ -172,7 +174,6 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilter }) => {
 };
 
 const Notification = () => {
-
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -220,12 +221,16 @@ const Notification = () => {
 
   const [currentFilter, setCurrentFilter] = useState("all");
   const dispatch = useDispatch();
-  const { status, error, unreadCount } = useSelector(state => state.notifications);
+  const { status, error, unreadCount } = useSelector(
+    (state) => state.notifications
+  );
   const filteredNotifications = useSelector(selectFilteredNotifications);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showClearAllModal, setShowClearAllModal] = useState(false);
-  const userId = 'current-user-id'; // Replace with actual user ID from auth
 
+  const { user } = useSelector((state) => state.auth);
+  const userId = user.id; // Replace with actual user ID from auth
+  console.log(filteredNotifications);
   // const handleRemoveNotification = (id) => {
   //   setNotifications(
   //     notifications.filter((notification) => notification.id !== id)
@@ -243,6 +248,12 @@ const Notification = () => {
   const handleMarkAllAsRead = () => {
     dispatch(markAllAsRead(userId));
   };
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchNotifications(userId));
+    }
+  }, [dispatch, userId]);
 
   // const handleClearAll = () => {
   //   setNotifications([]);
@@ -264,7 +275,7 @@ const Notification = () => {
             Mark all as read ({unreadCount} unread)
           </button>
         )}
-        
+
         {/* If no unread notifications, show empty div to maintain layout */}
         {unreadCount === 0 && <div></div>}
 
@@ -286,26 +297,26 @@ const Notification = () => {
       </div>
 
       <div className="space-y-2 sm:space-y-3">
-      {filteredNotifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No notifications found
           </div>
         ) : (
-        filteredNotifications?.map((notification) => (
-          <NotificationItem
-            key={notification.id}
-            notification={notification}
-            onRemove={handleRemoveNotification}
-          />
-          
-        )))}
+          filteredNotifications?.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onRemove={handleRemoveNotification}
+            />
+          ))
+        )}
       </div>
 
       {/* Filter Modal */}
       <FilterModal
         isOpen={showFilterModal}
         onClose={() => setShowFilterModal(false)}
-                currentFilter={useSelector(state => state.notifications.filter)}
+        currentFilter={useSelector((state) => state.notifications.filter)}
       />
 
       {/* Clear All Modal */}
@@ -352,10 +363,7 @@ const Notification = () => {
 
 export default Notification;
 
-
-
-
-// 
+//
 // import React, { useState } from "react";
 // import { IoClose } from "react-icons/io5";
 // import { BsFilter } from "react-icons/bs";

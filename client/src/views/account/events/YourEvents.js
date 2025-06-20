@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import AttendingEvents from "./AttendingEvents";
 import InvitedEvents from "./InvitedEvents";
 import PastEvents from "./PastEvents";
 import SavedEvents from "./SavedEvents";
-import { fetchAllEventTypes, fetchAttendingMembers } from "../../../features/eventSlice";
+import {
+  fetchAllEventTypes,
+  fetchAttendingMembers,
+} from "../../../features/eventSlice";
+import {
+  getCardByUserId,
+  getCardStatus,
+} from "../../../features/clubCardSlice";
 
 const NavigationTabs = ({ activeTab, setActiveTab, eventTabs }) => {
   return (
@@ -60,8 +67,11 @@ const YourEvents = () => {
     "Saved Events",
   ];
 
+  const { user } = useSelector((state) => state.auth);
+
   // Get events from Redux store
   const {
+    visibleEvents,
     attendingEvents,
     invitedEvents,
     pastEvents,
@@ -69,16 +79,45 @@ const YourEvents = () => {
     savedEvents,
     loading,
     membersLoading,
-    error
+    error,
   } = useSelector((state) => state.events);
- console.log("attendingEvents", attendingEvents);
+  console.log("visibleEvents", visibleEvents);
+  console.log("attendingEvents", attendingEvents);
   console.log("invitedEvents", invitedEvents);
   console.log("pastEvents", pastEvents);
-  console.log("saved",savedEvents)
+  console.log("saved", savedEvents);
+
+  const {
+    cardId,
+    isActive: cardIsActive,
+    loading: cardLoading,
+    error: cardError,
+  } = useSelector((state) => state.clubCard);
+
+  console.log("Club Card ID:", cardId);
+  console.log("Card Active Status:", cardIsActive);
+
   // Fetch all events on component mount
   useEffect(() => {
     dispatch(fetchAllEventTypes());
-  }, [dispatch]);
+
+    const userId = user?.id || user?._id;
+    if (userId) {
+      console.log("Fetching club card for user:", userId);
+      dispatch(getCardByUserId(userId))
+        .unwrap()
+        .then((cardData) => {
+          console.log("Card data received:", cardData);
+        })
+        .catch((error) => {
+          console.log("No card found for user or error:", error);
+        });
+    }
+  }, [dispatch, user]);
+
+  if (loading) {
+    return <div className="text-center">Loading events...</div>;
+  }
 
   // Handler for fetching attending members
   const handleFetchMembers = (eventId) => {
@@ -91,14 +130,22 @@ const YourEvents = () => {
     }
 
     if (error) {
-      return <div className="text-center text-red-500 py-8">Error: {error}</div>;
+      return (
+        <div className="text-center text-red-500 py-8">Error: {error}</div>
+      );
+    }
+
+    if (!cardIsActive && cardId) {
+      return (
+        <div className="text-center py-8 text-lg">Club Card is not active</div>
+      );
     }
 
     switch (activeTab) {
       case "Attending Events":
         return (
-          <AttendingEvents 
-            events={attendingEvents} 
+          <AttendingEvents
+            events={visibleEvents}
             onFetchMembers={handleFetchMembers}
             membersData={attendingMembers}
             membersLoading={membersLoading}

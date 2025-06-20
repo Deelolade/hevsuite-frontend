@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../assets/logo_white.png";
 import avatar from "../assets/user.avif";
 import { BsTwitterX, BsInstagram } from "react-icons/bs";
@@ -28,6 +28,8 @@ const Header = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
   const [logOutLoading, setLogOutLoading] = useState(false);
+  const [moveToEvents, setMoveToEvents] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { user, isLoading } = useSelector((state) => state.auth);
   const {
@@ -54,6 +56,19 @@ const Header = () => {
       dispatch(fetchNotifications(user._id));
     }
   }, [dispatch, user, isLoggedIn]);
+
+  useEffect(() => {
+    const openProfile = searchParams.get("openProfile");
+    const goToEvents = searchParams.get("goToEvents");
+
+    if (openProfile === "true") {
+      setShowProfileModal(true);
+
+      if (goToEvents === "true") {
+        setMoveToEvents(true);
+      }
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleLogout = async () => {
     setLogOutLoading(true);
@@ -402,6 +417,7 @@ const Header = () => {
           <ProfileModal
             forNotification={notRef.current ? notRef : null}
             onClose={() => setShowProfileModal(false)}
+            moveToEvents={moveToEvents}
           />
         </Modal>
       )}

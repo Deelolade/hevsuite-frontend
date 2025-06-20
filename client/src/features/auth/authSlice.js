@@ -26,15 +26,19 @@ const initialState = {
 //   }
 // );
 
-export const register = createAsyncThunk('auth/register', async (data, thunkAPI) => {
-  try {
-    const response = await authService.register(data);
-    return response;
-  } catch (error) {
-    const message = error.response?.data?.message || error.message || "Login failed";
-    return thunkAPI.rejectWithValue(message);
+export const register = createAsyncThunk(
+  "auth/register",
+  async (data, thunkAPI) => {
+    try {
+      const response = await authService.register(data);
+      return response;
+    } catch (error) {
+      const message =
+        error.response?.data?.message || error.message || "Login failed";
+      return thunkAPI.rejectWithValue(message);
+    }
   }
-});
+);
 
 export const login = createAsyncThunk(
   "auth/login",
@@ -76,6 +80,34 @@ export const updateProfile = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.message || "Failed to update profile"
+      );
+    }
+  }
+);
+
+export const setup2FA = createAsyncThunk(
+  "auth/setup2FA",
+  async (data, thunkAPI) => {
+    try {
+      const response = await authService.setup2FA(data);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Two factor authentication setup failed"
+      );
+    }
+  }
+);
+
+export const disable2FA = createAsyncThunk(
+  "auth/disable2FA",
+  async (data, thunkAPI) => {
+    try {
+      const response = await authService.disable2FA(data);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Two factor authentication disable failed"
       );
     }
   }
@@ -164,6 +196,35 @@ const authSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         toast.error(state.message);
+      })
+      .addCase(setup2FA.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = "";
+      })
+      .addCase(setup2FA.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = { ...state.user, ...action.payload.user };
+      })
+      .addCase(setup2FA.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(state.message);
+      })
+      .addCase(disable2FA.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.message = "";
+      })
+      .addCase(disable2FA.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = { ...state.user, ...action.payload.user };
       });
   },
 });
