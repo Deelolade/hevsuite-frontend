@@ -133,7 +133,7 @@ const Terms = () => {
             {activeTab?.title === "Cookie Policy" && (
               <CookiePolicy policyData={activeTab} searchQuery={searchQuery} />
             )}
-            {activeTab.title === "Code of Conduct" && (
+            {activeTab?.title === "Code of Conduct" && (
               <CodeOfConduct policyData={activeTab} searchQuery={searchQuery} />
             )}
           </div>

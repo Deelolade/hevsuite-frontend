@@ -222,11 +222,11 @@ const Login = () => {
                 Terms & Conditions
               </Link>
               ,{' '}
-              <Link to='/privacy' className='hover:underline'>
+              <Link to='/terms' className='hover:underline'>
                 Privacy Policy
               </Link>{' '}
               and{' '}
-              <Link to='/cookies' className='hover:underline'>
+              <Link to='/terms' className='hover:underline'>
                 Cookie Policy
               </Link>
             </p>
