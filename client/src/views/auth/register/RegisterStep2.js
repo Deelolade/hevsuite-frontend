@@ -6,7 +6,7 @@ import logo_white from '../../../assets/logo_white.png';
 import bg_image from '../../../assets/party3.jpg';
 import Swal from 'sweetalert2';
 import { showModal } from '../../../components/FireModal';
-import { CountrySelect } from 'react-country-state-city';
+import { CountrySelect, GetCountries } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -28,10 +28,27 @@ const RegisterStep2 = () => {
     (state) => state.register
   );
 
+  const [countries, setCountries] = useState([]);
+
   const [formData, setFormData] = useState({ ...data.step2 });
   const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
+
+  const handleTextChange = (txt, key) => {
+    const trimmed = txt.trim();
+
+    if (!trimmed) {
+      // Clear country if user clears input
+      setFormData((prev) => ({ ...prev, [key]: '' }));
+      return;
+    }
+
+    const match = countries.find(
+      (c) => c.name.toLowerCase() === txt.trim().toLowerCase()
+    );
+    if (match) setFormData((prev) => ({ ...prev, [key]: match }));       // ✅ auto‑select
+  };
 
   const changeNationalityHandler = (country, key) => {
     setFormData((prev) => ({ ...prev, [key]: country.name }));
@@ -79,6 +96,10 @@ const RegisterStep2 = () => {
     dispatch(nextStep());
     navigate('/register-3');
   };
+
+  useEffect(() => {
+    GetCountries().then(setCountries); 
+  }, []);
 
   return (
     <div className='min-h-screen flex flex-col'>
@@ -230,11 +251,12 @@ const RegisterStep2 = () => {
               </label>
               <div className={`${errors.nationality ? 'border border-red-500' : ''}`}>
                 <CountrySelect
+                  autoComplete='off'
                   onChange={(country) =>
                     changeNationalityHandler(country, 'nationality')
                   }
-                  onTextChange={() =>
-                    setFormData((prev) => ({ ...prev, nationality: '' }))
+                  onTextChange={(e) =>  handleTextChange(e.target.value, "nationality")
+                    // setFormData((prev) => ({ ...prev, nationality: '' }))
                   }
                   defaultValue={formData.nationality}
                   placeHolder='Select Country'
@@ -257,12 +279,13 @@ const RegisterStep2 = () => {
                 onChange={(country) =>
                   changeNationalityHandler(country, 'additionalNationality')
                 }
-                onTextChange={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    additionalNationality: '',
-                  }))
-                }
+                onTextChange={(e) =>  handleTextChange(e.target.value, "additionalNationality")}
+                // onTextChange={() =>
+                //   setFormData((prev) => ({
+                //     ...prev,
+                //     additionalNationality: '',
+                //   }))
+                // }
                 placeHolder='Select Additional Country'
                 defaultValue={formData.additionalNationality}
                 style={{
