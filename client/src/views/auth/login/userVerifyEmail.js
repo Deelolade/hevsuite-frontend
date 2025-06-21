@@ -9,32 +9,6 @@ import {
 } from "react-icons/ai";
 import authService from "../../../services/authService";
 
-const UserVerifyEmail_ = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  console.log(searchParams.get("email"));
-  const navigate = useNavigate();
-
-  return (
-    <div className="h-screen bg-gray-100">
-      <div className="bg-white  p-8 shadow-md max-w-lg relative top-40 m-auto  text-center space-y-5">
-        <FaCheckCircle className="mx-auto text-green-500" size={48} />
-        <h2 className="text-2xl font-semibold">Email Verified</h2>
-        <p className="text-gray-600">
-          Your email address has been successfully verified.
-        </p>
-        <button
-          className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440]  text-white rounded-3xl font-secondary text-lg font-medium }`}
-        >
-          Login
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// export default UserVerifyEmail;
-
 export default function UserVerifyEmail() {
   const [status, setStatus] = useState("loading"); // "loading" | "success" | "error"
   const [searchParams] = useSearchParams();
