@@ -14,11 +14,12 @@ import { getEvents, createNewEvent, updateExistingEvent, deleteExistingEvent } f
 import { memberUsers } from "../../store/users/userSlice"
 import { getAffiliates } from "../../store/affiliate/affiliateSlice"
 import "../layout/forced.css"
+import authService from '../../store/auth/authService';
 
 // Set app element for Modal accessibility
 Modal.setAppElement("#root")
 
-const Event = () => {
+const YourEvents = () => {
   const dispatch = useDispatch()
   const {
     events,
@@ -43,6 +44,7 @@ const Event = () => {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [isEditEventOpen, setIsEditEventOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false)
 
   // Form states
   const [eventImages, setEventImages] = useState([])
@@ -118,7 +120,7 @@ const Event = () => {
 
   // Fetch events, users, and affiliates on component mount
   useEffect(() => {
-    dispatch(getEvents({ status: "approved", filter: "all" }))
+    dispatch(getEvents({ status: "all", filter: "all" }))
     dispatch(memberUsers({ page: 1, search: "", role: "" }))
     dispatch(getAffiliates())
   }, [dispatch])
@@ -250,31 +252,6 @@ const Event = () => {
     const files = Array.from(e.target.files)
     if (files.length > 0) {
       setEvidenceFiles((prev) => [...prev, ...files])
-      
-      // Clear error for evidence of plan if it exists
-      if (formErrors.evidenceOfPlan) {
-        setFormErrors({
-          ...formErrors,
-          evidenceOfPlan: "",
-        })
-      }
-    }
-  }
-
-  // Helper function to check if evidence validation should be cleared
-  const clearEvidenceErrorIfValid = () => {
-    const hasExistingEvidence = selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.length > 0
-    const hasNewEvidence = evidenceFiles.length > 0
-    const hasKeptEvidence = selectedEvent && selectedEvent.evidenceOfPlan && 
-      selectedEvent.evidenceOfPlan.filter(url => !removedEvidenceUrls.includes(url)).length > 0
-    
-    if ((hasExistingEvidence && hasKeptEvidence) || hasNewEvidence) {
-      if (formErrors.evidenceOfPlan) {
-        setFormErrors({
-          ...formErrors,
-          evidenceOfPlan: "",
-        })
-      }
     }
   }
 
@@ -289,18 +266,6 @@ const Event = () => {
     }
     if (!eventFormData.description.trim()) errors.description = "Description is required"
     if (!eventFormData.location.trim()) errors.location = "Location is required"
-    
-    // Validate Evidence of Plan - check for existing evidence or new files
-    const hasExistingEvidence = selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.length > 0
-    const hasNewEvidence = evidenceFiles.length > 0
-    const hasKeptEvidence = selectedEvent && selectedEvent.evidenceOfPlan && 
-      selectedEvent.evidenceOfPlan.filter(url => !removedEvidenceUrls.includes(url)).length > 0
-    
-    if (!hasExistingEvidence && !hasNewEvidence) {
-      errors.evidenceOfPlan = "Evidence of Plan is required"
-    } else if (hasExistingEvidence && !hasNewEvidence && !hasKeptEvidence) {
-      errors.evidenceOfPlan = "Evidence of Plan is required"
-    }
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -380,7 +345,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsAddEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -447,7 +412,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsEditEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -461,7 +426,7 @@ const Event = () => {
         setIsDeleteModalOpen(false)
         setIsViewEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -622,6 +587,40 @@ const Event = () => {
     }
   }
 
+  const [adminProfile, setAdminProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileRes = await authService.getProfile();
+        if (profileRes && profileRes.user && profileRes.user._id) {
+          setAdminProfile(profileRes.user);
+        }
+      } catch (error) {
+        setAdminProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Filter events to only those created by the logged-in admin
+  const myEvents = Array.isArray(events) && adminProfile
+    ? events.filter(event => {
+        if (!event.createdBy) return false;
+        if (typeof event.createdBy === 'object' && event.createdBy._id) {
+          return event.createdBy._id === adminProfile._id;
+        }
+        return event.createdBy === adminProfile._id;
+      })
+    : [];
+
+  if (profileLoading) {
+    return <div className="text-center p-10">Loading profile...</div>;
+  }
+
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
@@ -712,11 +711,11 @@ const Event = () => {
       {/* Event Grid */}
       {!eventsLoading && !eventsError && (
         <div className="grid md:grid-cols-4 gap-6 relative z-10">
-          {events?.filter(event => {
+          {myEvents.filter(event => {
             if (timeFilter === 'all') return true;
             return getEventStatus(event) === timeFilter;
           }).length > 0 ? (
-            events.filter(event => {
+            myEvents.filter(event => {
               if (timeFilter === 'all') return true;
               return getEventStatus(event) === timeFilter;
             }).map((event) => (
@@ -799,6 +798,29 @@ const Event = () => {
                     </div>
                   </div>
                 </div>
+                <div className="grid grid-cols-1 gap-2 mt-2">
+                  {event.status === 'pending' ? (
+                    <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg text-sm w-full text-center font-semibold border border-yellow-200">
+                      Pending Approval
+                    </span>
+                  ) : (
+                    <>
+                      <button className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm w-full" onClick={e => e.stopPropagation()}>
+                        Balance: £{event.balance || 0}
+                      </button>
+                      <button
+                        className="bg-primary text-white px-4 py-2 rounded-lg text-sm w-full"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedEvent(event);
+                          setIsBreakdownModalOpen(true);
+                        }}
+                      >
+                        View Breakdown
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))
           ) : (
@@ -810,7 +832,7 @@ const Event = () => {
       )}
 
       {/* Pagination */}
-      {!eventsLoading && !eventsError && events?.length > 0 && (
+      {!eventsLoading && !eventsError && myEvents.length > 0 && (
         <div className="flex w-[90vw] md:w-full overflow-auto items-center justify-between">
           <div className="flex items-center gap-2 text-[#323C47]">
             Show result:
@@ -1003,9 +1025,7 @@ const Event = () => {
                   disabled={affiliatesLoading}
                 >
                   <option value="">Select Affiliate Partner</option>
-                  {affiliates && affiliates.length > 0 && affiliates
-                    .filter(affiliate => affiliate.status === 'Approved')
-                    .map((affiliate) => (
+                  {affiliates && affiliates.length > 0 && affiliates.map((affiliate) => (
                     <option key={affiliate._id} value={affiliate._id}>
                       {affiliate.businessName || affiliate.name || affiliate.email}
                     </option>
@@ -1126,29 +1146,20 @@ const Event = () => {
 
             {/* Evidence of Plan Upload */}
             <div>
-              <label className="block mb-1">Evidence of Plan <span className="text-red-500">*</span></label>
+              <label className="block mb-1">Evidence of Plan</label>
               <div className="flex gap-4 flex-wrap">
                 <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                   <span className="text-2xl text-gray-400">+</span>
                   <input type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple className="hidden" onChange={handleEvidenceChange} />
                 </label>
                 {/* Show existing evidence files from selectedEvent.evidenceOfPlan */}
-                {selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.filter(fileUrl => !removedEvidenceUrls.includes(fileUrl)).map((fileUrl, index) => (
+                {selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.map((fileUrl, index) => (
                   <div key={index} className="w-24 h-24 rounded-lg overflow-hidden relative group flex flex-col items-center justify-center bg-gray-100">
                     {fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                       <img src={fileUrl} alt="evidence" className="w-full h-full object-cover" />
                     ) : (
                       <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 p-2 text-center underline">{fileUrl.split('/').pop()}</a>
                     )}
-                    <button
-                      onClick={() => {
-                        setRemovedEvidenceUrls((prev) => [...prev, fileUrl])
-                        clearEvidenceErrorIfValid()
-                      }}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ✕
-                    </button>
                   </div>
                 ))}
                 {/* Show new evidence files not yet uploaded */}
@@ -1160,10 +1171,7 @@ const Event = () => {
                       <span className="text-xs text-gray-700 p-2 text-center">{file.name}</span>
                     )}
                     <button
-                      onClick={() => {
-                        setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
-                        clearEvidenceErrorIfValid()
-                      }}
+                      onClick={() => setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))}
                       className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕
@@ -1171,7 +1179,6 @@ const Event = () => {
                   </div>
                 ))}
               </div>
-              {formErrors.evidenceOfPlan && <p className="text-red-500 text-xs mt-1">{formErrors.evidenceOfPlan}</p>}
             </div>
 
             {/* Action Buttons */}
@@ -1598,9 +1605,7 @@ const Event = () => {
                     disabled={affiliatesLoading}
                   >
                     <option value="">Select Affiliate Partner</option>
-                    {affiliates && affiliates.length > 0 && affiliates
-                      .filter(affiliate => affiliate.status === 'Approved')
-                      .map((affiliate) => (
+                    {affiliates && affiliates.length > 0 && affiliates.map((affiliate) => (
                       <option key={affiliate._id} value={affiliate._id}>
                         {affiliate.businessName || affiliate.name || affiliate.email}
                       </option>
@@ -1720,7 +1725,7 @@ const Event = () => {
 
               {/* Evidence of Plan Upload */}
               <div>
-                <label className="block mb-1">Evidence of Plan <span className="text-red-500">*</span></label>
+                <label className="block mb-1">Evidence of Plan</label>
                 <div className="flex gap-4 flex-wrap">
                   <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                     <span className="text-2xl text-gray-400">+</span>
@@ -1735,10 +1740,7 @@ const Event = () => {
                         <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 p-2 text-center underline">{fileUrl.split('/').pop()}</a>
                       )}
                       <button
-                        onClick={() => {
-                          setRemovedEvidenceUrls((prev) => [...prev, fileUrl])
-                          clearEvidenceErrorIfValid()
-                        }}
+                        onClick={() => setRemovedEvidenceUrls((prev) => [...prev, fileUrl])}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ✕
@@ -1754,10 +1756,7 @@ const Event = () => {
                         <span className="text-xs text-gray-700 p-2 text-center">{file.name}</span>
                       )}
                       <button
-                        onClick={() => {
-                          setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
-                          clearEvidenceErrorIfValid()
-                        }}
+                        onClick={() => setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ✕
@@ -1765,7 +1764,6 @@ const Event = () => {
                     </div>
                   ))}
                 </div>
-                {formErrors.evidenceOfPlan && <p className="text-red-500 text-xs mt-1">{formErrors.evidenceOfPlan}</p>}
               </div>
 
               {/* Action Buttons */}
@@ -1824,9 +1822,65 @@ const Event = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Breakdown Modal */}
+      <Modal
+        isOpen={isBreakdownModalOpen}
+        onRequestClose={() => setIsBreakdownModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 superZ bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] will-change-transform overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50 superZ"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Event Payment Breakdown</h2>
+            <button onClick={() => setIsBreakdownModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              ✕
+            </button>
+          </div>
+          {selectedEvent && (
+            <div>
+              <h3 className="text-lg font-medium mb-4">{selectedEvent.name}</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Available Tickets</p>
+                  <p className="font-semibold text-lg">{selectedEvent.numberOfTicket || "N/A"}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Tickets Sold</p>
+                  <p className="font-semibold text-lg">{selectedEvent.invitedUsers?.length || 0}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Price Per Ticket</p>
+                  <p className="font-semibold text-lg">£{selectedEvent.price || 0}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Total Balance</p>
+                  <p className="font-semibold text-lg">
+                    £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Commission</p>
+                  <p className="font-semibold text-lg">10%</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-gray-500">Your Balance</p>
+                  <p className="font-semibold text-lg">
+                    £{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }
 
-export default Event
+export default YourEvents
 

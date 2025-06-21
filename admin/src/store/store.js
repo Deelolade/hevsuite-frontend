@@ -22,6 +22,7 @@ import pageReducer from "./page/pageSlice";
 import notificationReducer from './notifications/notificationSlice';
 import financeReducer from './finance/financeSlice'
 import supportReducer from "./support/supportSlice";
+import affiliateReducer from './affiliate/affiliateSlice';
 
 export const store = configureStore({
   reducer: {
@@ -48,7 +49,8 @@ export const store = configureStore({
     pages: pageReducer,
     notifications: notificationReducer,
     finance: financeReducer,
-    support: supportReducer
+    support: supportReducer,
+    affiliate: affiliateReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

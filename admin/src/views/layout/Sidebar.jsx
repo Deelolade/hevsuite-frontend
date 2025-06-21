@@ -7,8 +7,9 @@ import {
   FaCalendarAlt,
   FaNewspaper,
   FaSignOutAlt,  
+  FaHandshake,
 } from "react-icons/fa";
-import { RiUserSettingsLine, RiQuestionAnswerLine } from "react-icons/ri";
+import { RiQuestionAnswerLine, RiUserSettingsLine } from "react-icons/ri";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { MdOutlinePendingActions, MdOutlineSettings } from "react-icons/md";
 import { TbBuildingBank } from "react-icons/tb";
@@ -52,6 +53,12 @@ const menuItems = [
     icon: <CgWebsite size={20} />, 
     label: "CMS",
     permission: "CMS"
+  },
+  {
+    path: "affiliate-partners",
+    icon: <FaHandshake size={20} />,
+    label: "Affiliate Partners",
+    permission: "Affiliate Partners"
   },
   {
     path: "events",
@@ -171,7 +178,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
     };
 
     fetchDashboardStats();
-    // Refresh stats every 30 seconds
+
     const interval = setInterval(fetchDashboardStats, 60000);
     return () => clearInterval(interval);
   }, []);

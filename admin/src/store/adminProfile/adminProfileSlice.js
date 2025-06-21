@@ -4,16 +4,31 @@ import { toast } from "react-toastify";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/user`;
 
+// Function to get the token from localStorage
+const getAuthToken = () => {
+  const admin = JSON.parse(localStorage.getItem("admin"));
+  return admin?.token;
+};
+
 // Get admin profile
 export const getAdminProfile = createAsyncThunk(
   "adminProfile/getAdminProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/profile`);
+      const token = getAuthToken();
+      if (!token) {
+        return rejectWithValue("No token found");
+      }
+      const response = await axios.get(`${API_URL}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error fetching profile");
-      return rejectWithValue(error.response?.data || "Error fetching profile");
+      const message = error.response?.data?.message || "Error fetching profile";
+      toast.error(message);
+      return rejectWithValue(error.response?.data || message);
     }
   }
 );
@@ -23,9 +38,14 @@ export const updateAdminProfile = createAsyncThunk(
   "adminProfile/updateAdminProfile",
   async (formData, { rejectWithValue }) => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        return rejectWithValue("No token found");
+      }
       const response = await axios.put(`${API_URL}/profile`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
       });
       toast.success("Profile updated successfully");
@@ -42,7 +62,15 @@ export const changeAdminPassword = createAsyncThunk(
   "adminProfile/changeAdminPassword",
   async (passwordData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/change-password`, passwordData);
+      const token = getAuthToken();
+      if (!token) {
+        return rejectWithValue("No token found");
+      }
+      const response = await axios.put(`${API_URL}/change-password`, passwordData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       toast.success("Password changed successfully");
       return response.data;
     } catch (error) {
