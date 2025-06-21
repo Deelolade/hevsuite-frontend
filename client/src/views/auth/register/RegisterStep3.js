@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsCheckCircleFill } from 'react-icons/bs';
 import Footer from '../../../components/Footer';
@@ -11,6 +11,7 @@ import {
   CountrySelect,
   StateSelect,
   PhonecodeSelect,
+  GetCountries,
   Country,
 } from 'react-country-state-city';
 import 'react-country-state-city/dist/react-country-state-city.css';
@@ -23,6 +24,9 @@ import {
 } from '../../../features/auth/registerSlice';
 import authService from '../../../services/authService';
 import ProgressSteps from './ProgressSteps';
+import CreatableSelect from 'react-select/creatable';
+
+import config from '../../../config/default.json';
 
 const RegisterStep3 = () => {
   useEffect(() => {
@@ -40,6 +44,72 @@ const RegisterStep3 = () => {
   const [countryId, setCountryId] = useState('');
   const [primaryPhoneCode, setPrimaryPhoneCode] = useState('');
   const [secondaryPhoneCode, setSecondaryPhoneCode] = useState('');
+  const [userTypingAddressLoading, setUserTypingAddressLoading] = useState(false);
+
+  const [ addresses, setAddresses ] = useState([]);
+
+  const abortControllerRef = useRef(null);
+
+  const getAddresses = (search = "") => {
+
+    // Abort previous request if it exists
+    if (abortControllerRef.current)  abortControllerRef.current.abort();
+
+    // Create a new controller
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const query = `/search?q=${search}&addressdetails=1&limit=50&format=json`;
+    const url = config.openstreetmap + query;
+    setUserTypingAddressLoading(true);
+
+    fetch(url, { signal: controller.signal })
+      .then(async response => {
+
+        if(response.ok){
+          const res = await response.json();
+          setAddresses(res);
+        }
+      })
+      .catch(ex => console.error(ex))
+      .finally(( ) => {
+        setUserTypingAddressLoading(false);
+      })
+  }
+
+  const handleAddressInputChange = value => {
+    const trimmed = value.trim();
+    if(trimmed !== formData.addressLine1 || value.trim())   getAddresses(value);
+  }
+
+  const handleAddressChange = (value) => {
+    const found = addresses.find( a  => a.place_id === value.id);
+    if(found){
+      const { address } = found;
+      setFormData(prev => ({
+       ...prev,
+       addressLine1: found?.display_name??"",
+       city: address?.city || address?.town || address?.village || address?.municipality|| "",
+       country: address?.country??"",
+       postcode: address?.postcode||"00000",
+       state: address?.state || address?.city || ""
+     }));
+
+
+     GetCountries().then(res => {
+       const country =  res.find( c => c.name.toLowerCase() === address?.country.toLowerCase())
+        setCountryId(country?.id)
+        setPrimaryPhoneCode(country?.phone_code);
+     })
+      
+    }
+  }
+
+  useEffect(() => {
+    getAddresses("main street"); //initial dropdown
+  }, [])
+
+ 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -179,6 +249,8 @@ const RegisterStep3 = () => {
     navigate('/register-4');
   };
 
+  const addressOptions = addresses.map(item => ({ value: item?.display_name , label: item?.display_name, id: item?.place_id }))
+
   return (
     <div className='min-h-screen flex flex-col'>
       <div className='relative text-white'>
@@ -230,17 +302,23 @@ const RegisterStep3 = () => {
             <label className='block mb-1 md:mb-2 text-sm md:text-base'>
               Address Line 1<span className='text-red-500'>*</span>
             </label>
-            <input
+            <CreatableSelect 
               type='text'
+              required
               placeholder='Address Line 1'
-              className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.addressLine1 ? 'border-red-500' : ''
-                }`}
-              value={formData.addressLine1}
+              // className={`w-full px-3 md:px-4 py-2 md:py-3 border rounded-lg text-sm md:text-base ${errors.addressLine1 ? 'border-red-500' : ''
+              //   }`}
+              isLoading={userTypingAddressLoading}
+              defaultInputValue={formData.addressLine1}
+              onInputChange={(newValue) => handleAddressInputChange(newValue.toLowerCase()) }
+              onChange={(newValue) => handleAddressChange(newValue) }
+              options={addressOptions}
+            />
+            {/* <input
               onChange={(e) =>
                 setFormData({ ...formData, addressLine1: e.target.value })
               }
-              required
-            />
+            /> */}
             {errors.addressLine1 && (
               <p className="text-red-500 text-xs mt-1">{errors.addressLine1}</p>
             )}
