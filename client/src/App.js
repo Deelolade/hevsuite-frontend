@@ -44,6 +44,7 @@ import NotFound from "./views/NotFound";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
+import UserVerifyEmail from "./views/auth/login/userVerifyEmail";
 
 axios.defaults.withCredentials = true;
 
@@ -229,6 +230,10 @@ const router = createBrowserRouter([
   {
     path: "how-it-works",
     element: <HowItWorks />,
+  },
+   {
+    path: "/user/verify-email",
+    element: <UserVerifyEmail />,
   },
   {
     path: "/register",

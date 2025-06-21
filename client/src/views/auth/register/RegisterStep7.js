@@ -18,6 +18,8 @@ import constants from '../../../constants';
 import AuthModal from '../../../components/AuthModal';
 import { z } from 'zod';
 
+import { GetCountries } from 'react-country-state-city';
+
 const schema = z.object({
     cardNumber: z.number(),
     expiry: z.number(),
@@ -33,13 +35,15 @@ const RegisterStep7 = () => {
   }, []);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [countries, setCountries] = useState([]);
+  
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [logOutLoading, setLogOutLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiry: '',
     cvc: '',
-    country: 'United States',
+    country: 'United Kingdom',
     postalCode: '',
   });
  const { user } = useSelector((state) => state.auth);
@@ -114,6 +118,15 @@ const RegisterStep7 = () => {
       console.error('Logout failed:', error);
     }
   };
+
+
+  useEffect(()=>{
+    GetCountries()
+     .then( (res ) => {
+         const _countries = res.map( c => c.name);
+         setCountries(_countries);
+     } )
+  }, [])
 
   useEffect(() => {
 
@@ -413,11 +426,12 @@ const RegisterStep7 = () => {
                         })
                       }
                     >
-                      <option value='United States'>United States</option>
+                      {countries.map(c => <option value={c} > {c} </option>) }
+                      {/* <option value='United States'>United States</option>
                       <option value='Canada'>Canada</option>
                       <option value='Canada'>Canada</option>
                       <option value='Canada'>Canada</option>
-                      <option value='Canada'>Canada</option>
+                      <option value='Canada'>Canada</option> */}
                     </select>
                   </div>
                   <div>
