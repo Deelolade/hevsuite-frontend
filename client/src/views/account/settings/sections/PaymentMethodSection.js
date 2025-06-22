@@ -38,10 +38,10 @@ const PaymentMethodSection = () => {
 
   const handlePaymentMethodSelect = (method) => {
     const methodMap = {
-      PayPal: "paypal",
-      Stripe: "stripe",
+      paypal: "paypal",
+      stripe: "stripe",
     };
-    const normalizedMethod = methodMap[method] || "stripe";
+    const normalizedMethod = methodMap[method];
     setPaymentMethod(normalizedMethod);
   };
 
@@ -112,19 +112,17 @@ const PaymentMethodSection = () => {
       );
       console.log(response);
       // Combine backend methods with hardcoded PayPal
-      const hardcodedPayPal = {
-        provider: "paypal",
-        details: {
-          paymentMethodId: "paypal-hardcoded-123",
-          email: "user@example.com",
-        },
-      };
-      const methods = [...response.data.methods, hardcodedPayPal];
+      // const hardcodedPayPal = {
+      //   provider: "paypal",
+      //   details: {
+      //     paymentMethodId: "paypal-hardcoded-123",
+      //     email: "user@example.com",
+      //   },
+      // };
+      const methods = [...response.data.methods];
       setAllPaymentMethods(methods);
       // Set initial default to first method or hardcoded PayPal
-      setDefaultMethodId(
-        methods[0]?.details.paymentMethodId || "paypal-hardcoded-123"
-      );
+      setDefaultMethodId(methods[0]?.details.paymentMethodId);
     } catch (error) {
       console.error("Failed to fetch payment methods:", error);
     }
