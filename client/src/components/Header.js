@@ -21,6 +21,8 @@ import { PiCirclesThreeDuotone } from "react-icons/pi";
 import AuthModal from "./AuthModal";
 import useUserIdentificationApproved from "../hooks/useIdentificationApproved";
 import toast from "react-hot-toast";
+import { fetchFooterData } from "../features/footerSlice";
+
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -32,13 +34,10 @@ const Header = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { user, isLoading } = useSelector((state) => state.auth);
-  const {
-    menus,
-    loading: menusLoading,
-    error: menusError,
-  } = useSelector((state) => state.menus);
+  const { menus, loading: menusLoading } = useSelector((state) => state.menus);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
   const isLoggedIn = !!user;
+  const { footerData, socialMedia } = useSelector((state) => state.footer);
 
   const { userIdentificationApproved } = useUserIdentificationApproved();
 
@@ -56,6 +55,14 @@ const Header = () => {
       dispatch(fetchNotifications(user._id));
     }
   }, [dispatch, user, isLoggedIn]);
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchFooterData());
+  }, [dispatch]);
 
   useEffect(() => {
     const openProfile = searchParams.get("openProfile");
@@ -149,15 +156,17 @@ const Header = () => {
             <Link to="/ask">Ask</Link>{" "}
           </AskButton>
           {!menusLoading &&
-            menus?.data?.map((menu) => (
-              <Link
-                key={menu._id}
-                to={menu.link}
-                className="hover:text-gray-300 transition-colors"
-              >
-                {menu.title}
-              </Link>
-            ))}
+            menus?.data
+              ?.filter((menu) => menu.visibility === true)
+              ?.map((menu) => (
+                <Link
+                  key={menu._id}
+                  to={menu.link}
+                  className="hover:text-gray-300 transition-colors"
+                >
+                  {menu.title}
+                </Link>
+              ))}
           {isLoggedIn ? (
             <>
               <div className="flex items-center space-x-6">
@@ -269,15 +278,17 @@ const Header = () => {
                   <span>Help Centre</span>
                 </Link>
                 {!menusLoading &&
-                  menus.data?.map((menu) => (
-                    <Link
-                      key={menu._id}
-                      to={menu.link}
-                      className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
-                    >
-                      {menu.title}
-                    </Link>
-                  ))}
+                  menus.data
+                    ?.filter((menu) => menu.visibility === true)
+                    ?.map((menu) => (
+                      <Link
+                        key={menu._id}
+                        to={menu.link}
+                        className="flex text-white  text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      >
+                        {menu.title}
+                      </Link>
+                    ))}
                 {isLoggedIn && (
                   <>
                     <div
@@ -355,7 +366,7 @@ const Header = () => {
                 </>
               )}
 
-              <div className="border-t border-gray-700 pt-4">
+              {/* <div className="border-t border-gray-700 pt-4">
                 <div className="flex justify-start gap-6 mb-4">
                   <Link to="" className="text-white text-xl">
                     <BsTwitterX />
@@ -373,6 +384,63 @@ const Header = () => {
                 </div>
                 <div className=" text-xs text-white mt-2">
                   2024 Hazer Group (Trading as HH Club)
+                </div>
+              </div> */}
+              <div className="border-t border-gray-700 pt-4">
+                {socialMedia?.length > 0 && (
+                  <div className="flex justify-center items-center gap-4 mb-4">
+                    <span className="text-white text-sm font-semibold">
+                      Follow us
+                    </span>
+                    <div className="flex gap-3">
+                      {socialMedia.map((item) => (
+                        <Link
+                          key={item._id}
+                          to={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+                          aria-label={`Follow us on ${item.socialName}`}
+                        >
+                          <img
+                            src={item.iconImage}
+                            alt={item.socialName}
+                            className="w-6 h-6 rounded-3xl"
+                          />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-center items-center gap-6 mb-3">
+                  {footerData?.data?.map(
+                    (section) =>
+                      section.visibility && (
+                        <div key={section._id}>
+                          {section.title?.toLowerCase().includes("policies") ? (
+                            <Link
+                              to="/terms"
+                              className="text-white text-sm hover:text-gray-300 transition-colors"
+                            >
+                              {section.title}
+                            </Link>
+                          ) : (
+                            <Link
+                              to={section.link || "/club"}
+                              className="text-white text-sm hover:text-gray-300 transition-colors"
+                            >
+                              {section.title}
+                            </Link>
+                          )}
+                        </div>
+                      )
+                  )}
+                </div>
+
+                <div className="text-center text-xs text-gray-300 mt-2">
+                  &copy; {new Date().getFullYear()} Hazor Group (Trading as HH
+                  Club)
                 </div>
               </div>
             </div>
