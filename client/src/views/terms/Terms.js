@@ -106,20 +106,22 @@ const Terms = () => {
 
         <div className="container mx-auto px-4 py-6 flex-grow ">
           {/* Navigation Tabs */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {policies?.items?.map((item) => (
-              <button
-                key={item._id}
-                onClick={() => handleTabClick(item)}
-                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors ${
-                  activeTab?._id === item._id
-                    ? "bg-[#540A26] text-white"
-                    : "border border-[#540A26] text-[#540A26]"
-                }`}
-              >
-                {item.title}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto scrollbar-hidden -mx-4 px-4">
+            <div className="flex items-center gap-2 flex-nowrap min-w-max">
+              {policies?.items?.map((item) => (
+                <button
+                  key={item._id}
+                  onClick={() => handleTabClick(item)}
+                  className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                    activeTab?._id === item._id
+                      ? "bg-[#540A26] text-white"
+                      : "border border-[#540A26] text-[#540A26]"
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Content */}
@@ -275,20 +277,22 @@ const Terms = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex flex-row items-center flex-wrap gap-4 mb-8 mt-12">
-              {policies?.items?.map((item) => (
-                <button
-                  key={item._id}
-                  onClick={() => handleTabClick(item)}
-                  className={`px-4 md:px-4 md:text-lg py-1.5 md:py-2 rounded-3xl transition-colors ${
-                    activeTab?._id === item._id
-                      ? "bg-[#540A26] text-white"
-                      : "border border-[#540A26] text-[#540A26]"
-                  }`}
-                >
-                  {item.title}
-                </button>
-              ))}
+            <div className="flex flex-row items-center gap-4 mb-8 mt-12 overflow-x-auto scrollbar-hidden -mr-16 xl:-mr-20 pr-16 xl:pr-20">
+              <div className="flex flex-row items-center gap-4 flex-nowrap min-w-max">
+                {policies?.items?.map((item) => (
+                  <button
+                    key={item._id}
+                    onClick={() => handleTabClick(item)}
+                    className={`px-4 md:px-4 md:text-lg py-1.5 md:py-2 rounded-3xl transition-colors whitespace-nowrap flex-shrink-0 ${
+                      activeTab?._id === item._id
+                        ? "bg-[#540A26] text-white"
+                        : "border border-[#540A26] text-[#540A26]"
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Content */}
