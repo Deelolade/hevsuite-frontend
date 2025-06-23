@@ -1,24 +1,14 @@
 import React, { useEffect, useState } from "react";
 import headerBg from "../../assets/header-bg.jpg";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  BsBell,
-  BsChevronLeft,
-  BsChevronRight,
-  BsCalendar,
-  BsHeart,
-} from "react-icons/bs";
-import { MdAccessTime, MdPerson } from "react-icons/md";
+import { Link } from "react-router-dom";
+import { BsCalendar } from "react-icons/bs";
+import { MdPerson } from "react-icons/md";
 import Header from "../../components/Header";
-import event from "../../assets/event.png";
-import party from "../../assets/party2.jpg";
 import Footer from "../../components/Footer";
-import avatar from "../../assets/user.avif";
 import mastercard from "../../assets/Mastercard.png";
-import { IoLocationOutline } from "react-icons/io5";
 import { FaArrowLeft } from "react-icons/fa";
 import { fetchNonExpiredNews } from "../../features/newsSlice";
-import { fetchAttendingMembers, fetchEvents } from "../../features/eventSlice";
+import { fetchEvents } from "../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 
@@ -385,23 +375,15 @@ const Events = () => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [activeSlide, setActiveSlide] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState("scroll");
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
   }, [dispatch]);
-  const {
-    events,
-    loading: eventsLoading,
-    error: eventsError,
-  } = useSelector((state) => state.events);
+  const { events } = useSelector((state) => state.events);
 
   // Add this function to filter events by date
   const filterEvents = () => {
@@ -470,155 +452,218 @@ const Events = () => {
         <div className="relative z-10">
           <Header />
 
-          {/* Filters */}
-          <div className="relative px-6 py-4 flex flex-col md:flex-row items-center justify-center md:space-x-4">
-            <div className="absolute bottom-4 left-5 w-full md:w-auto mt-2 md:mt-24">
-              <Link
-                to="/homepage"
-                className="text-white flex gap-4 items-center border mt-4 p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
-              >
-                <FaArrowLeft />
-                <span>Go to home</span>
-              </Link>
-            </div>
-
-            <div className="relative w-full md:w-auto mt-2 md:mt-24">
-              <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <select
-                className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                value={selectedAudience}
-                onChange={(e) => setSelectedAudience(e.target.value)}
-              >
-                <option value="" className="text-black">
-                  Audience
-                </option>
-                <option value="members" className="text-black">
-                  For Members
-                </option>
-                <option value="public" className="text-black">
-                  Public Event
-                </option>
-                <option value="vip" className="text-black">
-                  Vip Members
-                </option>
-              </select>
-            </div>
-
-            {/* <div className='relative w-full md:w-auto mt-2 md:mt-24'>
-              <IoLocationOutline className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
-              <select
-                className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
-                value={selectedCountry}
-                onChange={(e) => setSelectedCountry(e.target.value)}
-              >
-                <option value='' className='text-black'>
-                  Country
-                </option>
-                <option value='ethiopia' className='text-black'>
-                  Ethiopia
-                </option>
-                <option value='kenya' className='text-black'>
-                  Kenya
-                </option>
-              </select>
-            </div>
-
-            <div className='relative w-full md:w-auto mt-2 md:mt-24'>
-              <IoLocationOutline className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
-              <select
-                className='w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none'
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-              >
-                <option value='' className='text-black'>
-                  City
-                </option>
-                <option value='addis' className='text-black'>
-                  Addis Ababa
-                </option>
-                <option value='nairobi' className='text-black'>
-                  Nairobi
-                </option>
-              </select>
-            </div> */}
-
-            <div className="relative w-full md:w-auto mt-2 md:mt-24">
-              <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <select
-                className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              >
-                <option value="" className="text-black">
-                  Date
-                </option>
-                <option value="newest" className="text-black">
-                  Newest to Oldest
-                </option>
-                <option value="oldest" className="text-black">
-                  Oldest to Newest
-                </option>
-              </select>
-            </div>
-          </div>
-
-          {/* Events Grid */}
-          <div className="px-6 py-2 mt-4">
-            <div className="flex justify-center w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center max-w-7xl mx-auto px-4">
-                {paginatedEvents.map((event, index) => (
-                  <Link key={index} to={`/events/${event._id}`}>
-                    <div
-                      key={index}
-                      className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
-                      // onClick={() => setSelectedEvent(event)}
-                    >
-                      <img
-                        src={event.images[0]}
-                        alt={event.name}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 className="text-xl font-semibold">{event.name}</h3>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <span>{formatDateWithSuffix(event.time)}</span>
-                          <span>{formatTime(event.time)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+          <div className="relative px-6 py-4">
+            <div className="md:hidden space-y-4">
+              <div className="w-full pt-20">
+                <Link
+                  to="/homepage"
+                  className="text-white flex gap-4 items-center border p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm w-fit"
+                >
+                  <FaArrowLeft />
+                  <span>Go to home</span>
+                </Link>
               </div>
-            </div>
 
-            {/* Pagination */}
-            <div className="w-full flex justify-center items-center">
-              <div className="flex justify-center ml-10 items-center space-x-2 mt-8">
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <button
-                    key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      currentPage === index + 1 ? "bg-[#540A26]" : "bg-gray-400"
-                    } flex items-center justify-center`}
-                    onClick={() => handlePageChange(index + 1)}
+              <div className="flex flex-col space-y-3">
+                <div className="relative w-full">
+                  <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                    value={selectedAudience}
+                    onChange={(e) => setSelectedAudience(e.target.value)}
                   >
-                    {/* {index + 1} */}
-                  </button>
-                ))}
+                    <option value="" className="text-black">
+                      Audience
+                    </option>
+                    <option value="members" className="text-black">
+                      For Members
+                    </option>
+                    <option value="public" className="text-black">
+                      Public Event
+                    </option>
+                    <option value="vip" className="text-black">
+                      Vip Members
+                    </option>
+                  </select>
+                </div>
+
+                <div className="relative w-full">
+                  <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                  >
+                    <option value="" className="text-black">
+                      Date
+                    </option>
+                    <option value="newest" className="text-black">
+                      Newest to Oldest
+                    </option>
+                    <option value="oldest" className="text-black">
+                      Oldest to Newest
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="hidden md:flex md:flex-row items-center justify-center md:space-x-4">
+              <div className="absolute bottom-4 left-6 w-full md:w-auto md:mt-24">
+                <Link
+                  to="/homepage"
+                  className="text-white flex gap-4 items-center border mt-4 p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  <FaArrowLeft />
+                  <span>Go to home</span>
+                </Link>
+              </div>
+
+              <div className="relative w-full md:w-auto mt-24">
+                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  value={selectedAudience}
+                  onChange={(e) => setSelectedAudience(e.target.value)}
+                >
+                  <option value="" className="text-black">
+                    Audience
+                  </option>
+                  <option value="members" className="text-black">
+                    For Members
+                  </option>
+                  <option value="public" className="text-black">
+                    Public Event
+                  </option>
+                  <option value="vip" className="text-black">
+                    Vip Members
+                  </option>
+                </select>
+              </div>
+
+              <div className="relative w-full md:w-auto mt-2 md:mt-24">
+                <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                >
+                  <option value="" className="text-black">
+                    Date
+                  </option>
+                  <option value="newest" className="text-black">
+                    Newest to Oldest
+                  </option>
+                  <option value="oldest" className="text-black">
+                    Oldest to Newest
+                  </option>
+                </select>
               </div>
             </div>
           </div>
-          {/* {selectedEvent && (
-            <EventDetailsModal
-              event={selectedEvent}
-              events={events}
-              onClose={() => setSelectedEvent(null)}
-            />
-          )} */}
+
+          <div className="px-6 py-2 mt-16">
+            {viewMode === "scroll" ? (
+              <div className="w-full">
+                {/* <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold">Upcoming Events</h2>
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className="text-white underline hover:text-gray-300 transition-colors"
+                  >
+                    View All Events
+                  </button>
+                </div> */}
+                <div className="overflow-x-auto scrollbar-hide">
+                  <div
+                    className="flex space-x-6 pb-4"
+                    style={{ width: "max-content" }}
+                  >
+                    {filteredEvents.slice(0, 8).map((event, index) => (
+                      <Link key={index} to={`/events/${event._id}`}>
+                        <div className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer flex-shrink-0 w-[300px] h-[427px]">
+                          <img
+                            src={event.images[0]}
+                            alt={event.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <h3 className="text-xl font-semibold">
+                              {event.name}
+                            </h3>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <span>{formatDateWithSuffix(event.time)}</span>
+                              <span>{formatTime(event.time)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-center w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center max-w-7xl mx-auto px-4">
+                    {paginatedEvents.map((event, index) => (
+                      <Link key={index} to={`/events/${event._id}`}>
+                        <div
+                          key={index}
+                          className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
+                        >
+                          <img
+                            src={event.images[0]}
+                            alt={event.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <h3 className="text-xl font-semibold">
+                              {event.name}
+                            </h3>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <span>{formatDateWithSuffix(event.time)}</span>
+                              <span>{formatTime(event.time)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-full flex justify-center items-center">
+                  <div className="flex justify-center ml-10 items-center space-x-2 mt-8">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <button
+                        key={index}
+                        className={`w-3 h-3 rounded-full ${
+                          currentPage === index + 1
+                            ? "bg-[#540A26]"
+                            : "bg-gray-400"
+                        } flex items-center justify-center`}
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {/* {index + 1} */}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="my-12 flex justify-end">
+              <button
+                onClick={() =>
+                  setViewMode(viewMode === "scroll" ? "grid" : "scroll")
+                }
+                className="text-white flex gap-2 items-center border p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
+              >
+                {viewMode === "scroll" ? "View All" : "Scroll View"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Footer */}
       <Footer />
     </div>
   );
