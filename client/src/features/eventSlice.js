@@ -116,7 +116,9 @@ export const getSavedEvents = createAsyncThunk(
   "savedEvents/getAll",
   async (_, { rejectWithValue }) => {
     try {
-      return await eventService.getSavedEvents();
+      const response = await eventService.getSavedEvents();
+      console.log("getSavedEvents: API response:", response);
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch saved events"
@@ -191,14 +193,6 @@ const eventSlice = createSlice({
         state.pastEvents = action.payload.past || [];
         state.savedEvents = action.payload.saved || [];
         state.loading = false;
-
-        console.log("Updated state:", {
-          visibleEvents: state.visibleEvents.length,
-          attendingEvents: state.attendingEvents.length,
-          invitedEvents: state.invitedEvents.length,
-          pastEvents: state.pastEvents.length,
-          savedEvents: state.savedEvents.length,
-        });
       })
       .addCase(fetchAllEventTypes.rejected, (state, action) => {
         state.loading = false;
@@ -222,6 +216,7 @@ const eventSlice = createSlice({
       // Update invite status
       .addCase(updateInviteStatus.pending, (state) => {
         state.updateStatus = "loading";
+        state.error = null;
       })
       .addCase(updateInviteStatus.fulfilled, (state, action) => {
         const { eventId, status, updatedEvent } = action.payload;
@@ -231,15 +226,23 @@ const eventSlice = createSlice({
           (event) => event._id !== eventId
         );
 
-        // // If accepted, add to attendingEvents
-        // if (status === 'accepted') {
-        //   state.attendingEvents = [updatedEvent, ...state.attendingEvents];
-        // }
+        if (status === "accepted" && updatedEvent) {
+          const alreadyAttending = state.attendingEvents.some(
+            (event) => event._id === eventId
+          );
 
-        // // Update visibleEvents if needed
-        // state.visibleEvents = state.visibleEvents.map(event =>
-        //   event._id === eventId ? updatedEvent : event
-        // );
+          if (!alreadyAttending) {
+            state.attendingEvents = [updatedEvent, ...state.attendingEvents];
+          }
+        }
+
+        state.visibleEvents = state.visibleEvents.map((event) =>
+          event._id === eventId ? { ...event, ...updatedEvent } : event
+        );
+
+        state.events = state.events.map((event) =>
+          event._id === eventId ? { ...event, ...updatedEvent } : event
+        );
 
         // Update any other relevant state
         state.updateStatus = "succeeded";
@@ -292,9 +295,18 @@ const eventSlice = createSlice({
       })
       .addCase(removeSavedEvent.fulfilled, (state, action) => {
         state.removeSavedEventLoading = false;
-        state.savedEvents = state.savedEvents.filter(
-          (event) => event._id !== action.payload.eventId
-        );
+
+        // Ensure savedEvents is an array before filtering
+        if (Array.isArray(state.savedEvents.events)) {
+          state.savedEvents = state.savedEvents.events.filter((savedEvent) => {
+            // Check the structure of your saved events
+            const eventId = savedEvent._id || savedEvent.event?._id;
+            return eventId !== action.payload.eventId;
+          });
+        } else {
+          console.error("savedEvents is not an array:", state.savedEvents);
+          state.savedEvents = [];
+        }
       })
       .addCase(removeSavedEvent.rejected, (state, action) => {
         state.removeSavedEventLoading = false;
@@ -320,12 +332,22 @@ export const { clearAttendingMembers, resetUpdateStatus, syncEvents } =
 
 export const selectSavedEvents = (state) => state.savedEvents || [];
 export const selectIsEventSaved = (eventId) => (state) => {
-  const savedEvents = state.events.savedEvents || [];
+  const savedEvents = state.events.savedEvents;
+
+  // Ensure it's an array
+  if (!Array.isArray(savedEvents)) {
+    return false;
+  }
+
+  // Check the structure of saved events
+  if (savedEvents.length > 0) {
+  }
 
   const isFound = savedEvents.some((event) => {
-    return event.event._id === eventId;
+    return event.event?._id === eventId;
   });
 
   return isFound;
 };
+
 export default eventSlice.reducer;

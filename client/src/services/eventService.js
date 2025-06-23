@@ -139,7 +139,7 @@ const eventService = {
   // Get saved events
   getSavedEvents: async () => {
     try {
-      const response = await axios.get(`${API_URL}/saved-events`, {
+      const response = await axios.get(`${API_URL}/user/saved`, {
         withCredentials: true,
       });
       return response.data;
