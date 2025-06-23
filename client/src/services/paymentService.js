@@ -97,6 +97,27 @@ const createStripePayment = async ({ amount, currency = "gbp", data = null }) =>
 
 }
 
+const createPaypalOrder = async ({ amount }) => {
+
+  const response = await axios.post(API_URL + 'paypal/create-order',{amount},{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
+
+const capturePaypalPayment = async ({ orderId }) => {
+
+  const response = await axios.get(API_URL + 'paypal/capture-order/'+orderId,{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
 
   const paymentService = {
     addPayment,
@@ -104,8 +125,9 @@ const createStripePayment = async ({ amount, currency = "gbp", data = null }) =>
     editPayment,
     deletePayment,
     getPublishableKey,
-    createStripePayment
-
+    createStripePayment,
+    createPaypalOrder,
+    capturePaypalPayment
   };
 
   export default paymentService;
