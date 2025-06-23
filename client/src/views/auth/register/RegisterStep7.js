@@ -19,6 +19,7 @@ import AuthModal from '../../../components/AuthModal';
 import { z } from 'zod';
 
 import { GetCountries } from 'react-country-state-city';
+import StripePaymentRegisterForm from './stripePaymentRegisterForm';
 
 const schema = z.object({
     cardNumber: z.number(),
@@ -238,9 +239,11 @@ const RegisterStep7 = () => {
             <p className='text-gray-400 text-3xl'>£120.00</p>
           </div>
 
+
           {/* Right Side - Payment Form */}
           <div className='md:order-2 space-y-6'>
-            <div>
+          <StripePaymentRegisterForm />
+            {/* <div>
               <label className='block mb-2 font-medium text-xl text-[#0A5440]'>
                 {mode}
               </label>
@@ -351,8 +354,8 @@ const RegisterStep7 = () => {
                   )}
                 </div>
               </div>
-            </div>
-            {mode === 'Card' && (
+            </div> */}
+            {/* {mode === 'Card' && (
               <>
                 <div>
                   <label className='block mb-2'>Card number</label>
@@ -427,11 +430,11 @@ const RegisterStep7 = () => {
                       }
                     >
                       {countries.map(c => <option value={c} > {c} </option>) }
-                      {/* <option value='United States'>United States</option>
+                      <option value='United States'>United States</option>
                       <option value='Canada'>Canada</option>
                       <option value='Canada'>Canada</option>
                       <option value='Canada'>Canada</option>
-                      <option value='Canada'>Canada</option> */}
+                      <option value='Canada'>Canada</option>
                     </select>
                   </div>
                   <div>
@@ -458,7 +461,7 @@ const RegisterStep7 = () => {
                   Make Payment
                 </button>
               </>
-            )}
+            )} */}
             <button
               type='button'
               onClick={() => setIsCancelModalOpen(true)}

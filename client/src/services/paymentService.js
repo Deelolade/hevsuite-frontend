@@ -73,14 +73,38 @@ const editPayment = async (paymentType, paymentData) => {
   };
 
  
+const getPublishableKey = async () => {
+ 
+ const response = await axios.get(API_URL + 'get-publishable-key', {
+    withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json',
+         
+      }
+  })
 
+  return response.data;
+}
+
+const createStripePayment = async ({ amount, currency = "eur", data = null }) => {
+
+  const response = await axios.post(API_URL + 'create-payment-intent',{amount,currency,data},{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
 
 
   const paymentService = {
     addPayment,
     createSetupIntent,
     editPayment,
-    deletePayment
+    deletePayment,
+    getPublishableKey,
+    createStripePayment
 
   };
 

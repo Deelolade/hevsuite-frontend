@@ -1,0 +1,84 @@
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import paymentService from "../../../../services/paymentService";
+import { useEffect, useState } from "react";
+import StripePaymentForm from "./form";
+import SuccessPaymentModal from "./successModal";
+import { fetchProfile } from "../../../../features/auth/authSlice";
+
+const StripePaymentRegisterForm = () => {
+  const [stripePromise, setStripePromise] = useState(null);
+  const [paymentConfig, setpaymentConfig] = useState({
+    clientSecret: "",
+    customerId: "",
+    paymentIntentId: "",
+  });
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOnPaymentSuccess = (payDetails) => {
+    setShowModal(true);
+    setPaymentDetails(payDetails);
+    fetchProfile(); // re-fetch user-profile
+  };
+
+  const handleOnCloseModal = () => {
+    setShowModal(false);
+
+    setTimeout(() => {
+      setPaymentDetails(null);
+    }, 5_000);
+  };
+
+  useEffect(() => {
+    const fetchPublishableKey = () => {
+      paymentService
+        .getPublishableKey()
+        .then((res) => {
+          const { publishable_key } = res.data;
+          setStripePromise(loadStripe(publishable_key));
+        })
+        .catch((ex) => console.error(ex));
+    };
+
+    fetchPublishableKey();
+  }, []);
+
+
+  useEffect(() => {
+    // getting client secret.
+    const fetchClientSecret = () => {
+      paymentService
+        .createStripePayment({ amount: 12_000 }) // amount 120, you need to get
+        .then((res) => {
+          // console.log("created: ", res);
+          setpaymentConfig(res);
+        })
+        .catch((ex) => console.error(ex));
+    };
+
+    fetchClientSecret();
+  }, []);
+
+  return (
+    <div>
+      {paymentDetails && (
+        <SuccessPaymentModal
+          isOpen={showModal}
+          onClose={handleOnCloseModal}
+          paymentDetails={paymentDetails}
+        />
+      )}
+      {paymentConfig.clientSecret && stripePromise && (
+        <Elements
+          stripe={stripePromise}
+          options={{ clientSecret: paymentConfig.clientSecret }}
+        >
+          <StripePaymentForm onSuccess={handleOnPaymentSuccess} />
+        </Elements>
+      )}
+    </div>
+  );
+};
+
+export default StripePaymentRegisterForm;

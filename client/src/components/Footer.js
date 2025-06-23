@@ -13,7 +13,7 @@ const Footer = () => {
     (state) => state.footer
   );
 
-  console.log(footerData);
+  // console.log(footerData);
 
   useEffect(() => {
     dispatch(fetchFooterData());
