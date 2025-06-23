@@ -49,6 +49,7 @@ const RegisterStep7 = () => {
   });
  const { user } = useSelector((state) => state.auth);
  const { Settings } = useSelector((state) => state.generalSettings);
+
   const modalStyles = {
     content: {
       top: '50%',
@@ -236,7 +237,14 @@ const RegisterStep7 = () => {
             <h2 className='text-[#0A5440] font-medium text-xl mb-2'>
               Membership fee
             </h2>
-            <p className='text-gray-400 text-3xl'>£120.00</p>
+            { Settings && 
+            
+            <p className='text-gray-400 text-3xl'>
+              {
+                 new Intl.NumberFormat("en-GB", {style: "currency",currency: "GBP" }).format(Settings.membershipStandardPrice)
+              }
+            </p>
+            }
           </div>
 
 

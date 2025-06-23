@@ -10,6 +10,8 @@ import { useSelector } from "react-redux";
 const StripePaymentRegisterForm = () => {
 
   const { user } = useSelector(s => s.auth);
+  const { Settings } = useSelector((state) => state.generalSettings);
+  
 
   const [stripePromise, setStripePromise] = useState(null);
   const [paymentConfig, setpaymentConfig] = useState({
@@ -52,8 +54,9 @@ const StripePaymentRegisterForm = () => {
   useEffect(() => {
     // getting client secret.
     const fetchClientSecret = () => {
+      const amount = Settings.membershipStandardPrice * 100 // converting into cents
       paymentService
-        .createStripePayment({ amount: 12_000 }) // amount 120, you need to get
+        .createStripePayment({ amount }) // amount 120, you need to get
         .then((res) => {
           // console.log("created: ", res);
           setpaymentConfig(res);
@@ -61,8 +64,8 @@ const StripePaymentRegisterForm = () => {
         .catch((ex) => console.error(ex));
     };
 
-    fetchClientSecret();
-  }, []);
+    if(Settings) fetchClientSecret();
+  }, [Settings]);
 
   return (
     <div>
