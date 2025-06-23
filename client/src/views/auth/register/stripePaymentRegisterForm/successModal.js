@@ -16,10 +16,13 @@ import { BsCheckCircleFill } from "react-icons/bs";
  *
  * @param {SuccessPaymentModalProps} props
  */
-const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose }) => {
+const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
+
+  const fullName = `${user.surname} ${user.forename}`;
+
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const { currency, amount, created, id, payment_method, payment_method_types } =  paymentDetails;
+  const { currency, amount, created, id, payment_method_types } =  paymentDetails;
 
   const handleCopy = async (refId) => {
     try {
@@ -67,7 +70,7 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose }) => {
 
   const formattedAmount = new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: currency?.toUpperCase(),
+    currency: (currency || "GBP").toUpperCase(),
   }).format(amount / 100); // convert cents to euros
 
   // 2. Format date
@@ -139,12 +142,12 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose }) => {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-500 text-sm mb-1">Payment Method</p>
-              <p className="font-medium">{typeof payment_method === "string" ? payment_method: payment_method_types[0]} </p>
+              <p className="font-medium">{payment_method_types[0]} </p>
               {/* <p className="font-medium">Card</p> */}
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-500 text-sm mb-1">Sender Name</p>
-              <p className="font-medium">{payment_method?.billing_details?.name}{" "}</p>
+              <p className="font-medium text-ellipsis overflow-hidden text-center">{fullName}{" "}</p>
               {/* <p className="font-medium">Antonio Roberto</p> */}
             </div>
           </div>

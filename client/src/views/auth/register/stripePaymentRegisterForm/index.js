@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 import StripePaymentForm from "./form";
 import SuccessPaymentModal from "./successModal";
 import { fetchProfile } from "../../../../features/auth/authSlice";
+import { useSelector } from "react-redux";
 
 const StripePaymentRegisterForm = () => {
+
+  const { user } = useSelector(s => s.auth);
+
   const [stripePromise, setStripePromise] = useState(null);
   const [paymentConfig, setpaymentConfig] = useState({
     clientSecret: "",
@@ -67,6 +71,7 @@ const StripePaymentRegisterForm = () => {
           isOpen={showModal}
           onClose={handleOnCloseModal}
           paymentDetails={paymentDetails}
+          user={user}
         />
       )}
       {paymentConfig.clientSecret && stripePromise && (

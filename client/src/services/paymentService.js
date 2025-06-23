@@ -86,7 +86,7 @@ const getPublishableKey = async () => {
   return response.data;
 }
 
-const createStripePayment = async ({ amount, currency = "eur", data = null }) => {
+const createStripePayment = async ({ amount, currency = "gbp", data = null }) => {
 
   const response = await axios.post(API_URL + 'create-payment-intent',{amount,currency,data},{
       withCredentials: true,
