@@ -1,86 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BsCheck, BsCheckCircleFill } from 'react-icons/bs';
-import { FiDownload } from 'react-icons/fi';
-import Modal from 'react-modal';
-import Footer from '../../../components/Footer';
-import mastercard from '../../../assets/Mastercard.png';
-import american from '../../../assets/AMEX.png';
-import discover from '../../../assets/Discover.png';
-import visa from '../../../assets/VISA.png';
-import logo_white from '../../../assets/logo_white.png';
-import bg_image from '../../../assets/party3.jpg';
-import { persistor } from '../../../store/store';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../../features/auth/authSlice';
-import toast from 'react-hot-toast';
-import constants from '../../../constants';
-import AuthModal from '../../../components/AuthModal';
-import { z } from 'zod';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { BsCheck, BsCheckCircleFill } from "react-icons/bs";
+import { FiDownload } from "react-icons/fi";
+import Modal from "react-modal";
+import Footer from "../../../components/Footer";
+import mastercard from "../../../assets/Mastercard.png";
+import american from "../../../assets/AMEX.png";
+import discover from "../../../assets/Discover.png";
+import visa from "../../../assets/VISA.png";
+import logo_white from "../../../assets/logo_white.png";
+import bg_image from "../../../assets/party3.jpg";
+import { persistor } from "../../../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../../features/auth/authSlice";
+import toast from "react-hot-toast";
+import constants from "../../../constants";
+import AuthModal from "../../../components/AuthModal";
 
-const schema = z.object({
-    cardNumber: z.number(),
-    expiry: z.number(),
-    cvc: z.number() ,
-    country: z.string() ,
-    postalCode: z.string(),
-});
 
-const RegisterStep7 = () => { 
+import { GetCountries } from "react-country-state-city";
+import StripePaymentRegisterForm from "./stripePaymentRegisterForm";
+import PaypalPaymentRegisterForm from "./paypalPaymentRegisterForm";
+
+
+const RegisterStep7 = () => {
   const dispatch = useDispatch();
   React.useEffect(() => {
     window.scrollTo({ top: 50, behavior: 'smooth' });
   }, []);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [countries, setCountries] = useState([]);
+  
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [logOutLoading, setLogOutLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiry: '',
     cvc: '',
-    country: 'United States',
+    country: 'United Kingdom',
     postalCode: '',
   });
  const { user } = useSelector((state) => state.auth);
  const { Settings } = useSelector((state) => state.generalSettings);
+
   const modalStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      transform: 'translate(-50%, -50%)',
-      maxWidth: '500px',
-      width: '90%',
-      padding: '0',
-      height: 'min-content',
-      border: 'none',
-      borderRadius: '24px',
-      backgroundColor: 'white',
-      
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "500px",
+      width: "90%",
+      padding: "0",
+      height: "min-content",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
     },
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
     },
   };
 
   const cancelModalStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      transform: 'translate(-50%, -50%)',
-      maxWidth: '400px',
-      width: '90%',
-      padding: '0',
-      border: 'none',
-      borderRadius: '24px',
-      backgroundColor: 'white',
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "400px",
+      width: "90%",
+      padding: "0",
+      border: "none",
+      borderRadius: "24px",
+      backgroundColor: "white",
     },
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      backgroundColor: "rgba(0, 0, 0, 0.75)",
     },
   };
 
@@ -90,7 +89,7 @@ const RegisterStep7 = () => {
     // Add payment processing logic here
   };
   const [isPopoverVisible, setPopoverVisible] = useState(false);
-  const [mode, setMode] = useState('Card');
+  const [mode, setMode] = useState("Card");
   // Toggle the visibility of the popover
   const togglePopover = () => {
     setPopoverVisible(!isPopoverVisible);
@@ -101,19 +100,25 @@ const RegisterStep7 = () => {
     setMode(val);
   }
   const handleLogout = async () => {
-
     setLogOutLoading(true);
 
     try {
       await dispatch(logout()).unwrap(); // unwrap to catch error
-      await persistor.purge();           // clear redux-persist storage
-      navigate('/');
+      await persistor.purge(); // clear redux-persist storage
+      navigate("/");
       setLogOutLoading(false);
     } catch (error) {
       toast.error("Logout failed. Please try again.");
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
+
+  useEffect(() => {
+    GetCountries().then((res) => {
+      const _countries = res.map((c) => c.name);
+      setCountries(_countries);
+    });
+  }, []);
 
   useEffect(() => {
 
@@ -222,14 +227,21 @@ const RegisterStep7 = () => {
             <h2 className='text-[#0A5440] font-medium text-xl mb-2'>
               Membership fee
             </h2>
-            <p className='text-gray-400 text-3xl'>£120.00</p>
+            {Settings && (
+              <p className="text-gray-400 text-3xl">
+                {new Intl.NumberFormat("en-GB", {
+                  style: "currency",
+                  currency: "GBP",
+                }).format(Settings.membershipStandardPrice)}
+              </p>
+            )}
           </div>
 
           {/* Right Side - Payment Form */}
-          <div className='md:order-2 space-y-6'>
-            <div>
+          <div className="md:order-2 space-y-6">
+             <div>
               <label className='block mb-2 font-medium text-xl text-[#0A5440]'>
-                {mode}
+                {mode === "Card" ? "Stripe": mode}
               </label>
               <div className='flex gap-4'>
                 {(() => {
@@ -258,23 +270,12 @@ const RegisterStep7 = () => {
                             />
                           </svg>
                         </div>
-                        <input
-                          type='text'
-                          placeholder='Card'
-                          className='w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none'
-                          value={paymentDetails.cardType}
-                          onChange={(e) =>
-                            setPaymentDetails({
-                              ...paymentDetails,
-                              cardType: e.target.value,
-                            })
-                          }
-                        />
+                        
                       </div>
                     );
                   } else if (mode === 'PayPal') {
                     return (
-                      <div className='underline cursor-pointer mr-8 font-bold text-sm justify-center flex items-center text-primary'>
+                      <div className='underline mr-8 font-bold text-sm justify-center flex items-center text-primary'>
                         Proceed to PayPal For Payment
                       </div>
                     );
@@ -306,12 +307,12 @@ const RegisterStep7 = () => {
                     </svg>
                   </button>
                   {isPopoverVisible && (
-                    <div className='absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border p-3'>
+                    <div className='absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border p-3 z-[2222]'>
                       <div
                         className='cursor-pointer p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg'
                         onClick={() => handleMode('Card')}
                       >
-                        Card{' '}
+                        Stripe{' '}
                         {mode === 'Card' && (
                           <BsCheck className='text-green-400' />
                         )}
@@ -325,137 +326,25 @@ const RegisterStep7 = () => {
                           <BsCheck className='text-green-400' />
                         )}
                       </div>
-                      <div
-                        className='cursor-pointer p-2 flex items-center gap-2 hover:bg-gray-100 rounded-lg'
-                        onClick={() => handleMode('Google Pay')}
-                      >
-                        Google Pay{' '}
-                        {mode === 'Google Pay' && (
-                          <BsCheck className='text-green-400' />
-                        )}
-                      </div>
+                     
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-            {mode === 'Card' && (
-              <>
-                <div>
-                  <label className='block mb-2'>Card number</label>
-                  <input
-                    type='text'
-                    placeholder='1234 1234 1234 1234'
-                    className='w-full px-4 py-3 border rounded-lg'
-                    value={paymentDetails.cardNumber}
-                    onChange={(e) =>
-                      setPaymentDetails({
-                        ...paymentDetails,
-                        cardNumber: e.target.value,
-                      })
-                    }
-                  />
-                  <div className='flex gap-2 mt-2'>
-                    <img src={visa} alt='Visa' className='h-6' />
-                    <img src={mastercard} alt='Mastercard' className='h-6' />
-                    <img
-                      src={american}
-                      alt='American Express'
-                      className='h-6'
-                    />
-                    <img src={discover} alt='Discover' className='h-6' />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block mb-2'>Expiry</label>
-                    <input
-                      type='text'
-                      placeholder='MM/YY'
-                      className='w-full px-4 py-3 border rounded-lg'
-                      value={paymentDetails.expiry}
-                      onChange={(e) =>
-                        setPaymentDetails({
-                          ...paymentDetails,
-                          expiry: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className='block mb-2'>CVC</label>
-                    <input
-                      type='text'
-                      placeholder='CVC'
-                      className='w-full px-4 py-3 border rounded-lg'
-                      value={paymentDetails.cvc}
-                      onChange={(e) =>
-                        setPaymentDetails({
-                          ...paymentDetails,
-                          cvc: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block mb-2'>Country</label>
-                    <select
-                      className='w-full px-4 py-3 border rounded-lg bg-white'
-                      value={paymentDetails.country}
-                      onChange={(e) =>
-                        setPaymentDetails({
-                          ...paymentDetails,
-                          country: e.target.value,
-                        })
-                      }
-                    >
-                      <option value='United States'>United States</option>
-                      <option value='Canada'>Canada</option>
-                      <option value='Canada'>Canada</option>
-                      <option value='Canada'>Canada</option>
-                      <option value='Canada'>Canada</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className='block mb-2'>Postal code</label>
-                    <input
-                      type='text'
-                      placeholder='90210'
-                      className='w-full px-4 py-3 border rounded-lg'
-                      value={paymentDetails.postalCode}
-                      onChange={(e) =>
-                        setPaymentDetails({
-                          ...paymentDetails,
-                          postalCode: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  className='w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl text-base font-medium'
-                >
-                  Make Payment
-                </button>
-              </>
-            )}
+            </div>  
+            {mode === 'Card' && ( <StripePaymentRegisterForm />  )} 
+            {mode === 'PayPal' && ( <PaypalPaymentRegisterForm />  )} 
             <button
-              type='button'
+              type="button"
               onClick={() => setIsCancelModalOpen(true)}
-              className='w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-base font-medium'
+              className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-base font-medium"
             >
               Cancel Application
             </button>
-            {user && user.joinFeeStatus === 'pending' && (
+            {user && user.joinFeeStatus === "pending" && (
               <button
                 onClick={handleLogout}
-                className='w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-base font-medium'
+                className="w-full py-3 border border-[#540A26] text-[#540A26] rounded-3xl text-base font-medium"
               >
                 Logout
               </button>
@@ -467,117 +356,42 @@ const RegisterStep7 = () => {
       <Footer />
 
       <Modal
-        isOpen={isModalOpen}
-        onRequestClose={() => setIsModalOpen(false)}
-        style={{content: {...modalStyles.content, background: "none", backgroundColor: "none !important"}, overlay: modalStyles.overlay }}
-        contentLabel='Payment Success Modal'
-      >
-         
-
-          
-          <div className='left-0 top-6 z-50 relative w-full' >
-
-            <div className=' flex justify-center w-full relative'>
-              <div className='w-14 h-14  rounded-full bg-black flex items-center justify-center'>
-              </div>
-                <BsCheckCircleFill className='w-8 h-8 text-[#900C3F] z-0 absolute top-3' />
-              
-            </div>
-
-          </div>
-        <div className='relative pt-5 pb-8 px-8 z-10 rounded-2xl bg-white'>
-          {/* Success Icon */} 
-
-          {/* Modal Content */}
-          <div className='text-center mt-6'>
-            <h2 className='text-2xl font-semibold mb-2'>Payment Success!</h2>
-            <p className='text-gray-600 mb-8'>
-              Your payment has been successfully done.
-            </p>
-
-            <hr className='mb-4' />
-
-            <div className='mb-8'>
-              <h3 className='text-gray-500 mb-2'>Total Payment</h3>
-              <p className='text-4xl text-gray-600'>£120.00</p>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4 mb-8'>
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <p className='text-gray-500 text-sm mb-1'>Ref Number</p>
-                <p className='font-medium'>00008575257</p>
-              </div>
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <p className='text-gray-500 text-sm mb-1'>Payment Time</p>
-                <p className='font-medium'>25 Feb 2023, 13:22</p>
-              </div>
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <p className='text-gray-500 text-sm mb-1'>Payment Method</p>
-                <p className='font-medium'>Card</p>
-              </div>
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <p className='text-gray-500 text-sm mb-1'>Sender Name</p>
-                <p className='font-medium'>Antonio Roberto</p>
-              </div>
-            </div>
-
-            <button
-              className='flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800'
-              onClick={() => {
-                /* Add PDF download logic */
-              }}
-            >
-              <FiDownload className='w-5 h-5' />
-              Get PDF Receipt
-            </button>
-
-            <button
-              onClick={() => navigate('/homepage')}
-              className='w-full py-1   text-[#540A26] border-2 border-gradient_r rounded-3xl'
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
         isOpen={isCancelModalOpen}
         onRequestClose={() => setIsCancelModalOpen(false)}
         style={cancelModalStyles}
-        contentLabel='Cancel Application Confirmation Modal'
+        contentLabel="Cancel Application Confirmation Modal"
       >
-        <div className='p-6'>
-          <div className='flex justify-between items-center mb-6'>
-            <h2 className='text-xl font-semibold flex items-center gap-2'>
-              <span className='text-red-500'>⚠</span>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <span className="text-red-500">⚠</span>
               Cancel Application
             </h2>
             <button
               onClick={() => setIsCancelModalOpen(false)}
-              className='text-gray-400 hover:text-gray-600'
+              className="text-gray-400 hover:text-gray-600"
             >
               ✕
             </button>
           </div>
-          <div className='space-y-6'>
-            <p className='text-gray-600'>
+          <div className="space-y-6">
+            <p className="text-gray-600">
               Are you sure you want to cancel your application? This action
               cannot be undone.
             </p>
-            <div className='flex justify-end gap-3'>
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsCancelModalOpen(false)}
-                className='px-6 py-2 border rounded-lg text-sm'
+                className="px-6 py-2 border rounded-lg text-sm"
               >
                 No, Keep Application
               </button>
               <button
                 onClick={() => {
                   setIsCancelModalOpen(false);
-                  navigate('/');
+                  navigate("/");
                 }}
-                className='px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm'
+                className="px-6 py-2 bg-[#540A26] text-white rounded-lg text-sm"
               >
                 Yes, Cancel
               </button>

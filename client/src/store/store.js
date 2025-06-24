@@ -26,7 +26,7 @@ import supportRequestReducer from "../features/supportRequestSlice";
 //   whitelist: ['isAuthenticated']
 // };
 
-const CURRENT_STORE_VERSION = 0;
+const CURRENT_STORE_VERSION = 1;
 
 /**@type { import("redux-persist").PersistConfig } */
 const persistConfig = {
@@ -35,7 +35,8 @@ const persistConfig = {
   version: CURRENT_STORE_VERSION,
   whitelist: ["auth", "register"], // optional: persist only selected slices
   migrate: (state, version) => {
-    if (version !== CURRENT_STORE_VERSION) return undefined; // reset everything
+    if(version !== CURRENT_STORE_VERSION) return Promise.resolve(undefined); // reset everything
+
     return Promise.resolve(state); // return peristed-state
   },
 };

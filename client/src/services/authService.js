@@ -173,6 +173,21 @@ const updateProfile = async (userData, confirmPassword) => {
   }
 };
 
+//for verfication when the user clicks the email verification link sent
+const verifyEmailLinkToken = async (token) => {
+  try{
+  const response = await axios.get(API_URL + `verify-email?token=${token}`);
+  return response.data;
+}catch (error) {
+
+  throw new Error(
+    error.response?.data?.message || 
+    error.message || 
+    'Registration failed'
+  );
+}
+};
+
 // const resend2FACode = async () => {
 //   const response = await axios.get(API_URL + 'resend-2fa-code');
 //   return response.data;
@@ -191,6 +206,9 @@ const authService = {
   resetPassword,
   resend2FACode,
   checkUserByEmail,
+  resend2FACode,
+  verifyEmailLinkToken
+
 };
 
 export default authService;

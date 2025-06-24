@@ -73,15 +73,61 @@ const editPayment = async (paymentType, paymentData) => {
   };
 
  
+const getPublishableKey = async () => {
+ 
+ const response = await axios.get(API_URL + 'get-publishable-key', {
+    withCredentials: true, 
+        headers: {
+          'Content-Type': 'application/json',
+         
+      }
+  })
 
+  return response.data;
+}
 
+const createStripePayment = async ({ amount, currency = "gbp", data = null }) => {
+
+  const response = await axios.post(API_URL + 'create-payment-intent',{amount,currency,data},{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
+
+const createMembershipPayment = async ({ amount, provider }) => {
+
+  const response = await axios.post(API_URL + 'create-membership-session',{amount, provider },{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
+
+const capturePaypalPayment = async ({ orderId }) => {
+
+  const response = await axios.get(API_URL + 'paypal/capture-order/'+orderId,{
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json'  }
+    })
+
+  return response.data;
+
+}
 
   const paymentService = {
     addPayment,
     createSetupIntent,
     editPayment,
-    deletePayment
-
+    deletePayment,
+    getPublishableKey,
+    createStripePayment,
+    capturePaypalPayment,
+    createMembershipPayment
   };
 
   export default paymentService;

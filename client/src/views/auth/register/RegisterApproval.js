@@ -90,7 +90,7 @@ const RegisterApproval = ({ setApproval, referrals, onDecliningReferredBy }) => 
     if(user && referredByUsers) {
       
       const allReferredByApproved = referredByUsers.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-      if(allReferredByApproved || user.approvedByAdmin || user.membershipStatus === constants.membershipStatus.accepted  ){
+      if(allReferredByApproved && referredByUsers.length > 0 || user.approvedByAdmin || user.membershipStatus === constants.membershipStatus.accepted  ){
         setUserApprovedToMakePayment(true);
       }
     }

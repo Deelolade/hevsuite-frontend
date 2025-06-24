@@ -37,7 +37,7 @@ const RegisterStep5 = () => {
     },
     completed: {
       title: "Registration Completed!",
-      description: "Please verifty your email before logging in.",
+      description: "A verification link has been sent to your email.",
       loading: false,
     },
   };
@@ -189,10 +189,10 @@ const RegisterStep5 = () => {
       // await authService.register(formDataToSend);
       setTimeout(
         () => setAuthModal((prev) => ({ ...prev, status: "completed" })),
-        2000
+        1000
       );
 
-      const goTo = (path, delay = 5000) => {
+      const goTo = (path, delay = 4000) => {
         setTimeout(() => {
           navigate(path, {
             replace: true,
@@ -215,7 +215,7 @@ const RegisterStep5 = () => {
         return;
       }
 
-      goTo("/register-6", 3000);
+      goTo("/register-6", 2000);
       // toast.success("Registration successful! Check your email for verification.");
       // navigate("/register-6");
       // dispatch(reset());
@@ -224,7 +224,7 @@ const RegisterStep5 = () => {
     } finally {
       setTimeout(() => {
         setAuthModal({ isOpen: false, status: " " });
-      }, 4000);
+      }, 2000);
 
       setTimeout(() => {
         setRegisteringLoading(false);

@@ -45,6 +45,7 @@ import NotFound from "./views/NotFound";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
+import UserVerifyEmail from "./views/auth/login/userVerifyEmail";
 import UpcomingEvents from "./views/account/events/UpcomingEvents";
 import SelectedEvent from "./views/homepage/SelectedEvent";
 
@@ -135,15 +136,9 @@ const LoginRedirect = ({ children }) => {
 
     if (Settings?.requiredReferralNumber <= 0 && !Settings?.membershipFee)
       return <Navigate to="/homepage" state={{ from: location }} replace />;
-
-    const allReferredByApproved = user.referredBy.every(
-      (r) => r.status.toLowerCase() === constants.referredByStatus.approved
-    );
-    if (
-      user.approvedByAdmin ||
-      allReferredByApproved ||
-      user.membershipStatus === constants.membershipStatus.accepted
-    )
+   
+    const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
+    if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length > 0 || user.membershipStatus === constants.membershipStatus.accepted ) 
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;
@@ -260,6 +255,10 @@ const router = createBrowserRouter([
   {
     path: "how-it-works",
     element: <HowItWorks />,
+  },
+   {
+    path: "/user/verify-email",
+    element: <UserVerifyEmail />,
   },
   {
     path: "/register",
