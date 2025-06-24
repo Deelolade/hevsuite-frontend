@@ -210,11 +210,10 @@ export const ReceiptPDF = ({ data }) => (
         <View style={styles.leftHeader}>
           <View style={styles.logo}>
             <Image src={Logo} style={styles.logoImage} />
-            {/* <Text style={styles.logoText}>h</Text> */}
           </View>
           <View style={styles.companyInfo}>
             <Text style={styles.companyName}>HevSuite Club</Text>
-            <Text style={styles.supportEmail}>support@hevsuite.com</Text>
+            {/* <Text style={styles.supportEmail}>support@hevsuite.com</Text> */}
           </View>
         </View>
 
@@ -298,11 +297,11 @@ export const ReceiptPDF = ({ data }) => (
       {/* Footer Section */}
       <View style={styles.footer}>
         <Text style={styles.footerTextBold}>Thank you for your purchase!</Text>
-        <Text style={styles.footerText}>
+        {/* <Text style={styles.footerText}>
           For support or inquiries, contact us at support@hevsuite.com
-        </Text>
+        </Text> */}
         <Text style={styles.footerTextItalic}>
-          HevSuite Club - Building Communities Through Events
+          Hazor Group Ltd - 20-22 Wen lock Road, London N1 7GU
         </Text>
       </View>
     </Page>

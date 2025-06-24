@@ -111,7 +111,7 @@ const LoginRedirect = ({ children }) => {
       return <Navigate to="/homepage" state={{ from: location }} replace />;
    
     const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-    if (user.approvedByAdmin || allReferredByApproved || user.membershipStatus === constants.membershipStatus.accepted ) 
+    if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length > 0 || user.membershipStatus === constants.membershipStatus.accepted ) 
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;

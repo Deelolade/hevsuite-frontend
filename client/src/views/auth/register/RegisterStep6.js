@@ -198,6 +198,28 @@ const RegisterStep6 = () => {
   };
 
     const handleProceedToSendReferredBy = async () => {
+    
+      if(referredBy.length >= Settings.requiredReferralNumber){
+        toast.error("You've reached the limit of required members", {duration: 3_000 });
+        return
+      }
+
+      const remainingReferred = Settings.requiredReferralNumber - referredBy.length;
+
+      if(selectedMembers.size > remainingReferred && referredBy.length ){
+
+        const message = `You can refer up to ${remainingReferred} member${remainingReferred > 1 ? 's' : ''}.`;
+        toast.error(message, {duration: 3_000})
+        return
+      }
+
+      if(referredBy.length === 0 && selectedMembers.size > Settings.requiredReferralNumber){
+        const message = `Only ${Settings.requiredReferralNumber} member${Settings.requiredReferralNumber > 1 ? 's' : ''}. are required`;
+        toast.error(message, {duration: 3_000});
+        return
+      }
+
+   
     try {
       const payload = [];
       setSendReferredByLoading(true);

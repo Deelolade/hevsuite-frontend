@@ -17,7 +17,7 @@ const PaypalPaymentRegisterForm = () => {
   const initialOptions = { clientId, currency: "GBP",buyerCountry: "GB" };
 
   const handleOnSuccessfullPayment = (payDetails) => {
-    console.log("Onsucees: ", payDetails);
+    
     setPaymentDetails(payDetails);
     setTimeout(() => {
 

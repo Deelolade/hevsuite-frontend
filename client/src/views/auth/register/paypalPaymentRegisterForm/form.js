@@ -8,9 +8,9 @@ const PayPalCheckout = ({ Settings, onSuccess }) => {
     try {
       const amount = Settings.membershipStandardPrice;
 
-      const response = await paymentService.createPaypalOrder({ amount });
+      const response = await paymentService.createMembershipPayment({ amount, provider: "paypal" });
 
-      const { id, redirect_url } = response.data;
+      const { id } = response.data;
 
       return id; //order Id
     } catch (ex) {

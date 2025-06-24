@@ -16,8 +16,6 @@ const StripePaymentRegisterForm = () => {
   const [stripePromise, setStripePromise] = useState(null);
   const [paymentConfig, setpaymentConfig] = useState({
     clientSecret: "",
-    customerId: "",
-    paymentIntentId: "",
   });
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -54,18 +52,19 @@ const StripePaymentRegisterForm = () => {
   useEffect(() => {
     // getting client secret.
     const fetchClientSecret = () => {
-      const amount = Settings.membershipStandardPrice * 100 // converting into cents
+
+      const amount = Settings.membershipStandardPrice;
+
       paymentService
-        .createStripePayment({ amount }) // amount 120, you need to get
+        .createMembershipPayment({ amount, provider: "stripe" }) // amount 120, you need to get
         .then((res) => {
-          // console.log("created: ", res);
           setpaymentConfig(res);
         })
         .catch((ex) => console.error(ex));
     };
 
-    if(Settings) fetchClientSecret();
-  }, [Settings]);
+    if(Settings && user ) fetchClientSecret();
+  }, [Settings, user]);
 
   return (
     <div>
