@@ -14,11 +14,13 @@ import { getEvents, createNewEvent, updateExistingEvent, deleteExistingEvent } f
 import { memberUsers } from "../../store/users/userSlice"
 import { getAffiliates } from "../../store/affiliate/affiliateSlice"
 import "../layout/forced.css"
+import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 // Set app element for Modal accessibility
 Modal.setAppElement("#root")
 
-const Event = () => {
+const PendingApproval = () => {
   const dispatch = useDispatch()
   const {
     events,
@@ -43,6 +45,12 @@ const Event = () => {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [isEditEventOpen, setIsEditEventOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false)
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [actionEvent, setActionEvent] = useState(null);
+  const [showEvidenceModal, setShowEvidenceModal] = useState(false);
+  const [evidenceEvent, setEvidenceEvent] = useState(null);
 
   // Form states
   const [eventImages, setEventImages] = useState([])
@@ -67,31 +75,23 @@ const Event = () => {
   const [evidenceFiles, setEvidenceFiles] = useState([])
 
   // Filter and sort states
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
-  const [showSortDropdown, setShowSortDropdown] = useState(false)
-  const [showTimeFilterDropdown, setShowTimeFilterDropdown] = useState(false)
-
-  // Filter and sort handlers for new UI
-  const handleFilterChange = (filterValue) => {
-    setShowFilterDropdown(false)
-    const sort = currentSort || 'all'
-    dispatch(getEvents({ sort, filter: filterValue }))
-    setCurrentFilter(filterValue)
-  }
-
-  const handleSortChange = (sortValue) => {
-    setShowSortDropdown(false)
-    const filter = currentFilter || 'all'
-    dispatch(getEvents({ sort: sortValue, filter }))
-    setCurrentSort(sortValue)
-  }
-
-  // State for current filter/sort
-  const [currentFilter, setCurrentFilter] = useState('all')
-  const [currentSort, setCurrentSort] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('pending');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showTimeFilterDropdown, setShowTimeFilterDropdown] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState('all');
+  const [currentSort, setCurrentSort] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('all');
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   // State for image slider in event detail modal
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  const statusOptions = [
+    { value: 'pending', label: 'Pending', icon: <FaClock className="inline mr-2 text-yellow-500" /> },
+    { value: 'approved', label: 'Approved', icon: <FaCheckCircle className="inline mr-2 text-green-600" /> },
+    { value: 'declined', label: 'Declined', icon: <FaTimesCircle className="inline mr-2 text-red-600" /> },
+  ];
 
   // Add these helper functions after the existing imports
   const getEventStatus = (event) => {
@@ -110,15 +110,12 @@ const Event = () => {
     return 'future';
   };
 
-  // Add this state near other state declarations
-  const [timeFilter, setTimeFilter] = useState('all');
-
   // Add state to track removed evidence URLs
   const [removedEvidenceUrls, setRemovedEvidenceUrls] = useState([])
 
   // Fetch events, users, and affiliates on component mount
   useEffect(() => {
-    dispatch(getEvents({ status: "approved", filter: "all" }))
+    dispatch(getEvents({ status: "all", filter: "all" }))
     dispatch(memberUsers({ page: 1, search: "", role: "" }))
     dispatch(getAffiliates())
   }, [dispatch])
@@ -250,31 +247,6 @@ const Event = () => {
     const files = Array.from(e.target.files)
     if (files.length > 0) {
       setEvidenceFiles((prev) => [...prev, ...files])
-      
-      // Clear error for evidence of plan if it exists
-      if (formErrors.evidenceOfPlan) {
-        setFormErrors({
-          ...formErrors,
-          evidenceOfPlan: "",
-        })
-      }
-    }
-  }
-
-  // Helper function to check if evidence validation should be cleared
-  const clearEvidenceErrorIfValid = () => {
-    const hasExistingEvidence = selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.length > 0
-    const hasNewEvidence = evidenceFiles.length > 0
-    const hasKeptEvidence = selectedEvent && selectedEvent.evidenceOfPlan && 
-      selectedEvent.evidenceOfPlan.filter(url => !removedEvidenceUrls.includes(url)).length > 0
-    
-    if ((hasExistingEvidence && hasKeptEvidence) || hasNewEvidence) {
-      if (formErrors.evidenceOfPlan) {
-        setFormErrors({
-          ...formErrors,
-          evidenceOfPlan: "",
-        })
-      }
     }
   }
 
@@ -289,18 +261,6 @@ const Event = () => {
     }
     if (!eventFormData.description.trim()) errors.description = "Description is required"
     if (!eventFormData.location.trim()) errors.location = "Location is required"
-    
-    // Validate Evidence of Plan - check for existing evidence or new files
-    const hasExistingEvidence = selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.length > 0
-    const hasNewEvidence = evidenceFiles.length > 0
-    const hasKeptEvidence = selectedEvent && selectedEvent.evidenceOfPlan && 
-      selectedEvent.evidenceOfPlan.filter(url => !removedEvidenceUrls.includes(url)).length > 0
-    
-    if (!hasExistingEvidence && !hasNewEvidence) {
-      errors.evidenceOfPlan = "Evidence of Plan is required"
-    } else if (hasExistingEvidence && !hasNewEvidence && !hasKeptEvidence) {
-      errors.evidenceOfPlan = "Evidence of Plan is required"
-    }
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -380,7 +340,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsAddEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -447,7 +407,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsEditEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -461,7 +421,7 @@ const Event = () => {
         setIsDeleteModalOpen(false)
         setIsViewEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "all", filter: "all" }))
       }
     })
   }
@@ -622,18 +582,60 @@ const Event = () => {
     }
   }
 
+  // Combined filter logic
+  const filteredEvents = Array.isArray(events)
+    ? events.filter(event => {
+        // Status filter
+        if (!event.status || event.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
+        // Audience type filter
+        if (currentFilter !== 'all' && event.audienceType !== currentFilter) return false;
+        // Time status filter
+        if (timeFilter !== 'all' && getEventStatus(event) !== timeFilter) return false;
+        return true;
+      })
+    : [];
+
+  const handleApprove = (event) => {
+    setActionEvent(event);
+    setShowApproveModal(true);
+  };
+  const handleDecline = (event) => {
+    setActionEvent(event);
+    setShowDeclineModal(true);
+  };
+  const confirmApprove = async () => {
+    if (!actionEvent) return;
+    try {
+      const formData = new FormData();
+      formData.append('status', 'approved');
+      await dispatch(updateExistingEvent({ id: actionEvent._id, eventData: formData })).unwrap();
+      toast.success('Event approved successfully');
+    } catch (err) {
+      toast.error('Failed to approve event');
+    } finally {
+      setShowApproveModal(false);
+      setActionEvent(null);
+    }
+  };
+  const confirmDecline = async () => {
+    if (!actionEvent) return;
+    try {
+      const formData = new FormData();
+      formData.append('status', 'declined');
+      await dispatch(updateExistingEvent({ id: actionEvent._id, eventData: formData })).unwrap();
+      toast.success('Event declined successfully');
+    } catch (err) {
+      toast.error('Failed to decline event');
+    } finally {
+      setShowDeclineModal(false);
+      setActionEvent(null);
+    }
+  };
+
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
-      {/* Header */}
-
-      <div className="flex justify-between flex-col md:flex-row gap-2 items-center">
-        <button
-          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
-          onClick={() => setIsAddEventOpen(true)}
-        >
-          Create Event
-          <span className="text-xl">+</span>
-        </button>
+      {/* Filter Controls */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
         <div className="flex gap-4 relative z-50">
           {/* Audience Type Filter Button */}
           <div className="relative">
@@ -647,13 +649,12 @@ const Event = () => {
             </button>
             {showFilterDropdown && (
               <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('all')}>All</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('members')}>Members Only</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('vip')}>VIP Members</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentFilter('all'); setShowFilterDropdown(false); }}>All</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentFilter('members'); setShowFilterDropdown(false); }}>Members Only</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentFilter('vip'); setShowFilterDropdown(false); }}>VIP Members</button>
               </div>
             )}
           </div>
-
           {/* Time Status Filter Button */}
           <div className="relative">
             <button
@@ -666,14 +667,13 @@ const Event = () => {
             </button>
             {showTimeFilterDropdown && (
               <div className="absolute z-[100] mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('all')}>All Events</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('upcoming')}>Upcoming (7 days)</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('ongoing')}>Ongoing</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => setTimeFilter('completed')}>Completed</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setTimeFilter('all'); setShowTimeFilterDropdown(false); }}>All Events</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setTimeFilter('upcoming'); setShowTimeFilterDropdown(false); }}>Upcoming (7 days)</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setTimeFilter('ongoing'); setShowTimeFilterDropdown(false); }}>Ongoing</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setTimeFilter('completed'); setShowTimeFilterDropdown(false); }}>Completed</button>
               </div>
             )}
           </div>
-
           {/* Sort By Button */}
           <div className="relative">
             <button
@@ -686,128 +686,163 @@ const Event = () => {
             </button>
             {showSortDropdown && (
               <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('all')}>All</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('latest')}>Latest</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange('oldest')}>Oldest</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentSort('all'); setShowSortDropdown(false); }}>All</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentSort('latest'); setShowSortDropdown(false); }}>Latest</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setCurrentSort('oldest'); setShowSortDropdown(false); }}>Oldest</button>
+              </div>
+            )}
+          </div>
+          {/* Status Filter Button */}
+          <div className="relative">
+            <button
+              className="flex items-center border border-gray-300 rounded-lg px-6 py-2.5 bg-white text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+              onClick={() => setShowStatusDropdown((prev) => !prev)}
+              type="button"
+            >
+              {statusOptions.find(opt => opt.value === statusFilter)?.icon}
+              {statusOptions.find(opt => opt.value === statusFilter)?.label || 'Status'}
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {showStatusDropdown && (
+              <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+                {statusOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    className={`block w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center ${statusFilter === opt.value ? 'bg-gray-100 font-semibold' : ''}`}
+                    onClick={() => { setStatusFilter(opt.value); setShowStatusDropdown(false); }}
+                  >
+                    {opt.icon}
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Loading State */}
-      {eventsLoading && (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {eventsError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          <p>Error loading events: {eventsMessage}</p>
-        </div>
-      )}
-
       {/* Event Grid */}
-      {!eventsLoading && !eventsError && (
-        <div className="grid md:grid-cols-4 gap-6 relative z-10">
-          {events?.filter(event => {
-            if (timeFilter === 'all') return true;
-            return getEventStatus(event) === timeFilter;
-          }).length > 0 ? (
-            events.filter(event => {
-              if (timeFilter === 'all') return true;
-              return getEventStatus(event) === timeFilter;
-            }).map((event) => (
-              <div
-                key={event._id}
-                className="relative group"
-                onClick={() => {
-                  setSelectedEvent(event)
-                  setIsViewEventOpen(true)
-                }}
-              >
-                <div className="absolute top-4 flex justify-between w-full gap-2 z-10">
-                  <button
-                    className="p-2 relative text-white left-4 rounded-lg transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedEvent(event)
-                      setIsEditEventOpen(true)
-                    }}
-                  >
-                    <img src={edit_icon || "/placeholder.svg"} alt="edit icon" />
-                  </button>
-                  <button
-                    className="p-2 relative right-4 text-white rounded-lg transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedEvent(event)
-                      setIsDeleteModalOpen(true)
-                    }}
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                </div>
-                <div
-                  className="relative h-80 rounded-2xl overflow-hidden bg-center bg-cover"
-                  style={{
-                    backgroundImage:
-                      event.images && event.images.length > 0
-                        ? `url(${event.images[0]})`
-                        : "url(https://via.placeholder.com/400x300?text=No+Image)",
+      <div className="grid md:grid-cols-4 gap-6 relative z-10">
+        {filteredEvents.length > 0 ? (
+          filteredEvents.map((event) => (
+            <div
+              key={event._id}
+              className="relative group"
+              onClick={() => {
+                setSelectedEvent(event)
+                setIsViewEventOpen && setIsViewEventOpen(true)
+              }}
+            >
+              <div className="absolute top-4 flex justify-between w-full gap-2 z-10">
+                <button
+                  className="p-2 relative text-white left-4 rounded-lg transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedEvent(event)
+                    setIsEditEventOpen(true)
                   }}
                 >
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <img src={edit_icon || "/placeholder.svg"} alt="edit icon" />
+                </button>
+                <button
+                  className="p-2 relative right-4 text-white rounded-lg transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedEvent(event)
+                    setIsDeleteModalOpen(true)
+                  }}
+                >
+                  <FiTrash2 className="w-5 h-5" />
+                </button>
+              </div>
+              <div
+                className="relative h-80 rounded-2xl overflow-hidden bg-center bg-cover"
+                style={{
+                  backgroundImage:
+                    event.images && event.images.length > 0
+                      ? `url(${event.images[0]})`
+                      : "url(https://via.placeholder.com/400x300?text=No+Image)",
+                }}
+              >
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {event.name}
-                    </h3>
-                    <div className="flex justify-between gap-4">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 text-white/80">
-                          <BsCalendar className="w-4 h-4" />
-                          <span className="text-[12px]">{formatDate(event.time)} - {formatDate(event.endTime)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-white/80">
-                          <MdAccessTime className="w-4 h-4" />
-                          <span className="text-[12px]">{formatTime(event.time)} - {formatTime(event.endTime)}</span>
-                        </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                    {event.name}
+                  </h3>
+                  <div className="flex justify-between gap-4">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-2 text-white/80">
+                        <BsCalendar className="w-4 h-4" />
+                        <span className="text-[12px]">{formatDate(event.time)} - {formatDate(event.endTime)}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-white/80 cursor-pointer">
-                        {event.visible ? (
-                          <FiEye
-                            className="w-7 h-7 text-white"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleVisibility(event._id)
-                            }}
-                          />
-                        ) : (
-                          <FiEyeOff
-                            className="w-7 h-7 text-white/80"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleVisibility(event._id)
-                            }}
-                          />
-                        )}
+                      <div className="flex items-center gap-2 text-white/80">
+                        <MdAccessTime className="w-4 h-4" />
+                        <span className="text-[12px]">{formatTime(event.time)} - {formatTime(event.endTime)}</span>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-white/80 cursor-pointer">
+                      {event.visible ? (
+                        <FiEye
+                          className="w-7 h-7 text-white"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleVisibility(event._id)
+                          }}
+                        />
+                      ) : (
+                        <FiEyeOff
+                          className="w-7 h-7 text-white/80"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleVisibility(event._id)
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="col-span-4 text-center py-12">
-              <p className="text-gray-500">No events found matching the current filters.</p>
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                <div className="flex gap-2">
+                  <button
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm w-full flex items-center justify-center gap-2 hover:bg-green-600"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleApprove(event);
+                    }}
+                  >
+                    <FaCheckCircle /> Approve
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm w-full flex items-center justify-center gap-2 hover:bg-red-600"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDecline(event);
+                    }}
+                  >
+                    <FaTimesCircle /> Decline
+                  </button>
+                </div>
+                <button
+                 className="bg-primary text-white px-4 py-2 rounded-lg text-sm w-full"
+                  onClick={e => {
+                    e.stopPropagation();
+                    setEvidenceEvent(event);
+                    setShowEvidenceModal(true);
+                  }}
+                >
+                  View Evidence
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="col-span-4 text-center py-12">
+            <p className="text-gray-500">No events found for this status.</p>
+          </div>
+        )}
+      </div>
 
       {/* Pagination */}
       {!eventsLoading && !eventsError && events?.length > 0 && (
@@ -1003,9 +1038,7 @@ const Event = () => {
                   disabled={affiliatesLoading}
                 >
                   <option value="">Select Affiliate Partner</option>
-                  {affiliates && affiliates.length > 0 && affiliates
-                    .filter(affiliate => affiliate.status === 'Approved')
-                    .map((affiliate) => (
+                  {affiliates && affiliates.length > 0 && affiliates.map((affiliate) => (
                     <option key={affiliate._id} value={affiliate._id}>
                       {affiliate.businessName || affiliate.name || affiliate.email}
                     </option>
@@ -1126,29 +1159,20 @@ const Event = () => {
 
             {/* Evidence of Plan Upload */}
             <div>
-              <label className="block mb-1">Evidence of Plan <span className="text-red-500">*</span></label>
+              <label className="block mb-1">Evidence of Plan</label>
               <div className="flex gap-4 flex-wrap">
                 <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                   <span className="text-2xl text-gray-400">+</span>
                   <input type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple className="hidden" onChange={handleEvidenceChange} />
                 </label>
                 {/* Show existing evidence files from selectedEvent.evidenceOfPlan */}
-                {selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.filter(fileUrl => !removedEvidenceUrls.includes(fileUrl)).map((fileUrl, index) => (
+                {selectedEvent && selectedEvent.evidenceOfPlan && selectedEvent.evidenceOfPlan.map((fileUrl, index) => (
                   <div key={index} className="w-24 h-24 rounded-lg overflow-hidden relative group flex flex-col items-center justify-center bg-gray-100">
                     {fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
                       <img src={fileUrl} alt="evidence" className="w-full h-full object-cover" />
                     ) : (
                       <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 p-2 text-center underline">{fileUrl.split('/').pop()}</a>
                     )}
-                    <button
-                      onClick={() => {
-                        setRemovedEvidenceUrls((prev) => [...prev, fileUrl])
-                        clearEvidenceErrorIfValid()
-                      }}
-                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ✕
-                    </button>
                   </div>
                 ))}
                 {/* Show new evidence files not yet uploaded */}
@@ -1160,10 +1184,7 @@ const Event = () => {
                       <span className="text-xs text-gray-700 p-2 text-center">{file.name}</span>
                     )}
                     <button
-                      onClick={() => {
-                        setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
-                        clearEvidenceErrorIfValid()
-                      }}
+                      onClick={() => setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))}
                       className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ✕
@@ -1171,7 +1192,6 @@ const Event = () => {
                   </div>
                 ))}
               </div>
-              {formErrors.evidenceOfPlan && <p className="text-red-500 text-xs mt-1">{formErrors.evidenceOfPlan}</p>}
             </div>
 
             {/* Action Buttons */}
@@ -1598,9 +1618,7 @@ const Event = () => {
                     disabled={affiliatesLoading}
                   >
                     <option value="">Select Affiliate Partner</option>
-                    {affiliates && affiliates.length > 0 && affiliates
-                      .filter(affiliate => affiliate.status === 'Approved')
-                      .map((affiliate) => (
+                    {affiliates && affiliates.length > 0 && affiliates.map((affiliate) => (
                       <option key={affiliate._id} value={affiliate._id}>
                         {affiliate.businessName || affiliate.name || affiliate.email}
                       </option>
@@ -1720,7 +1738,7 @@ const Event = () => {
 
               {/* Evidence of Plan Upload */}
               <div>
-                <label className="block mb-1">Evidence of Plan <span className="text-red-500">*</span></label>
+                <label className="block mb-1">Evidence of Plan</label>
                 <div className="flex gap-4 flex-wrap">
                   <label className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
                     <span className="text-2xl text-gray-400">+</span>
@@ -1735,10 +1753,7 @@ const Event = () => {
                         <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 p-2 text-center underline">{fileUrl.split('/').pop()}</a>
                       )}
                       <button
-                        onClick={() => {
-                          setRemovedEvidenceUrls((prev) => [...prev, fileUrl])
-                          clearEvidenceErrorIfValid()
-                        }}
+                        onClick={() => setRemovedEvidenceUrls((prev) => [...prev, fileUrl])}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ✕
@@ -1754,10 +1769,7 @@ const Event = () => {
                         <span className="text-xs text-gray-700 p-2 text-center">{file.name}</span>
                       )}
                       <button
-                        onClick={() => {
-                          setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
-                          clearEvidenceErrorIfValid()
-                        }}
+                        onClick={() => setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ✕
@@ -1765,7 +1777,6 @@ const Event = () => {
                     </div>
                   ))}
                 </div>
-                {formErrors.evidenceOfPlan && <p className="text-red-500 text-xs mt-1">{formErrors.evidenceOfPlan}</p>}
               </div>
 
               {/* Action Buttons */}
@@ -1824,9 +1835,126 @@ const Event = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Approve Modal */}
+      <Modal
+        isOpen={showApproveModal}
+        onRequestClose={() => setShowApproveModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[96vw] z-[1000]"
+        overlayClassName="fixed inset-0 bg-black/50 z-[1000]"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Approve Event</h2>
+            <button
+              onClick={() => setShowApproveModal(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+          {actionEvent && (
+            <div className="mb-6">
+              <h3 className="font-medium mb-2">{actionEvent.name}</h3>
+              <p className="text-gray-600">
+                Are you sure you want to approve this event?
+              </p>
+            </div>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowApproveModal(false)}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmApprove}
+              className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
+            >
+              Approve
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Decline Modal */}
+      <Modal
+        isOpen={showDeclineModal}
+        onRequestClose={() => setShowDeclineModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[400px] w-[96vw] z-[1000]"
+        overlayClassName="fixed inset-0 bg-black/50 z-[1000]"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Decline Event</h2>
+            <button
+              onClick={() => setShowDeclineModal(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+          {actionEvent && (
+            <div className="mb-6">
+              <h3 className="font-medium mb-2">{actionEvent.name}</h3>
+              <p className="text-gray-600">
+                Are you sure you want to decline this event?
+              </p>
+            </div>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowDeclineModal(false)}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDecline}
+              className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
+            >
+              Decline
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Evidence Modal */}
+      <Modal
+        isOpen={showEvidenceModal}
+        onRequestClose={() => setShowEvidenceModal(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[80vh] will-change-transform overflow-y-auto z-[1000]"
+        overlayClassName="fixed inset-0 bg-black/50 z-[1000]"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Evidence of Plan</h2>
+            <button
+              onClick={() => setShowEvidenceModal(false)}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+          {evidenceEvent && evidenceEvent.evidenceOfPlan && evidenceEvent.evidenceOfPlan.length > 0 ? (
+            <div className="flex flex-col items-center justify-center gap-6">
+              {evidenceEvent.evidenceOfPlan.map((fileUrl, idx) => (
+                <div key={idx} className="flex flex-col items-center justify-center">
+                  {fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                    <img src={fileUrl} alt="evidence" className="rounded-lg object-contain max-w-xs max-h-[300px] w-full h-auto mx-auto" />
+                  ) : (
+                    <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-700 p-2 text-center underline block mx-auto">{fileUrl.split('/').pop()}</a>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-center">No evidence files found for this event.</div>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }
 
-export default Event
+export default PendingApproval
 

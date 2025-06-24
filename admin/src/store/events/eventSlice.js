@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 
 const initialState = {
   events: [],
+  pagination: {},
   isSuccess: false,
   isError: false,
   isLoading: false,
@@ -81,7 +82,12 @@ export const eventSlice = createSlice({
         state.isSuccess = true;
         state.isError = false;
         state.message = 'success';
-        state.events = action.payload;
+        state.events = action.payload.events;
+        state.pagination = {
+          total: action.payload.total,
+          page: action.payload.page,
+          pages: action.payload.pages
+        };
       })
       .addCase(getEvents.rejected, (state, action) => {
         state.isLoading = false;

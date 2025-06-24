@@ -12,7 +12,7 @@ import ViewPending from './views/pending/ViewPending';
 import UserManagement from './views/user-management/UserManagement';
 import ClubCards from './views/cards/ClubCards';
 import CMS from './views/cms/CMS';
-import Event from './views/events/Event';
+import Events from './views/events/Events';
 import News from './views/news/News';
 import Ask from './views/ask/Ask';
 import Help from './views/help/Help';
@@ -26,6 +26,7 @@ import ResetSuccess from './views/auth/ForgotPassword/ResetSuccess';
 import ResetPassword from './views/auth/ForgotPassword/ResetPassword';
 import PagePreview from './views/cms/PreviewPage';
 import PageSystemPreview from './views/cms/PreviewSystemPage';
+import AffiliatePartners from './views/affiliate/AffiliatePartners';
 import axios from 'axios';
 import Layout from './views/Layout';
 
@@ -81,7 +82,8 @@ const router = createBrowserRouter([
       { path: 'cms', element: <CMS /> },
       { path: 'cms/preview', element: <PagePreview /> },
       { path: 'cms/preview-system', element: <PageSystemPreview /> },
-      { path: 'events', element: <Event /> },
+      { path: 'affiliate-partners', element: <AffiliatePartners /> },
+      { path: 'events', element: <Events /> },
       { path: 'news', element: <News /> },
       { path: 'asks', element: <Ask /> },
       { path: 'help', element: <Help /> },
