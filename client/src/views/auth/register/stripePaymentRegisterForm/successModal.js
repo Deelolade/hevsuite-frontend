@@ -3,6 +3,8 @@ import Modal from "../../../account/settings/components/Modal";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { ReceiptPDF } from "../components/receiptPDF";
 
 /**
  * @typedef {Object} SuccessPaymentModalProps
@@ -23,6 +25,51 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const { currency, amount, created, id, payment_method_types } =  paymentDetails;
+
+  const formattedAmount = new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: (currency || "GBP").toUpperCase(),
+  }).format(amount / 100); // convert cents to euros
+
+
+  const receiptDate = new Date(created);
+  const formattedReceiptDate = receiptDate.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+});
+
+  const receiptData = {
+    receiptNumber: "#RCP-1750696461238",
+    billTo: {
+      name: fullName,
+      email: user?.primaryEmail,
+    },
+    date: formattedReceiptDate,
+    isPaid: true,
+    // event: {
+    //   name: "hangout",
+    //   dateTime: "29/06/2025, 11:50:00",
+    //   location: "Brighton, Brighton and Hove, England, BN1 1HH, United Kingdom",
+    // },
+    purchase: {
+      paidBy: fullName,
+      transactionId: id,
+      paymentMethod: "stripe",
+      amount: formattedAmount,
+      paymentFor: "Membership Fee",
+    },
+    totalAmount: formattedAmount,
+  };
+
+  const handleOnClose = () => {
+    setTimeout(() => {  onClose(); }, 1_000);
+    navigate("/homepage");
+  }
 
   const handleCopy = async (refId) => {
     try {
@@ -68,10 +115,6 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
     },
   };
 
-  const formattedAmount = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: (currency || "GBP").toUpperCase(),
-  }).format(amount / 100); // convert cents to euros
 
   // 2. Format date
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
@@ -152,21 +195,24 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
             </div>
           </div>
 
+              {typeof window !== "undefined" && (
+                    <PDFDownloadLink
+                      document={<ReceiptPDF data={receiptData} />}
+                      fileName={`Hevsuite_membership_receipt-${receiptData.receiptNumber.replace("#","" )}.pdf`}
+                      className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
+                      // className="inline-block w-full bg-red-900 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                      {({ blob, url, loading, error }) =>
+                        loading ? "Generating PDF..." : <div className="flex items-center justify-center gap-2 w-full" > 
+                              <FiDownload className="w-5 h-5" />
+                             Get PDF Receipt
+                        </div>
+                      }
+                    </PDFDownloadLink>
+              )}
+         
           <button
-            className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
-            onClick={() => {
-              /* Add PDF download logic */
-            }}
-          >
-            <FiDownload className="w-5 h-5" />
-            Get PDF Receipt
-          </button>
-
-          <button
-            onClick={() => {
-              onClose();
-              navigate("/homepage");
-            }}
+            onClick={handleOnClose}
             className="w-full py-1   text-[#540A26] border-2 border-gradient_r rounded-3xl"
           >
             Back to Home

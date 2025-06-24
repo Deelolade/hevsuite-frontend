@@ -5,6 +5,7 @@ import PaypalSuccessModal from "./paypalSuccessModal";
 import { useState } from "react";
 
 const PaypalPaymentRegisterForm = () => {
+  const { user } = useSelector(s => s.auth);
   const { Settings } = useSelector((s) => s.generalSettings);
 
   const [showModal , setShowModal ] = useState(false);
@@ -38,7 +39,7 @@ const PaypalPaymentRegisterForm = () => {
 
   return (
     <>
-    {paymentDetails && showModal && <PaypalSuccessModal isOpen={showModal} onClose={handleOnCloseModal} paymentDetails={paymentDetails} /> }
+    {paymentDetails && showModal && <PaypalSuccessModal isOpen={showModal} onClose={handleOnCloseModal} paymentDetails={paymentDetails} user={user} /> }
       <PayPalScriptProvider options={initialOptions}>
         {Settings  && <PayPalCheckout Settings={Settings} onSuccess={handleOnSuccessfullPayment} />}
       </PayPalScriptProvider>

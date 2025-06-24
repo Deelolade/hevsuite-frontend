@@ -3,14 +3,16 @@ import Modal from "../../../account/settings/components/Modal";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BsCheckCircleFill } from "react-icons/bs";
+import { ReceiptPDF } from "../components/receiptPDF";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 
-const PaypalSuccessModal = ({ paymentDetails, isOpen, onClose }) => {
+const PaypalSuccessModal = ({ paymentDetails, isOpen, onClose, user }) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
     const { payer, payment: { create_time, amount, currency, referenceId }  } =  paymentDetails;
 
-    const fullName = `${payer.name.surname} ${payer.name.given_name}`;
+    const fullName = `${payer.name.given_name} ${payer.name.surname}`;
 
     const handleOnClose = ( ) => {
       
@@ -21,6 +23,47 @@ const PaypalSuccessModal = ({ paymentDetails, isOpen, onClose }) => {
 
       }, 1500);
     }
+
+    const formattedAmount = new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: (currency || "GBP").toUpperCase(),
+    }).format(amount); 
+
+     const receiptDate = new Date(create_time);
+     const formattedReceiptDate = receiptDate.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+     });
+
+    const billTo = `${user.surname} ${user.forename}`;
+
+    const receiptData = {
+      receiptNumber: "#RCP-1750696461238",
+      billTo: {
+        name: billTo,
+        email: user?.primaryEmail,
+      },
+      date: formattedReceiptDate,
+      isPaid: true,
+      // event: {
+      //   name: "hangout",
+      //   dateTime: "29/06/2025, 11:50:00",
+      //   location: "Brighton, Brighton and Hove, England, BN1 1HH, United Kingdom",
+      // },
+      purchase: {
+        paidBy: fullName,
+        transactionId: referenceId,
+        paymentMethod: "paypal",
+        amount: formattedAmount,
+        paymentFor: "Membership Fee",
+      },
+      totalAmount: formattedAmount,
+  };
 
   const handleCopy = async (refId) => {
     try {
@@ -67,10 +110,7 @@ const PaypalSuccessModal = ({ paymentDetails, isOpen, onClose }) => {
     },
   };
 
-    const formattedAmount = new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: (currency || "GBP").toUpperCase(),
-    }).format(amount); 
+
 
   //   // 2. Format date
     const formattedDate = new Intl.DateTimeFormat("en-GB", {
@@ -152,15 +192,21 @@ const PaypalSuccessModal = ({ paymentDetails, isOpen, onClose }) => {
               </div>
             </div>
 
-            <button
-              className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
-              onClick={() => {
-                /* Add PDF download logic */
-              }}
-            >
-              <FiDownload className="w-5 h-5" />
-              Get PDF Receipt
-            </button>
+           {typeof window !== "undefined" && (
+                <PDFDownloadLink
+                  document={<ReceiptPDF data={receiptData} />}
+                  fileName={`Hevsuite_membership_receipt-${receiptData.purchase.transactionId}.pdf`}
+                  className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
+                  // className="inline-block w-full bg-red-900 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+                >
+                  {({ blob, url, loading, error }) =>
+                    loading ? "Generating PDF..." : <div className="flex items-center justify-center gap-2 w-full" > 
+                          <FiDownload className="w-5 h-5" />
+                          Get PDF Receipt
+                    </div>
+                  }
+                </PDFDownloadLink>
+           )}
 
             <button
               onClick={handleOnClose}
