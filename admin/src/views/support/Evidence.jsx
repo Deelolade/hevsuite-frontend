@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BiSearch } from "react-icons/bi";
-import {
-  BsCheckCircleFill,
-  BsThreeDots,
-  BsXCircleFill,
-} from "react-icons/bs";
+import { BsCheckCircleFill, BsThreeDots, BsXCircleFill } from "react-icons/bs";
 import Modal from "react-modal";
 import avatar from "../../assets/defualtuser.webp";
 import idcards from "../../assets/Id.jpg";
@@ -13,21 +9,22 @@ import ExportButton from "../ExportButton";
 import {
   getEvidenceRequests,
   updateEvidenceStatus,
-  assignRequestToAdmin as assignRequest
+  assignRequestToAdmin as assignRequest,
 } from "../../store/evidence/evidenceSlice";
 import { getAdminUsers } from "../../store/users/userSlice";
 import evidenceService from "../../store/evidence/evidenceService";
 import authService from "../../store/auth/authService";
 import Spinner from "../../components/Spinner";
 import { toast } from "react-toastify";
-import axios from 'axios';
-import { base_url } from '../../constants/axiosConfig';
+import axios from "axios";
+import { base_url } from "../../constants/axiosConfig";
 
 const Evidence = () => {
   const dispatch = useDispatch();
   const { evidenceRequests, isLoading, isError, message } = useSelector(
     (state) => state.evidence
   );
+
   const { adminUsers = [], isLoading: isLoadingAdmins } = useSelector(
     (state) => state.adminUsers
   );
@@ -51,7 +48,7 @@ const Evidence = () => {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   // Get user role from localStorage
-  const userRole = JSON.parse(localStorage.getItem('admin'))?.role;
+  const userRole = JSON.parse(localStorage.getItem("admin"))?.role;
 
   // Fetch user permissions
   useEffect(() => {
@@ -60,12 +57,14 @@ const Evidence = () => {
         setLoading(true);
         const response = await axios.get(`${base_url}/api/permissions`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
 
         // Find the user's role and get its permissions
-        const userRoleData = response.data.find(role => role.role === userRole);
+        const userRoleData = response.data.find(
+          (role) => role.role === userRole
+        );
 
         if (userRoleData) {
           setUserPermissions(userRoleData.permissions);
@@ -75,14 +74,14 @@ const Evidence = () => {
           }
         } else {
           // If no specific role found, set default permissions for superadmin
-          if (userRole === 'superadmin') {
+          if (userRole === "superadmin") {
             setUserPermissions([]);
           } else {
             setUserPermissions([]);
           }
         }
       } catch (error) {
-        console.error('Error fetching roles:', error);
+        console.error("Error fetching roles:", error);
         setUserPermissions([]);
       } finally {
         setLoading(false);
@@ -119,29 +118,37 @@ const Evidence = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching evidence requests with activeTab:', activeTab);
+        console.log("Fetching evidence requests with activeTab:", activeTab);
         let typeFilter;
 
         if (activeTab === "assigned") {
           typeFilter = undefined; // Show all types for assigned requests
         } else if (activeTab === "other") {
-          typeFilter = ["Document Review", "Identity Verification", "Other Support", "Card Request", "Membership Upgrade"]; // Show these types for other requests
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ]; // Show these types for other requests
         } else {
           typeFilter = "Evidence Review"; // Show only evidence review for main tab
         }
 
-        await dispatch(getEvidenceRequests({
-          assignedTo: activeTab === "assigned" ? "me" : undefined,
-          type: typeFilter
-        })).unwrap();
-        console.log('Evidence requests AFTER fetch:', evidenceRequests);
+        await dispatch(
+          getEvidenceRequests({
+            assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
+          })
+        ).unwrap();
+        console.log("Evidence requests AFTER fetch:", evidenceRequests);
 
-        console.log('Fetching admin users...');
+        console.log("Fetching admin users...");
         await dispatch(getAdminUsers()).unwrap();
-        console.log('Admin users fetched:', adminUsers);
+        console.log("Admin users fetched:", adminUsers);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error('Failed to fetch data');
+        console.error("Error fetching data:", error);
+        toast.error("Failed to fetch data");
       }
     };
 
@@ -162,7 +169,17 @@ const Evidence = () => {
 
   const handleAssignToAdmin = async (requestId, adminId = null) => {
     try {
-      console.log('Assigning request:', { requestId, adminId, currentUser: currentUser?._id });
+      console.log("Assigning request:", {
+        requestId,
+        adminId,
+        currentUser: currentUser?._id,
+      });
+
+      console.log("Assigning request:", {
+        requestId,
+        adminId,
+        currentUser: currentUser?._id,
+      });
 
       // If no adminId is provided, assign to current user
       const targetAdminId = adminId || currentUser?._id;
@@ -172,12 +189,12 @@ const Evidence = () => {
         `${base_url}/api/support-requests/${requestId}`,
         {
           assignedTo: targetAdminId,
-          status: 'Pending' // Maintain the current status
+          status: "Pending", // Maintain the current status
         },
         {
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -188,22 +205,31 @@ const Evidence = () => {
         if (activeTab === "assigned") {
           typeFilter = undefined;
         } else if (activeTab === "other") {
-          typeFilter = ["Document Review", "Identity Verification", "Other Support", "Card Request", "Membership Upgrade"];
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ];
         } else {
           typeFilter = "Evidence Review";
         }
 
-        await dispatch(getEvidenceRequests({
-          assignedTo: activeTab === "assigned" ? "me" : undefined,
-          type: typeFilter
-        })).unwrap();
+        await dispatch(
+          getEvidenceRequests({
+            assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
+          })
+        ).unwrap();
 
         toast.success("Request assigned successfully");
         setShowAssignModal(false);
       }
     } catch (error) {
-      console.error('Error assigning request:', error);
-      const errorMessage = error.response?.data?.message || "Failed to assign request";
+      console.error("Error assigning request:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to assign request";
       toast.error(errorMessage);
     }
   };
@@ -215,7 +241,7 @@ const Evidence = () => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRequest) return;
-    
+
     setIsSendingMessage(true);
     // Optimistically update local message history
     const optimisticMsg = {
@@ -224,9 +250,9 @@ const Evidence = () => {
       date: new Date().toISOString(),
       _id: Math.random().toString(36).substr(2, 9), // temp id
     };
-    setSelectedRequest(prev => ({
+    setSelectedRequest((prev) => ({
       ...prev,
-      messages: [...(prev?.messages || []), optimisticMsg]
+      messages: [...(prev?.messages || []), optimisticMsg],
     }));
     setNewMessage("");
     try {
@@ -234,12 +260,12 @@ const Evidence = () => {
         `${base_url}/api/support-requests/${selectedRequest._id}/messages`,
         {
           text: optimisticMsg.text,
-          sender: "admin"
+          sender: "admin",
         },
         {
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -251,24 +277,33 @@ const Evidence = () => {
         if (activeTab === "assigned") {
           typeFilter = undefined;
         } else if (activeTab === "other") {
-          typeFilter = ["Document Review", "Identity Verification", "Other Support", "Card Request", "Membership Upgrade"];
+          typeFilter = [
+            "Document Review",
+            "Identity Verification",
+            "Other Support",
+            "Card Request",
+            "Membership Upgrade",
+          ];
         } else {
           typeFilter = "Evidence Review";
         }
 
-        await dispatch(getEvidenceRequests({ 
-          assignedTo: activeTab === "assigned" ? "me" : undefined,
-          type: typeFilter
-        })).unwrap();
+        await dispatch(
+          getEvidenceRequests({
+            assignedTo: activeTab === "assigned" ? "me" : undefined,
+            type: typeFilter,
+          })
+        ).unwrap();
       }
     } catch (error) {
       // Remove the optimistic message if API fails
-      setSelectedRequest(prev => ({
+      setSelectedRequest((prev) => ({
         ...prev,
-        messages: prev.messages.filter(m => m._id !== optimisticMsg._id)
+        messages: prev.messages.filter((m) => m._id !== optimisticMsg._id),
       }));
-      console.error('Error sending message:', error);
-      const errorMessage = error.response?.data?.message || "Failed to send message";
+      console.error("Error sending message:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to send message";
       toast.error(errorMessage);
     } finally {
       setIsSendingMessage(false);
@@ -296,7 +331,7 @@ const Evidence = () => {
   // Filter requests based on active tab and search term
   const getFilteredRequests = () => {
     if (!evidenceRequests) {
-      console.log('No evidence requests available');
+      console.log("No evidence requests available");
       return [];
     }
 
@@ -307,49 +342,76 @@ const Evidence = () => {
       // No type filtering for assigned tab
     } else if (activeTab === "other") {
       // Filter for Document Review and Identity Verification
-      filtered = filtered.filter(request =>
-        request.type === "Document Review" || request.type === "Identity Verification" || request.type === "Other Support" || request.type === "Card Request" || request.type === "Membership Upgrade"
+      filtered = filtered.filter(
+        (request) =>
+          request.type === "Document Review" ||
+          request.type === "Identity Verification" ||
+          request.type === "Other Support" ||
+          request.type === "Card Request" ||
+          request.type === "Membership Upgrade"
       );
     } else {
       // Filter for Evidence Review in main tab
-      filtered = filtered.filter(request => request.type === "Evidence Review");
+      filtered = filtered.filter(
+        (request) => request.type === "Evidence Review"
+      );
     }
 
-    console.log('getFilteredRequests - Initial evidenceRequests:', filtered.length, filtered.map(r => r.type));
+    console.log(
+      "getFilteredRequests - Initial evidenceRequests:",
+      filtered.length,
+      filtered.map((r) => r.type)
+    );
 
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter((request) => {
-        const matchesName = request.user?.forename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          request.user?.surname?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = request.type?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesName =
+          request.user?.forename
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          request.user?.surname
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase());
+        const matchesType = request.type
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
         return matchesName || matchesType;
       });
-      console.log('After search filter:', filtered.length);
+      console.log("After search filter:", filtered.length);
     }
 
     // Filter by status if not "all"
     if (statusFilter !== "all") {
       filtered = filtered.filter((request) => request.status === statusFilter);
-      console.log('After status filter:', filtered.length);
+      console.log("After status filter:", filtered.length);
     }
 
     return filtered;
   };
 
   const filteredRequests = getFilteredRequests();
-  console.log('Final filteredRequests before rendering:', filteredRequests.length, filteredRequests.map(r => r.type));
+  console.log(
+    "Final filteredRequests before rendering:",
+    filteredRequests.length,
+    filteredRequests.map((r) => r.type)
+  );
 
   const formattedRequests = filteredRequests.map((request) => ({
     ID: request._id,
-    Name: `${request.user?.name || ''} ${request.user?.surname || ''}`.trim() || 'Unknown User',
-    Email: request.user?.primaryEmail || 'No Email',
+    Name:
+      `${request.user?.name || ""} ${request.user?.surname || ""}`.trim() ||
+      "Unknown User",
+    Email: request.user?.primaryEmail || "No Email",
     Type: request.type,
     SubmissionDate: new Date(request.submissionDate).toLocaleDateString(),
     Status: request.status,
-    Messages: request.messages
-      ?.map((msg) => `${new Date(msg.date).toLocaleDateString()}: ${msg.text}`)
-      .join(" | ") || "",
+    Messages:
+      request.messages
+        ?.map(
+          (msg) => `${new Date(msg.date).toLocaleDateString()}: ${msg.text}`
+        )
+        .join(" | ") || "",
   }));
 
   if (isLoading) {
@@ -382,10 +444,10 @@ const Evidence = () => {
               <option value="Approved">Approved</option>
               <option value="Declined">Declined</option>
             </select>
-            <ExportButton
+            {/* <ExportButton
               data={formattedRequests}
               fileName="evidence_requests"
-            />
+            /> */}
           </div>
         </div>
 
@@ -393,30 +455,33 @@ const Evidence = () => {
         <div className="flex flex-row md:ml-0 -ml-2 gap-4">
           {!userPermissions.includes("Your Support Request") && (
             <button
-              className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "all"
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "all"
                   ? "bg-primary text-white"
                   : "bg-white border text-gray-700"
-                }`}
+              }`}
               onClick={() => setActiveTab("all")}
             >
               Evidence Review
             </button>
           )}
           <button
-            className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "assigned"
+            className={`px-6 py-3 rounded-lg flex-1 ${
+              activeTab === "assigned"
                 ? "bg-primary text-white"
                 : "bg-white border text-gray-700"
-              }`}
+            }`}
             onClick={() => setActiveTab("assigned")}
           >
             Your Assigned Requests
           </button>
           {!userPermissions.includes("Your Support Request") && (
             <button
-              className={`px-6 py-3 rounded-lg flex-1 ${activeTab === "other"
+              className={`px-6 py-3 rounded-lg flex-1 ${
+                activeTab === "other"
                   ? "bg-primary text-white"
                   : "bg-white border text-gray-700"
-                }`}
+              }`}
               onClick={() => setActiveTab("other")}
             >
               Other Requests
@@ -446,11 +511,13 @@ const Evidence = () => {
                       {/* Debug: {request.user.forename} */}
                       <img
                         src={request.user?.profilePhoto || avatar}
-                        alt={request.user?.forename || 'User'}
+                        alt={request.user?.forename || "User"}
                         className="w-8 h-8 rounded-full"
                       />
                       <span className="font-primary w-32 md:w-fit text-[#323C47]">
-                        {`${request.user?.forename || ""} ${request.user?.surname || "Unknown User"}`}
+                        {`${request.user?.forename || ""} ${
+                          request.user?.surname || "Unknown User"
+                        }`}
                       </span>
                     </div>
                   </td>
@@ -464,12 +531,13 @@ const Evidence = () => {
                   </td>
                   <td className="py-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-sm ${request.status === "Declined"
-                        ? "text-red-500"
-                        : request.status === "Approved"
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        request.status === "Declined"
+                          ? "text-red-500"
+                          : request.status === "Approved"
                           ? "text-green-500"
                           : "text-yellow-500"
-                        }`}
+                      }`}
                     >
                       {request.status}
                     </span>
@@ -499,14 +567,18 @@ const Evidence = () => {
                         </>
                       )}
                       {request.status === "Approved" ? (
-                        <span className="text-gray-400 font-semibold">Closed</span>
+                        <span className="text-gray-400 font-semibold">
+                          Closed
+                        </span>
                       ) : (
                         <>
                           <button
                             className="p-1 text-gray-400 hover:text-gray-500"
                             onClick={() => {
                               setOpenOptionsId(
-                                openOptionsId === request._id ? null : request._id
+                                openOptionsId === request._id
+                                  ? null
+                                  : request._id
                               );
                             }}
                           >
@@ -555,10 +627,12 @@ const Evidence = () => {
               <div className="flex items-center gap-3">
                 <img
                   src={selectedRequest?.user?.profilePhoto || avatar}
-                  alt={selectedRequest?.user?.forename || 'User'}
+                  alt={selectedRequest?.user?.forename || "User"}
                   className="w-10 h-10 rounded-full border"
                 />
-                <span className="font-semibold text-lg">{`${selectedRequest?.user?.forename || ''} ${selectedRequest?.user?.surname || 'Unknown User'}`}</span>
+                <span className="font-semibold text-lg">{`${
+                  selectedRequest?.user?.forename || ""
+                } ${selectedRequest?.user?.surname || "Unknown User"}`}</span>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -568,9 +642,10 @@ const Evidence = () => {
               >
                 ×
               </button>
-              <span className="text-gray-500 text-sm">{selectedRequest?.user?.primaryEmail || 'No Email'}</span>
+              <span className="text-gray-500 text-sm">
+                {selectedRequest?.user?.primaryEmail || "No Email"}
+              </span>
             </div>
-
           </div>
 
           {/* Dropdown */}
@@ -585,7 +660,10 @@ const Evidence = () => {
           {selectedRequest?.images && selectedRequest.images.length > 0 && (
             <div className="flex gap-4 mb-8">
               {selectedRequest.images.map((image, index) => (
-                <div key={index} className="relative w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                <div
+                  key={index}
+                  className="relative w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
+                >
                   <img
                     src={image}
                     alt={`Evidence ${index + 1}`}
@@ -626,14 +704,16 @@ const Evidence = () => {
               {selectedRequest?.messages?.map((msg, idx) => (
                 <div
                   key={msg._id?.$oid || idx}
-                  className={`p-3 rounded-lg w-fit max-w-[80%] ${msg.sender === 'admin'
-                      ? 'ml-auto bg-blue-100 text-right'
-                      : 'mr-auto bg-gray-100 text-left'
-                    }`}
+                  className={`p-3 rounded-lg w-fit max-w-[80%] ${
+                    msg.sender === "admin"
+                      ? "ml-auto bg-blue-100 text-right"
+                      : "mr-auto bg-gray-100 text-left"
+                  }`}
                 >
                   <div className="text-sm text-gray-700">{msg.text}</div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {new Date(msg.date?.$date || msg.date).toLocaleString()} - {msg.sender === 'admin' ? 'Admin' : 'User'}
+                    {new Date(msg.date?.$date || msg.date).toLocaleString()} -{" "}
+                    {msg.sender === "admin" ? "Admin" : "User"}
                   </div>
                 </div>
               ))}
@@ -641,7 +721,7 @@ const Evidence = () => {
           </div>
 
           {/* Response Section */}
-          {selectedRequest?.status === 'Declined' ? (
+          {selectedRequest?.status === "Declined" ? (
             <div className="mb-4 text-center text-gray-400 font-semibold">
               Messaging is disabled for declined requests.
             </div>
@@ -666,16 +746,17 @@ const Evidence = () => {
             >
               Cancel
             </button>
-            {selectedRequest?.status !== 'Declined' && (
+            {selectedRequest?.status !== "Declined" && (
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || isSendingMessage}
-                className={`px-6 py-2 rounded-lg text-white font-semibold ${!newMessage.trim() || isSendingMessage
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-[#A80036] hover:bg-[#8a0030]'
+                className={`px-6 py-2 rounded-lg text-white font-semibold ${
+                  !newMessage.trim() || isSendingMessage
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#A80036] hover:bg-[#8a0030]"
                 }`}
               >
-                {isSendingMessage ? 'Sending...' : 'Send'}
+                {isSendingMessage ? "Sending..." : "Send"}
               </button>
             )}
           </div>
@@ -704,14 +785,18 @@ const Evidence = () => {
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src={selectedRequest?.user?.avatar || avatar}
-                  alt={selectedRequest?.user?.name || 'User'}
+                  src={selectedRequest?.user?.profilePhoto || avatar}
+                  alt={selectedRequest?.user?.name || "User"}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <h3 className="font-medium">
+                    {selectedRequest?.user?.forename +
+                      " " +
+                      selectedRequest?.user?.surname || "Unknown User"}
+                  </h3>
                   <p className="text-sm text-gray-500">
-                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                    {selectedRequest?.user?.primaryEmail || "No Email"}
                   </p>
                 </div>
               </div>
@@ -729,7 +814,9 @@ const Evidence = () => {
               Cancel
             </button>
             <button
-              onClick={() => handleStatusUpdate(selectedRequest._id, "Approved")}
+              onClick={() =>
+                handleStatusUpdate(selectedRequest._id, "Approved")
+              }
               className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
             >
               Approve
@@ -761,13 +848,15 @@ const Evidence = () => {
               <div className="flex items-center gap-3 mb-4">
                 <img
                   src={selectedRequest?.user?.avatar || avatar}
-                  alt={selectedRequest?.user?.name || 'User'}
+                  alt={selectedRequest?.user?.name || "User"}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <h3 className="font-medium">
+                    {selectedRequest?.user?.name || "Unknown User"}
+                  </h3>
                   <p className="text-sm text-gray-500">
-                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                    {selectedRequest?.user?.primaryEmail || "No Email"}
                   </p>
                 </div>
               </div>
@@ -785,7 +874,9 @@ const Evidence = () => {
               Cancel
             </button>
             <button
-              onClick={() => handleStatusUpdate(selectedRequest._id, "Declined")}
+              onClick={() =>
+                handleStatusUpdate(selectedRequest._id, "Declined")
+              }
               className="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
             >
               Decline
@@ -817,13 +908,15 @@ const Evidence = () => {
               <div className="flex items-center gap-3 mb-4">
                 <img
                   src={selectedRequest?.user?.profilePhoto || avatar}
-                  alt={selectedRequest?.user?.name || 'User'}
+                  alt={selectedRequest?.user?.name || "User"}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
-                  <h3 className="font-medium">{selectedRequest?.user?.name || 'Unknown User'}</h3>
+                  <h3 className="font-medium">
+                    {selectedRequest?.user?.name || "Unknown User"}
+                  </h3>
                   <p className="text-sm text-gray-500">
-                    {selectedRequest?.user?.primaryEmail || 'No Email'}
+                    {selectedRequest?.user?.primaryEmail || "No Email"}
                   </p>
                 </div>
               </div>
@@ -838,7 +931,7 @@ const Evidence = () => {
                 >
                   <img
                     src={user?.profilePhoto || avatar}
-                    alt={user?.name || 'Current User'}
+                    alt={user?.name || "Current User"}
                     className="w-8 h-8 rounded-full"
                   />
                   <span>Assign to myself</span>
@@ -852,7 +945,9 @@ const Evidence = () => {
                   adminUsers.map((admin) => (
                     <button
                       key={admin._id}
-                      onClick={() => handleAssignToAdmin(selectedRequest._id, admin._id)}
+                      onClick={() =>
+                        handleAssignToAdmin(selectedRequest._id, admin._id)
+                      }
                       className="w-full px-4 py-2 text-left border rounded-lg hover:bg-gray-50 flex items-center gap-3"
                     >
                       <img
@@ -862,7 +957,9 @@ const Evidence = () => {
                       />
                       <div className="flex flex-col">
                         <span>{admin.name}</span>
-                        <span className="text-sm text-gray-500">{admin.primaryEmail}</span>
+                        <span className="text-sm text-gray-500">
+                          {admin.primaryEmail}
+                        </span>
                       </div>
                     </button>
                   ))
@@ -892,7 +989,7 @@ const Evidence = () => {
           </div>
         </div>
       </Modal>
-    </div >
+    </div>
   );
 };
 

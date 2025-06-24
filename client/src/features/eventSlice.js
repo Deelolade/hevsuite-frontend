@@ -1,22 +1,24 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import eventService  from '../services/eventService'
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import eventService from "../services/eventService";
 
 // Original fetchEvents thunk (kept for backward compatibility)
 export const fetchEvents = createAsyncThunk(
-  'events/fetchEvents',
+  "events/fetchEvents",
   async (_, thunkAPI) => {
     try {
       const response = await eventService.getVisibleEvents();
       return response;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message || 'Failed to fetch events');
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to fetch events"
+      );
     }
   }
 );
 
 // Extended fetch for all event types
 export const fetchAllEventTypes = createAsyncThunk(
-  'events/fetchAll',
+  "events/fetchAll",
   async (_, thunkAPI) => {
     try {
       const [visible, attending, invited, past, saved] = await Promise.all([
@@ -24,9 +26,17 @@ export const fetchAllEventTypes = createAsyncThunk(
         eventService.getAttendingEvents(),
         eventService.getInvitedEvents(),
         eventService.getPastEvents(),
-        eventService.getSavedEvents()
+        eventService.getSavedEvents(),
       ]);
-      return { visible, attending, invited, past , saved};
+
+      console.log("fetchAllEventTypes: API responses:", {
+        visible: visible || 0,
+        attending: attending || 0,
+        invited: invited || 0,
+        past: past || 0,
+        saved: saved || 0,
+      });
+      return { visible, attending, invited, past, saved };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -35,7 +45,7 @@ export const fetchAllEventTypes = createAsyncThunk(
 
 // Thunk for fetching attending members
 export const fetchAttendingMembers = createAsyncThunk(
-  'events/fetchAttendingMembers',
+  "events/fetchAttendingMembers",
   async (eventId, thunkAPI) => {
     try {
       const members = await eventService.getAttendingMembers(eventId);
@@ -48,14 +58,17 @@ export const fetchAttendingMembers = createAsyncThunk(
 
 // Thunk for updating invite status
 export const updateInviteStatus = createAsyncThunk(
-  'events/updateInviteStatus',
+  "events/updateInviteStatus",
   async ({ eventId, status }, thunkAPI) => {
     try {
-      const response = await eventService.updateInviteStatus({ eventId, status });
-      return { 
-        eventId, 
-        status, 
-        updatedEvent: response.event 
+      const response = await eventService.updateInviteStatus({
+        eventId,
+        status,
+      });
+      return {
+        eventId,
+        status,
+        updatedEvent: response.event,
       };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -76,7 +89,7 @@ export const cancelEventAttendance = createAsyncThunk(
 );
 //save event
 export const saveEvent = createAsyncThunk(
-  'events/saveEvent',
+  "events/saveEvent",
   async (eventId, { rejectWithValue }) => {
     try {
       const response = await eventService.saveEvent(eventId);
@@ -88,7 +101,7 @@ export const saveEvent = createAsyncThunk(
 );
 //remove saved event
 export const removeSavedEvent = createAsyncThunk(
-  'events/removeSavedEvent',
+  "events/removeSavedEvent",
   async (eventId, { rejectWithValue }) => {
     try {
       const response = await eventService.removeSavedEvent(eventId);
@@ -99,10 +112,21 @@ export const removeSavedEvent = createAsyncThunk(
   }
 );
 
-
+export const getSavedEvents = createAsyncThunk(
+  "savedEvents/getAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      return await eventService.getSavedEvents();
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch saved events"
+      );
+    }
+  }
+);
 
 const eventSlice = createSlice({
-  name: 'events',
+  name: "events",
   initialState: {
     // Original state structure
     events: [], // Maintained for components using fetchEvents
@@ -117,23 +141,23 @@ const eventSlice = createSlice({
     membersLoading: false,
     error: null,
     membersError: null,
-    updateStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    updateStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
     saveEventLoading: false,
-  saveEventError: null,
-  removeSavedEventLoading: false,
-  removeSavedEventError: null
+    saveEventError: null,
+    removeSavedEventLoading: false,
+    removeSavedEventError: null,
   },
   reducers: {
     clearAttendingMembers: (state) => {
       state.attendingMembers = {};
     },
     resetUpdateStatus: (state) => {
-      state.updateStatus = 'idle';
+      state.updateStatus = "idle";
     },
     // Optional: Add a reducer to sync state if needed
     syncEvents: (state, action) => {
       state.events = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -151,26 +175,36 @@ const eventSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Fetch all event types
       .addCase(fetchAllEventTypes.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchAllEventTypes.fulfilled, (state, action) => {
-        state.visibleEvents = action.payload.visible;
-        state.events = action.payload.visible; // Sync with old structure
-        state.attendingEvents = action.payload.attending;
-        state.invitedEvents = action.payload.invited;
-        state.pastEvents = action.payload.past;
-        state.savedEvents = action.payload.saved;
+        console.log("fetchAllEventTypes.fulfilled payload:", action.payload);
+
+        state.visibleEvents = action.payload.visible || [];
+        state.events = action.payload.visible || []; // Sync with old structure
+        state.attendingEvents = action.payload.attending || [];
+        state.invitedEvents = action.payload.invited || [];
+        state.pastEvents = action.payload.past || [];
+        state.savedEvents = action.payload.saved || [];
         state.loading = false;
+
+        console.log("Updated state:", {
+          visibleEvents: state.visibleEvents.length,
+          attendingEvents: state.attendingEvents.length,
+          invitedEvents: state.invitedEvents.length,
+          pastEvents: state.pastEvents.length,
+          savedEvents: state.savedEvents.length,
+        });
       })
       .addCase(fetchAllEventTypes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Attending members
       .addCase(fetchAttendingMembers.pending, (state) => {
         state.membersLoading = true;
@@ -184,92 +218,114 @@ const eventSlice = createSlice({
         state.membersLoading = false;
         state.membersError = action.payload;
       })
-      
+
       // Update invite status
       .addCase(updateInviteStatus.pending, (state) => {
-        state.updateStatus = 'loading';
+        state.updateStatus = "loading";
       })
-    .addCase(updateInviteStatus.fulfilled, (state, action) => {
-      const { eventId, status, updatedEvent } = action.payload;
-      
-      // Remove from invitedEvents regardless of status
-      state.invitedEvents = state.invitedEvents.filter(event => event._id !== eventId);
-      
-      // // If accepted, add to attendingEvents
-      // if (status === 'accepted') {
-      //   state.attendingEvents = [updatedEvent, ...state.attendingEvents];
-      // }
-      
-      // // Update visibleEvents if needed
-      // state.visibleEvents = state.visibleEvents.map(event => 
-      //   event._id === eventId ? updatedEvent : event
-      // );
-      
-      // Update any other relevant state
-      state.updateStatus = 'succeeded';
-    })
-    .addCase(updateInviteStatus.rejected, (state, action) => {
-      state.updateStatus = 'failed';
-      state.error = action.payload;
-    })
-     .addCase(cancelEventAttendance.pending, (state) => {
-    state.cancelAttendanceLoading = true;
-    state.cancelAttendanceError = null;
-  })
-  .addCase(cancelEventAttendance.fulfilled, (state, action) => {
-    state.cancelAttendanceLoading = false;
+      .addCase(updateInviteStatus.fulfilled, (state, action) => {
+        const { eventId, status, updatedEvent } = action.payload;
 
-    // Update the attendance lists
-    const eventId = action.payload.eventId;
-    state.attendingEvents = state.attendingEvents.filter(
-      (event) => event._id !== eventId
-    );
-  })
-  .addCase(cancelEventAttendance.rejected, (state, action) => {
-    state.cancelAttendanceLoading = false;
-    state.cancelAttendanceError = action.payload;
-  })
-  // Add these to your extraReducers
-.addCase(saveEvent.pending, (state) => {
-  state.saveEventLoading = true;
-  state.saveEventError = null;
-})
-.addCase(saveEvent.fulfilled, (state, action) => {
-  state.saveEventLoading = false;
-  // Update based on the actual response structure
-  if (action.payload.savedEvent && 
-      !state.savedEvents.some(e => e._id === action.payload.eventId)) {
-    state.savedEvents.push(action.payload.savedEvent);
-  }
-})
-.addCase(saveEvent.rejected, (state, action) => {
-  state.saveEventLoading = false;
-  // Use the error message from backend if available
-  state.saveEventError = action.payload || 'Failed to save event';
-})
+        // Remove from invitedEvents regardless of status
+        state.invitedEvents = state.invitedEvents.filter(
+          (event) => event._id !== eventId
+        );
 
-.addCase(removeSavedEvent.pending, (state) => {
-  state.removeSavedEventLoading = true;
-  state.removeSavedEventError = null;
-})
-.addCase(removeSavedEvent.fulfilled, (state, action) => {
-  state.removeSavedEventLoading = false;
-  state.savedEvents = state.savedEvents.filter(
-    event => event._id !== action.payload.eventId
-  );
-})
-.addCase(removeSavedEvent.rejected, (state, action) => {
-  state.removeSavedEventLoading = false;
-  state.removeSavedEventError = action.payload;
-})
+        // // If accepted, add to attendingEvents
+        // if (status === 'accepted') {
+        //   state.attendingEvents = [updatedEvent, ...state.attendingEvents];
+        // }
 
+        // // Update visibleEvents if needed
+        // state.visibleEvents = state.visibleEvents.map(event =>
+        //   event._id === eventId ? updatedEvent : event
+        // );
+
+        // Update any other relevant state
+        state.updateStatus = "succeeded";
+      })
+      .addCase(updateInviteStatus.rejected, (state, action) => {
+        state.updateStatus = "failed";
+        state.error = action.payload;
+      })
+      .addCase(cancelEventAttendance.pending, (state) => {
+        state.cancelAttendanceLoading = true;
+        state.cancelAttendanceError = null;
+      })
+      .addCase(cancelEventAttendance.fulfilled, (state, action) => {
+        state.cancelAttendanceLoading = false;
+
+        // Update the attendance lists
+        const eventId = action.payload.eventId;
+        state.attendingEvents = state.attendingEvents.filter(
+          (event) => event._id !== eventId
+        );
+      })
+      .addCase(cancelEventAttendance.rejected, (state, action) => {
+        state.cancelAttendanceLoading = false;
+        state.cancelAttendanceError = action.payload;
+      })
+      // Add these to your extraReducers
+      .addCase(saveEvent.pending, (state) => {
+        state.saveEventLoading = true;
+        state.saveEventError = null;
+      })
+      .addCase(saveEvent.fulfilled, (state, action) => {
+        state.saveEventLoading = false;
+        // Update based on the actual response structure
+        if (
+          action.payload.savedEvent &&
+          !state.savedEvents.some((e) => e._id === action.payload.eventId)
+        ) {
+          state.savedEvents.push(action.payload.savedEvent);
+        }
+      })
+      .addCase(saveEvent.rejected, (state, action) => {
+        state.saveEventLoading = false;
+        // Use the error message from backend if available
+        state.saveEventError = action.payload || "Failed to save event";
+      })
+
+      .addCase(removeSavedEvent.pending, (state) => {
+        state.removeSavedEventLoading = true;
+        state.removeSavedEventError = null;
+      })
+      .addCase(removeSavedEvent.fulfilled, (state, action) => {
+        state.removeSavedEventLoading = false;
+        state.savedEvents = state.savedEvents.filter(
+          (event) => event._id !== action.payload.eventId
+        );
+      })
+      .addCase(removeSavedEvent.rejected, (state, action) => {
+        state.removeSavedEventLoading = false;
+        state.removeSavedEventError = action.payload;
+      })
+      .addCase(getSavedEvents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSavedEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.savedEvents = action.payload.events;
+      })
+      .addCase(getSavedEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
-export const { 
-  clearAttendingMembers, 
-  resetUpdateStatus,
-  syncEvents 
-} = eventSlice.actions;
+export const { clearAttendingMembers, resetUpdateStatus, syncEvents } =
+  eventSlice.actions;
 
+export const selectSavedEvents = (state) => state.savedEvents || [];
+export const selectIsEventSaved = (eventId) => (state) => {
+  const savedEvents = state.events.savedEvents || [];
+
+  const isFound = savedEvents.some((event) => {
+    return event.event._id === eventId;
+  });
+
+  return isFound;
+};
 export default eventSlice.reducer;

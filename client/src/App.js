@@ -3,6 +3,7 @@ import {
   RouterProvider,
   Navigate,
   useLocation,
+  useSearchParams,
 } from "react-router-dom";
 
 import Landing from "./views/landing/Landing";
@@ -37,7 +38,7 @@ import OneTimePayment from "./views/account/settings/components/paymentChannels.
 import MakeSubscriptionPayment from "./views/account/settings/components/paymentChannels.js/subscriptionPayments";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "./features/auth/authSlice";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import MaintenancePage from "./components/MaintainanceMode";
 import { fetchGeneralSettings } from "./features/generalSettingSlice";
 import NotFound from "./views/NotFound";
@@ -45,6 +46,8 @@ import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
 import UserVerifyEmail from "./views/auth/login/userVerifyEmail";
+import UpcomingEvents from "./views/account/events/UpcomingEvents";
+import SelectedEvent from "./views/homepage/SelectedEvent";
 
 axios.defaults.withCredentials = true;
 
@@ -92,22 +95,46 @@ const ProtectedRoute = ({ children }) => {
 };
 // Add this new component
 const LoginRedirect = ({ children }) => {
+  const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { Settings } = useSelector((state) => state.generalSettings);
   const location = useLocation();
 
-  if(isAuthenticated && user ) {
+  const [searchParams] = useSearchParams();
 
-    if(user.membershipStatus === constants.membershipStatus.declined )
-      return <Navigate to="/application-declined" state={{ from: location }} replace />;
+  useEffect(() => {
+    dispatch(fetchGeneralSettings());
+  }, [dispatch]);
 
-    if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.paid )
+  const hasToken = searchParams.get("token");
+  if (hasToken) {
+    return children;
+  }
+
+  if (isAuthenticated && user) {
+    if (user.membershipStatus === constants.membershipStatus.declined)
+      return (
+        <Navigate
+          to="/application-declined"
+          state={{ from: location }}
+          replace
+        />
+      );
+
+    if (
+      user.membershipStatus === constants.membershipStatus.accepted &&
+      user.joinFeeStatus === constants.joinFeeStatus.paid
+    )
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
-     if(user.membershipStatus === constants.membershipStatus.accepted && user.joinFeeStatus === constants.joinFeeStatus.pending && Settings.membershipFee)
+    if (
+      user.membershipStatus === constants.membershipStatus.accepted &&
+      user.joinFeeStatus === constants.joinFeeStatus.pending &&
+      Settings?.membershipFee
+    )
       return <Navigate to="/register-7" state={{ from: location }} replace />;
 
-    if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
+    if (Settings?.requiredReferralNumber <= 0 && !Settings?.membershipFee)
       return <Navigate to="/homepage" state={{ from: location }} replace />;
    
     const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
@@ -116,13 +143,11 @@ const LoginRedirect = ({ children }) => {
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;
 
-
     //  // all referredBy declined
     //   const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
     //   if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) return <Navigate to="/application-declined" state={{from: location}} replace />
-      
 
-    //   if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) 
+    //   if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee)
     //       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     //   // only membership is on
@@ -131,7 +156,7 @@ const LoginRedirect = ({ children }) => {
     //     return <Navigate to="/register-7" state={{ from: location }} replace />;
     //   }
 
-    //   // referrals on 
+    //   // referrals on
     //   const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
     //   if (user.approvedByAdmin || allReferredByApproved) {
     //     //if membeshipFee is on
@@ -140,10 +165,8 @@ const LoginRedirect = ({ children }) => {
 
     //   }
 
-     
     //   // not approved
     //   return <Navigate to="/register-6" state={{ from: location }} replace />;
-       
   }
 
   // if (isAuthenticated) {
@@ -223,9 +246,11 @@ const router = createBrowserRouter([
   },
   {
     path: "terms",
-    element:  <PageWrapper>
-       <Terms />
-    </PageWrapper>
+    element: (
+      <PageWrapper>
+        <Terms />
+      </PageWrapper>
+    ),
   },
   {
     path: "how-it-works",
@@ -295,6 +320,14 @@ const router = createBrowserRouter([
       {
         path: "events",
         element: <Events />,
+      },
+      {
+        path: "events/:id",
+        element: <SelectedEvent />,
+      },
+      {
+        path: "upcoming-events",
+        element: <UpcomingEvents />,
       },
       {
         path: "ask",

@@ -15,8 +15,8 @@ const getEvidenceRequests = async (params = {}) => {
     const response = await axios.get(API_URL, {
       params: { ...params, type: params.type || undefined },
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`
-      }
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -31,9 +31,7 @@ const updateEvidenceStatus = async (id, status) => {
       `${API_URL}/${id}`,
       { status },
       {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`
-        }
+        withCredentials: true,
       }
     );
     return response.data;
@@ -49,9 +47,7 @@ const assignRequestToAdmin = async (requestId, adminId) => {
       `${API_URL}/${requestId}`,
       { adminId },
       {
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`
-        }
+        withCredentials: true,
       }
     );
     return response.data;
@@ -66,4 +62,4 @@ const evidenceService = {
   assignRequestToAdmin,
 };
 
-export default evidenceService; 
+export default evidenceService;
