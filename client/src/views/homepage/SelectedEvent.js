@@ -1,6 +1,6 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { BsCalendar } from "react-icons/bs";
@@ -19,15 +19,15 @@ import Event1 from "../../assets/event-1.jpg";
 import Event2 from "../../assets/event-2.jpg";
 import Event3 from "../../assets/event-3.jpg";
 import Event4 from "../../assets/event-4.jpg";
-import { setISODay } from "date-fns";
+import toast from "react-hot-toast";
 
 const SelectedEvent = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { events, isLoading } = useSelector((state) => state.events);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const isEventSaved = useSelector(selectIsEventSaved(id));
-  console.log(isEventSaved);
 
   useEffect(() => {
     // Fetch saved events when component mounts
@@ -103,6 +103,8 @@ const SelectedEvent = () => {
 
   const [activeTab, setActiveTab] = useState("description");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [selectedTicketCount, setSelectedTicketCount] = useState(1);
   const [savingEvent, setSavingEvent] = useState(false);
   const { attendingMembers } = useSelector((state) => state.events);
 
@@ -133,10 +135,43 @@ const SelectedEvent = () => {
 
   const handleSaveEvent = (eventId) => {
     setSavingEvent(true);
-    dispatch(saveEvent(eventId));
-    setTimeout(() => {
+    try {
+      dispatch(saveEvent(eventId));
+      toast.success("Event saved successfully");
+    } catch (error) {
+      console.error("Failed to save event:", error);
+      toast.error("Failed to save event");
+    } finally {
       setSavingEvent(false);
-    }, 1000);
+    }
+  };
+
+  const handleTicketConfirm = (ticketCount) => {
+    setSelectedTicketCount(ticketCount);
+    setShowTicketModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handleAttendEvent = () => {
+    if (
+      selectedEvent.audienceType === "all" ||
+      selectedEvent.audienceType === "open"
+    ) {
+      setShowTicketModal(true);
+    } else {
+      const paymentData = {
+        eventId: selectedEvent._id,
+        ticketCount: selectedTicketCount,
+        amount: selectedEvent.price * selectedTicketCount,
+        type: `Event - ${selectedEvent.name} ticket purchase`,
+      };
+      sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
+      navigate("/make-one-time-payment", {
+        state: {
+          paymentData: paymentData,
+        },
+      });
+    }
   };
 
   if (isLoading || !selectedEvent) {
@@ -150,6 +185,20 @@ const SelectedEvent = () => {
     <div className="min-h-screen">
       <div className="relative">
         <Header />
+        {showTicketModal && (
+          <TicketSelectionModal
+            event={selectedEvent}
+            onClose={() => setShowTicketModal(false)}
+            onConfirm={handleTicketConfirm}
+          />
+        )}
+        {showPaymentModal && (
+          <PaymentMethodModal
+            event={selectedEvent}
+            ticketCount={selectedTicketCount}
+            onClose={() => setShowPaymentModal(false)}
+          />
+        )}
         <div className="pt-24 relative lg:bg-[rgba(255,255,255,0.85)] bg-white min-h-screen ">
           <div className=" mx-auto px-4">
             <div className="bg-black  flex lg:flex-row flex-col">
@@ -216,7 +265,10 @@ const SelectedEvent = () => {
                 <h4 className="text-3xl font-semibold text-black">
                   £{selectedEvent.price}
                 </h4>
-                <button className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium">
+                <button
+                  onClick={handleAttendEvent}
+                  className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                >
                   Attend
                 </button>
               </div>
@@ -258,7 +310,7 @@ const SelectedEvent = () => {
                           : `Note: You can buy up to ${selectedEvent.numberOfTicket} tickets`}
                       </p>
                       <button
-                        // onClick={() => setShowPaymentModal(true)}
+                        onClick={() => setShowPaymentModal(true)}
                         className="w-full opacity-0 py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
                       >
                         Attend
@@ -280,11 +332,6 @@ const SelectedEvent = () => {
                             : "Save for later"}
                         </button>
                       </div>
-                      {showPaymentModal && (
-                        <PaymentMethodModal
-                          onClose={() => setShowPaymentModal(false)}
-                        />
-                      )}
                     </div>
                   </div>
                 </div>
@@ -402,6 +449,117 @@ const SelectedEvent = () => {
         </div>
       </div>
       <Footer />
+    </div>
+  );
+};
+
+const TicketSelectionModal = ({ event, onClose, onConfirm }) => {
+  const [ticketCount, setTicketCount] = useState(1);
+  const maxTickets = event.numberOfTicket || 1;
+  const navigate = useNavigate();
+
+  const incrementTickets = () => {
+    if (ticketCount < maxTickets) {
+      setTicketCount(ticketCount + 1);
+    }
+  };
+
+  const decrementTickets = () => {
+    if (ticketCount > 1) {
+      setTicketCount(ticketCount - 1);
+    }
+  };
+
+  const handleConfirm = () => {
+    // onConfirm(ticketCount);
+    const paymentData = {
+      eventId: event._id,
+      ticketCount: ticketCount,
+      amount: event.price * ticketCount,
+      type: `Event - ${event.name} ticket purchase`,
+    };
+    sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
+    navigate("/make-one-time-payment", {
+      state: {
+        paymentData: paymentData,
+      },
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Select Tickets
+          </h2>
+          <p className="text-gray-600 mb-6">
+            How many tickets would you like for this event?
+          </p>
+
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-gray-800">{event.name}</h3>
+            <p className="text-sm text-gray-600">{event.location}</p>
+            <p className="text-lg font-bold text-gray-800 mt-2">
+              £{event.price} per ticket
+            </p>
+          </div>
+
+          {/* Ticket Counter */}
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <button
+              onClick={decrementTickets}
+              disabled={ticketCount <= 1}
+              className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              -
+            </button>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-800">
+                {ticketCount}
+              </div>
+              <div className="text-sm text-gray-600">
+                {ticketCount === 1 ? "ticket" : "tickets"}
+              </div>
+            </div>
+
+            <button
+              onClick={incrementTickets}
+              disabled={ticketCount >= maxTickets}
+              className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Total Price */}
+          <div className="bg-gradient-to-r from-gradient_r to-gradient_g rounded-xl p-4 mb-6">
+            <div className="text-white">
+              <p className="text-sm opacity-90">Total Amount</p>
+              <p className="text-2xl font-bold">
+                £{(event.price * ticketCount).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 px-6 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 py-3 px-6 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl font-medium"
+            >
+              Confirm {ticketCount} {ticketCount === 1 ? "Ticket" : "Tickets"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

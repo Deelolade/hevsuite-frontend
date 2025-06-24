@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import paymentService from '../../../../../services/paymentService';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import paymentService from "../../../../../services/paymentService";
+import toast from "react-hot-toast";
 
-const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) => {
+const StripePaymentForm = ({
+  onSuccess,
+  onError,
+  isEditing,
+  paymentMethodId,
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [clientSecret, setClientSecret] = useState(null);
@@ -17,16 +22,18 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
         if (response.success) {
           setClientSecret(response.data.client_secret);
         } else {
-          throw new Error(response.message || 'Failed to initialize payment setup');
+          throw new Error(
+            response.message || "Failed to initialize payment setup"
+          );
         }
       } catch (error) {
-        console.error('Setup Intent error:', error);
-        onError(error.message || 'Failed to initialize Stripe');
+        console.error("Setup Intent error:", error);
+        // onError(error.message || 'Failed to initialize Stripe');
       }
     };
 
     fetchSetupIntent();
-  }, [onError]);
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -34,7 +41,7 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
 
     // When editing, ensure paymentMethodId is provided
     if (isEditing && !paymentMethodId) {
-      onError('Payment method ID is required for editing');
+      onError("Payment method ID is required for editing");
       return;
     }
 
@@ -42,11 +49,14 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
     try {
       const cardElement = elements.getElement(CardElement);
 
-      const { error, setupIntent } = await stripe.confirmCardSetup(clientSecret, {
-        payment_method: {
-          card: cardElement,
-        },
-      });
+      const { error, setupIntent } = await stripe.confirmCardSetup(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+          },
+        }
+      );
 
       if (error) {
         throw error;
@@ -54,23 +64,33 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
 
       // Choose the appropriate API based on isEditing
       const response = isEditing
-        ? await paymentService.editPayment('stripe', {
+        ? await paymentService.editPayment("stripe", {
             paymentMethodId, // The ID of the payment method being edited
             newPaymentMethodId: setupIntent.payment_method, // New Stripe payment method ID
           })
-        : await paymentService.addPayment('stripe', {
+        : await paymentService.addPayment("stripe", {
             paymentMethodId: setupIntent.payment_method,
           });
 
       if (response.success) {
-        toast.success(isEditing ? 'Payment Method updated successfully!' : 'Payment Method added successfully!');
+        toast.success(
+          isEditing
+            ? "Payment Method updated successfully!"
+            : "Payment Method added successfully!"
+        );
         onSuccess(response.data);
       } else {
-        throw new Error(response.message || `Failed to ${isEditing ? 'update' : 'save'} payment method`);
+        throw new Error(
+          response.message ||
+            `Failed to ${isEditing ? "update" : "save"} payment method`
+        );
       }
     } catch (error) {
-      console.error('Stripe setup error:', error);
-      onError(error.message || `Failed to ${isEditing ? 'update' : 'save'} payment method`);
+      console.error("Stripe setup error:", error);
+      onError(
+        error.message ||
+          `Failed to ${isEditing ? "update" : "save"} payment method`
+      );
     } finally {
       setLoading(false);
     }
@@ -83,14 +103,14 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
           options={{
             style: {
               base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': { color: '#aab7c4' },
+                fontSize: "16px",
+                color: "#424770",
+                "::placeholder": { color: "#aab7c4" },
                 fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
               },
               invalid: {
-                color: '#fa755a',
-                iconColor: '#fa755a',
+                color: "#fa755a",
+                iconColor: "#fa755a",
               },
             },
           }}
@@ -101,7 +121,7 @@ const StripePaymentForm = ({ onSuccess, onError, isEditing, paymentMethodId }) =
         disabled={!stripe || !clientSecret || loading}
         className="w-full bg-primary text-white rounded-lg p-3 font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Saving...' : isEditing ? 'Update Card' : 'Save Card'}
+        {loading ? "Saving..." : isEditing ? "Update Card" : "Save Card"}
       </button>
     </form>
   );

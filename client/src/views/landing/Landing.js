@@ -128,15 +128,19 @@ const Landing = () => {
             Become a Member
           </Link> */}
           <div className="flex gap-2 mt-8 pointer-events-auto">
-            {landingPages?.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full ${
-                  index === 0 ? "bg-white" : "bg-white/50"
-                } slider-button`} // Adjust active button styling
-                onClick={() => handleSlideChange(index)} // On button click, change slide
-              ></button>
-            ))}
+            {landingPages?.length > 1 && (
+              <div className="flex gap-2 mt-8 pointer-events-auto">
+                {landingPages?.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2 h-2 rounded-full ${
+                      index === 0 ? "bg-white" : "bg-white/50"
+                    } slider-button`}
+                    onClick={() => handleSlideChange(index)}
+                  ></button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
