@@ -15,7 +15,7 @@ import {
   usePayPalScriptReducer,
 } from "@paypal/react-paypal-js";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { MdClose, MdCheckCircle } from "react-icons/md";
 
 // Utility function for class names
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -41,7 +41,7 @@ export const PaymentTitle = ({ title, className }) => {
 };
 
 const LoadingSpinner = () => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
     <div className="flex flex-col items-center">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
       <p className="mt-4 font-medium text-white">Processing Payment...</p>
@@ -96,11 +96,11 @@ const StripePaymentForm = ({
   useNewCard,
   setUseNewCard,
   setSavedPaymentMethods,
+  onPaymentSuccess,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const authState = JSON.parse(localStorage.getItem("authState") || "{}");
-  const navigate = useNavigate();
   const [cardNumberComplete, setCardNumberComplete] = useState(false);
   const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
   const [cardCvcComplete, setCardCvcComplete] = useState(false);
@@ -110,11 +110,10 @@ const StripePaymentForm = ({
 
   useEffect(() => {
     return () => {
-      isMountedRef.current = false; // Cleanup on unmount
+      isMountedRef.current = false;
     };
   }, []);
 
-  // Memoize paymentData to prevent unnecessary useEffect triggers
   const memoizedPaymentData = useMemo(
     () => ({
       paymentProvider: paymentData.paymentProvider,
@@ -132,9 +131,8 @@ const StripePaymentForm = ({
     ]
   );
 
-  // Debounce API call to prevent rapid requests
   const createPaymentIntent = useCallback(async () => {
-    if (clientSecret || !isMountedRef.current) return; // Prevent calls if clientSecret is set or component is unmounted
+    if (clientSecret || !isMountedRef.current) return;
 
     try {
       setIsLoading(true);
@@ -160,8 +158,7 @@ const StripePaymentForm = ({
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log("Payment intent response", response.data);
-      setClientSecret(response.data.clientSecret);
+
       if (isMountedRef.current) {
         setClientSecret(response.data.clientSecret);
       }
@@ -200,7 +197,7 @@ const StripePaymentForm = ({
         toast.error("Please select a payment method");
         return false;
       }
-      return true; // No further validation needed for saved payment methods
+      return true;
     }
     let isValid = true;
     const errors = { firstName: "", lastName: "" };
@@ -237,7 +234,7 @@ const StripePaymentForm = ({
           headers: { "Content-Type": "application/json" },
         }
       );
-      // Refresh payment methods after saving
+
       const response = await axios.get(
         `${apiUrl}/api/payments/getpaymentMethods`,
         {
@@ -268,12 +265,9 @@ const StripePaymentForm = ({
           headers: { "Content-Type": "application/json" },
         }
       );
-
-      console.log("Receipt sent", response.data);
       return response.data;
     } catch (error) {
       console.error("Failed to send receipt", error);
-      // Don't show error to user as payment was successful
       toast.error(
         "Payment successful, but there was an issue with receipt delivery"
       );
@@ -298,8 +292,6 @@ const StripePaymentForm = ({
           throw new Error("Card number element is not mounted");
         }
 
-        console.log(formData, authState, "Form data and auth state");
-
         const { error: pmError, paymentMethod } =
           await stripe.createPaymentMethod({
             type: "card",
@@ -314,18 +306,13 @@ const StripePaymentForm = ({
           throw pmError;
         }
 
-        console.log("Created payment method:", paymentMethod);
-
         paymentMethodId = paymentMethod.id;
-        await savePaymentMethod(paymentMethodId); // Save the new payment method
+        await savePaymentMethod(paymentMethodId);
       }
 
       if (!paymentMethodId) {
         throw new Error("No payment method selected");
       }
-
-      console.log("Selected payment method ID:", paymentMethodId);
-      console.log("Client secret:", clientSecret);
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
@@ -339,8 +326,6 @@ const StripePaymentForm = ({
       }
 
       if (paymentIntent?.status === "succeeded") {
-        toast.success("Payment completed successfully");
-
         const paymentResult = {
           transactionId: paymentIntent.id,
           amount: paymentData.amount,
@@ -351,26 +336,19 @@ const StripePaymentForm = ({
           created: new Date().toISOString(),
           charges: paymentIntent.charges?.data?.[0] || null,
         };
-        const receiptToast = toast.loading("Sending receipt to email...");
+
+        const receiptToast = toast.loading("Processing payment...");
 
         try {
           await sendReceipt(paymentResult, paymentData);
           toast.dismiss(receiptToast);
+          toast.success("Payment completed successfully");
           toast.success("Receipt sent to your Email!");
         } catch (receiptError) {
           console.error("Receipt update failed:", receiptError);
-          // Continue with success flow even if receipt fails
         }
 
-        // Clear session data
-        sessionStorage.removeItem("paymentData");
-        navigate("/events");
-        // if (isMountedRef.current) {
-        //   setTimeout(() => {
-        //     if (isMountedRef.current) {
-        //     }
-        //   }, 2000);
-        // }
+        onPaymentSuccess(paymentResult);
       }
     } catch (error) {
       if (isMountedRef.current) {
@@ -562,96 +540,97 @@ const StripePaymentForm = ({
   );
 };
 
-const OneTimePayment = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [propPaymentData, setPropPaymentData] = useState(null);
+const PaymentConfirmation = ({ onClose }) => {
+  return (
+    <div className="p-6 md:p-8 payment-confirmation-enter">
+      <div className="flex flex-col items-center mb-8">
+        <div className="relative mb-6">
+          <div className="flex items-center justify-center w-20 h-20 rounded-full gradient-success shadow-lg payment-success-icon">
+            <MdCheckCircle className="w-12 h-12 text-white" />
+          </div>
+          <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-ping opacity-20"></div>
+        </div>
 
-  // Get payment data from navigation state or sessionStorage
-  useEffect(() => {
-    const stateData = location.state?.paymentData;
-    const sessionData = sessionStorage.getItem("paymentData");
+        <h2 className="text-3xl font-bold text-gray-800 mb-3 text-center">
+          Payment Successful!
+        </h2>
+        <p className="text-gray-600 text-center max-w-md leading-relaxed">
+          Thank you for your payment. Your transaction has been completed
+          successfully and a confirmation email has been sent.
+        </p>
+      </div>
 
-    if (stateData) {
-      setPropPaymentData(stateData);
-    } else if (sessionData) {
-      try {
-        const parsedData = JSON.parse(sessionData);
-        setPropPaymentData(parsedData);
-      } catch (error) {
-        console.error("Error parsing payment data:", error);
-        navigate("/events");
-      }
-    } else {
-      navigate("/events");
-    }
-  }, [location, navigate]);
-
-  // Use memo to stabilize paymentData
-  const paymentData = useMemo(
-    () => ({
-      eventId: propPaymentData?.eventId || null,
-      paymentProvider: propPaymentData?.paymentProvider || "stripe",
-      trxRef: propPaymentData?.trxRef || generateTransactionReference(),
-      type: propPaymentData?.type || "Hevsuite Payment",
-      ticketCount: propPaymentData?.ticketCount || 1,
-      amount: propPaymentData?.amount || "20",
-      reason: propPaymentData?.reason || "payment to hevsuite",
-    }),
-    [propPaymentData]
+      <div
+        className="flex flex-col sm:flex-row gap-3 payment-details-card"
+        style={{ animationDelay: "0.3s" }}
+      >
+        <button
+          onClick={onClose}
+          className="flex-1 gradient-primary text-white py-3 px-6 rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+        >
+          Continue to Events
+        </button>
+      </div>
+    </div>
   );
+};
 
-  const handlePaymentSuccess = (result) => {
-    console.log("Payment successful:", result);
-
-    // Clear payment data
-    sessionStorage.removeItem("paymentData");
-
-    // Navigate to success page
-    navigate("/payment-success", {
-      state: {
-        paymentResult: result,
-        paymentData: paymentData,
-        originalData: propPaymentData,
-      },
-    });
-  };
-
+const PaymentModal = ({
+  isOpen,
+  onClose,
+  paymentData: propPaymentData,
+  onPaymentSuccess,
+}) => {
   const [stripePromise, setStripePromise] = useState(null);
   const [paypalClientId, setPaypalClientId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [availableProcessors, setAvailableProcessors] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
   const [savedPaymentMethods, setSavedPaymentMethods] = useState([]);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState(null);
   const [useNewCard, setUseNewCard] = useState(false);
+  const [paymentResult, setPaymentResult] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const authState = JSON.parse(localStorage.getItem("authState") || "{}");
   const isMountedRef = useRef(true);
 
+  const paymentData = useMemo(
+    () => ({
+      eventId: propPaymentData?.eventId,
+      paymentProvider: propPaymentData?.paymentProvider,
+      trxRef: propPaymentData?.trxRef || generateTransactionReference(),
+      type: propPaymentData?.type,
+      ticketCount: propPaymentData?.ticketCount,
+      amount: propPaymentData?.amount,
+      reason: propPaymentData?.reason,
+    }),
+    [propPaymentData]
+  );
+
   useEffect(() => {
     return () => {
-      isMountedRef.current = false; // Cleanup on unmount
+      isMountedRef.current = false;
     };
   }, []);
 
   useEffect(() => {
-    const initializePaymentProcessors = async () => {
-      try {
-        setStripePromise(loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY));
-        setPaypalClientId(process.env.REACT_APP_PAYPAL_CLIENT_ID);
-        setAvailableProcessors(["stripe", "paypal"]);
-      } catch (error) {
-        console.error("Payment initialization error:", error);
-        toast.error("Payment system initialization failed");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (isOpen) {
+      const initializePaymentProcessors = async () => {
+        try {
+          setStripePromise(loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY));
+          setPaypalClientId(process.env.REACT_APP_PAYPAL_CLIENT_ID);
+        } catch (error) {
+          console.error("Payment initialization error:", error);
+          toast.error("Payment system initialization failed");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    initializePaymentProcessors();
-  }, []);
+      initializePaymentProcessors();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const fetchPaymentMethods = async () => {
@@ -664,7 +643,7 @@ const OneTimePayment = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        console.log("Fetched payment methods:", response.data);
+
         if (isMountedRef.current) {
           setSavedPaymentMethods(response.data.methods || []);
           const methods = response.data.methods || [];
@@ -689,8 +668,6 @@ const OneTimePayment = () => {
 
     fetchPaymentMethods();
   }, [paymentMethod]);
-
-  console.log("savedPaymentMethods", savedPaymentMethods);
 
   const createPayPalOrder = async () => {
     setIsLoading(true);
@@ -727,6 +704,7 @@ const OneTimePayment = () => {
         {},
         { headers: { Authorization: authState.apiKey } }
       );
+
       if (response.data.billingAgreementId) {
         setSavedPaymentMethods((prev) => [
           ...prev,
@@ -740,13 +718,16 @@ const OneTimePayment = () => {
         ]);
       }
       toast.success("Payment completed successfully");
-      if (isMountedRef.current) {
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            navigate("/homepage");
-          }
-        }, 2000);
-      }
+      const result = {
+        transactionId: data.orderID,
+        amount: paymentData.amount,
+        currency: "USD",
+        status: "succeeded",
+        paymentMethod: "paypal",
+        created: new Date().toISOString(),
+      };
+      setPaymentResult(result);
+      setShowConfirmation(true);
     } catch (error) {
       console.error("Failed to process PayPal payment:", error);
       toast.error(error.response?.data?.message || "Payment failed");
@@ -760,138 +741,183 @@ const OneTimePayment = () => {
     setIsLoading(false);
     console.error(err);
   };
-
   const availablePaymentMethods = ["stripe", "paypal"];
+  const handleModalClose = useCallback(() => {
+    setPaymentMethod(null);
+    setClientSecret("");
+    setSelectedPaymentMethodId(null);
+    setUseNewCard(false);
+    setIsLoading(false);
+    setShowConfirmation(false);
+    setPaymentResult(null);
+    onClose();
+  }, [onClose]);
+
+  const handlePaymentSuccess = (result) => {
+    setPaymentResult(result);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmationClose = () => {
+    setShowConfirmation(false);
+    setPaymentResult(null);
+    onPaymentSuccess && onPaymentSuccess(paymentResult);
+    handleModalClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="relative ml-auto mr-auto min-h-[400px] w-full rounded-lg bg-white py-6 md:w-[600px] lg:w-[500px]">
-      {isLoading && <LoadingSpinner />}
-      {loading ? (
-        <div className="py-4 text-center">Loading payment providers...</div>
-      ) : (
-        <PayPalScriptProvider
-          options={{
-            "client-id": paypalClientId,
-            currency: "USD",
-            "disable-funding": "credit,card",
-            "data-sdk-integration-source": "funding_sc",
-            vault: "true",
-          }}
-        >
-          {paymentMethod ? (
-            <PaymentTitle title={`Pay with ${paymentMethod}`} />
-          ) : (
-            <PaymentTitle title="Make Payment" />
-          )}
-          <div className="my-6 px-4 md:px-12 text-black">
-            {loading ? (
-              <div className="py-4 text-center">Loading payment options...</div>
-            ) : paymentMethod === null ? (
-              <div className="mb-6 flex flex-col gap-4 md:flex-row justify-center">
-                {availablePaymentMethods.includes("stripe") && (
-                  <div
-                    onClick={() => setPaymentMethod("stripe")}
-                    className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors hover:border-blue-600"
-                  >
-                    <button className="w-full rounded-lg bg-blue-600 py-2 text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center payment-modal-backdrop p-4">
+      {" "}
+      <div className="relative w-full max-w-lg max-h-[90vh] py-6 overflow-y-auto rounded-xl bg-white payment-modal-content">
+        {isLoading && <LoadingSpinner />}
+
+        {!showConfirmation && (
+          <button
+            onClick={handleModalClose}
+            className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2 hover:bg-gray-200 transition-colors"
+          >
+            <MdClose className="h-5 w-5" />
+          </button>
+        )}
+        {loading ? (
+          <div className="py-8 text-center">Loading payment providers...</div>
+        ) : showConfirmation && paymentResult ? (
+          <PaymentConfirmation onClose={handleConfirmationClose} />
+        ) : (
+          <PayPalScriptProvider
+            options={{
+              "client-id": paypalClientId,
+              currency: "USD",
+              "disable-funding": "credit,card",
+              "data-sdk-integration-source": "funding_sc",
+              vault: "true",
+            }}
+          >
+            {paymentMethod ? (
+              <PaymentTitle title={`Pay with ${paymentMethod}`} />
+            ) : (
+              <PaymentTitle title="Make Payment" />
+            )}
+
+            <div className="my-6 px-4 md:px-12 text-black">
+              {paymentMethod === null ? (
+                <div className="mb-6 flex flex-col gap-4 md:flex-row justify-center">
+                  {availablePaymentMethods.includes("stripe") && (
+                    <button
+                      onClick={() => setPaymentMethod("stripe")}
+                      className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600"
+                    >
                       Pay with Stripe
                     </button>
-                  </div>
-                )}
-                {availablePaymentMethods.includes("paypal") && (
-                  <div
-                    onClick={() => setPaymentMethod("paypal")}
-                    className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors hover:border-blue-600"
-                  >
-                    <button className="w-full rounded-lg bg-blue-600 py-2 text-white">
+                  )}
+                  {availablePaymentMethods.includes("paypal") && (
+                    <button
+                      onClick={() => setPaymentMethod("paypal")}
+                      className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600"
+                    >
                       Pay with PayPal
                     </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => {
-                    setPaymentMethod(null);
-                    setClientSecret("");
-                    setSelectedPaymentMethodId(null);
-                    setUseNewCard(false);
-                  }}
-                  className="mb-4 rounded-lg bg-gray-600 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-700"
-                >
-                  ← Back to payment methods
-                </button>
-                {paymentMethod === "stripe" && (
-                  <Elements stripe={stripePromise}>
-                    <StripePaymentForm
-                      paymentData={paymentData}
-                      clientSecret={clientSecret}
-                      setClientSecret={setClientSecret}
-                      isLoading={isLoading}
-                      setIsLoading={setIsLoading}
-                      savedPaymentMethods={savedPaymentMethods}
-                      selectedPaymentMethodId={selectedPaymentMethodId}
-                      setSelectedPaymentMethodId={setSelectedPaymentMethodId}
-                      useNewCard={useNewCard}
-                      setUseNewCard={setUseNewCard}
-                      setSavedPaymentMethods={setSavedPaymentMethods}
-                    />
-                  </Elements>
-                )}
-                {paymentMethod === "paypal" && (
-                  <div>
-                    {savedPaymentMethods.find(
-                      (m) => m.provider === "paypal"
-                    ) ? (
-                      <div className="flex flex-col gap-2">
-                        <span>
-                          Saved PayPal Account:{" "}
-                          {
-                            savedPaymentMethods.find(
-                              (m) => m.provider === "paypal"
-                            ).details.email
-                          }
-                        </span>
-                        <button
-                          onClick={async () => {
-                            try {
-                              setIsLoading(true);
-                              await createPayPalOrder();
-                            } catch (error) {
-                              console.error("PayPal payment failed:", error);
-                              toast.error("PayPal payment failed");
-                            } finally {
-                              setIsLoading(false);
-                            }
-                          }}
-                          className="mt-4 w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
-                        >
-                          {isLoading
-                            ? "Processing..."
-                            : `Pay $${Number(
-                                paymentData.amount
-                              ).toLocaleString()}`}
-                        </button>
-                      </div>
-                    ) : (
-                      <PayPalButtonWrapper
-                        currency="USD"
-                        amount={paymentData.amount}
-                        createOrder={createPayPalOrder}
-                        onApprove={onPayPalApprove}
-                        onError={onPayPalError}
+                  )}
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setPaymentMethod(null);
+                      setClientSecret("");
+                      setSelectedPaymentMethodId(null);
+                      setUseNewCard(false);
+                    }}
+                    className="mb-4 rounded-lg bg-gray-600 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-700"
+                  >
+                    ← Back to payment methods
+                  </button>
+
+                  {paymentMethod === "stripe" && (
+                    <Elements stripe={stripePromise}>
+                      <StripePaymentForm
+                        paymentData={paymentData}
+                        clientSecret={clientSecret}
+                        setClientSecret={setClientSecret}
+                        isLoading={isLoading}
+                        setIsLoading={setIsLoading}
+                        savedPaymentMethods={savedPaymentMethods}
+                        selectedPaymentMethodId={selectedPaymentMethodId}
+                        setSelectedPaymentMethodId={setSelectedPaymentMethodId}
+                        useNewCard={useNewCard}
+                        setUseNewCard={setUseNewCard}
+                        setSavedPaymentMethods={setSavedPaymentMethods}
+                        onPaymentSuccess={handlePaymentSuccess}
                       />
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </PayPalScriptProvider>
-      )}
+                    </Elements>
+                  )}
+
+                  {paymentMethod === "paypal" && (
+                    <div>
+                      {savedPaymentMethods.find(
+                        (m) => m.provider === "paypal"
+                      ) ? (
+                        <div className="flex flex-col gap-2">
+                          <span>
+                            Saved PayPal Account:{" "}
+                            {
+                              savedPaymentMethods.find(
+                                (m) => m.provider === "paypal"
+                              ).details.email
+                            }
+                          </span>
+                          <div className="flex flex-col gap-3 mt-4">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  setIsLoading(true);
+                                  await createPayPalOrder();
+                                } catch (error) {
+                                  console.error(
+                                    "PayPal payment failed:",
+                                    error
+                                  );
+                                  toast.error("PayPal payment failed");
+                                } finally {
+                                  setIsLoading(false);
+                                }
+                              }}
+                              disabled={isLoading}
+                              className={`w-full rounded-lg py-3 font-medium text-white transition-colors ${
+                                isLoading
+                                  ? "bg-gray-400 cursor-not-allowed"
+                                  : "bg-blue-600 hover:bg-blue-700"
+                              }`}
+                            >
+                              {isLoading
+                                ? "Processing..."
+                                : `Pay $${Number(
+                                    paymentData.amount
+                                  ).toLocaleString()}`}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <PayPalButtonWrapper
+                          currency="USD"
+                          amount={paymentData.amount}
+                          createOrder={createPayPalOrder}
+                          onApprove={onPayPalApprove}
+                          onError={onPayPalError}
+                        />
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </PayPalScriptProvider>
+        )}
+      </div>
     </div>
   );
 };
 
-export default OneTimePayment;
+export default PaymentModal;
