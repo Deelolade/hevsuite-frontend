@@ -34,14 +34,14 @@ import HowItWorks from "./views/how-it-works/HowItWorks";
 import News from "./views/news/News";
 import NewsDetail from "./views/news/NewsDetail";
 import axios from "axios";
-import OneTimePayment from "./views/account/settings/components/paymentChannels.js/oneTimePayments";
 import MakeSubscriptionPayment from "./views/account/settings/components/paymentChannels.js/subscriptionPayments";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "./features/auth/authSlice";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import MaintenancePage from "./components/MaintainanceMode";
 import { fetchGeneralSettings } from "./features/generalSettingSlice";
-import NotFound from "./views/NotFound";
+// import NotFound from "./views/NotFound";
+import ErrorPage from "./views/ErrorPage";
 import constants from "./constants";
 import ApplicationDeclined from "./views/auth/ApplicationDeclined";
 import PageWrapper from "./components/PageWrapper";
@@ -199,14 +199,17 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Landing />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/news",
     element: <News />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/news-detail/:id",
     element: <NewsDetail />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "login",
@@ -215,34 +218,57 @@ const router = createBrowserRouter([
         <Login />
       </LoginRedirect>
     ),
+    errorElement: <ErrorPage />,
   },
-  { path: "forgot-password", element: <ForgotPassword /> },
-  { path: "reset-password", element: <ResetPassword /> },
-  { path: "reset-success", element: <ResetSuccess /> },
-  { path: "two-factor-auth", element: <TwoFactorAuth /> },
+  {
+    path: "forgot-password",
+    element: <ForgotPassword />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "reset-password",
+    element: <ResetPassword />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "reset-success",
+    element: <ResetSuccess />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "two-factor-auth",
+    element: <TwoFactorAuth />,
+    errorElement: <ErrorPage />,
+  },
   {
     path: "/email-verification",
     element: <EmailVerification />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/phone-verification",
     element: <PhoneVerification />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/code-verification",
     element: <CodeVerification />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/success",
     element: <Success />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "topics",
     element: <Topics />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "topic-details/:id",
     element: <TopicDetails />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "terms",
@@ -251,10 +277,12 @@ const router = createBrowserRouter([
         <Terms />
       </PageWrapper>
     ),
+    errorElement: <ErrorPage />,
   },
   {
     path: "how-it-works",
     element: <HowItWorks />,
+    errorElement: <ErrorPage />,
   },
    {
     path: "/user/verify-email",
@@ -263,22 +291,27 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-2",
     element: <RegisterStep2 />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-3",
     element: <RegisterStep3 />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-4",
     element: <RegisterStep4 />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-5",
     element: <RegisterStep5 />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-6",
@@ -287,6 +320,7 @@ const router = createBrowserRouter([
         <RegisterStep6 />,
       </AuthenticatedOnly>
     ),
+    errorElement: <ErrorPage />,
   },
   {
     path: "/register-7",
@@ -295,6 +329,7 @@ const router = createBrowserRouter([
         <RegisterStep7 />,
       </AuthenticatedOnly>
     ),
+    errorElement: <ErrorPage />,
   },
   {
     path: "/application-declined",
@@ -303,6 +338,7 @@ const router = createBrowserRouter([
         <ApplicationDeclined />,
       </AuthenticatedOnly>
     ),
+    errorElement: <ErrorPage />,
   },
 
   {
@@ -312,6 +348,7 @@ const router = createBrowserRouter([
         <AuthLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "homepage",
@@ -349,29 +386,31 @@ const router = createBrowserRouter([
         path: "how-it-works",
         element: <HowItWorks />,
       },
-      {
-        path: "make-one-time-payment",
-        element: <OneTimePayment />,
-      },
+      // {
+      //   path: "make-one-time-payment",
+      //   element: <OneTimePayment />,
+      // },
       {
         path: "make-subscription-payment",
         element: <MakeSubscriptionPayment />,
       },
     ],
   },
-  { path: "*", element: <NotFound /> },
+  {
+    path: "*",
+    element: <ErrorPage />,
+  },
 ]);
 
 function App() {
   const dispatch = useDispatch();
   const { Settings } = useSelector((state) => state.generalSettings);
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  const [isLoading, setIsLoading] = useState(true);
-  // useEffect(() => {
+  const { isAuthenticated } = useSelector((state) => state.auth); // useEffect(() => {
   //   if (isAuthenticated) {
   //     dispatch(fetchProfile());
   //   }
   // }, [dispatch, isAuthenticated]);
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -381,8 +420,6 @@ function App() {
         }
       } catch (error) {
         console.error("Initialization error:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
     initializeApp();
