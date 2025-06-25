@@ -61,22 +61,21 @@ const ProfileModal = ({ onClose, forNotification, moveToEvents }) => {
     // "Settings",
   ];
 
-  const handleProtectedTab = useCallback(
-    (tab) => {
-      if (user) {
-        if (!protectedtabs.includes(tab)) return () => setActiveTab(tab);
-
-        if (!userIdentificationApproved)
-          return () => setShowDocumentReviewModal(true);
-
-        return () => setActiveTab(tab);
+  const handleProtectedTab = (tab) => {
+    if (user) {
+      if (!protectedtabs.includes(tab)) {
+        setActiveTab(tab);
+        return;
       }
 
-      // nothing
-      return () => {};
-    },
-    [user, userIdentificationApproved]
-  );
+      if (!userIdentificationApproved) {
+        setShowDocumentReviewModal(true);
+        return;
+      }
+
+      setActiveTab(tab);
+    }
+  };
   //   const tabs = [
   //   "Account Profile",
   //   ...(user?.approvedByAdmin ? ["Your Events"] : []),
@@ -284,7 +283,7 @@ const ProfileModal = ({ onClose, forNotification, moveToEvents }) => {
               <button
                 key={tab}
                 // onClick={() => protectedtabs.includes(tab) ? handleProtectedTab():setActiveTab(tab)}
-                onClick={() => handleProtectedTab(tab)()}
+                onClick={() => handleProtectedTab(tab)}
                 className={`px-2  py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg whitespace-nowrap  w-auto sm:w-[165px] transition-colors border border-transparent ${
                   activeTab === tab
                     ? "bg-[#540A26] text-white"
