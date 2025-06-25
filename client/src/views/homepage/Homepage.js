@@ -91,12 +91,12 @@ const Homepage = () => {
             src={headerBg}
             alt="background"
             className={`w-full ${
-              showFilters ? "h-[120vh]" : "h-screen"
+              showFilters ? "h-[120vh]" : "h-[110vh]"
             } object-cover`}
           />
           <div
             className={`absolute inset-0 bg-black/50 ${
-              showFilters ? "h-[120vh]" : "h-screen"
+              showFilters ? "h-[120vh]" : "h-[110vh]"
             }`}
           />
         </div>
@@ -226,10 +226,10 @@ const Homepage = () => {
               {/* Desktop Slider */}
               <div className=" relative flex flex-col  items-center">
                 <div className="flex items-center md:-ml-10 flex-row absolute -bottom-20  justify-center gap-32 mb-4">
-                  <button className="custom-prev scale-150  p-2 z-50 rounded-full hover:bg-black/70 transition-colors">
+                  <button className="custom-prev scale-150  p-2 z-30 rounded-full hover:bg-black/70 transition-colors">
                     ←
                   </button>
-                  <button className="custom-next z-50 scale-150  p-2 rounded-full  hover:bg-black/50 transition-colors">
+                  <button className="custom-next z-30 scale-150  p-2 rounded-full  hover:bg-black/50 transition-colors">
                     →
                   </button>
                   <div className="swiper-pagination text-white"></div>
