@@ -24,6 +24,11 @@ import {
   selectLoadingStates,
 } from "../../../features/clubCardSlice";
 import { createSupportRequest } from "../../../features/supportRequestSlice";
+import {
+  fetchPricingFees,
+  selectPricingFees,
+  selectPricingFeesLoading,
+} from "../../../features/pricingFeesSlice";
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
     personalInfo: true,
@@ -64,6 +69,8 @@ const StandardProfile = () => {
   const [password, setPassword] = useState("");
   const clubCard = useSelector(selectClubCard);
   const { activating, deactivating } = useSelector(selectLoadingStates);
+  const pricingFees = useSelector(selectPricingFees);
+  const pricingFeesLoading = useSelector(selectPricingFeesLoading);
 
   const handle2FAChange = (method) => {
     if (user?.is2FAEnabled) {
@@ -125,6 +132,17 @@ const StandardProfile = () => {
           console.log("No card found for user or error:", error);
         });
     }
+
+    // Fetch pricing fees
+    dispatch(fetchPricingFees())
+      .unwrap()
+      .then((data) => {
+        console.log("Pricing fees loaded:", data);
+        console.log("User role:", user?.role);
+      })
+      .catch((error) => {
+        console.log("Failed to fetch pricing fees:", error);
+      });
   }, [dispatch, user]);
   console.log(user);
 
@@ -1383,19 +1401,62 @@ const StandardProfile = () => {
                 <div className="md:col-span-1 md:row-span-3 md:justify-self-end md:mt-0">
                   <div className="p-4 rounded-lg">
                     <h4 className="font-medium mb-2">Payment Summary:</h4>
+                    {/* Debug logging */}
+                    {console.log(
+                      "Pricing Fees in Payment Summary:",
+                      pricingFees
+                    )}
+                    {console.log("User Role in Payment Summary:", user?.role)}
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Club Card Fee:</span>
-                        <span className="font-medium">£15</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Shipping Fee:</span>
-                        <span className="font-medium">£0</span>
-                      </div>
-                      <div className="border-t border-gray-300 my-2 pt-2 flex justify-between">
-                        <span>Total:</span>
-                        <span className="font-medium">£15</span>
-                      </div>
+                      {pricingFeesLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#540A26] mx-auto"></div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Loading pricing...
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Club Card Fee:</span>
+                            <span className="font-medium">
+                              £
+                              {(() => {
+                                const newClubCardFee = pricingFees?.find(
+                                  (fee) => fee.name === "New Club Card Fee"
+                                );
+                                if (newClubCardFee) {
+                                  return user?.role === "vip"
+                                    ? newClubCardFee.vipPrice
+                                    : newClubCardFee.standardPrice;
+                                }
+                                return 15;
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Shipping Fee:</span>
+                            <span className="font-medium">£0</span>
+                          </div>
+                          <div className="border-t border-gray-300 my-2 pt-2 flex justify-between">
+                            <span>Total:</span>
+                            <span className="font-medium">
+                              £
+                              {(() => {
+                                const newClubCardFee = pricingFees?.find(
+                                  (fee) => fee.name === "New Club Card Fee"
+                                );
+                                if (newClubCardFee) {
+                                  return user?.role === "vip"
+                                    ? newClubCardFee.vipPrice
+                                    : newClubCardFee.standardPrice;
+                                }
+                                return 15;
+                              })()}
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
