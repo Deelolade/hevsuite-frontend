@@ -138,20 +138,20 @@ const LoginRedirect = ({ children }) => {
       return <Navigate to="/homepage" state={{ from: location }} replace />;
    
     const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-    if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length > 0 || user.membershipStatus === constants.membershipStatus.accepted ) 
+    if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length === user.requiredReferrals || user.membershipStatus === constants.membershipStatus.accepted ) 
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;
 
     //  // all referredBy declined
     //   const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
-    //   if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) return <Navigate to="/application-declined" state={{from: location}} replace />
+    //   if(allReferredByDeclined && user.referredBy.length > 0 && user.requiredReferrals > 0) return <Navigate to="/application-declined" state={{from: location}} replace />
 
-    //   if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee)
+    //   if (user.requiredReferrals <= 0 && !Settings.membershipFee)
     //       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     //   // only membership is on
-    //   if (Settings.requiredReferralNumber <= 0 && Settings.membershipFee) {
+    //   if (user.requiredReferrals <= 0 && Settings.membershipFee) {
     //     if(user.joinFeeStatus === constants.joinFeeStatus.paid) return <Navigate to="/homepage" state={{ from: location }} replace />;
     //     return <Navigate to="/register-7" state={{ from: location }} replace />;
     //   }

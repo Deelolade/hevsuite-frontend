@@ -66,7 +66,7 @@ const RegisterStep6 = () => {
     if (user && referredBy && Settings) {
 
       // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
-      // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0)  {
+      // if(allReferredByDeclined && user.referredBy.length > 0 && user.requiredReferrals > 0)  {
       if(user.membershipStatus === constants.membershipStatus.declined){
         navigate("/application-declined", {replace: true });
         return;
@@ -78,13 +78,13 @@ const RegisterStep6 = () => {
       }
             
       // if both referral and membership are off
-      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) {
+      if (user.requiredReferrals <= 0 && !Settings.membershipFee) {
         navigate("/homepage", {replace: true });
         return;
       }
 
       //if referrals are off and membership are on
-      if (Settings.requiredReferralNumber <= 0 && Settings.membershipFee) {
+      if (user.requiredReferrals <= 0 && Settings.membershipFee) {
 
         // in-case someone visits this URL and they paid
         if(user.joinFeeStatus === constants.joinFeeStatus.paid) {
@@ -199,12 +199,12 @@ const RegisterStep6 = () => {
 
     const handleProceedToSendReferredBy = async () => {
     
-      if(referredBy.length >= Settings.requiredReferralNumber){
+      if(referredBy.length >= user.requiredReferrals){
         toast.error("You've reached the limit of required members", {duration: 3_000 });
         return
       }
 
-      const remainingReferred = Settings.requiredReferralNumber - referredBy.length;
+      const remainingReferred = user.requiredReferrals - referredBy.length;
 
       if(selectedMembers.size > remainingReferred && referredBy.length ){
 
@@ -213,8 +213,8 @@ const RegisterStep6 = () => {
         return
       }
 
-      if(referredBy.length === 0 && selectedMembers.size > Settings.requiredReferralNumber){
-        const message = `Only ${Settings.requiredReferralNumber} member${Settings.requiredReferralNumber > 1 ? 's' : ''}. are required`;
+      if(referredBy.length === 0 && selectedMembers.size > user.requiredReferrals){
+        const message = `Only ${user.requiredReferrals} member${user.requiredReferrals > 1 ? 's' : ''}. are required`;
         toast.error(message, {duration: 3_000});
         return
       }

@@ -29,7 +29,7 @@ const useUserMembership = ( ) => {
             const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
             if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length > 0 || user.membershipStatus === constants.membershipStatus.accepted)return;
                
-           if (Settings.requiredReferralNumber > 0) {
+           if (user.requiredReferrals > 0) {
               
             
                if(user.membershipStatus !== constants.membershipStatus.accepted) {
