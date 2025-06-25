@@ -46,15 +46,13 @@ const Login = () => {
           const userId = userProfile.id || userProfile._id;
 
           if (userId) {
-            const cardData = await dispatch(getCardByUserId(userId)).unwrap();
-
-            // If card is already active, clear token and redirect to homepage
+            const cardData = await dispatch(getCardByUserId(userId)).unwrap(); // If card is already active, clear token and redirect to upcoming-events
             if (cardData.isActive) {
               localStorage.removeItem("authToken");
               console.log(
                 "AuthToken cleared - card already active during login"
               );
-              navigate("/homepage", { replace: true });
+              navigate("/upcoming-events", { replace: true });
               return;
             }
           }
