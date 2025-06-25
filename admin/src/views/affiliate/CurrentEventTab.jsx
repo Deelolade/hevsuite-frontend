@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi"
 import { BiSearch } from "react-icons/bi"
@@ -14,6 +14,7 @@ import authService from "../../store/auth/authService"
 import affiliateService from "../../store/affiliate/affiliateService"
 import "../layout/forced.css"
 import Modal from "react-modal"
+import ExportButton from "../ExportButton"
 
 const CurrentEventTab = () => {
   const dispatch = useDispatch()
@@ -337,9 +338,39 @@ const CurrentEventTab = () => {
     }
   }, [showFilterDropdown, showSortDropdown])
 
+  // Prepare data for export
+  const preparedExportData = useMemo(() => {
+    if (!events || events.length === 0) {
+      return []
+    }
+    // Add date and time of export
+    const now = new Date();
+    const dateExported = now.toLocaleDateString();
+    const timeExported = now.toLocaleTimeString();
+    return events
+      .filter((event) => getEventStatus(event) !== "completed")
+      .map((event) => {
+        const ticketsSold = event.invitedUsers?.length || 0
+        const price = event.price || 0
+        const totalRevenue = ticketsSold * price
+        return {
+          "Event Name": event.name,
+          "Start Date": formatDate(event.time),
+          "End Date": formatDate(event.endTime),
+          "Tickets Sold": ticketsSold,
+          "Price Per Ticket (£)": price.toFixed(2),
+          "Total Revenue (£)": totalRevenue.toFixed(2),
+          Status: getEventStatus(event),
+          "Date Exported": dateExported,
+          "Time Exported": timeExported,
+        }
+      })
+  }, [events])
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end flex-col md:flex-row gap-2 items-center">
+        
         <div className="flex gap-4 relative">
           {/* Audience Type Filter Button */}
           <div className="relative">
@@ -383,6 +414,7 @@ const CurrentEventTab = () => {
             )}
           </div>
         </div>
+        <ExportButton data={preparedExportData} fileName="current_events" />
       </div>
       {/* Loading State */}
       {eventsLoading && (

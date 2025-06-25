@@ -59,7 +59,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
   };
 
   const getSupportersStatusColor = (user) => {
-    const referralCount = user.referralCount || 0;
+    const referralCount = user.requiredReferrals || 0;
     const referrals = user.referrals?.length || 0;
     
     // If referrals match referralCount exactly, show green
@@ -73,7 +73,7 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
   };
 
   const getSupportersStatusText = (user) => {
-    const referralCount = user.referralCount || 0;
+    const referralCount = user.requiredReferrals || 0;
     const referrals = user.referrals?.length || 0;
     return `${referrals}/${referralCount}`;
   };
@@ -202,13 +202,13 @@ const DefaultPending = ({ pendingUsers, setShowViewPending, setViewUser, onAccep
                 </td>
                 <td className="px-6 py-4 text-gray-500 text-sm">
                   <span className={`px-2 py-1 rounded ${
-                    user.membershipFee === true
+                    user.membershipFeeStatus === true
                       ? user.joinFeeStatus?.toLowerCase() === 'paid'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {user.membershipFee === true 
+                    {user.membershipFeeStatus === true 
                       ? user.joinFeeStatus?.toLowerCase() === 'paid' ? "Paid" : "Pending"
                       : "Off"}
                   </span>

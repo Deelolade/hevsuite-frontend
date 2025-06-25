@@ -75,7 +75,7 @@ const PendingApproval = () => {
   const [evidenceFiles, setEvidenceFiles] = useState([])
 
   // Filter and sort states
-  const [statusFilter, setStatusFilter] = useState('pending');
+  const [statusFilter, setStatusFilter] = useState('Pending');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTimeFilterDropdown, setShowTimeFilterDropdown] = useState(false);
@@ -88,9 +88,9 @@ const PendingApproval = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const statusOptions = [
-    { value: 'pending', label: 'Pending', icon: <FaClock className="inline mr-2 text-yellow-500" /> },
-    { value: 'approved', label: 'Approved', icon: <FaCheckCircle className="inline mr-2 text-green-600" /> },
-    { value: 'declined', label: 'Declined', icon: <FaTimesCircle className="inline mr-2 text-red-600" /> },
+    { value: 'Pending', label: 'Pending', icon: <FaClock className="inline mr-2 text-yellow-500" /> },
+    { value: 'Approved', label: 'Approved', icon: <FaCheckCircle className="inline mr-2 text-green-600" /> },
+    { value: 'Declined', label: 'Declined', icon: <FaTimesCircle className="inline mr-2 text-red-600" /> },
   ];
 
   // Add these helper functions after the existing imports
@@ -317,7 +317,7 @@ const PendingApproval = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -368,7 +368,7 @@ const PendingApproval = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -585,14 +585,14 @@ const PendingApproval = () => {
   // Combined filter logic
   const filteredEvents = Array.isArray(events)
     ? events.filter(event => {
-        // Status filter
-        if (!event.status || event.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
-        // Audience type filter
-        if (currentFilter !== 'all' && event.audienceType !== currentFilter) return false;
-        // Time status filter
-        if (timeFilter !== 'all' && getEventStatus(event) !== timeFilter) return false;
-        return true;
-      })
+      // Status filter
+      if (!event.status || event.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
+      // Audience type filter
+      if (currentFilter !== 'all' && event.audienceType !== currentFilter) return false;
+      // Time status filter
+      if (timeFilter !== 'all' && getEventStatus(event) !== timeFilter) return false;
+      return true;
+    })
     : [];
 
   const handleApprove = (event) => {
@@ -607,9 +607,9 @@ const PendingApproval = () => {
     if (!actionEvent) return;
     try {
       const formData = new FormData();
-      formData.append('status', 'approved');
+      formData.append('status', 'Approved');
       await dispatch(updateExistingEvent({ id: actionEvent._id, eventData: formData })).unwrap();
-      toast.success('Event approved successfully');
+      toast.success('Event Approved successfully');
     } catch (err) {
       toast.error('Failed to approve event');
     } finally {
@@ -635,8 +635,8 @@ const PendingApproval = () => {
   return (
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Filter Controls */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-        <div className="flex gap-4 relative z-50">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4 mb-4 w-full">
+        <div className="flex flex-wrap gap-2 md:gap-4 w-full relative z-49">
           {/* Audience Type Filter Button */}
           <div className="relative">
             <button
@@ -825,7 +825,7 @@ const PendingApproval = () => {
                   </button>
                 </div>
                 <button
-                 className="bg-primary text-white px-4 py-2 rounded-lg text-sm w-full"
+                  className="bg-primary text-white px-4 py-2 rounded-lg text-sm w-full"
                   onClick={e => {
                     e.stopPropagation();
                     setEvidenceEvent(event);

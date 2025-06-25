@@ -23,6 +23,7 @@ import notificationReducer from './notifications/notificationSlice';
 import financeReducer from './finance/financeSlice'
 import supportReducer from "./support/supportSlice";
 import affiliateReducer from './affiliate/affiliateSlice';
+import companyReducer from './setting/companySlice'
 
 export const store = configureStore({
   reducer: {
@@ -50,7 +51,8 @@ export const store = configureStore({
     notifications: notificationReducer,
     finance: financeReducer,
     support: supportReducer,
-    affiliate: affiliateReducer
+    affiliate: affiliateReducer,
+    company: companyReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

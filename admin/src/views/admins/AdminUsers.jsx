@@ -205,9 +205,9 @@ const AdminUsers = () => {
       </div>
 
       {/* Admin Grid */}
-      <div className="md:grid md:grid-cols-5 flex w-[90vw] md:w-full overflow-auto gap-8 mb-8 h-56">
-        {currentAdmins.slice(0, 5).map((admin) => (
-          <div key={admin._id} className="border rounded-lg p-4 flex flex-col items-center relative">
+      <div className="flex flex-row w-full overflow-x-auto gap-8 mb-8 h-56 px-4 scrollbar-hide max-w-[70vw]" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {currentAdmins.slice(0, 10).map((admin) => (
+          <div key={admin._id} className="border rounded-lg p-2 flex flex-col items-center relative min-w-[168px] max-w-[168px]">
             <div className="flex justify-between mb-4">
               <img
                 src={admin.profilePhoto || avatar}

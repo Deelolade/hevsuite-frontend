@@ -118,7 +118,7 @@ const Event = () => {
 
   // Fetch events, users, and affiliates on component mount
   useEffect(() => {
-    dispatch(getEvents({ status: "approved", filter: "all" }))
+    dispatch(getEvents({ status: "Approved", filter: "all" }))
     dispatch(memberUsers({ page: 1, search: "", role: "" }))
     dispatch(getAffiliates())
   }, [dispatch])
@@ -357,7 +357,7 @@ const Event = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -380,7 +380,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsAddEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "Approved", filter: "all" }))
       }
     })
   }
@@ -408,7 +408,7 @@ const Event = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -447,7 +447,7 @@ const Event = () => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsEditEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "Approved", filter: "all" }))
       }
     })
   }
@@ -461,7 +461,7 @@ const Event = () => {
         setIsDeleteModalOpen(false)
         setIsViewEventOpen(false)
         // Refresh events list
-        dispatch(getEvents({ status: "approved", filter: "all" }))
+        dispatch(getEvents({ status: "Approved", filter: "all" }))
       }
     })
   }
@@ -634,7 +634,7 @@ const Event = () => {
           Create Event
           <span className="text-xl">+</span>
         </button>
-        <div className="flex gap-4 relative z-50">
+        <div className="flex flex-wrap gap-2 md:gap-4 w-full relative z-49">
           {/* Audience Type Filter Button */}
           <div className="relative">
             <button

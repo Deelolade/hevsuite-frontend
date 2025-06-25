@@ -8,24 +8,23 @@ export const exportData = (data, format, fileName = "export") => {
     return;
   }
 
-  // Extract headers dynamically
-  const headers = Object.keys(data[0]).map(
-    (key) => key.charAt(0).toUpperCase() + key.slice(1)
-  );
+  const headers = Object.keys(data[0]);
   switch (format) {
     case "pdf": {
-      const doc = new jsPDF();
+      const doc = new jsPDF({ orientation: "landscape" });
       doc.text(fileName, 14, 10);
 
       const tableRows = data.map((item) =>
-        headers.map((key) => item[key.toLocaleLowerCase()])
+        headers.map((header) => item[header])
       );
 
       autoTable(doc, {
         head: [headers],
         body: tableRows,
         startY: 20,
-        headStyles: { fillColor: "#900C3F" },
+        headStyles: { fillColor: "#900C3F", fontSize: 7, halign: 'center' },
+        styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak' },
+        alternateRowStyles: { fillColor: "#f2f2f2" },
       });
 
       doc.save(`${fileName}.pdf`);
@@ -36,7 +35,7 @@ export const exportData = (data, format, fileName = "export") => {
       const csvContent = [
         headers.join(","), // Header row
         ...data.map((item) =>
-          headers.map((key) => item[key.toLocaleLowerCase()]).join(",")
+          headers.map((header) => `"${item[header]}"`).join(",")
         ), // Data rows
       ].join("\n");
 

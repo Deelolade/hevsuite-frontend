@@ -349,7 +349,7 @@ const OutstandingPayments = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -400,7 +400,7 @@ const OutstandingPayments = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -653,7 +653,7 @@ const OutstandingPayments = () => {
         const isPastEndDate = now > eventEndDate;
         
         // Check if payment status is pending
-        const isPaymentPending = event.paymentStatus === 'pending';
+        const isPaymentPending = event.paymentStatus === 'Pending';
         
         return isPastEndDate && isPaymentPending;
       })
@@ -667,15 +667,15 @@ const OutstandingPayments = () => {
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
 
-      <div className="flex justify-between flex-col md:flex-row gap-2 items-center">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4 mb-4 w-full items-center justify-between">
         <button
-          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
+          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors w-full sm:w-auto"
           onClick={() => setIsAddEventOpen(true)}
         >
           Create Event
           <span className="text-xl">+</span>
         </button>
-        <div className="flex gap-4 relative z-50">
+        <div className="flex flex-wrap gap-2 md:gap-4 w-full sm:w-auto relative z-49 justify-center">
           {/* Audience Type Filter Button */}
           <div className="relative">
             <button

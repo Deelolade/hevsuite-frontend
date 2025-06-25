@@ -10,6 +10,8 @@ import authService from "../../store/auth/authService"
 import affiliateService from "../../store/affiliate/affiliateService"
 import toast from "react-hot-toast"
 import Modal from "react-modal"
+import { exportData } from "../Exporter"
+import { FiDownload } from "react-icons/fi"
 
 const initialBusiness = {
   businessName: "",
@@ -140,6 +142,7 @@ const ProfileSettingsTab = () => {
   const [formErrors, setFormErrors] = useState({})
   const [isDissolveModalOpen, setIsDissolveModalOpen] = useState(false)
   const [isDissolving, setIsDissolving] = useState(false)
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false)
   
   // Use a single state object for all fields
   const [affiliates, setAffiliates] = useState({
@@ -289,6 +292,20 @@ const ProfileSettingsTab = () => {
       dispatch(reset())
     }
   }, [isSuccess, isError, message, hasShownAlert, dispatch, affiliateId])
+
+  // Handle clicking outside export dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isExportDropdownOpen && !event.target.closest('.export-dropdown-container')) {
+        setIsExportDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isExportDropdownOpen])
 
   // Helper to ensure phone code is always prefixed with '+'
   const formatPhoneCode = (code) => {
@@ -664,6 +681,66 @@ const ProfileSettingsTab = () => {
   // Check if partnership is dissolved
   const isDissolved = affiliates.status === "Dissolved"
 
+  // Handle export functionality
+  const handleExport = (format) => {
+    if (!hasAffiliate) {
+      toast.error("No affiliate data to export")
+      return
+    }
+
+    // Prepare data with two rows: one for business, one for rep
+    const now = new Date();
+    const dateExported = now.toLocaleDateString();
+    const timeExported = now.toLocaleTimeString();
+    const exportDataArray = [
+      { // Business Row
+        "Type": "Business",
+        "Name": affiliates.businessName || "",
+        "Relationship": "N/A",
+        "Address": affiliates.businessAddressLine1 || "",
+        "City": affiliates.businessCity || "",
+        "Country": affiliates.businessCountry || "",
+        "State": affiliates.businessState || "",
+        "Postcode": affiliates.businessPostcode || "",
+        "Email": affiliates.businessEmail || "",
+        "Phone": `${affiliates.businessPhoneCode || ""} ${affiliates.businessPhone || ""}`,
+        "Bank Name": affiliates.bankName || "",
+        "Account No.": affiliates.accountNumber || "",
+        "Sort Code": affiliates.sortCode || "",
+        "Routing No.": affiliates.routingNumber || "",
+        "SWIFT/BIC": affiliates.swiftBic || "",
+        "Commission": affiliates.commissionFee || "",
+        "Status": affiliates.status || "",
+        "Date Exported": dateExported,
+        "Time Exported": timeExported,
+      },
+      { // Rep Row
+        "Type": "Representative",
+        "Name": affiliates.repName || "",
+        "Relationship": affiliates.repRelationship === 'Other' ? affiliates.repOtherRole : affiliates.repRelationship,
+        "Address": affiliates.repAddressLine1 || "",
+        "City": affiliates.repCity || "",
+        "Country": affiliates.repCountry || "",
+        "State": affiliates.repState || "",
+        "Postcode": affiliates.repPostcode || "",
+        "Email": affiliates.repEmail || "",
+        "Phone": `${affiliates.repPhoneCode || ""} ${affiliates.repPhone || ""}`,
+        "Bank Name": "N/A",
+        "Account No.": "N/A",
+        "Sort Code": "N/A",
+        "Routing No.": "N/A",
+        "SWIFT/BIC": "N/A",
+        "Commission": "N/A",
+        "Status": "N/A",
+        "Date Exported": dateExported,
+        "Time Exported": timeExported,
+      }
+    ]
+
+    exportData(exportDataArray, format, `affiliate_profile_${affiliates.businessName?.replace(/[^a-zA-Z0-9]/g, '_') || 'export'}`)
+    toast.success(`Profile exported successfully as ${format.toUpperCase()}`)
+  }
+
   if (isLoading) {
     return <div className="text-center p-10">Loading...</div>
   }
@@ -697,30 +774,6 @@ const ProfileSettingsTab = () => {
   return (
     <form className="space-y-8" onSubmit={handleSubmit}>
       {isLoading && <div className="text-center text-blue-500">Saving...</div>}
-      
-      {/* Warning message for data export */}
-      {/* {hasAffiliate && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                Important: Export Your Data
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>
-                  Before dissolving your partnership, please export/download your affiliate details. 
-                  After dissolution, your data will be cleared from the system after 30 days from your last outstanding event.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Business Information */}
@@ -1215,6 +1268,59 @@ const ProfileSettingsTab = () => {
               >
                 {affiliates.status}
               </span>
+              {/* Export Button - Only show if user has affiliate data */}
+              {hasAffiliate && affiliates.businessName && (
+                <div className="relative export-dropdown-container">
+                  <button
+                    type="button"
+                    onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                    className="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+                  >
+                    <FiDownload />
+                    Export Profile
+                  </button>
+                  {isExportDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 py-2">
+                      <button
+                        onClick={() => {
+                          handleExport("pdf")
+                          setIsExportDropdownOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-red-500"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" />
+                        </svg>
+                        Export as PDF
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleExport("csv")
+                          setIsExportDropdownOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-green-500"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" />
+                        </svg>
+                        Export as CSV
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleExport("excel")
+                          setIsExportDropdownOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-blue-500"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" />
+                        </svg>
+                        Export as Excel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           {isEditMode && affiliates.status === "Approved" && (
@@ -1322,7 +1428,7 @@ const ProfileSettingsTab = () => {
             </ul>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-sm text-yellow-800 font-medium">
-                ⚠️ Important: Please export/download your affiliate details before proceeding.
+                ⚠️ Important: Please export your affiliate details using the "Export Profile" button above before proceeding.
               </p>
             </div>
           </div>
