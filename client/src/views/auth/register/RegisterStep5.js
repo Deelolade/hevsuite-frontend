@@ -24,6 +24,7 @@ const RegisterStep5 = () => {
   }, []);
   const navigate = useNavigate();
   const { Settings } = useSelector((s) => s.generalSettings);
+  const { user } = useSelector((s) => s.auth);
   const [errors, setErrors] = useState({});
   const [registeringLoading, setRegisteringLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -204,13 +205,13 @@ const RegisterStep5 = () => {
       };
 
       // if both referrals & membershipFee are off
-      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) {
+      if (user.requiredReferrals <= 0 && !Settings.membershipFee) {
         goTo("/homepage");
         return;
       }
 
       // if referrals are off & membershipFee are on
-      if (Settings.requiredReferralNumber <= 0 && Settings.membershipFee) {
+      if (user.requiredReferrals <= 0 && Settings.membershipFee) {
         goTo("/register-7");
         return;
       }

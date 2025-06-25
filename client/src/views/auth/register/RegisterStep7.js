@@ -134,10 +134,10 @@ const RegisterStep7 = () => {
           return
         }
 
-      if(Settings.requiredReferralNumber > 0) {
+      if(user.requiredReferrals > 0) {
 
           // const allReferredByDeclined = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.declined);
-          // if(allReferredByDeclined && user.referredBy.length > 0 && Settings.requiredReferralNumber > 0) {
+          // if(allReferredByDeclined && user.referredBy.length > 0 && user.requiredReferrals > 0) {
         const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
         if(user.membershipStatus === constants.membershipStatus.accepted || user.approvedByAdmin || allReferredByApproved ){
            //if membeshipFee is off
