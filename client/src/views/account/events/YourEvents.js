@@ -9,10 +9,7 @@ import {
   fetchAllEventTypes,
   fetchAttendingMembers,
 } from "../../../features/eventSlice";
-import {
-  getCardByUserId,
-  getCardStatus,
-} from "../../../features/clubCardSlice";
+import { getCardByUserId } from "../../../features/clubCardSlice";
 
 const NavigationTabs = ({ activeTab, setActiveTab, eventTabs }) => {
   return (
@@ -71,7 +68,6 @@ const YourEvents = () => {
 
   // Get events from Redux store
   const {
-    visibleEvents,
     attendingEvents,
     invitedEvents,
     pastEvents,
@@ -81,21 +77,10 @@ const YourEvents = () => {
     membersLoading,
     error,
   } = useSelector((state) => state.events);
-  console.log("visibleEvents", visibleEvents);
-  console.log("attendingEvents", attendingEvents);
-  console.log("invitedEvents", invitedEvents);
-  console.log("pastEvents", pastEvents);
-  console.log("saved", savedEvents);
 
-  const {
-    cardId,
-    isActive: cardIsActive,
-    loading: cardLoading,
-    error: cardError,
-  } = useSelector((state) => state.clubCard);
-
-  console.log("Club Card ID:", cardId);
-  console.log("Card Active Status:", cardIsActive);
+  const { cardId, isActive: cardIsActive } = useSelector(
+    (state) => state.clubCard
+  );
 
   // Fetch all events on component mount
   useEffect(() => {
@@ -103,7 +88,6 @@ const YourEvents = () => {
 
     const userId = user?.id || user?._id;
     if (userId) {
-      console.log("Fetching club card for user:", userId);
       dispatch(getCardByUserId(userId))
         .unwrap()
         .then((cardData) => {
@@ -140,12 +124,13 @@ const YourEvents = () => {
         <div className="text-center py-8 text-lg">Club Card is not active</div>
       );
     }
+    console.log("Saved Events:", savedEvents);
 
     switch (activeTab) {
       case "Attending Events":
         return (
           <AttendingEvents
-            events={visibleEvents}
+            events={attendingEvents}
             onFetchMembers={handleFetchMembers}
             membersData={attendingMembers}
             membersLoading={membersLoading}
@@ -156,7 +141,7 @@ const YourEvents = () => {
       case "Past Events":
         return <PastEvents events={pastEvents} />;
       case "Saved Events":
-        return <SavedEvents events={savedEvents} />; // You can implement saved events later
+        return <SavedEvents events={savedEvents.events} />;
       default:
         return null;
     }

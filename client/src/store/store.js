@@ -14,6 +14,7 @@ import menusReducer from "../features/menuSlice";
 import clubCardReducer from "../features/clubCardSlice";
 import supportRequestReducer from "../features/supportRequestSlice";
 import paymentMethodReducer from "../features/paymentMethodSlice";
+import pricingFeesReducer from "../features/pricingFeesSlice";
 // Persist configuration for the register slice
 // const registerPersistConfig = {
 //   key: 'register',
@@ -36,7 +37,7 @@ const persistConfig = {
   version: CURRENT_STORE_VERSION,
   whitelist: ["auth", "register"], // optional: persist only selected slices
   migrate: (state, version) => {
-    if(version !== CURRENT_STORE_VERSION) return Promise.resolve(undefined); // reset everything
+    if (version !== CURRENT_STORE_VERSION) return Promise.resolve(undefined); // reset everything
 
     return Promise.resolve(state); // return peristed-state
   },
@@ -60,6 +61,7 @@ const rootReducer = combineReducers({
   clubCard: clubCardReducer,
   supportRequest: supportRequestReducer,
   paymentMethods: paymentMethodReducer,
+  pricingFees: pricingFeesReducer,
 });
 
 const persistedRootReducer = persistReducer(persistConfig, rootReducer);

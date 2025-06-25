@@ -1,6 +1,6 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { BsCalendar } from "react-icons/bs";
@@ -12,8 +12,10 @@ import {
   getSavedEvents,
   saveEvent,
   selectIsEventSaved,
+  fetchAllEventTypes,
 } from "../../features/eventSlice";
 import { PaymentMethodModal } from "../account/events/EventDetails";
+import PaymentModal from "../../components/PaymentModal";
 import EventBg from "../../assets/event-bg.jpg";
 import Event1 from "../../assets/event-1.jpg";
 import Event2 from "../../assets/event-2.jpg";
@@ -24,10 +26,14 @@ import toast from "react-hot-toast";
 const SelectedEvent = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { events, isLoading } = useSelector((state) => state.events);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const isEventSaved = useSelector(selectIsEventSaved(id));
+  const isUserAttending = useSelector((state) => {
+    if (!selectedEvent) return false;
+    const attendingEvents = state.events.attendingEvents || [];
+    return attendingEvents.some((event) => event._id === selectedEvent._id);
+  });
 
   useEffect(() => {
     // Fetch saved events when component mounts
@@ -100,12 +106,13 @@ const SelectedEvent = () => {
 
     return `${startFormatted} to ${endFormatted}`;
   };
-
   const [activeTab, setActiveTab] = useState("description");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showOneTimePaymentModal, setShowOneTimePaymentModal] = useState(false);
   const [selectedTicketCount, setSelectedTicketCount] = useState(1);
   const [savingEvent, setSavingEvent] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
   const { attendingMembers } = useSelector((state) => state.events);
 
   const attendees =
@@ -117,9 +124,6 @@ const SelectedEvent = () => {
       dispatch(fetchAttendingMembers(selectedEvent._id));
     }
   }, [dispatch, selectedEvent, attendingMembers]);
-
-  const attendeesPerPage = 4;
-  const totalModalPages = Math.ceil(attendees.length / attendeesPerPage);
 
   const eventImages = [Event1, Event2, Event3, Event4];
   const generateRandomImages = () => {
@@ -151,26 +155,26 @@ const SelectedEvent = () => {
     setShowTicketModal(false);
     setShowPaymentModal(true);
   };
-
   const handleAttendEvent = () => {
+    if (isUserAttending) {
+      toast.info("You are already registered for this event");
+      return;
+    }
     if (
       selectedEvent.audienceType === "all" ||
       selectedEvent.audienceType === "open"
     ) {
       setShowTicketModal(true);
     } else {
-      const paymentData = {
+      const newPaymentData = {
         eventId: selectedEvent._id,
         ticketCount: selectedTicketCount,
         amount: selectedEvent.price * selectedTicketCount,
         type: `Event - ${selectedEvent.name} ticket purchase`,
+        reason: `Ticket purchase for ${selectedEvent.name}`,
       };
-      sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
-      navigate("/make-one-time-payment", {
-        state: {
-          paymentData: paymentData,
-        },
-      });
+      setPaymentData(newPaymentData);
+      setShowOneTimePaymentModal(true);
     }
   };
 
@@ -184,12 +188,14 @@ const SelectedEvent = () => {
   return (
     <div className="min-h-screen">
       <div className="relative">
-        <Header />
+        <Header />{" "}
         {showTicketModal && (
           <TicketSelectionModal
             event={selectedEvent}
             onClose={() => setShowTicketModal(false)}
             onConfirm={handleTicketConfirm}
+            setPaymentData={setPaymentData}
+            setShowOneTimePaymentModal={setShowOneTimePaymentModal}
           />
         )}
         {showPaymentModal && (
@@ -197,6 +203,25 @@ const SelectedEvent = () => {
             event={selectedEvent}
             ticketCount={selectedTicketCount}
             onClose={() => setShowPaymentModal(false)}
+          />
+        )}
+        {showOneTimePaymentModal && (
+          <PaymentModal
+            isOpen={showOneTimePaymentModal}
+            onClose={() => setShowOneTimePaymentModal(false)}
+            paymentData={paymentData}
+            onPaymentSuccess={async (result) => {
+              console.log("Payment successful:", result);
+              setShowOneTimePaymentModal(false);
+              toast.success("Payment completed successfully!");
+
+              // Refresh the attending events list to include this new event
+              try {
+                await dispatch(fetchAllEventTypes()).unwrap();
+              } catch (error) {
+                console.error("Failed to refresh attending events:", error);
+              }
+            }}
           />
         )}
         <div className="pt-24 relative lg:bg-[rgba(255,255,255,0.85)] bg-white min-h-screen ">
@@ -265,12 +290,21 @@ const SelectedEvent = () => {
                 <h4 className="text-3xl font-semibold text-black">
                   £{selectedEvent.price}
                 </h4>
-                <button
-                  onClick={handleAttendEvent}
-                  className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
-                >
-                  Attend
-                </button>
+                {isUserAttending && selectedEvent.audienceType !== "all" ? (
+                  <button
+                    disabled
+                    className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
+                  >
+                    Registered
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAttendEvent}
+                    className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Attend
+                  </button>
+                )}
               </div>
             </div>
             <div className="lg:bg-white drop-shadow-[0px_10px_50px_rgba(0,0,0,0.18)] my-11 rounded-3xl w-full overflow-hidden">
@@ -310,10 +344,19 @@ const SelectedEvent = () => {
                           : `Note: You can buy up to ${selectedEvent.numberOfTicket} tickets`}
                       </p>
                       <button
-                        onClick={() => setShowPaymentModal(true)}
-                        className="w-full opacity-0 py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                        onClick={
+                          isUserAttending
+                            ? undefined
+                            : () => setShowPaymentModal(true)
+                        }
+                        disabled={isUserAttending}
+                        className={`w-full opacity-0 py-4 rounded-xl text-lg font-medium ${
+                          isUserAttending
+                            ? "bg-gray-400 text-white cursor-not-allowed"
+                            : "bg-gradient-to-r from-gradient_r to-gradient_g text-white"
+                        }`}
                       >
-                        Attend
+                        {isUserAttending ? "Already Registered" : "Attend"}
                       </button>
                       <div className="flex flex-row items-center justify-between gap-4">
                         <FaHeart
@@ -407,13 +450,14 @@ const SelectedEvent = () => {
                         className="md:h-[500px] w-full"
                         frameborder="0"
                         src="https://www.google.com/maps/embed/v1/place?q=uk+london,+brixton+brockwell+park&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
-                      /> */}
+                      /> */}{" "}
                             <iframe
                               className="md:h-[500px] w-full"
                               frameBorder="0"
                               src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${selectedEvent.location?.coordinates?.lat},${selectedEvent.location?.coordinates?.lng}&zoom=15`}
                               loading="lazy"
                               referrerPolicy="no-referrer-when-downgrade"
+                              title={`Map showing location of ${selectedEvent.name}`}
                             />
                           </div>
                         </div>
@@ -453,10 +497,15 @@ const SelectedEvent = () => {
   );
 };
 
-const TicketSelectionModal = ({ event, onClose, onConfirm }) => {
+const TicketSelectionModal = ({
+  event,
+  onClose,
+  onConfirm,
+  setPaymentData,
+  setShowOneTimePaymentModal,
+}) => {
   const [ticketCount, setTicketCount] = useState(1);
   const maxTickets = event.numberOfTicket || 1;
-  const navigate = useNavigate();
 
   const incrementTickets = () => {
     if (ticketCount < maxTickets) {
@@ -469,21 +518,17 @@ const TicketSelectionModal = ({ event, onClose, onConfirm }) => {
       setTicketCount(ticketCount - 1);
     }
   };
-
   const handleConfirm = () => {
-    // onConfirm(ticketCount);
-    const paymentData = {
+    const newPaymentData = {
       eventId: event._id,
       ticketCount: ticketCount,
       amount: event.price * ticketCount,
       type: `Event - ${event.name} ticket purchase`,
+      reason: `Ticket purchase for ${event.name}`,
     };
-    sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
-    navigate("/make-one-time-payment", {
-      state: {
-        paymentData: paymentData,
-      },
-    });
+    setPaymentData(newPaymentData);
+    onClose(); // Close ticket modal
+    setShowOneTimePaymentModal(true); // Open payment modal
   };
 
   return (
