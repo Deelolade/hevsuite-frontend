@@ -5,3 +5,5 @@
 **/build
 text.txt
 /admin/.env
+client/package-lock.json
+/client
