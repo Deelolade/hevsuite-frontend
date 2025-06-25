@@ -4,32 +4,29 @@ import { useSelector } from "react-redux";
 import constants from "../constants";
 
 const useUserIdentificationApproved = () => {
-    const [ userIdentificationApproved, setUserIdentificationApproved ] = useState(false);
-    const { user } = useSelector(s => s.auth);
+  const [userIdentificationApproved, setUserIdentificationApproved] =
+    useState(false);
+  const { user } = useSelector((s) => s.auth);
 
-    useEffect(( ) => {
+  useEffect(() => {
+    const checkIdentificationApproved = async () => {
+      try {
+        const requests = await supportRequestService.getSupportRequests();
+        // check if one of the requests is approved
+        const isIdentificationApproved = requests.data.some(
+          (r) => r.status === constants.supportRequestStatus.approved
+        );
 
-        const checkIdentificationApproved = async( ) => {
+        setUserIdentificationApproved(isIdentificationApproved);
+      } catch (ex) {
+        console.error("[Support Request]: ", ex);
+      }
+    };
 
-            try { 
-                
-                const requests = await supportRequestService.getSupportRequests();
-                // check if one of the requests is approved
-                const isIdentificationApproved = requests.some(r => r.status === constants.supportRequestStatus.approved);
-                
-                setUserIdentificationApproved(isIdentificationApproved);
-
-            }catch(ex) {
-                console.error("[Support Request]: ", ex);
-            }
-
-        }
-
-    checkIdentificationApproved()
-
+    checkIdentificationApproved();
   }, [user]);
 
-  return {userIdentificationApproved}
-}
+  return { userIdentificationApproved };
+};
 
-export default useUserIdentificationApproved
+export default useUserIdentificationApproved;
