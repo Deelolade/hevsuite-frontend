@@ -5,12 +5,13 @@ import { BsCalendar } from "react-icons/bs";
 import { MdPerson } from "react-icons/md";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import mastercard from "../../assets/Mastercard.png";
 import { FaArrowLeft } from "react-icons/fa";
 import { fetchNonExpiredNews } from "../../features/newsSlice";
-import { fetchEvents } from "../../features/eventSlice";
+import { fetchEvents, fetchAllEventTypes } from "../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
+import PaymentModal from "../../components/PaymentModal";
+import toast from "react-hot-toast";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -324,88 +325,139 @@ import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 //     </div>
 //   );
 // };
-const PaymentMethodModal = ({ onClose }) => {
-  const paymentMethods = [
-    { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
-    { id: "amazon-pay", logo: mastercard, name: "Amazon Pay" },
-    { id: "samsung-pay", logo: mastercard, name: "Samsung Pay" },
-    { id: "google-pay", logo: mastercard, name: "Google Pay" },
-    { id: "mastercard", logo: mastercard, name: "Mastercard" },
-    { id: "paypal", logo: mastercard, name: "PayPal" },
-    { id: "visa", logo: mastercard, name: "Visa" },
-    { id: "maestro", logo: mastercard, name: "Maestro" },
-    { id: "cirrus", logo: mastercard, name: "Cirrus" },
-  ];
+// const PaymentMethodModal = ({ onClose }) => {
+//   const paymentMethods = [
+//     { id: "apple-pay", logo: mastercard, name: "Apple Pay" },
+//     { id: "amazon-pay", logo: mastercard, name: "Amazon Pay" },
+//     { id: "samsung-pay", logo: mastercard, name: "Samsung Pay" },
+//     { id: "google-pay", logo: mastercard, name: "Google Pay" },
+//     { id: "mastercard", logo: mastercard, name: "Mastercard" },
+//     { id: "paypal", logo: mastercard, name: "PayPal" },
+//     { id: "visa", logo: mastercard, name: "Visa" },
+//     { id: "maestro", logo: mastercard, name: "Maestro" },
+//     { id: "cirrus", logo: mastercard, name: "Cirrus" },
+//   ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-3xl w-full max-w-lg p-6">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-semibold">Select your Payment Method</h2>
-          <button onClick={onClose} className="text-[#540A26] font-medium">
-            Back
-          </button>
-        </div>
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+//       <div className="bg-white rounded-3xl w-full max-w-lg p-6">
+//         <div className="flex justify-between items-center mb-8">
+//           <h2 className="text-2xl font-semibold">Select your Payment Method</h2>
+//           <button onClick={onClose} className="text-[#540A26] font-medium">
+//             Back
+//           </button>
+//         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {paymentMethods.map((method) => (
-            <div
-              key={method.id}
-              className="bg-white rounded-lg p-4 shadow-sm border hover:border-[#540A26] cursor-pointer transition-colors"
-            >
-              <img
-                src={method.logo}
-                alt={method.name}
-                className="w-full h-12 object-contain"
-              />
-            </div>
-          ))}
-        </div>
+//         <div className="grid grid-cols-3 gap-4 mb-8">
+//           {paymentMethods.map((method) => (
+//             <div
+//               key={method.id}
+//               className="bg-white rounded-lg p-4 shadow-sm border hover:border-[#540A26] cursor-pointer transition-colors"
+//             >
+//               <img
+//                 src={method.logo}
+//                 alt={method.name}
+//                 className="w-full h-12 object-contain"
+//               />
+//             </div>
+//           ))}
+//         </div>
 
-        <button className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
-          Next
-        </button>
-      </div>
-    </div>
-  );
-};
+//         <button className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+//           Next
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
 
 const Events = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCountry] = useState("");
+  const [selectedCity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("scroll");
+
+  // Payment and attend modal states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
+    dispatch(fetchAllEventTypes());
   }, [dispatch]);
-  const { events } = useSelector((state) => state.events);
 
-  // Add this function to filter events by date
+  const { events, attendingEvents } = useSelector((state) => state.events);
+
+  const isUserAttending = (eventId) =>
+    attendingEvents.some((event) => event._id === eventId);
+
+  const handleAttendEvent = (event, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (event.audienceType !== "all") {
+      if (isUserAttending(event._id)) {
+        toast.info("You are already registered for this event");
+        return;
+      }
+    }
+
+    if (event.audienceType === "all" || event.audienceType === "open") {
+      // Show ticket selection modal for events with multiple ticket options
+      setSelectedEvent(event);
+      setShowTicketModal(true);
+    } else {
+      // Direct payment for restricted events
+      const newPaymentData = {
+        eventId: event._id,
+        ticketCount: 1,
+        amount: event.price * 1,
+        type: `Event - ${event.name} ticket purchase`,
+        reason: `Ticket purchase for ${event.name}`,
+      };
+      setPaymentData(newPaymentData);
+      setShowPaymentModal(true);
+    }
+  };
+
+  const handleTicketModalClose = () => {
+    setShowTicketModal(false);
+    setSelectedEvent(null);
+  };
+
+  const handlePaymentSuccess = async (result) => {
+    console.log("Payment successful:", result);
+    setShowPaymentModal(false);
+    toast.success("Payment completed successfully!");
+
+    try {
+      await dispatch(fetchAllEventTypes()).unwrap();
+    } catch (error) {
+      console.error("Failed to refresh attending events:", error);
+    }
+  };
+
   const filterEvents = () => {
     if (!events) return [];
 
     return events
       .filter((event) => {
-        // Audience filter
         if (selectedAudience && event.audienceType !== selectedAudience)
           return false;
 
-        // Country filter
         if (selectedCountry && event.country !== selectedCountry) return false;
 
-        // City filter
         if (selectedCity && event.city !== selectedCity) return false;
 
-        // Date filter (newest to oldest or oldest to newest)
         if (selectedDate === "newest") {
-          return true; // Actual sorting will be done after filtering
+          return true;
         } else if (selectedDate === "oldest") {
-          return true; // Actual sorting will be done after filtering
+          return true;
         }
 
         return true;
@@ -440,6 +492,23 @@ const Events = () => {
 
   return (
     <div className="min-h-screen">
+      {showPaymentModal && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          paymentData={paymentData}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {showTicketModal && selectedEvent && (
+        <TicketSelectionModal
+          event={selectedEvent}
+          onClose={handleTicketModalClose}
+          setPaymentData={setPaymentData}
+          setShowOneTimePaymentModal={setShowPaymentModal}
+        />
+      )}
       <div className="relative text-white min-h-screen">
         <div className="absolute inset-0 z-0">
           <img
@@ -579,24 +648,57 @@ const Events = () => {
                     style={{ width: "max-content" }}
                   >
                     {filteredEvents.slice(0, 8).map((event, index) => (
-                      <Link key={index} to={`/events/${event._id}`}>
-                        <div className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer flex-shrink-0 w-[300px] h-[427px]">
+                      <div
+                        key={index}
+                        className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer flex-shrink-0 w-[300px] h-[427px]"
+                      >
+                        <Link to={`/events/${event._id}`}>
                           <img
                             src={event.images[0]}
                             alt={event.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                           />
-                          <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <h3 className="text-xl font-semibold">
+                        </Link>
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                          <Link to={`/events/${event._id}`}>
+                            <h3 className="text-xl font-semibold mb-2">
                               {event.name}
                             </h3>
-                            <div className="flex items-center space-x-4 mt-2">
-                              <span>{formatDateWithSuffix(event.time)}</span>
-                              <span>{formatTime(event.time)}</span>
+                          </Link>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-lg font-bold text-white">
+                              £{event.price}
+                            </span>
+                            <div className="inline-block px-3 py-1 rounded-full border border-white text-white text-xs">
+                              {event.audienceType === "members"
+                                ? "Members Only"
+                                : event.audienceType === "vip"
+                                ? "VIP Only"
+                                : "Open to All"}
                             </div>
                           </div>
+                          <div className="flex items-center space-x-4 mb-3 text-sm">
+                            <span>{formatDateWithSuffix(event.time)}</span>
+                            <span>{formatTime(event.time)}</span>
+                          </div>
+                          {isUserAttending(event._id) &&
+                          event.audienceType !== "all" ? (
+                            <button
+                              disabled
+                              className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
+                            >
+                              Registered
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => handleAttendEvent(event, e)}
+                              className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                            >
+                              Attend
+                            </button>
+                          )}
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -606,27 +708,59 @@ const Events = () => {
                 <div className="flex justify-center w-full">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center max-w-7xl mx-auto px-4">
                     {paginatedEvents.map((event, index) => (
-                      <Link key={index} to={`/events/${event._id}`}>
-                        <div
-                          key={index}
-                          className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
-                        >
+                      <div
+                        key={index}
+                        className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
+                      >
+                        <Link to={`/events/${event._id}`}>
                           <img
                             src={event.images[0]}
                             alt={event.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                           />
-                          <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <h3 className="text-xl font-semibold">
+                        </Link>
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                          <Link to={`/events/${event._id}`}>
+                            <h3 className="text-xl font-semibold mb-2">
                               {event.name}
                             </h3>
-                            <div className="flex items-center space-x-4 mt-2">
-                              <span>{formatDateWithSuffix(event.time)}</span>
-                              <span>{formatTime(event.time)}</span>
+                          </Link>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-lg font-bold text-white">
+                              £{event.price}
+                            </span>
+                            <div className="inline-block px-3 py-1 rounded-full border border-white text-white text-xs">
+                              {event.audienceType === "members"
+                                ? "Members Only"
+                                : event.audienceType === "vip"
+                                ? "VIP Only"
+                                : "Open to All"}
                             </div>
                           </div>
+                          <div className="flex items-center space-x-4 mb-3 text-sm">
+                            <span>{formatDateWithSuffix(event.time)}</span>
+                            <span>{formatTime(event.time)}</span>
+                          </div>
+                          {isUserAttending(event._id) ? (
+                            <button
+                              disabled
+                              className="w-full py-2 bg-gray-400 text-white rounded-lg font-medium cursor-not-allowed"
+                            >
+                              {event.audienceType === "members" ||
+                              event.audienceType === "vip"
+                                ? "Already Registered"
+                                : "Registered"}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => handleAttendEvent(event, e)}
+                              className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                            >
+                              Attend
+                            </button>
+                          )}
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -665,6 +799,119 @@ const Events = () => {
         </div>
       </div>
       <Footer />
+    </div>
+  );
+};
+
+const TicketSelectionModal = ({
+  event,
+  onClose,
+  onConfirm,
+  setPaymentData,
+  setShowOneTimePaymentModal,
+}) => {
+  const [ticketCount, setTicketCount] = useState(1);
+  const maxTickets = event.numberOfTicket || 1;
+
+  const incrementTickets = () => {
+    if (ticketCount < maxTickets) {
+      setTicketCount(ticketCount + 1);
+    }
+  };
+
+  const decrementTickets = () => {
+    if (ticketCount > 1) {
+      setTicketCount(ticketCount - 1);
+    }
+  };
+
+  const handleConfirm = () => {
+    const newPaymentData = {
+      eventId: event._id,
+      ticketCount: ticketCount,
+      amount: event.price * ticketCount,
+      type: `Event - ${event.name} ticket purchase`,
+      reason: `Ticket purchase for ${event.name}`,
+    };
+    setPaymentData(newPaymentData);
+    onClose(); // Close ticket modal
+    setShowOneTimePaymentModal(true); // Open payment modal
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Select Tickets
+          </h2>
+          <p className="text-gray-600 mb-6">
+            How many tickets would you like for this event?
+          </p>
+
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-gray-800">{event.name}</h3>
+            <p className="text-sm text-gray-600">{event.location}</p>
+            <p className="text-lg font-bold text-gray-800 mt-2">
+              £{event.price} per ticket
+            </p>
+          </div>
+
+          {/* Ticket Counter */}
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <button
+              onClick={decrementTickets}
+              disabled={ticketCount <= 1}
+              className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              -
+            </button>
+
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-800">
+                {ticketCount}
+              </div>
+              <div className="text-sm text-gray-600">
+                {ticketCount === 1 ? "ticket" : "tickets"}
+              </div>
+            </div>
+
+            <button
+              onClick={incrementTickets}
+              disabled={ticketCount >= maxTickets}
+              className="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Total Price */}
+          <div className="bg-gradient-to-r from-gradient_r to-gradient_g rounded-xl p-4 mb-6">
+            <div className="text-white">
+              <p className="text-sm opacity-90">Total Amount</p>
+              <p className="text-2xl font-bold">
+                £{(event.price * ticketCount).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 px-6 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 py-3 px-6 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl font-medium"
+            >
+              Confirm {ticketCount} {ticketCount === 1 ? "Ticket" : "Tickets"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

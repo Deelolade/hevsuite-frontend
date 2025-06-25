@@ -13,28 +13,40 @@ import party from "../../../assets/party2.jpg";
 import eventimg from "../../../assets/event.png";
 import mastercard from "../../../assets/Mastercard.png";
 import paypal from "../../../assets/PayPal.png";
-import stripe from "../../../assets/Stripe.png"
-import { fetchAttendingMembers, removeSavedEvent, saveEvent } from "../../../features/eventSlice";
+import stripe from "../../../assets/Stripe.png";
+import {
+  fetchAttendingMembers,
+  removeSavedEvent,
+  saveEvent,
+} from "../../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
 import toast from "react-hot-toast";
 import AuthModal from "../../../components/AuthModal";
 import useUserIdentificationApproved from "../../../hooks/useIdentificationApproved";
+import {
+  fetchPaymentMethods,
+  selectAllPaymentMethods,
+  selectPaymentMethodsError,
+  selectPaymentMethodsLoading,
+} from "../../../features/paymentMethodSlice";
+import { useNavigate } from "react-router-dom";
 
 const EventDetailsModal = ({ event, onClose, eventType, events }) => {
-
   const dispatch = useDispatch();
-  const { user } = useSelector(s => s.auth);
+  const { user } = useSelector((s) => s.auth);
   const { savedEvents, saveEventLoading, removeSavedEventLoading } =
-    useSelector(state => state.events);
+    useSelector((state) => state.events);
 
-  const isSaved = savedEvents?.some(saved => saved._id === event._id);
+  const isSaved = savedEvents?.some((saved) => saved._id === event._id);
   const [activeTab, setActiveTab] = useState("description");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [modalPage, setModalPage] = useState(1);
-  const { attendingMembers, membersLoading } = useSelector((state) => state.events);
-  const [ showDocumentReviewModal, setShowDocumentReviewModal ] = useState(false);
+  const { attendingMembers, membersLoading } = useSelector(
+    (state) => state.events
+  );
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
 
   const { userIdentificationApproved } = useUserIdentificationApproved();
 
@@ -74,9 +86,9 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
   //     prevIndex === 0 ? events.length - 1 : prevIndex - 1
   //   );
   // };
-   const handleNext = () => {
-    setCurrentImageIndex((prevIndex) =>
-      (prevIndex + 1) % currentEvent.images.length
+  const handleNext = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex + 1) % currentEvent.images.length
     );
   };
 
@@ -85,22 +97,22 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
       prevIndex === 0 ? currentEvent.images.length - 1 : prevIndex - 1
     );
   };
- 
-  const isUserVerifiedAndApproved = user && user?.isEmailVerified && userIdentificationApproved;
+
+  const isUserVerifiedAndApproved =
+    user && user?.isEmailVerified && userIdentificationApproved;
 
   const currentEvent = events[currentEventIndex];
 
   return (
     <div className="fixed inset-0 z-50  superZ flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <AuthModal 
-        open={showDocumentReviewModal} 
+      <AuthModal
+        open={showDocumentReviewModal}
         title="Document Verification Process "
-        description="Verification is ongoing before you can start attending events" 
-        onClose={() =>setShowDocumentReviewModal(false)}
+        description="Verification is ongoing before you can start attending events"
+        onClose={() => setShowDocumentReviewModal(false)}
       />
-      
-      <div className="bg-white h-full sm:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-y-auto">
 
+      <div className="bg-white h-full sm:h-[90vh] rounded-3xl w-full md:w-[80vw] max-w-7xl overflow-y-auto">
         <div className="flex flex-col md:flex-row md:h-full">
           {/* Left side - Image */}
           <div className="w-full md:w-5/12 relative bg-black">
@@ -118,7 +130,7 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                 alt={currentEvent.name}
                 className="w-full md:h-full min-h-[25rem] object-center bg-center bg-current opacity-90"
               /> */}
-               <img
+              <img
                 src={currentEvent.images[currentImageIndex]}
                 alt={currentEvent.name}
                 className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
@@ -146,19 +158,19 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                     try {
                       if (isSaved) {
                         await dispatch(removeSavedEvent(event._id)).unwrap();
-                        toast.success('Removed from saved!');
+                        toast.success("Removed from saved!");
                       } else {
                         await dispatch(saveEvent(event._id)).unwrap();
-                        toast.success('Event saved!');
+                        toast.success("Event saved!");
                       }
                     } catch (err) {
-                      console.log(err)
-                      toast.error(err || 'Something went wrong');
+                      console.log(err);
+                      toast.error(err || "Something went wrong");
                     }
-
                   }}
-                  className={`w-12 h-12 flex items-center justify-center ${isSaved ? 'text-red-500' : 'text-white'
-                    }`}
+                  className={`w-12 h-12 flex items-center justify-center ${
+                    isSaved ? "text-red-500" : "text-white"
+                  }`}
                 >
                   {isSaved ? (
                     <BsHeartFill className="text-xl" />
@@ -168,9 +180,15 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                 </button>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
-                <div className="text-2xl sm:text-5xl font-bold text-white mb-4">{currentEvent.price}£</div>
+                <div className="text-2xl sm:text-5xl font-bold text-white mb-4">
+                  {currentEvent.price}£
+                </div>
                 <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
-                  {currentEvent.audienceType === "members" ? "Members Only" : currentEvent.audienceType === "vip" ? "VIP Only" : "Open to All"}
+                  {currentEvent.audienceType === "members"
+                    ? "Members Only"
+                    : currentEvent.audienceType === "vip"
+                    ? "VIP Only"
+                    : "Open to All"}
                 </div>
                 <div className="flex items-center gap-6 text-white mb-4">
                   <div className="flex items-center gap-2">
@@ -188,7 +206,11 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                     : `Note: You can buy up to ${currentEvent.numberOfTicket} tickets`}
                 </p>
                 <button
-                  onClick={() => !isUserVerifiedAndApproved ? setShowDocumentReviewModal(true) : setShowPaymentModal(true)}
+                  onClick={() =>
+                    !isUserVerifiedAndApproved
+                      ? setShowDocumentReviewModal(true)
+                      : setShowPaymentModal(true)
+                  }
                   className="w-full opacity-70 py-2 sm:py-4 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-base sm:text-lg font-medium"
                 >
                   Attend
@@ -207,28 +229,31 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
             <div className="border-b">
               <div className="flex">
                 <button
-                  className={`px-8 py-4 ${activeTab === "description"
-                    ? "bg-[#540A26] text-white"
-                    : "bg-white text-black"
-                    }`}
+                  className={`px-8 py-4 ${
+                    activeTab === "description"
+                      ? "bg-[#540A26] text-white"
+                      : "bg-white text-black"
+                  }`}
                   onClick={() => setActiveTab("description")}
                 >
                   Event Description
                 </button>
                 <button
-                  className={`px-8 py-4 ${activeTab === "location"
-                    ? "bg-[#540A26] text-white"
-                    : "bg-white text-black"
-                    }`}
+                  className={`px-8 py-4 ${
+                    activeTab === "location"
+                      ? "bg-[#540A26] text-white"
+                      : "bg-white text-black"
+                  }`}
                   onClick={() => setActiveTab("location")}
                 >
                   Location
                 </button>
                 <button
-                  className={`px-8 py-4 ${activeTab === "members"
-                    ? "bg-[#540A26] text-white"
-                    : "bg-white text-black"
-                    }`}
+                  className={`px-8 py-4 ${
+                    activeTab === "members"
+                      ? "bg-[#540A26] text-white"
+                      : "bg-white text-black"
+                  }`}
                   onClick={() => setActiveTab("members")}
                 >
                   Attending Members
@@ -319,7 +344,9 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                         <h3 className="font-semibold text-black">
                           {`${attendee.forename} ${attendee.surname}`}
                         </h3>
-                        <p className="text-gray-600">{formatDateWithSuffix(attendee.createdAt)}</p>
+                        <p className="text-gray-600">
+                          {formatDateWithSuffix(attendee.createdAt)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -338,10 +365,11 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
                       {Array.from({ length: totalModalPages }, (_, index) => (
                         <div
                           key={index}
-                          className={`w-2 h-2 rounded-full ${modalPage === index + 1
-                            ? "bg-[#540A26]"
-                            : "bg-gray-200"
-                            }`}
+                          className={`w-2 h-2 rounded-full ${
+                            modalPage === index + 1
+                              ? "bg-[#540A26]"
+                              : "bg-gray-200"
+                          }`}
                         ></div>
                       ))}
                     </div>
@@ -366,23 +394,75 @@ const EventDetailsModal = ({ event, onClose, eventType, events }) => {
   );
 };
 
-export const PaymentMethodModal = ({ onClose, showNewModal, onPaymentMethodSelect }) => {
+const generateTransactionReference = () => {
+  return "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
+
+export const PaymentMethodModal = ({
+  onClose,
+  showNewModal,
+  onPaymentMethodSelect,
+  event,
+  ticketCount,
+}) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  // Local state for selected payment method
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
-  const paymentMethods = [
-    { id: "paypal", logo: paypal, name: "PayPal" },
-    { id: "stripe", logo: stripe, name: "Stripe" },
-  ];
+
+  // Redux selectors
+  const paymentMethods = useSelector(selectAllPaymentMethods);
+  const isLoading = useSelector(selectPaymentMethodsLoading);
+
+  console.log(paymentMethods);
+
+  useEffect(() => {
+    dispatch(fetchPaymentMethods());
+  }, [dispatch]);
 
   const handleMethodSelection = () => {
     if (selectedPaymentMethod) {
+      const selectedMethod = paymentMethods.find(
+        (method) => method.provider === selectedPaymentMethod
+      );
 
-      // Optionally call showNewModal or close the modal
-      onPaymentMethodSelect(selectedPaymentMethod);
-      showNewModal();
-      onClose();
+      if (selectedMethod) {
+        const paymentData = {
+          paymentProvider: selectedMethod.provider,
+          trxRef: generateTransactionReference(),
+          type: "Event Ticket payment",
+          amount: event.price * ticketCount,
+          reason: `Ticket payment for ${event.name} event`,
+          eventId: event._id,
+        };
+
+        sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
+
+        if (onPaymentMethodSelect) {
+          onPaymentMethodSelect(paymentData);
+        }
+
+        onClose();
+        // navigate("/make-one-time-payment", {
+        //   state: {
+        //     paymentData: paymentData,
+        //   },
+        // });
+        // showNewModal();
+      }
     } else {
-      alert("Please select a payment method.");
+      toast.error("Please select a payment method.");
     }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="bg-white rounded-3xl w-full max-w-lg p-6">
+          <h2 className="text-lg font-medium">Loading payment methods...</h2>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -399,22 +479,26 @@ export const PaymentMethodModal = ({ onClose, showNewModal, onPaymentMethodSelec
           {paymentMethods.map((method) => (
             <div
               key={method.id}
-              onClick={() => setSelectedPaymentMethod(method.name)}
-              className={`bg-white rounded-lg p-4 shadow-sm border cursor-pointer transition-colors ${selectedPaymentMethod === method.name
-                ? 'border-[#540A26] bg-[#540A26]/10'
-                : 'hover:border-[#540A26] border-gray-200'
-                }`}
+              onClick={() => setSelectedPaymentMethod(method.provider)}
+              className={`bg-white rounded-lg p-4 shadow-sm border cursor-pointer transition-colors ${
+                selectedPaymentMethod === method.provider
+                  ? "border-[#540A26] bg-[#540A26]/10"
+                  : "hover:border-[#540A26] border-gray-200"
+              }`}
             >
               <img
                 src={method.logo}
-                alt={method.name}
+                alt={method.provider}
                 className="w-full h-12 object-contain"
               />
             </div>
           ))}
         </div>
 
-        <button onClick={() => handleMethodSelection()} className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity">
+        <button
+          onClick={() => handleMethodSelection()}
+          className="w-full py-3 bg-[#540A26] text-white rounded-lg font-medium hover:bg-opacity-90 transition-opacity"
+        >
           Next
         </button>
       </div>

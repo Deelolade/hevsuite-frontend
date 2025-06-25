@@ -8,9 +8,14 @@ import Swal from "sweetalert2";
 import { showModal } from "../../../components/FireModal";
 import { formatDateWithSuffix, formatTime } from "../../../utils/formatDate";
 import { MdAccessTime } from "react-icons/md";
-import { cancelEventAttendance, removeSavedEvent, updateInviteStatus } from "../../../features/eventSlice";
+import {
+  cancelEventAttendance,
+  removeSavedEvent,
+  updateInviteStatus,
+} from "../../../features/eventSlice";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 
 const EventCard = ({ event, activeTab, events }) => {
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
@@ -38,32 +43,36 @@ const EventCard = ({ event, activeTab, events }) => {
     },
   };
   const handleAcceptInvite = () => {
-    dispatch(updateInviteStatus({
-      eventId: event._id,
-      status: 'accepted'
-    }))
+    dispatch(
+      updateInviteStatus({
+        eventId: event._id,
+        status: "accepted",
+      })
+    )
       .unwrap()
       .then(() => {
-        toast.success('Invitation accepted successfully!');
+        toast.success("Invitation accepted successfully!");
         setIsAcceptModalOpen(false);
       })
       .catch((error) => {
-        toast.error(error.message || 'Failed to accept invitation');
+        toast.error(error.message || "Failed to accept invitation");
       });
   };
 
   const handleDeclineInvite = () => {
-    dispatch(updateInviteStatus({
-      eventId: event._id,
-      status: 'declined'
-    }))
+    dispatch(
+      updateInviteStatus({
+        eventId: event._id,
+        status: "declined",
+      })
+    )
       .unwrap()
       .then(() => {
-        toast.success('Invitation declined successfully!');
+        toast.success("Invitation declined successfully!");
         setIsDeclineModalOpen(false);
       })
       .catch((error) => {
-        toast.error(error.message || 'Failed to decline invitation');
+        toast.error(error.message || "Failed to decline invitation");
       });
   };
   const getActionButtons = () => {
@@ -97,10 +106,12 @@ const EventCard = ({ event, activeTab, events }) => {
                   dispatch(removeSavedEvent(event._id))
                     .unwrap()
                     .then(() => {
-                      toast.success('Event removed from saved list!');
+                      toast.success("Event removed from saved list!");
                     })
-                    .catch(error => {
-                      toast.error(error.message || 'Failed to remove saved event');
+                    .catch((error) => {
+                      toast.error(
+                        error.message || "Failed to remove saved event"
+                      );
                     });
                 },
               })
@@ -118,14 +129,17 @@ const EventCard = ({ event, activeTab, events }) => {
                 title: "Cancel Attendance?",
                 text: "You won't be able to undo this action!",
                 confirmText: "Yes",
-                onConfirm: () => {  // Remove the event parameter here since we're using closure
+                onConfirm: () => {
+                  // Remove the event parameter here since we're using closure
                   dispatch(cancelEventAttendance(event._id))
                     .unwrap()
                     .then(() => {
-                      toast.success('Attendance cancelled successfully!');
+                      toast.success("Attendance cancelled successfully!");
                     })
                     .catch((error) => {
-                      toast.error(error.message || 'Failed to cancel attendance');
+                      toast.error(
+                        error.message || "Failed to cancel attendance"
+                      );
                     });
                 },
               })
@@ -148,40 +162,37 @@ const EventCard = ({ event, activeTab, events }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full">
-      <div className="relative w-full pt-[60%]">
-        <img
-          src={event.image}
-          alt={event.name}
-          onClick={() => setSelectedEvent(event)}
-          className="absolute  cursor-pointer top-0 left-0 w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-3 sm:p-4 flex-grow flex flex-col">
-        <h3 className="font-medium mb-2 text-base sm:text-lg font-secondary text-[#121212] line-clamp-2">
-          {event.name}
-        </h3>
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
-          <div className="flex items-center gap-2">
-            <BsCalendar />
-            <span>{formatDateWithSuffix(event.time)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MdAccessTime />
-            <span>{formatTime(event.time)}</span>
+      <Link key={event._id} to={`/events/${event._id}`}>
+        <div
+          key={event._id}
+          className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
+          // onClick={() => setSelectedEvent(event)}
+        >
+          <img
+            src={event?.images[0]}
+            alt={event?.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h3 className="text-xl font-semibold">{event?.name}</h3>
+            <div className="flex items-center space-x-4 mt-2">
+              <span>{formatDateWithSuffix(event?.time)}</span>
+              <span>{formatTime(event?.time)}</span>
+            </div>
           </div>
         </div>
-        <div className="mt-auto">
-          {getActionButtons()}
-          {activeTab !== "Invited Events" && (
-            <button
-              onClick={() => setSelectedEvent(event)}
-              className="w-full flex items-center justify-between px-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base py-1"
-            >
-              <span>View Details</span>
-              <HiOutlineArrowRight />
-            </button>
-          )}
-        </div>
+      </Link>
+      <div className="mt-auto">
+        {getActionButtons()}
+        {activeTab !== "Invited Events" && (
+          <button
+            onClick={() => setSelectedEvent(event)}
+            className="w-full flex items-center justify-between px-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base py-1"
+          >
+            <span>View Details</span>
+            <HiOutlineArrowRight />
+          </button>
+        )}
       </div>
       {selectedEvent && (
         <EventDetailsModal
