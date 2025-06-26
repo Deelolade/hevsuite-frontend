@@ -279,6 +279,7 @@ const StripePaymentForm = ({
     if (!stripe || !elements || !validateForm() || !isMountedRef.current) {
       return;
     }
+    setIsLoading(true);
 
     try {
       let paymentMethodId = selectedPaymentMethodId;
@@ -342,8 +343,8 @@ const StripePaymentForm = ({
         try {
           await sendReceipt(paymentResult, paymentData);
           toast.dismiss(receiptToast);
-          toast.success("Payment completed successfully");
-          toast.success("Receipt sent to your Email!");
+          // toast.success("Payment completed successfully");
+          // toast.success("Receipt sent to your Email!");
         } catch (receiptError) {
           console.error("Receipt update failed:", receiptError);
         }
@@ -384,7 +385,7 @@ const StripePaymentForm = ({
 
   return (
     <>
-      {isLoading || !clientSecret ? (
+      {!clientSecret ? (
         <div className="py-4 text-center">Loading payment form...</div>
       ) : (
         <form
@@ -531,7 +532,7 @@ const StripePaymentForm = ({
             }`}
           >
             {isLoading
-              ? "Processing..."
+              ? "Processing payment..."
               : `Pay £${Number(memoizedPaymentData.amount).toLocaleString()}`}
           </button>
         </form>
@@ -670,40 +671,46 @@ const PaymentModal = ({
   }, [paymentMethod]);
 
   const createPayPalOrder = async () => {
-    setIsLoading(true);
     try {
       const response = await axios.post(
-        `${apiUrl}/api/payments/create-paypal-order`,
+        `${apiUrl}/api/payments/paypal/create-order`,
         {
           amount: paymentData.amount,
-          currency: "USD",
+          currency: "GBP",
           paymentData: {
             type: "one-time",
-            description: paymentData.type || "Purchase",
+            description: paymentData.type,
           },
           billingAgreementId: savedPaymentMethods.find(
             (m) => m.provider === "paypal"
           )?.details.billingAgreementId,
         },
-        { headers: { Authorization: authState.apiKey } }
+        { withCredentials: true }
       );
-      return response.data.orderId;
+      return response.data.data.id;
     } catch (error) {
+      console.error("Failed to create PayPal order:", error);
       toast.error(error.response?.data?.message || "Failed to create order");
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const onPayPalApprove = async (data) => {
+    console.log("PayPal order approved:", data);
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${apiUrl}/api/payments/capture-paypal-order/${data.orderID}`,
-        {},
-        { headers: { Authorization: authState.apiKey } }
+      const response = await axios.get(
+        `${apiUrl}/api/payments/paypal/capture-order/${data.orderID}`,
+
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
+
+      console.log(response);
 
       if (response.data.billingAgreementId) {
         setSavedPaymentMethods((prev) => [
@@ -717,16 +724,34 @@ const PaymentModal = ({
           },
         ]);
       }
-      toast.success("Payment completed successfully");
       const result = {
         transactionId: data.orderID,
         amount: paymentData.amount,
-        currency: "USD",
+        currency: "GBP",
         status: "succeeded",
         paymentMethod: "paypal",
         created: new Date().toISOString(),
       };
+      try {
+        await axios.post(
+          `${apiUrl}/api/payments/process-successful-payment`,
+          {
+            paymentResult: result,
+            paymentData: paymentData,
+          },
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      } catch (receiptError) {
+        console.error("Failed to send receipt:", receiptError);
+        toast.error(
+          "Payment successful, but there was an issue with receipt delivery"
+        );
+      }
       setPaymentResult(result);
+      toast.success("Payment completed successfully");
       setShowConfirmation(true);
     } catch (error) {
       console.error("Failed to process PayPal payment:", error);
@@ -756,6 +781,7 @@ const PaymentModal = ({
   const handlePaymentSuccess = (result) => {
     setPaymentResult(result);
     setShowConfirmation(true);
+    toast.success("Payment completed successfully");
   };
 
   const handleConfirmationClose = () => {
@@ -771,9 +797,9 @@ const PaymentModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center payment-modal-backdrop p-4">
       {" "}
       <div className="relative w-full max-w-lg max-h-[90vh] py-6 overflow-y-auto rounded-xl bg-white payment-modal-content">
-        {isLoading && <LoadingSpinner />}
+        {/* {isLoading && <LoadingSpinner />} */}
 
-        {!showConfirmation && (
+        {!showConfirmation && !isLoading && (
           <button
             onClick={handleModalClose}
             className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2 hover:bg-gray-200 transition-colors"
@@ -789,7 +815,7 @@ const PaymentModal = ({
           <PayPalScriptProvider
             options={{
               "client-id": paypalClientId,
-              currency: "USD",
+              currency: "GBP",
               "disable-funding": "credit,card",
               "data-sdk-integration-source": "funding_sc",
               vault: "true",
@@ -901,7 +927,7 @@ const PaymentModal = ({
                         </div>
                       ) : (
                         <PayPalButtonWrapper
-                          currency="USD"
+                          currency="GBP"
                           amount={paymentData.amount}
                           createOrder={createPayPalOrder}
                           onApprove={onPayPalApprove}
