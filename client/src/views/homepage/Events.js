@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
 import toast from "react-hot-toast";
+import { fetchProfile } from "../../features/auth/authSlice";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -378,6 +379,7 @@ const Events = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("scroll");
+  const { user } = useSelector((state) => state.auth);
 
   // Payment and attend modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -390,6 +392,7 @@ const Events = () => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
     dispatch(fetchAllEventTypes());
+    dispatch(fetchProfile());
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
@@ -415,7 +418,35 @@ const Events = () => {
     return [...new Set(countries)].sort(); // Remove duplicates and sort
   };
 
+  // Extract unique cities from event locations (search backwards for text without digits)
+  const getUniqueCities = () => {
+    if (!events) return [];
+
+    const approvedEvents = events.filter(
+      (event) => event.status.toLowerCase() === "approved"
+    );
+    const cities = approvedEvents
+      .map((event) => {
+        if (event.location && typeof event.location === "string") {
+          // Split by comma and search backwards for a part without digits
+          const parts = event.location.split(",");
+          for (let i = parts.length - 2; i >= 0; i--) {
+            const part = parts[i].trim();
+            // Check if the part doesn't contain any digits
+            if (part && !/\d/.test(part)) {
+              return part;
+            }
+          }
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return [...new Set(cities)].sort();
+  };
+
   const countries = getUniqueCountries();
+  const cities = getUniqueCities();
 
   // Reset page when filters change
   useEffect(() => {
@@ -428,6 +459,11 @@ const Events = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (user.isRestricted) {
+      toast.error("You are restricted from attending events");
+      return;
+    }
     if (event.audienceType !== "all") {
       if (isUserAttending(event._id)) {
         toast.info("You are already registered for this event");
@@ -487,24 +523,83 @@ const Events = () => {
           if (eventCountry !== selectedCountry) return false;
         }
 
-        if (selectedCity && event.city !== selectedCity) return false;
+        if (selectedCity) {
+          let eventCity = "";
+          if (event.location && typeof event.location === "string") {
+            // Search backwards for a part without digits
+            const parts = event.location.split(",");
+            for (let i = parts.length - 2; i >= 0; i--) {
+              const part = parts[i].trim();
+              if (part && !/\d/.test(part)) {
+                eventCity = part;
+                break;
+              }
+            }
+          }
+          if (eventCity !== selectedCity) return false;
+        }
 
         if (selectedDate === "newest") {
           return true;
         } else if (selectedDate === "oldest") {
+          return true;
+        } else if (selectedDate === "a-to-z") {
+          return true;
+        } else if (selectedDate === "z-to-a") {
+          return true;
+        } else if (selectedDate === "city-a-to-z") {
+          return true;
+        } else if (selectedDate === "city-z-to-a") {
           return true;
         }
 
         return true;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.time);
-        const dateB = new Date(b.time);
-
         if (selectedDate === "newest") {
+          const dateA = new Date(a.time);
+          const dateB = new Date(b.time);
           return dateB.getTime() - dateA.getTime();
         } else if (selectedDate === "oldest") {
+          const dateA = new Date(a.time);
+          const dateB = new Date(b.time);
           return dateA.getTime() - dateB.getTime();
+        } else if (selectedDate === "a-to-z") {
+          return a.name.localeCompare(b.name);
+        } else if (selectedDate === "z-to-a") {
+          return b.name.localeCompare(a.name);
+        } else if (selectedDate === "city-a-to-z") {
+          const getCityFromLocation = (location) => {
+            if (location && typeof location === "string") {
+              const parts = location.split(",");
+              for (let i = parts.length - 2; i >= 0; i--) {
+                const part = parts[i].trim();
+                if (part && !/\d/.test(part)) {
+                  return part;
+                }
+              }
+            }
+            return "";
+          };
+          const cityA = getCityFromLocation(a.location);
+          const cityB = getCityFromLocation(b.location);
+          return cityA.localeCompare(cityB);
+        } else if (selectedDate === "city-z-to-a") {
+          const getCityFromLocation = (location) => {
+            if (location && typeof location === "string") {
+              const parts = location.split(",");
+              for (let i = parts.length - 2; i >= 0; i--) {
+                const part = parts[i].trim();
+                if (part && !/\d/.test(part)) {
+                  return part;
+                }
+              }
+            }
+            return "";
+          };
+          const cityA = getCityFromLocation(a.location);
+          const cityB = getCityFromLocation(b.location);
+          return cityB.localeCompare(cityA);
         }
         return 0;
       });
@@ -614,6 +709,24 @@ const Events = () => {
                 </div>
 
                 <div className="relative w-full">
+                  <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                  >
+                    <option value="" className="text-black">
+                      All Cities
+                    </option>
+                    {cities.map((city) => (
+                      <option key={city} value={city} className="text-black">
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="relative w-full">
                   <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <select
                     className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
@@ -621,13 +734,25 @@ const Events = () => {
                     onChange={(e) => setSelectedDate(e.target.value)}
                   >
                     <option value="" className="text-black">
-                      Date
+                      Sort By
                     </option>
                     <option value="newest" className="text-black">
                       Newest to Oldest
                     </option>
                     <option value="oldest" className="text-black">
                       Oldest to Newest
+                    </option>
+                    <option value="a-to-z" className="text-black">
+                      Name: A to Z
+                    </option>
+                    <option value="z-to-a" className="text-black">
+                      Name: Z to A
+                    </option>
+                    <option value="city-a-to-z" className="text-black">
+                      City: A to Z
+                    </option>
+                    <option value="city-z-to-a" className="text-black">
+                      City: Z to A
                     </option>
                   </select>
                 </div>
@@ -689,6 +814,24 @@ const Events = () => {
               </div>
 
               <div className="relative w-full md:w-auto mt-2 md:mt-24">
+                <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                >
+                  <option value="" className="text-black">
+                    All Cities
+                  </option>
+                  {cities.map((city) => (
+                    <option key={city} value={city} className="text-black">
+                      {city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative w-full md:w-auto mt-2 md:mt-24">
                 <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
@@ -696,13 +839,25 @@ const Events = () => {
                   onChange={(e) => setSelectedDate(e.target.value)}
                 >
                   <option value="" className="text-black">
-                    Date
+                    Sort By
                   </option>
                   <option value="newest" className="text-black">
                     Newest to Oldest
                   </option>
                   <option value="oldest" className="text-black">
                     Oldest to Newest
+                  </option>
+                  <option value="a-to-z" className="text-black">
+                    Name: A to Z
+                  </option>
+                  <option value="z-to-a" className="text-black">
+                    Name: Z to A
+                  </option>
+                  <option value="city-a-to-z" className="text-black">
+                    City: A to Z
+                  </option>
+                  <option value="city-z-to-a" className="text-black">
+                    City: Z to A
                   </option>
                 </select>
               </div>

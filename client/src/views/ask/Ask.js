@@ -398,10 +398,18 @@ const Ask = () => {
         <div className="px-0 md:px-44 flex justify-between md:justify-center items-center mb-6 md:mb-8">
           <button
             onClick={(e) => {
-              if (!isUserVerifiedAndApproved)
-                return setShowDocumentReviewModal(true);
-
               e.stopPropagation();
+
+              if (currentUser.isRestricted) {
+                toast.error("You are restricted from creating asks");
+                return;
+              }
+
+              if (!isUserVerifiedAndApproved) {
+                setShowDocumentReviewModal(true);
+                return;
+              }
+
               setIsModalOpen(true);
             }}
             className="px-4 md:px-6 py-1 md:py-2 bg-primary text-white rounded-lg flex items-center gap-2 text-sm md:text-base ml-4 md:ml-0"
