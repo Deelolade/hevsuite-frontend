@@ -170,7 +170,7 @@ const Profile = () => {
         </button>
 
         {showNotifications && (
-          <div className='absolute left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100'>
+          <div className='absolute left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100 z-50'>
             <div className='px-4 py-2 border-b border-gray-100 flex justify-between items-center'>
               <h3 className='font-semibold'>Notifications</h3>
               {notifications.length > 0 && (

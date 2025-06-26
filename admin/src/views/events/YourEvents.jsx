@@ -322,7 +322,7 @@ const YourEvents = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -373,7 +373,7 @@ const YourEvents = () => {
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({
         user: user._id,
-        status: "pending",
+        status: "Pending",
       }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
@@ -625,15 +625,15 @@ const YourEvents = () => {
     <div className="md:p-8 space-y-6 md:min-h-screen">
       {/* Header */}
 
-      <div className="flex justify-between flex-col md:flex-row gap-2 items-center">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4 mb-4 w-full items-center justify-between">
         <button
-          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors"
+          className="px-6 py-2.5 bg-primary text-white rounded-lg flex items-center gap-2 hover:bg-[#4a0922] transition-colors w-full sm:w-auto"
           onClick={() => setIsAddEventOpen(true)}
         >
           Create Event
           <span className="text-xl">+</span>
         </button>
-        <div className="flex gap-4 relative z-50">
+        <div className="flex flex-wrap gap-2 md:gap-4 w-full sm:w-auto relative z-49 justify-center">
           {/* Audience Type Filter Button */}
           <div className="relative">
             <button
@@ -799,7 +799,7 @@ const YourEvents = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 mt-2">
-                  {event.status === 'pending' ? (
+                  {event.status === 'Pending' ? (
                     <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg text-sm w-full text-center font-semibold border border-yellow-200">
                       Pending Approval
                     </span>

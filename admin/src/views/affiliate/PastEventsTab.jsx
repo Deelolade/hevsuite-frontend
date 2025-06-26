@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi"
 import { BiSearch } from "react-icons/bi"
@@ -14,6 +14,11 @@ import authService from "../../store/auth/authService"
 import affiliateService from "../../store/affiliate/affiliateService"
 import "../layout/forced.css"
 import Modal from "react-modal"
+import ExportButton from "../ExportButton"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import { getCompanyInfo } from "../../store/setting/companySlice"
+import { getAffiliateById, getAffiliates } from "../../store/affiliate/affiliateSlice"
 
 const PastEventsTab = () => {
   const dispatch = useDispatch()
@@ -24,6 +29,8 @@ const PastEventsTab = () => {
     message: eventsMessage,
   } = useSelector((state) => state.events)
   const { member_users: users, isLoading: usersLoading } = useSelector((state) => state.user)
+  const { company } = useSelector((state) => state.company)
+  const { affiliate, affiliates } = useSelector((state) => state.affiliate)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -120,6 +127,8 @@ const PastEventsTab = () => {
 
     fetchAndLoadEvents()
     dispatch(memberUsers({ page: 1, search: "", role: "" }))
+    dispatch(getCompanyInfo())
+    dispatch(getAffiliates())
   }, [dispatch])
 
   // Update total pages when events data changes
@@ -338,9 +347,210 @@ const PastEventsTab = () => {
     }
   }, [showFilterDropdown, showSortDropdown])
 
+  // Prepare data for export
+  const preparedExportData = useMemo(() => {
+    if (!events || events.length === 0) {
+      return []
+    }
+    // Add date and time of export
+    const now = new Date();
+    const dateExported = now.toLocaleDateString();
+    const timeExported = now.toLocaleTimeString();
+    return events
+      .filter((event) => getEventStatus(event) === "completed")
+      .map((event) => {
+        const ticketsSold = event.invitedUsers?.length || 0
+        const price = event.price || 0
+        const totalRevenue = ticketsSold * price
+        return {
+          "Event Name": event.name,
+          "Start Date": formatDate(event.time),
+          "End Date": formatDate(event.endTime),
+          "Tickets Sold": ticketsSold,
+          "Price Per Ticket (£)": price.toFixed(2),
+          "Total Revenue (£)": totalRevenue.toFixed(2),
+          Status: getEventStatus(event),
+          "Date Exported": dateExported,
+          "Time Exported": timeExported,
+        }
+      })
+  }, [events])
+
+  const downloadInvoicePDF = (event) => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
+    const margin = 40
+    let y = margin
+
+    // --- Header Section ---
+    // Left: Logo + Company Info
+    const logoSize = 48;
+    doc.addImage('/logo_white.png', 'PNG', margin, y, logoSize, logoSize)
+    doc.setFontSize(16)
+    doc.setTextColor('#900C3F')
+    doc.text(company.name || 'HEVSUITE', margin + logoSize + 12, y + 18)
+    doc.setFontSize(10)
+    doc.setTextColor('#666')
+    doc.text(company.email || 'info@hevsuite.com', margin + logoSize + 12, y + 34)
+    doc.setTextColor('#888')
+    doc.text(formatCompanyAddress(company) || '123 Main Street, City, Country', margin + logoSize + 12, y + 48)
+
+    // Right: Receipt Info (top-aligned with logo)
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const rightX = pageWidth - margin;
+    let rightY = y;
+    doc.setFontSize(22)
+    doc.setTextColor('#900C3F')
+    doc.text('Receipt', rightX, rightY + 10, { align: 'right' })
+    doc.setFontSize(10)
+    doc.setTextColor('#666')
+    doc.text(`#RCP-${event._id?.slice(-12).toUpperCase() || 'N/A'}`, rightX, rightY + 28, { align: 'right' })
+    doc.setTextColor('#222')
+    doc.text(`Bill To: ${(typeof event.affiliatePartner === 'object' ? event.affiliatePartner.businessName || event.affiliatePartner.name : affiliate?.businessName || affiliate?.name) || 'Affiliate'}`, rightX, rightY + 43, { align: 'right' })
+    doc.setTextColor('#666')
+    doc.text((typeof event.affiliatePartner === 'object' && event.affiliatePartner.businessEmail) ? event.affiliatePartner.businessEmail : (affiliate?.businessEmail || 'affiliate@email.com'), rightX, rightY + 56, { align: 'right' })
+    doc.text(`${formatDate(new Date())}, ${formatTime(new Date())}`, rightX, rightY + 69, { align: 'right' })
+    // Status badge
+    doc.setFillColor(event.balance === 0 ? 46 : 200, event.balance === 0 ? 125 : 160, event.balance === 0 ? 50 : 0)
+    doc.roundedRect(rightX - 60, rightY + 75, 60, 20, 6, 6, 'F')
+    doc.setFontSize(10)
+    doc.setTextColor('#fff')
+    doc.text(event.balance === 0 ? 'PAID' : 'UNPAID', rightX - 30, rightY + 90, { align: 'center' })
+
+    // Set y to the lower of left or right section
+    y = Math.max(y + logoSize + 20, rightY + 100)
+    doc.setDrawColor('#eee')
+    doc.line(margin, y, rightX, y)
+    y += 20
+
+    // --- Purchase Details ---
+    doc.setFontSize(13)
+    doc.setTextColor('#900C3F')
+    doc.text('Purchase Details', margin, y)
+    y += 18
+    doc.setFontSize(10)
+    doc.setTextColor('#222')
+    const ticketsSold = event.invitedUsers?.length || 0;
+    const price = event.price || 0;
+    const total = ticketsSold * price;
+    const commission = total * 0.1;
+    const details = [
+      ['Tickets Sold', ticketsSold.toString()],
+      ['Price per Ticket', `£${price}`],
+      ['Total', `£${total.toFixed(2)}`],
+      ['Commission (10%)', `£${commission.toFixed(2)}`],
+      ['Amount Paid', `£${commission.toFixed(2)}`],
+      ['Bank Name', getAffiliateField('bankName')],
+      ['Account Number', getAffiliateField('accountNumber')],
+    ];
+    const labelX = margin;
+    const valueX = rightX; // perfectly right-aligned
+    details.forEach(([label, value]) => {
+      doc.text(label, labelX, y)
+      doc.text(value, valueX, y, { align: 'right' })
+      y += 18
+    })
+    y += 10
+
+    // --- Total Amount Paid ---
+    doc.setFillColor(245, 245, 245)
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 40, 8, 8, 'F')
+    doc.setFontSize(14)
+    doc.setTextColor('#900C3F')
+    doc.text('Total Amount Paid', margin + 10, y + 25)
+    doc.setFontSize(20)
+    doc.setTextColor('#218838')
+    doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 27, { align: 'right' })
+    y += 60
+
+    // --- Footer (centered) ---
+    doc.setFontSize(10)
+    doc.setTextColor('#222')
+    doc.text('Thank you for your purchase!', pageWidth / 2, y, { align: 'center' })
+    y += 15
+    doc.setTextColor('#666')
+    doc.text('For support or inquiries, contact us at support@hevsuite.com', pageWidth / 2, y, { align: 'center' })
+    y += 13
+    doc.setFontSize(9)
+    doc.setTextColor('#888')
+    doc.text('HevSuite Club - Building Communities Through Events', pageWidth / 2, y, { align: 'center' })
+
+    doc.save(`receipt_${event._id?.slice(-12).toUpperCase() || 'N/A'}.pdf`)
+  }
+
+  // Helper to format company address
+  const formatCompanyAddress = (company) => {
+    let parts = []
+    // if (company.addressLine1) parts.push(company.addressLine1)
+    if (company.city) parts.push(company.city)
+    if (company.state) parts.push(company.state)
+    if (company.country) parts.push(company.country)
+    if (company.postcode) parts.push(company.postcode)
+    return parts.join(", ")
+  }
+
+  // Fetch affiliate partner info when invoice modal opens and selectedEvent.affiliatePartner is a string
+  useEffect(() => {
+    if (isInvoiceModalOpen && selectedEvent && typeof selectedEvent.affiliatePartner === "string") {
+      dispatch(getAffiliateById(selectedEvent.affiliatePartner))
+    }
+  }, [isInvoiceModalOpen, selectedEvent, dispatch])
+
+  // Helper to get affiliate partner name
+  const getAffiliateName = () => {
+    if (selectedEvent && typeof selectedEvent.affiliatePartner === "object") {
+      return (
+        selectedEvent.affiliatePartner.businessName ||
+        selectedEvent.affiliatePartner.name ||
+        selectedEvent.affiliatePartner.email ||
+        "Event Organizer"
+      )
+    }
+    if (affiliate && affiliate._id === selectedEvent?.affiliatePartner) {
+      return (
+        affiliate.businessName ||
+        affiliate.name ||
+        affiliate.email ||
+        "Event Organizer"
+      )
+    }
+    // Try to find in affiliates array
+    if (affiliates && Array.isArray(affiliates)) {
+      const found = affiliates.find(a => a._id === selectedEvent?.affiliatePartner)
+      if (found) {
+        return (
+          found.businessName ||
+          found.name ||
+          found.email ||
+          "Event Organizer"
+        )
+      }
+    }
+    return "Event Organizer"
+  }
+
+  // Helper to get affiliate field (bankName, accountNumber, etc.)
+  const getAffiliateField = (field) => {
+    if (
+      affiliate &&
+      (affiliate._id === selectedEvent?.affiliatePartner ||
+        affiliate._id === selectedEvent?.affiliatePartner?._id)
+    ) {
+      return affiliate[field] || 'N/A';
+    }
+    if (
+      selectedEvent &&
+      typeof selectedEvent.affiliatePartner === 'object' &&
+      selectedEvent.affiliatePartner[field]
+    ) {
+      return selectedEvent.affiliatePartner[field];
+    }
+    return 'N/A';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end flex-col md:flex-row gap-2 items-center">
+        
         <div className="flex gap-4 relative">
           {/* Audience Type Filter Button */}
           <div className="relative">
@@ -384,6 +594,7 @@ const PastEventsTab = () => {
             )}
           </div>
         </div>
+        <ExportButton data={preparedExportData} fileName="past_events" />
       </div>
       {/* Loading State */}
       {eventsLoading && (
@@ -886,7 +1097,7 @@ const PastEventsTab = () => {
       <Modal
         isOpen={isInvoiceModalOpen}
         onRequestClose={() => setIsInvoiceModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 bg-white rounded-lg md:w-[500px] w-[95vw] max-h-[80vh] will-change-transform overflow-y-auto"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-1000 bg-white rounded-lg md:w-[600px] w-[95vw] max-h-[90vh] will-change-transform overflow-y-auto shadow-xl border"
         overlayClassName="fixed inset-0 bg-black/50 z-50"
         style={{
           overlay: { zIndex: 1000 },
@@ -896,42 +1107,84 @@ const PastEventsTab = () => {
         <div className="p-8 flex flex-col items-center justify-center text-center">
           {selectedEvent ? (
             <div className="w-full text-left">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">INVOICE</h2>
-                  <p className="text-sm text-gray-500">Invoice #: {selectedEvent._id?.slice(-6).toUpperCase() || 'N/A'}</p>
-                  <p className="text-sm text-gray-500">Date: {formatDate(new Date())}</p>
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex flex-col items-start gap-2">
+                  <img src="/logo_white.png" alt="Brand Logo" className="h-12 w-12 object-contain bg-gray-100 rounded-full border mb-2" onError={e => e.target.style.display='none'} />
+                  <span className="text-lg font-bold text-gray-800">{company.name || 'HEVSUITE'}</span>
+                  <span className="text-sm text-gray-500">{company.email || 'info@hevsuite.com'}</span>
+                  <span className="text-xs text-gray-400">{formatCompanyAddress(company) || '123 Main Street, City, Country'}</span>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-lg">{selectedEvent.name}</p>
-                  <p className="text-sm text-gray-500">{formatDate(selectedEvent.time)}</p>
-                  <p className="text-sm text-gray-500">{selectedEvent.location}</p>
+                  <h2 className="text-2xl font-bold mb-1 text-[#900C3F]">Receipt</h2>
+                  <p className="text-xs text-gray-500">#RCP-{selectedEvent._id?.slice(-12).toUpperCase() || 'N/A'}</p>
+                  <div className="mt-2 text-xs text-gray-700">
+                    <span className="font-semibold">Bill To:</span> <span className="font-bold text-[#900C3F]">{getAffiliateName()}</span><br/>
+                    <span>{(typeof selectedEvent.affiliatePartner === 'object' && selectedEvent.affiliatePartner.businessEmail) ? selectedEvent.affiliatePartner.businessEmail : (affiliate?.businessEmail || 'affiliate@email.com')}</span><br/>
+                    <span>{formatDate(new Date())}, {formatTime(new Date())}</span>
+                  </div>
+                  <div className="mt-2">
+                    <span className="inline-block px-4 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">{selectedEvent.balance === 0 ? 'PAID' : 'UNPAID'}</span>
+                  </div>
                 </div>
               </div>
-              <hr className="mb-4" />
-              <div className="mb-4">
-                <p className="font-semibold">Tickets Sold: <span className="font-normal">{selectedEvent.invitedUsers?.length || 0}</span></p>
-                <p className="font-semibold">Price per Ticket: <span className="font-normal">£{selectedEvent.price || 0}</span></p>
-                <p className="font-semibold">Total: <span className="font-normal">£{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}</span></p>
-                <p className="font-semibold">Commission (10%): <span className="font-normal">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span></p>
-                <p className="font-semibold">Net Balance: <span className="font-normal">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.9).toFixed(2)}</span></p>
+              <hr className="my-6 border-gray-200" />
+              {/* Purchase Details */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold mb-4 text-[#900C3F]">Purchase Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tickets Sold</span>
+                    <span className="text-gray-900 font-medium">{selectedEvent.invitedUsers?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Price per Ticket</span>
+                    <span className="text-gray-900 font-medium">£{selectedEvent.price || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total</span>
+                    <span className="text-gray-900 font-medium">£{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Commission (10%)</span>
+                    <span className="text-gray-900 font-medium">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Amount Paid</span>
+                    <span className="text-gray-900 font-medium">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Bank Name</span>
+                    <span className="text-gray-900 font-medium">{getAffiliateField('bankName')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Account Number</span>
+                    <span className="text-gray-900 font-medium">{getAffiliateField('accountNumber')}</span>
+                  </div>
+                </div>
               </div>
-              <hr className="mb-4" />
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold">Status:</span>
-                <span className={`px-3 py-1 rounded-full text-white text-xs ${selectedEvent.balance === 0 ? 'bg-green-500' : 'bg-yellow-500'}`}>{selectedEvent.balance === 0 ? 'Paid' : 'Unpaid'}</span>
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 flex justify-between items-center">
+                <span className="text-lg font-bold text-[#900C3F]">Total Amount Paid</span>
+                <span className="text-2xl font-bold text-green-700">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-semibold">Issued To:</span>
-                <span>{selectedEvent.organizer || 'Event Organizer'}</span>
+              <div className="mt-8 text-center text-gray-600 text-sm">
+                <p className="mb-1 font-semibold">Thank you for your purchase!</p>
+                <p>For support or inquiries, contact us at <a href="mailto:support@hevsuite.com" className="text-[#900C3F] underline">support@hevsuite.com</a></p>
+                <p className="italic mt-2 text-xs">HevSuite Club - Building Communities Through Events</p>
               </div>
             </div>
           ) : (
             <p>No event selected.</p>
           )}
           <button
+            onClick={() => downloadInvoicePDF(selectedEvent)}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg mt-4 mr-2"
+          >
+            Download Receipt as PDF
+          </button>
+          <button
             onClick={() => setIsInvoiceModalOpen(false)}
-            className="px-6 py-2 bg-primary text-white rounded-lg mt-6"
+            className="px-6 py-2 bg-primary text-white rounded-lg mt-4"
           >
             Close
           </button>

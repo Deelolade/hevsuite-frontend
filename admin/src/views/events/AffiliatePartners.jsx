@@ -90,7 +90,7 @@ const AffiliatePartners = () => {
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-2xl font-bold mb-6">Affiliate Partners</h1>
-      <div className="bg-white w-[90vw] md:w-full overflow-auto rounded-lg shadow-sm">
+      <div className="bg-white w-full overflow-x-auto rounded-lg shadow-sm">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -100,7 +100,7 @@ const AffiliatePartners = () => {
             {message || 'An error occurred while fetching affiliates'}
           </div>
         ) : (
-          <table className="w-full">
+          <table className="min-w-[700px] w-full">
             <thead>
               <tr className="border-b">
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-500">No</th>

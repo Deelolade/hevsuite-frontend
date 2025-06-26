@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi"
 import { BiSearch } from "react-icons/bi"
@@ -12,8 +12,33 @@ import { getEvents, updateExistingEvent, deleteExistingEvent } from "../../store
 import { memberUsers } from "../../store/users/userSlice"
 import authService from "../../store/auth/authService"
 import affiliateService from "../../store/affiliate/affiliateService"
+import ExportButton from "../ExportButton"
 import "../layout/forced.css"
 import Modal from "react-modal"
+
+// Helper functions (moved above useMemo)
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return date.toLocaleDateString("en-US", options);
+};
+
+const getEventStatus = (event) => {
+  const now = new Date();
+  const eventStart = new Date(event.time);
+  const eventEnd = new Date(event.endTime);
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  if (now > eventEnd) {
+    return "completed";
+  } else if (now >= eventStart && now <= eventEnd) {
+    return "ongoing";
+  } else if (eventStart <= sevenDaysFromNow) {
+    return "upcoming";
+  }
+  return "future";
+};
 
 const OutstandingPaymentTab = () => {
   const dispatch = useDispatch()
@@ -24,6 +49,9 @@ const OutstandingPaymentTab = () => {
     message: eventsMessage,
   } = useSelector((state) => state.events)
   const { member_users: users, isLoading: usersLoading } = useSelector((state) => state.user)
+
+  // Affiliate data state
+  const [affiliate, setAffiliate] = useState(null)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -79,46 +107,70 @@ const OutstandingPaymentTab = () => {
   const [currentFilter, setCurrentFilter] = useState("all")
   const [currentSort, setCurrentSort] = useState("all")
 
-  // Add these helper functions after the existing imports
-  const getEventStatus = (event) => {
-    const now = new Date()
-    const eventStart = new Date(event.time)
-    const eventEnd = new Date(event.endTime)
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-
-    if (now > eventEnd) {
-      return "completed"
-    } else if (now >= eventStart && now <= eventEnd) {
-      return "ongoing"
-    } else if (eventStart <= sevenDaysFromNow) {
-      return "upcoming"
-    }
-    return "future"
-  }
-
   // Add this state near other state declarations
   const [timeFilter, setTimeFilter] = useState("all")
+
+  // Prepare data for export
+  const preparedExportData = useMemo(() => {
+    if (!events || events.length === 0) {
+      return []
+    }
+    const commissionRateStr = affiliate?.commissionFee || "10%"
+    const commissionRate = parseFloat(commissionRateStr.replace("%", "")) / 100
+
+    // Add date and time of export
+    const now = new Date();
+    const dateExported = now.toLocaleDateString();
+    const timeExported = now.toLocaleTimeString();
+
+    return events
+      .filter((event) => {
+        if (timeFilter === "all") return true
+        return getEventStatus(event) === timeFilter
+      })
+      .map((event) => {
+        const ticketsSold = event.invitedUsers?.length || 0
+        const price = event.price || 0
+        const totalRevenue = ticketsSold * price
+        const earnings = totalRevenue * commissionRate
+
+        return {
+          "Event Name": event.name,
+          "Start Date": formatDate(event.time),
+          "End Date": formatDate(event.endTime),
+          "Tickets Sold": ticketsSold,
+          "Price Per Ticket (£)": price.toFixed(2),
+          "Total Revenue (£)": totalRevenue.toFixed(2),
+          "Commission Rate": commissionRateStr,
+          "Your Earnings (£)": earnings.toFixed(2),
+          Status: getEventStatus(event),
+          "Date Exported": dateExported,
+          "Time Exported": timeExported,
+        }
+      })
+  }, [events, timeFilter, affiliate])
 
   // Fetch events and users on component mount
   useEffect(() => {
     const fetchAffiliateEvents = async () => {
       try {
-        const profile = await authService.getProfile();
+        const profile = await authService.getProfile()
         if (profile?.user?._id) {
-          const affiliate = await affiliateService.getAffiliateById(profile.user._id);
-          if (affiliate?._id) {
+          const affiliateData = await affiliateService.getAffiliateById(profile.user._id)
+          setAffiliate(affiliateData)
+          if (affiliateData?._id) {
             // Pass affiliate profile id to getEvents
-            dispatch(getEvents({ affiliateId: affiliate._id, status: "Approved", filter: "all" }));
+            dispatch(getEvents({ affiliateId: affiliateData._id, status: "Approved", filter: "all" }))
           }
         }
       } catch (error) {
-        console.error("Failed to fetch affiliate data for events:", error);
+        console.error("Failed to fetch affiliate data for events:", error)
       }
-    };
+    }
 
-    fetchAffiliateEvents();
-    dispatch(memberUsers({ page: 1, search: "", role: "" }));
-  }, [dispatch]);
+    fetchAffiliateEvents()
+    dispatch(memberUsers({ page: 1, search: "", role: "" }))
+  }, [dispatch])
 
   // Update total pages when events data changes
   useEffect(() => {
@@ -303,14 +355,6 @@ const OutstandingPaymentTab = () => {
     })
   }
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return ""
-    const date = new Date(dateString)
-    const options = { year: "numeric", month: "long", day: "numeric" }
-    return date.toLocaleDateString("en-US", options)
-  }
-
   // Format time for display
   const formatTime = (dateString) => {
     if (!dateString) return ""
@@ -417,6 +461,7 @@ const OutstandingPaymentTab = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-end flex-col md:flex-row gap-2 items-center">
+       
         <div className="flex gap-4 relative">
           {/* Audience Type Filter Button */}
           <div className="relative">
@@ -503,6 +548,7 @@ const OutstandingPaymentTab = () => {
             )}
           </div>
         </div>
+        <ExportButton data={preparedExportData} fileName="outstanding_payments" />
       </div>
 
       {/* Loading State */}

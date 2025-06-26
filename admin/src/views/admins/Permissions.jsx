@@ -37,6 +37,8 @@ const Permissions = () => {
     { name: "CMS", id: "CMS" },
     { name: "Affiliate Partners", id: "Affiliate Partners" },
     { name: "Events Management", id: "Events Management" },
+    { name: "Event Management (Your events)", id: "Event Management (Your events)" },
+    { name: "Event Management (Payment and Partners)", id: "Event Management (Payment and Partners)" },
     { name: "Newsrooms", id: "Newsrooms" },
     { name: "Ask", id: "Ask" },
     { name: "Help Center", id: "Help Center" },

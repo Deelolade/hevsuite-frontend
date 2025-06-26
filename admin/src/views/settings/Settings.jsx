@@ -3,6 +3,7 @@ import React, { useState } from "react";
 
 import General from "./General";
 import SocialLinks from "./SocailLinks";
+import CompanyInfo from "./CompanyInfo";
 import Profile from "../../components/Profile";
 import { BiSearch } from "react-icons/bi";
 
@@ -16,7 +17,8 @@ const Settings = () => {
         return <General />;
       case "social":
         return <SocialLinks />;
-
+      case "company":
+        return <CompanyInfo />;
       default:
         return <General />;
     }
@@ -58,6 +60,16 @@ const Settings = () => {
             onClick={() => setActiveTab("social")}
           >
             Social Links
+          </button>
+          <button
+            className={`py-4 px-1 ${
+              activeTab === "company"
+                ? "border-b-4 border-primary text-primary"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("company")}
+          >
+            Company Info
           </button>
         </div>
       </div>

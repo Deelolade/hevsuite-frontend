@@ -65,7 +65,7 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
   };
 
   // Calculate supporters status
-  const referralCount = viewUser.referralCount || 0;
+  const referralCount = viewUser.requiredReferrals || 0;
   const referrals = viewUser.referrals?.length || 0;
   const supportersPercentage = referralCount > 0 ? (referrals / referralCount) * 100 : 0;
 
@@ -364,13 +364,13 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                     <label className="text-sm text-gray-500">Join Fee Status</label>
                     <div className="mt-1">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        viewUser.membershipFee === true
+                        viewUser.membershipFeeStatus === true
                           ? viewUser.joinFeeStatus?.toLowerCase() === 'paid'
                             ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
                           : "bg-gray-100 text-gray-800"
                       }`}>
-                        {viewUser.membershipFee === true
+                        {viewUser.membershipFeeStatus === true
                           ? viewUser.joinFeeStatus?.toLowerCase() === 'paid' ? "Paid" : "Pending"
                           : "Off"}
                       </span>
@@ -378,7 +378,7 @@ const ViewPending = ({ setShowViewPending, viewUser, onAccept, onReject }) => {
                   </div>
                   <div className="flex flex-col items-center">
                     <h3 className="text-lg font-semibold">Supporters Status</h3>
-                    <p className="text-gray-600">{referrals} / {referralCount} Referrals</p>
+                    <p className="text-gray-600">{referrals} / {viewUser.requiredReferrals} Referrals</p>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                       <div
                         className="bg-green-500 h-2.5 rounded-full"

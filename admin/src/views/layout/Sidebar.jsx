@@ -197,9 +197,22 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
   };
 
   // Filter menu items based on user permissions
-  const filteredMenuItems = menuItems.filter(item => 
-    userPermissions.includes(item.permission)
-  );
+  const filteredMenuItems = menuItems.filter(item => {
+    if (item.permission === 'Events Management') {
+      // Show 'Event Management' tab if user has any of the related permissions
+      return userPermissions.includes('Events Management') ||
+             userPermissions.includes('Event Management (Payment and Partners)') ||
+             userPermissions.includes('Event Management (Your events)');
+    }
+    if (item.permission === 'Support Request') {
+      // Show 'Support Request' if user has either permission
+      return userPermissions.includes('Support Request') || userPermissions.includes('Your Support Request');
+    }
+    return userPermissions.includes(item.permission);
+  });
+
+  // Determine if we should add extra margin to the logout button
+  const logoutExtraMargin = filteredMenuItems.length < 5 ? 'mt-32' : '';
 
   // If loading or no permissions, show loading state
   if (loading) {
@@ -220,7 +233,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
 
   return (
     <div
-      className={`flex flex-col md:h-fit ${ minimize ? "w-20" : "" } h-screen fixed z-50 bg-[#1A1A1A] text-white transition-width duration-300 `}
+      className={`flex flex-col md:h-fit ${ minimize ? "w-20" : "" } h-screen fixed z-50 bg-[#1A1A1A] text-white transition-width duration-300 min-h-[70vh] `}
       style={{
         zIndex: 200,
       }}
@@ -262,7 +275,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="min-h-[70vh]">
+      <nav className="flex-grow overflow-y-auto min-h-[70vh]">
         <ul className="flex flex-col space-y-1">
           {filteredMenuItems.map((item) => {
             const paths = location.pathname.split("/")[2];
@@ -297,7 +310,7 @@ const Sidebar = ({ collapsed, setCollapsed, minimize, setMinimize }) => {
       </nav>
 
       <div
-        className={`p-3 mt-auto border-t border-gray-800 transition-opacity duration-300 ${ collapsed ? "opacity-0" : "opacity-100" }`}
+        className={`p-3 mt-auto border-t border-gray-800 transition-opacity duration-300 ${logoutExtraMargin} ${collapsed ? "opacity-0" : "opacity-100"}`}
       >
         {minimize ? (
           <button

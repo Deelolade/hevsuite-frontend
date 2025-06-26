@@ -211,7 +211,7 @@ const History = () => {
                     />
                     <span>{transaction.user?.forename} {transaction.user?.surname}</span>
                   </td>
-                  <td className="py-4 capitalize">{transaction.paymentType}</td>
+                  <td className="py-4 capitalize">{transaction.provider}</td>
                   <td className="py-4">
                     {transaction.currency} {transaction.amount?.toFixed(2)}
                   </td>
@@ -235,29 +235,23 @@ const History = () => {
                 {expandedRows.includes(transaction._id) && (
                   <tr className="bg-gray-50">
                     <td colSpan="8" className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                           <label className="text-sm text-gray-500">Event Title</label>
-                          <p>{transaction.eventId?.title || 'N/A'}</p>
+                          <p>{transaction.purpose || 'N/A'}</p>
                         </div>
                         <div>
                           <label className="text-sm text-gray-500">Date</label>
                           <p>{transaction?.createdAt ? new Date(transaction.createdAt).toLocaleDateString('en-GB') : 'N/A'}</p>
                         </div>
                         <div>
-                          <label className="text-sm text-gray-500">Time</label>
-                          <p>{transaction.eventId?.time || 'N/A'}</p>
+                          <label className="text-sm text-gray-500">UserType</label>
+                          <p>{transaction.metadata?.userType || 'N/A'}</p>
                         </div>
                         <div>
-                          <label className="text-sm text-gray-500">Price</label>
-                          <p>{transaction.eventId?.price ? `${transaction.currency} ${transaction.eventId.price.toFixed(2)}` : transaction.metadata?.price ? `${transaction.currency} ${transaction.metadata.price.toFixed(2)}` : 'N/A'}</p>
+                          <label className="text-sm text-gray-500">Time</label>
+                          <p>{transaction?.createdAt ? new Date(transaction.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'}</p>
                         </div>
-                        {transaction.metadata && Object.entries(transaction.metadata).map(([key, value]) => (
-                          <div key={key}>
-                            <label className="text-sm text-gray-500 capitalize">{key}</label>
-                            <p>{JSON.stringify(value)}</p>
-                          </div>
-                        ))}
                       </div>
                     </td>
                   </tr>
