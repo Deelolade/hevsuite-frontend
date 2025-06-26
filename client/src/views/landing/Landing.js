@@ -14,6 +14,7 @@ import { fetchNonExpiredNews, setSelectedNews } from "../../features/newsSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLandingPageData } from "../../features/landingPageSlice";
 import { fetchFooterData } from "../../features/footerSlice";
+import PenaltyModal from "../../components/PenaltyModal";
 
 const Landing = () => {
   const dispatch = useDispatch();
@@ -22,6 +23,7 @@ const Landing = () => {
   const swiperRef2 = useRef(null);
   const [activeBullet, setActiveBullet] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { user } = useSelector((state) => state.auth);
 
   const {
     landingPages,
@@ -93,7 +95,7 @@ const Landing = () => {
     <div className="min-h-screen">
       {/* Header */}
       <HeaderOne />
-
+      {user?.isPenalized && <PenaltyModal isOpen={user.isPenalized} />}
       {/* Hero Section */}
       <section className="relative z-0 h-screen">
         <div className="absolute inset-0 ">
