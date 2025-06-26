@@ -213,9 +213,7 @@ const SelectedEvent = () => {
             onPaymentSuccess={async (result) => {
               console.log("Payment successful:", result);
               setShowOneTimePaymentModal(false);
-              toast.success("Payment completed successfully!");
 
-              // Refresh the attending events list to include this new event
               try {
                 await dispatch(fetchAllEventTypes()).unwrap();
               } catch (error) {
