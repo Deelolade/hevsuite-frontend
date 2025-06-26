@@ -696,7 +696,6 @@ const PaymentModal = ({
   };
 
   const onPayPalApprove = async (data) => {
-    console.log("PayPal order approved:", data);
     setIsLoading(true);
     try {
       const response = await axios.get(
@@ -709,8 +708,6 @@ const PaymentModal = ({
           },
         }
       );
-
-      console.log(response);
 
       if (response.data.billingAgreementId) {
         setSavedPaymentMethods((prev) => [
