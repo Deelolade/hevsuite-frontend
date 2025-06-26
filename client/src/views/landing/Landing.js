@@ -59,12 +59,32 @@ const Landing = () => {
 
   const images = [image_card, image_card, image_card];
 
-  const handleImageClick = (link) => {
-    if (link) {
-      if (link.startsWith("http")) {
-        window.open(link, "_blank");
+  const handleImageClick = (page) => {
+    console.log(page);
+    if (page?.link) {
+      let url = page.link;
+
+      if (
+        !url.startsWith("http") &&
+        (url.includes(".com") ||
+          url.includes(".org") ||
+          url.includes(".net") ||
+          url.includes("www."))
+      ) {
+        url = `https://${url}`;
+      }
+      if (page.openInNewTab) {
+        window.open(url, "_blank");
       } else {
-        navigate(link);
+        if (
+          url.startsWith("http") ||
+          url.includes(".com") ||
+          url.includes(".org") ||
+          url.includes(".net") ||
+          url.includes("www.")
+        ) {
+          window.open(url, "_self");
+        }
       }
     }
   };
@@ -104,7 +124,7 @@ const Landing = () => {
                   <img
                     src={page.file}
                     alt={`Image ${index}`}
-                    onClick={() => handleImageClick(page.link)}
+                    onClick={() => handleImageClick(page)}
                     className="w-full h-[100vh]  object-cover brightness-50"
                   />
                 </SwiperSlide>
