@@ -16,6 +16,12 @@ import {
 } from "@paypal/react-paypal-js";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { MdClose, MdCheckCircle } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchPaymentMethods,
+  selectAllPaymentMethods,
+  selectPaymentMethodsLoading,
+} from "../features/paymentMethodSlice";
 
 // Utility function for class names
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -40,14 +46,14 @@ export const PaymentTitle = ({ title, className }) => {
   );
 };
 
-const LoadingSpinner = () => (
-  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-    <div className="flex flex-col items-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      <p className="mt-4 font-medium text-white">Processing Payment...</p>
-    </div>
-  </div>
-);
+// const LoadingSpinner = () => (
+//   <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
+//     <div className="flex flex-col items-center">
+//       <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+//       <p className="mt-4 font-medium text-white">Processing Payment...</p>
+//     </div>
+//   </div>
+// );
 
 const PayPalButtonWrapper = ({
   currency,
@@ -594,7 +600,11 @@ const PaymentModal = ({
   const [paymentResult, setPaymentResult] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const authState = JSON.parse(localStorage.getItem("authState") || "{}");
+  const paymentMethods = useSelector(selectAllPaymentMethods);
+  const paymentMethodsLoading = useSelector(selectPaymentMethodsLoading);
   const isMountedRef = useRef(true);
+
+  const dispatch = useDispatch();
 
   const paymentData = useMemo(
     () => ({
@@ -763,7 +773,6 @@ const PaymentModal = ({
     setIsLoading(false);
     console.error(err);
   };
-  const availablePaymentMethods = ["stripe", "paypal"];
   const handleModalClose = useCallback(() => {
     setPaymentMethod(null);
     setClientSecret("");
@@ -787,6 +796,10 @@ const PaymentModal = ({
     onPaymentSuccess && onPaymentSuccess(paymentResult);
     handleModalClose();
   };
+
+  useEffect(() => {
+    dispatch(fetchPaymentMethods());
+  }, [dispatch]);
 
   if (!isOpen) return null;
 
@@ -827,21 +840,49 @@ const PaymentModal = ({
             <div className="my-6 px-4 md:px-12 text-black">
               {paymentMethod === null ? (
                 <div className="mb-6 flex flex-col gap-4 md:flex-row justify-center">
-                  {availablePaymentMethods.includes("stripe") && (
-                    <button
-                      onClick={() => setPaymentMethod("stripe")}
-                      className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600"
-                    >
-                      Pay with Stripe
-                    </button>
-                  )}
-                  {availablePaymentMethods.includes("paypal") && (
-                    <button
-                      onClick={() => setPaymentMethod("paypal")}
-                      className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600"
-                    >
-                      Pay with PayPal
-                    </button>
+                  {paymentMethodsLoading ? (
+                    <div className="py-4 text-center">
+                      Loading payment methods...
+                    </div>
+                  ) : (
+                    <>
+                      {paymentMethods
+                        .filter(
+                          (pm) =>
+                            pm.provider === "Stripe" && pm.enabled === true
+                        )
+                        .map((stripeMethod) => (
+                          <button
+                            key={stripeMethod.provider}
+                            onClick={() => setPaymentMethod("stripe")}
+                            className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600 w-40 h-20 flex justify-center items-center"
+                          >
+                            <img
+                              src={stripeMethod.logo}
+                              alt={stripeMethod.provider}
+                              className="h-10 w-10"
+                            />
+                          </button>
+                        ))}
+                      {paymentMethods
+                        .filter(
+                          (pm) =>
+                            pm.provider === "paypal" && pm.enabled === true
+                        )
+                        .map((paypalMethod) => (
+                          <button
+                            key={paypalMethod.provider}
+                            onClick={() => setPaymentMethod("paypal")}
+                            className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600 w-40 h-20 flex justify-center items-center"
+                          >
+                            <img
+                              src={paypalMethod.logo}
+                              alt={paypalMethod.provider}
+                              className="h-10 w-10"
+                            />
+                          </button>
+                        ))}
+                    </>
                   )}
                 </div>
               ) : (
