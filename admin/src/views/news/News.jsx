@@ -823,7 +823,7 @@ const News = () => {
                     Who should see the news?
                   </option>
                   <option value="all">All</option>
-                  <option value="members">Members</option>
+                  <option value="member">Members</option>
                 </select>
                 {formErrors.audienceType && <p className="text-red-500 text-xs mt-1">{formErrors.audienceType}</p>}
               </div>
@@ -1023,7 +1023,7 @@ const News = () => {
                       Who should see the news?
                     </option>
                     <option value="all">All</option>
-                    <option value="members">Members</option>
+                    <option value="member">Members</option>
                   </select>
                   {formErrors.audienceType && <p className="text-red-500 text-xs mt-1">{formErrors.audienceType}</p>}
                 </div>

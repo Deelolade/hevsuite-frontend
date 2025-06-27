@@ -21,13 +21,15 @@ export const getAllUsers = async ({ page = 1, limit = 10, search = '', role = ''
 };
 
 
-export const memberUsers = async ({ page = 1, search = '', role = '', membershipStatus = 'accepted' }) => {
+export const memberUsers = async ({ page = 1, search = '', role = '', limit = 10, membershipStatus = 'accepted' }) => {
   const token = getAuthToken();
+  console.log('[memberUsers] Request params:', { page, search, role, limit, membershipStatus });
   const response = await axios.get(`${base_url}/api/user/users`, {
     params: { 
       page, 
       search, 
       role,
+      limit,
       membershipStatus: 'accepted'
     },
     headers: {
@@ -35,6 +37,7 @@ export const memberUsers = async ({ page = 1, search = '', role = '', membership
     },
     withCredentials: true,
   });
+  console.log('[memberUsers] Response data:', response.data);
   return response.data;
 };
 
