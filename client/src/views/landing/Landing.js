@@ -33,6 +33,11 @@ const Landing = () => {
 
   const { newsItems, loading, error } = useSelector((state) => state.news);
 
+  const visibleLandingPages =
+    landingPages?.filter(
+      (page) => page.visibility === true && page.isDeleted === false
+    ) || [];
+
   // useEffect(() => {
   //   dispatch(fetchNonExpiredNews());
   //   dispatch(fetchLandingPageData());
@@ -99,7 +104,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative z-0 h-screen">
         <div className="absolute inset-0 ">
-          {landingPages.length > 0 ? (
+          {visibleLandingPages.length > 0 ? (
             <Swiper
               loop={true}
               spaceBetween={50}
@@ -121,7 +126,7 @@ const Landing = () => {
               }}
               ref={swiperRef}
             >
-              {landingPages?.map((page, index) => (
+              {visibleLandingPages?.map((page, index) => (
                 <SwiperSlide key={index}>
                   <img
                     src={page.file}
@@ -150,9 +155,9 @@ const Landing = () => {
             Become a Member
           </Link> */}
           <div className="flex gap-2 mt-8 pointer-events-auto">
-            {landingPages?.length > 1 && (
+            {visibleLandingPages?.length > 1 && (
               <div className="flex gap-2 mt-8 pointer-events-auto">
-                {landingPages?.map((_, index) => (
+                {visibleLandingPages?.map((_, index) => (
                   <button
                     key={index}
                     className={`w-2 h-2 rounded-full ${
