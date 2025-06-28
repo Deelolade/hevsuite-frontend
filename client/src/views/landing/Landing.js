@@ -14,6 +14,7 @@ import { fetchNonExpiredNews, setSelectedNews } from "../../features/newsSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLandingPageData } from "../../features/landingPageSlice";
 import { fetchFooterData } from "../../features/footerSlice";
+import PenaltyModal from "../../components/PenaltyModal";
 
 const Landing = () => {
   const dispatch = useDispatch();
@@ -22,6 +23,7 @@ const Landing = () => {
   const swiperRef2 = useRef(null);
   const [activeBullet, setActiveBullet] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { user } = useSelector((state) => state.auth);
 
   const {
     landingPages,
@@ -30,6 +32,11 @@ const Landing = () => {
   } = useSelector((state) => state.landingPage);
 
   const { newsItems, loading, error } = useSelector((state) => state.news);
+
+  const visibleLandingPages =
+    landingPages?.filter(
+      (page) => page.visibility === true && page.isDeleted === false
+    ) || [];
 
   // useEffect(() => {
   //   dispatch(fetchNonExpiredNews());
@@ -59,12 +66,32 @@ const Landing = () => {
 
   const images = [image_card, image_card, image_card];
 
-  const handleImageClick = (link) => {
-    if (link) {
-      if (link.startsWith("http")) {
-        window.open(link, "_blank");
+  const handleImageClick = (page) => {
+    console.log(page);
+    if (page?.link) {
+      let url = page.link;
+
+      if (
+        !url.startsWith("http") &&
+        (url.includes(".com") ||
+          url.includes(".org") ||
+          url.includes(".net") ||
+          url.includes("www."))
+      ) {
+        url = `https://${url}`;
+      }
+      if (page.openInNewTab) {
+        window.open(url, "_blank");
       } else {
-        navigate(link);
+        if (
+          url.startsWith("http") ||
+          url.includes(".com") ||
+          url.includes(".org") ||
+          url.includes(".net") ||
+          url.includes("www.")
+        ) {
+          window.open(url, "_self");
+        }
       }
     }
   };
@@ -73,11 +100,11 @@ const Landing = () => {
     <div className="min-h-screen">
       {/* Header */}
       <HeaderOne />
-
+      {user?.isPenalized && <PenaltyModal isOpen={user.isPenalized} />}
       {/* Hero Section */}
       <section className="relative z-0 h-screen">
         <div className="absolute inset-0 ">
-          {landingPages.length > 0 ? (
+          {visibleLandingPages.length > 0 ? (
             <Swiper
               loop={true}
               spaceBetween={50}
@@ -99,12 +126,12 @@ const Landing = () => {
               }}
               ref={swiperRef}
             >
-              {landingPages?.map((page, index) => (
+              {visibleLandingPages?.map((page, index) => (
                 <SwiperSlide key={index}>
                   <img
                     src={page.file}
                     alt={`Image ${index}`}
-                    onClick={() => handleImageClick(page.link)}
+                    onClick={() => handleImageClick(page)}
                     className="w-full h-[100vh]  object-cover brightness-50"
                   />
                 </SwiperSlide>
@@ -128,9 +155,9 @@ const Landing = () => {
             Become a Member
           </Link> */}
           <div className="flex gap-2 mt-8 pointer-events-auto">
-            {landingPages?.length > 1 && (
+            {visibleLandingPages?.length > 1 && (
               <div className="flex gap-2 mt-8 pointer-events-auto">
-                {landingPages?.map((_, index) => (
+                {visibleLandingPages?.map((_, index) => (
                   <button
                     key={index}
                     className={`w-2 h-2 rounded-full ${

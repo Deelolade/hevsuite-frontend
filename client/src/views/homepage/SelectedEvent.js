@@ -22,6 +22,7 @@ import Event2 from "../../assets/event-2.jpg";
 import Event3 from "../../assets/event-3.jpg";
 import Event4 from "../../assets/event-4.jpg";
 import toast from "react-hot-toast";
+import { fetchProfile } from "../../features/auth/authSlice";
 
 const SelectedEvent = () => {
   const { id } = useParams();
@@ -34,10 +35,12 @@ const SelectedEvent = () => {
     const attendingEvents = state.events.attendingEvents || [];
     return attendingEvents.some((event) => event._id === selectedEvent._id);
   });
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Fetch saved events when component mounts
     dispatch(getSavedEvents());
+    dispatch(fetchProfile());
   }, [dispatch]);
 
   useEffect(() => {
@@ -156,6 +159,10 @@ const SelectedEvent = () => {
     setShowPaymentModal(true);
   };
   const handleAttendEvent = () => {
+    if (user.isRestricted) {
+      toast.error("You are restricted from attending events");
+      return;
+    }
     if (isUserAttending) {
       toast.info("You are already registered for this event");
       return;
@@ -213,9 +220,7 @@ const SelectedEvent = () => {
             onPaymentSuccess={async (result) => {
               console.log("Payment successful:", result);
               setShowOneTimePaymentModal(false);
-              toast.success("Payment completed successfully!");
 
-              // Refresh the attending events list to include this new event
               try {
                 await dispatch(fetchAllEventTypes()).unwrap();
               } catch (error) {

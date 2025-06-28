@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import headerBg from "../../assets/header-bg.jpg";
 import { Link } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
-import { MdPerson } from "react-icons/md";
+import { MdPerson, MdLocationOn } from "react-icons/md";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { FaArrowLeft } from "react-icons/fa";
@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
 import toast from "react-hot-toast";
+import { fetchProfile } from "../../features/auth/authSlice";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -373,11 +374,12 @@ import toast from "react-hot-toast";
 
 const Events = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
-  const [selectedCountry] = useState("");
-  const [selectedCity] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("scroll");
+  const { user } = useSelector((state) => state.auth);
 
   // Payment and attend modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -390,9 +392,66 @@ const Events = () => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
     dispatch(fetchAllEventTypes());
+    dispatch(fetchProfile());
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
+
+  // Extract unique countries from event locations (last part of location string)
+  const getUniqueCountries = () => {
+    if (!events) return [];
+
+    const approvedEvents = events.filter(
+      (event) => event.status.toLowerCase() === "approved"
+    );
+    const countries = approvedEvents
+      .map((event) => {
+        if (event.location && typeof event.location === "string") {
+          // Split by comma and get the last part (country), then trim whitespace
+          const parts = event.location.split(",");
+          return parts[parts.length - 1].trim();
+        }
+        return null;
+      })
+      .filter(Boolean); // Remove null/empty values
+
+    return [...new Set(countries)].sort(); // Remove duplicates and sort
+  };
+
+  // Extract unique cities from event locations (search backwards for text without digits)
+  const getUniqueCities = () => {
+    if (!events) return [];
+
+    const approvedEvents = events.filter(
+      (event) => event.status.toLowerCase() === "approved"
+    );
+    const cities = approvedEvents
+      .map((event) => {
+        if (event.location && typeof event.location === "string") {
+          // Split by comma and search backwards for a part without digits
+          const parts = event.location.split(",");
+          for (let i = parts.length - 2; i >= 0; i--) {
+            const part = parts[i].trim();
+            // Check if the part doesn't contain any digits
+            if (part && !/\d/.test(part)) {
+              return part;
+            }
+          }
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return [...new Set(cities)].sort();
+  };
+
+  const countries = getUniqueCountries();
+  const cities = getUniqueCities();
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedAudience, selectedCountry, selectedCity, selectedDate]);
 
   const isUserAttending = (eventId) =>
     attendingEvents.some((event) => event._id === eventId);
@@ -400,6 +459,11 @@ const Events = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (user.isRestricted) {
+      toast.error("You are restricted from attending events");
+      return;
+    }
     if (event.audienceType !== "all") {
       if (isUserAttending(event._id)) {
         toast.info("You are already registered for this event");
@@ -431,9 +495,7 @@ const Events = () => {
   };
 
   const handlePaymentSuccess = async (result) => {
-    console.log("Payment successful:", result);
     setShowPaymentModal(false);
-    toast.success("Payment completed successfully!");
 
     try {
       await dispatch(fetchAllEventTypes()).unwrap();
@@ -447,29 +509,97 @@ const Events = () => {
 
     return events
       .filter((event) => {
+        // Only show approved events
+        if (event.status.toLowerCase() !== "approved") return false;
+
         if (selectedAudience && event.audienceType !== selectedAudience)
           return false;
 
-        if (selectedCountry && event.country !== selectedCountry) return false;
+        if (selectedCountry) {
+          const eventCountry =
+            event.location && typeof event.location === "string"
+              ? event.location.split(",").pop().trim()
+              : "";
+          if (eventCountry !== selectedCountry) return false;
+        }
 
-        if (selectedCity && event.city !== selectedCity) return false;
+        if (selectedCity) {
+          let eventCity = "";
+          if (event.location && typeof event.location === "string") {
+            // Search backwards for a part without digits
+            const parts = event.location.split(",");
+            for (let i = parts.length - 2; i >= 0; i--) {
+              const part = parts[i].trim();
+              if (part && !/\d/.test(part)) {
+                eventCity = part;
+                break;
+              }
+            }
+          }
+          if (eventCity !== selectedCity) return false;
+        }
 
         if (selectedDate === "newest") {
           return true;
         } else if (selectedDate === "oldest") {
+          return true;
+        } else if (selectedDate === "a-to-z") {
+          return true;
+        } else if (selectedDate === "z-to-a") {
+          return true;
+        } else if (selectedDate === "city-a-to-z") {
+          return true;
+        } else if (selectedDate === "city-z-to-a") {
           return true;
         }
 
         return true;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.time);
-        const dateB = new Date(b.time);
-
         if (selectedDate === "newest") {
+          const dateA = new Date(a.time);
+          const dateB = new Date(b.time);
           return dateB.getTime() - dateA.getTime();
         } else if (selectedDate === "oldest") {
+          const dateA = new Date(a.time);
+          const dateB = new Date(b.time);
           return dateA.getTime() - dateB.getTime();
+        } else if (selectedDate === "a-to-z") {
+          return a.name.localeCompare(b.name);
+        } else if (selectedDate === "z-to-a") {
+          return b.name.localeCompare(a.name);
+        } else if (selectedDate === "city-a-to-z") {
+          const getCityFromLocation = (location) => {
+            if (location && typeof location === "string") {
+              const parts = location.split(",");
+              for (let i = parts.length - 2; i >= 0; i--) {
+                const part = parts[i].trim();
+                if (part && !/\d/.test(part)) {
+                  return part;
+                }
+              }
+            }
+            return "";
+          };
+          const cityA = getCityFromLocation(a.location);
+          const cityB = getCityFromLocation(b.location);
+          return cityA.localeCompare(cityB);
+        } else if (selectedDate === "city-z-to-a") {
+          const getCityFromLocation = (location) => {
+            if (location && typeof location === "string") {
+              const parts = location.split(",");
+              for (let i = parts.length - 2; i >= 0; i--) {
+                const part = parts[i].trim();
+                if (part && !/\d/.test(part)) {
+                  return part;
+                }
+              }
+            }
+            return "";
+          };
+          const cityA = getCityFromLocation(a.location);
+          const cityB = getCityFromLocation(b.location);
+          return cityB.localeCompare(cityA);
         }
         return 0;
       });
@@ -557,6 +687,46 @@ const Events = () => {
                 </div>
 
                 <div className="relative w-full">
+                  <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                    value={selectedCountry}
+                    onChange={(e) => setSelectedCountry(e.target.value)}
+                  >
+                    <option value="" className="text-black">
+                      All Countries
+                    </option>
+                    {countries.map((country) => (
+                      <option
+                        key={country}
+                        value={country}
+                        className="text-black"
+                      >
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="relative w-full">
+                  <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                  >
+                    <option value="" className="text-black">
+                      All Cities
+                    </option>
+                    {cities.map((city) => (
+                      <option key={city} value={city} className="text-black">
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="relative w-full">
                   <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <select
                     className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
@@ -564,13 +734,25 @@ const Events = () => {
                     onChange={(e) => setSelectedDate(e.target.value)}
                   >
                     <option value="" className="text-black">
-                      Date
+                      Sort By
                     </option>
                     <option value="newest" className="text-black">
                       Newest to Oldest
                     </option>
                     <option value="oldest" className="text-black">
                       Oldest to Newest
+                    </option>
+                    <option value="a-to-z" className="text-black">
+                      Name: A to Z
+                    </option>
+                    <option value="z-to-a" className="text-black">
+                      Name: Z to A
+                    </option>
+                    <option value="city-a-to-z" className="text-black">
+                      City: A to Z
+                    </option>
+                    <option value="city-z-to-a" className="text-black">
+                      City: Z to A
                     </option>
                   </select>
                 </div>
@@ -610,6 +792,46 @@ const Events = () => {
               </div>
 
               <div className="relative w-full md:w-auto mt-2 md:mt-24">
+                <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                >
+                  <option value="" className="text-black">
+                    All Countries
+                  </option>
+                  {countries.map((country) => (
+                    <option
+                      key={country}
+                      value={country}
+                      className="text-black"
+                    >
+                      {country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative w-full md:w-auto mt-2 md:mt-24">
+                <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                >
+                  <option value="" className="text-black">
+                    All Cities
+                  </option>
+                  {cities.map((city) => (
+                    <option key={city} value={city} className="text-black">
+                      {city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative w-full md:w-auto mt-2 md:mt-24">
                 <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <select
                   className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
@@ -617,13 +839,25 @@ const Events = () => {
                   onChange={(e) => setSelectedDate(e.target.value)}
                 >
                   <option value="" className="text-black">
-                    Date
+                    Sort By
                   </option>
                   <option value="newest" className="text-black">
                     Newest to Oldest
                   </option>
                   <option value="oldest" className="text-black">
                     Oldest to Newest
+                  </option>
+                  <option value="a-to-z" className="text-black">
+                    Name: A to Z
+                  </option>
+                  <option value="z-to-a" className="text-black">
+                    Name: Z to A
+                  </option>
+                  <option value="city-a-to-z" className="text-black">
+                    City: A to Z
+                  </option>
+                  <option value="city-z-to-a" className="text-black">
+                    City: Z to A
                   </option>
                 </select>
               </div>
@@ -658,46 +892,44 @@ const Events = () => {
                             alt={event.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                           />
-                        </Link>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                          <Link to={`/events/${event._id}`}>
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                             <h3 className="text-xl font-semibold mb-2">
                               {event.name}
                             </h3>
-                          </Link>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-lg font-bold text-white">
-                              £{event.price}
-                            </span>
-                            <div className="inline-block px-3 py-1 rounded-full border border-white text-white text-xs">
-                              {event.audienceType === "members"
-                                ? "Members Only"
-                                : event.audienceType === "vip"
-                                ? "VIP Only"
-                                : "Open to All"}
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-lg font-bold text-white">
+                                £{event.price}
+                              </span>
+                              <div className="inline-block px-3 py-1 rounded-full border border-white text-white text-xs">
+                                {event.audienceType === "members"
+                                  ? "Members Only"
+                                  : event.audienceType === "vip"
+                                  ? "VIP Only"
+                                  : "Open to All"}
+                              </div>
                             </div>
+                            <div className="flex items-center space-x-4 mb-3 text-sm">
+                              <span>{formatDateWithSuffix(event.time)}</span>
+                              <span>{formatTime(event.time)}</span>
+                            </div>
+                            {isUserAttending(event._id) &&
+                            event.audienceType !== "all" ? (
+                              <button
+                                disabled
+                                className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
+                              >
+                                Registered
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => handleAttendEvent(event, e)}
+                                className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                              >
+                                Attend
+                              </button>
+                            )}
                           </div>
-                          <div className="flex items-center space-x-4 mb-3 text-sm">
-                            <span>{formatDateWithSuffix(event.time)}</span>
-                            <span>{formatTime(event.time)}</span>
-                          </div>
-                          {isUserAttending(event._id) &&
-                          event.audienceType !== "all" ? (
-                            <button
-                              disabled
-                              className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
-                            >
-                              Registered
-                            </button>
-                          ) : (
-                            <button
-                              onClick={(e) => handleAttendEvent(event, e)}
-                              className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-                            >
-                              Attend
-                            </button>
-                          )}
-                        </div>
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -741,15 +973,13 @@ const Events = () => {
                             <span>{formatDateWithSuffix(event.time)}</span>
                             <span>{formatTime(event.time)}</span>
                           </div>
-                          {isUserAttending(event._id) ? (
+                          {isUserAttending(event._id) &&
+                          event.audienceType !== "all" ? (
                             <button
                               disabled
                               className="w-full py-2 bg-gray-400 text-white rounded-lg font-medium cursor-not-allowed"
                             >
-                              {event.audienceType === "members" ||
-                              event.audienceType === "vip"
-                                ? "Already Registered"
-                                : "Registered"}
+                              Registered
                             </button>
                           ) : (
                             <button

@@ -248,6 +248,7 @@ const Homepage = () => {
                   spaceBetween={8} // Further reduced gap between slides
                   pagination={{
                     el: ".swiper-pagination",
+                    dynamicBullets: true,
                     clickable: true,
                     renderBullet: (index, className) =>
                       `<span class="${className} w-3 h-3 bg-red-500 rounded-full mx-1"></span>`,

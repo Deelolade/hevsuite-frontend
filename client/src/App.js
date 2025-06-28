@@ -79,6 +79,9 @@ const ProtectedRoute = ({ children }) => {
   if (!isAuthenticated && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+  if (user.isPenalized) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
 
   // Check membership status if user exists
   // if (user && user.membershipStatus !== "accepted") {
@@ -136,9 +139,16 @@ const LoginRedirect = ({ children }) => {
 
     if (Settings?.requiredReferralNumber <= 0 && !Settings?.membershipFee)
       return <Navigate to="/homepage" state={{ from: location }} replace />;
-   
-    const allReferredByApproved = user.referredBy.every(r => r.status.toLowerCase() === constants.referredByStatus.approved);
-    if (user.approvedByAdmin || allReferredByApproved && user.referredBy.length === user.requiredReferrals || user.membershipStatus === constants.membershipStatus.accepted ) 
+
+    const allReferredByApproved = user.referredBy.every(
+      (r) => r.status.toLowerCase() === constants.referredByStatus.approved
+    );
+    if (
+      user.approvedByAdmin ||
+      (allReferredByApproved &&
+        user.referredBy.length === user.requiredReferrals) ||
+      user.membershipStatus === constants.membershipStatus.accepted
+    )
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     return <Navigate to="/register-6" state={{ from: location }} replace />;
@@ -284,7 +294,7 @@ const router = createBrowserRouter([
     element: <HowItWorks />,
     errorElement: <ErrorPage />,
   },
-   {
+  {
     path: "/user/verify-email",
     element: <UserVerifyEmail />,
   },

@@ -40,15 +40,6 @@ export const PaymentTitle = ({ title, className }) => {
   );
 };
 
-const LoadingSpinner = () => (
-  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-    <div className="flex flex-col items-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      <p className="mt-4 font-medium text-white">Processing Payment...</p>
-    </div>
-  </div>
-);
-
 const PayPalButtonWrapper = ({
   currency,
   amount,
@@ -97,6 +88,7 @@ const StripePaymentForm = ({
   setUseNewCard,
   setSavedPaymentMethods,
   onPaymentSuccess,
+  userId,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -252,10 +244,32 @@ const StripePaymentForm = ({
     }
   };
 
-  const sendReceipt = async (paymentResult, paymentData) => {
+  //   const sendReceipt = async (paymentResult, paymentData) => {
+  //     try {
+  //       const response = await axios.post(
+  //         `${apiUrl}/api/payments/process-successful-payment`,
+  //         {
+  //           paymentResult,
+  //           paymentData,
+  //         },
+  //         {
+  //           withCredentials: true,
+  //           headers: { "Content-Type": "application/json" },
+  //         }
+  //       );
+  //       return response.data;
+  //     } catch (error) {
+  //       console.error("Failed to send receipt", error);
+  //       toast.error(
+  //         "Payment successful, but there was an issue with receipt delivery"
+  //       );
+  //     }
+  //   };
+
+  const updatePenaltyStatus = async (paymentResult, paymentData) => {
     try {
-      const response = await axios.post(
-        `${apiUrl}/api/payments/process-successful-payment`,
+      const response = await axios.put(
+        `${apiUrl}/api/user/update-penalty`,
         {
           paymentResult,
           paymentData,
@@ -267,10 +281,9 @@ const StripePaymentForm = ({
       );
       return response.data;
     } catch (error) {
-      console.error("Failed to send receipt", error);
-      toast.error(
-        "Payment successful, but there was an issue with receipt delivery"
-      );
+      console.error("Failed to update penalty status:", error);
+      toast.error("Payment successful, but failed to update account status");
+      throw error;
     }
   };
 
@@ -338,15 +351,21 @@ const StripePaymentForm = ({
           charges: paymentIntent.charges?.data?.[0] || null,
         };
 
-        const receiptToast = toast.loading("Processing payment...");
+        const processingToast = toast.loading("Processing payment...");
 
         try {
-          await sendReceipt(paymentResult, paymentData);
-          toast.dismiss(receiptToast);
-          // toast.success("Payment completed successfully");
-          // toast.success("Receipt sent to your Email!");
-        } catch (receiptError) {
-          console.error("Receipt update failed:", receiptError);
+          // Send receipt
+          //   await sendReceipt(paymentResult, paymentData);
+
+          // Update penalty status
+          await updatePenaltyStatus(paymentResult, paymentData);
+
+          toast.dismiss(processingToast);
+          toast.success("Payment completed successfully!");
+          toast.success("Account penalty has been removed!");
+        } catch (error) {
+          toast.dismiss(processingToast);
+          console.error("Post-payment processing failed:", error);
         }
 
         onPaymentSuccess(paymentResult);
@@ -542,6 +561,9 @@ const StripePaymentForm = ({
 };
 
 const PaymentConfirmation = ({ onClose }) => {
+  toast.success(
+    "Payment completed successfully! Your account has been reactivated."
+  );
   return (
     <div className="p-6 md:p-8 payment-confirmation-enter">
       <div className="flex flex-col items-center mb-8">
@@ -556,8 +578,9 @@ const PaymentConfirmation = ({ onClose }) => {
           Payment Successful!
         </h2>
         <p className="text-gray-600 text-center max-w-md leading-relaxed">
-          Thank you for your payment. Your transaction has been completed
-          successfully and a confirmation email has been sent.
+          Thank you for your payment. Your non-engagement fee has been processed
+          successfully, your account penalty has been removed, and a
+          confirmation email has been sent.
         </p>
       </div>
 
@@ -569,18 +592,19 @@ const PaymentConfirmation = ({ onClose }) => {
           onClick={onClose}
           className="flex-1 gradient-primary text-white py-3 px-6 rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
-          Continue to Events
+          Continue
         </button>
       </div>
     </div>
   );
 };
 
-const PaymentModal = ({
+const NonEngagementPaymentModal = ({
   isOpen,
   onClose,
   paymentData: propPaymentData,
   onPaymentSuccess,
+  userId,
 }) => {
   const [stripePromise, setStripePromise] = useState(null);
   const [paypalClientId, setPaypalClientId] = useState(null);
@@ -598,13 +622,11 @@ const PaymentModal = ({
 
   const paymentData = useMemo(
     () => ({
-      eventId: propPaymentData?.eventId,
       paymentProvider: propPaymentData?.paymentProvider,
       trxRef: propPaymentData?.trxRef || generateTransactionReference(),
-      type: propPaymentData?.type,
-      ticketCount: propPaymentData?.ticketCount,
+      type: propPaymentData?.type || "non-engagement-fee",
       amount: propPaymentData?.amount,
-      reason: propPaymentData?.reason,
+      reason: propPaymentData?.reason || "Non-engagement fee payment",
     }),
     [propPaymentData]
   );
@@ -670,6 +692,27 @@ const PaymentModal = ({
     fetchPaymentMethods();
   }, [paymentMethod]);
 
+  const updatePenaltyStatus = async (userId) => {
+    try {
+      const response = await axios.put(
+        `${apiUrl}/api/users/update-penalty`,
+        {
+          isPenalized: false,
+          userId: userId,
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update penalty status:", error);
+      toast.error("Payment successful, but failed to update account status");
+      throw error;
+    }
+  };
+
   const createPayPalOrder = async () => {
     try {
       const response = await axios.post(
@@ -678,7 +721,7 @@ const PaymentModal = ({
           amount: paymentData.amount,
           currency: "GBP",
           paymentData: {
-            type: "one-time",
+            type: "non-engagement-fee",
             description: paymentData.type,
           },
           billingAgreementId: savedPaymentMethods.find(
@@ -700,7 +743,6 @@ const PaymentModal = ({
     try {
       const response = await axios.get(
         `${apiUrl}/api/payments/paypal/capture-order/${data.orderID}`,
-
         {
           withCredentials: true,
           headers: {
@@ -721,6 +763,7 @@ const PaymentModal = ({
           },
         ]);
       }
+
       const result = {
         transactionId: data.orderID,
         amount: paymentData.amount,
@@ -729,7 +772,11 @@ const PaymentModal = ({
         paymentMethod: "paypal",
         created: new Date().toISOString(),
       };
+
+      const processingToast = toast.loading("Processing payment...");
+
       try {
+        // Send receipt
         await axios.post(
           `${apiUrl}/api/payments/process-successful-payment`,
           {
@@ -741,14 +788,19 @@ const PaymentModal = ({
             headers: { "Content-Type": "application/json" },
           }
         );
-      } catch (receiptError) {
-        console.error("Failed to send receipt:", receiptError);
-        toast.error(
-          "Payment successful, but there was an issue with receipt delivery"
-        );
+
+        // Update penalty status
+        await updatePenaltyStatus(userId);
+
+        toast.dismiss(processingToast);
+        toast.success("Payment completed successfully!");
+        toast.success("Account penalty has been removed!");
+      } catch (error) {
+        toast.dismiss(processingToast);
+        console.error("Post-payment processing failed:", error);
       }
+
       setPaymentResult(result);
-      toast.success("Payment completed successfully");
       setShowConfirmation(true);
     } catch (error) {
       console.error("Failed to process PayPal payment:", error);
@@ -763,7 +815,9 @@ const PaymentModal = ({
     setIsLoading(false);
     console.error(err);
   };
+
   const availablePaymentMethods = ["stripe", "paypal"];
+
   const handleModalClose = useCallback(() => {
     setPaymentMethod(null);
     setClientSecret("");
@@ -778,7 +832,6 @@ const PaymentModal = ({
   const handlePaymentSuccess = (result) => {
     setPaymentResult(result);
     setShowConfirmation(true);
-    toast.success("Payment completed successfully");
   };
 
   const handleConfirmationClose = () => {
@@ -792,10 +845,7 @@ const PaymentModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center payment-modal-backdrop p-4">
-      {" "}
       <div className="relative w-full max-w-lg max-h-[90vh] py-6 overflow-y-auto rounded-xl bg-white payment-modal-content">
-        {/* {isLoading && <LoadingSpinner />} */}
-
         {!showConfirmation && !isLoading && (
           <button
             onClick={handleModalClose}
@@ -804,6 +854,7 @@ const PaymentModal = ({
             <MdClose className="h-5 w-5" />
           </button>
         )}
+
         {loading ? (
           <div className="py-8 text-center">Loading payment providers...</div>
         ) : showConfirmation && paymentResult ? (
@@ -819,9 +870,11 @@ const PaymentModal = ({
             }}
           >
             {paymentMethod ? (
-              <PaymentTitle title={`Pay with ${paymentMethod}`} />
+              <PaymentTitle
+                title={`Pay Non-Engagement Fee with ${paymentMethod}`}
+              />
             ) : (
-              <PaymentTitle title="Make Payment" />
+              <PaymentTitle title="Pay Non-Engagement Fee" />
             )}
 
             <div className="my-6 px-4 md:px-12 text-black">
@@ -873,6 +926,7 @@ const PaymentModal = ({
                         setUseNewCard={setUseNewCard}
                         setSavedPaymentMethods={setSavedPaymentMethods}
                         onPaymentSuccess={handlePaymentSuccess}
+                        userId={userId}
                       />
                     </Elements>
                   )}
@@ -916,7 +970,7 @@ const PaymentModal = ({
                             >
                               {isLoading
                                 ? "Processing..."
-                                : `Pay $${Number(
+                                : `Pay £${Number(
                                     paymentData.amount
                                   ).toLocaleString()}`}
                             </button>
@@ -943,4 +997,4 @@ const PaymentModal = ({
   );
 };
 
-export default PaymentModal;
+export default NonEngagementPaymentModal;
