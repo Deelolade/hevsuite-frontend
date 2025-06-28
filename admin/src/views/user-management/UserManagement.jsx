@@ -17,8 +17,6 @@ import { format } from 'date-fns';
 
 Modal.setAppElement('#root');
 
-const ITEMS_PER_PAGE = 10;
-
 const UserManagement = () => {
   const dispatch = useDispatch();
   const {
@@ -29,7 +27,8 @@ const UserManagement = () => {
     userEvents,
     userActivity,
     eventsPagination,
-    activityPagination
+    activityPagination,
+    pagination
   } = useSelector((state) => state.user);
 
   const [showModal, setShowModal] = useState(false);
@@ -51,20 +50,21 @@ const UserManagement = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE);
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [selectedUserDetails, setSelectedUserDetails] = useState(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // default 10
 
   // Fetch all users when component mounts or when search/role changes
   useEffect(() => {
     dispatch(memberUsers({ 
       page: currentPage, 
       search, 
-      role
+      role,
+      limit: itemsPerPage
     }));
-  }, [dispatch, search, role, currentPage]);
+  }, [dispatch, search, role, currentPage, itemsPerPage]);
 
-  // Filter users based on status
+  // Filter users based on status (only on current page)
   const filteredUsers = member_users?.filter(user => {
     if (selectedFilter === 'All') return true;
     if (selectedFilter === 'Active') return !user.isBanned && !user.isRestricted && !user.isDeactivated && !user.isClosed;
@@ -74,12 +74,8 @@ const UserManagement = () => {
     if (selectedFilter === 'Closed Account') return user.isClosed;
     return true;
   });
-
-  // Calculate pagination
-  const totalPages = Math.ceil((filteredUsers?.length || 0) / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentUsers = filteredUsers?.slice(startIndex, endIndex);
+  const currentUsers = filteredUsers; // Already paginated from backend
+  const totalPages = pagination?.totalPages || pagination?.pages || 1;
 
   useEffect(() => {
     if (expandedUser) {
@@ -203,7 +199,7 @@ const UserManagement = () => {
       }
 
       // Refresh the user list without showing additional notifications
-      dispatch(memberUsers({ page: currentPage, search, role }));
+      dispatch(memberUsers({ page: currentPage, search, role, limit: itemsPerPage }));
     } catch (error) {
       toast.error(error.message || `Failed to ${action} user`);
     }
@@ -656,7 +652,7 @@ const UserManagement = () => {
                   }`}
                 >
                   <td className='px-6 py-4 text-sm text-gray-600'>
-                    {startIndex + index + 1}
+                    {index + 1}
                   </td>
                   <td className='px-6 py-4'>
                     <div className='flex items-center gap-3'>

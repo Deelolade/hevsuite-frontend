@@ -26,9 +26,9 @@ const initialState = {
 // Get member users
 export const memberUsers = createAsyncThunk(
   "users/member-users",
-  async ({ page, search, role }, thunkAPI) => {
+  async ({ page, search, role, limit }, thunkAPI) => {
     try {
-      return await userService.memberUsers({ page, search, role });
+      return await userService.memberUsers({ page, search, role, limit });
     } catch (error) {
       const message = error.response?.data?.message || error.message || 'Failed to fetch users';
       toast.error(message);
@@ -233,9 +233,9 @@ export const userSlice = createSlice({
         state.isError = false;
         state.member_users = action.payload.users;
         state.pagination = {
-          currentPage: action.payload.pagination.page,
-          totalPages: action.payload.pagination.pages,
-          totalItems: action.payload.pagination.total,
+          currentPage: action.payload.pagination.currentPage,
+          totalPages: action.payload.pagination.totalPages,
+          totalItems: action.payload.pagination.totalItems,
           limit: action.payload.pagination.limit
         };
       })

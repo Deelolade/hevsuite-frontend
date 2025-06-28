@@ -468,8 +468,11 @@ const PastEventsTab = () => {
     doc.text('Thank you for your purchase!', pageWidth / 2, y, { align: 'center' })
     y += 15
     doc.setTextColor('#666')
-    doc.text('For support or inquiries, contact us at support@hevsuite.com', pageWidth / 2, y, { align: 'center' })
-    y += 13
+    doc.text(`For support or inquiries, contact us at ${company.email || 'support@hevsuite.com'}`, pageWidth / 2, y, { align: 'center' })
+    y += 15
+    doc.setTextColor('#666')
+    doc.text('Hazor Group Ltd', pageWidth / 2, y, { align: 'center' })
+    y += 15
     doc.setFontSize(9)
     doc.setTextColor('#888')
     doc.text('HevSuite Club - Building Communities Through Events', pageWidth / 2, y, { align: 'center' })
@@ -535,6 +538,8 @@ const PastEventsTab = () => {
       (affiliate._id === selectedEvent?.affiliatePartner ||
         affiliate._id === selectedEvent?.affiliatePartner?._id)
     ) {
+      if (field === 'bankName') return affiliate[field] || 'Test Bank';
+      if (field === 'accountNumber') return affiliate[field] || '123456789';
       return affiliate[field] || 'N/A';
     }
     if (
@@ -542,9 +547,32 @@ const PastEventsTab = () => {
       typeof selectedEvent.affiliatePartner === 'object' &&
       selectedEvent.affiliatePartner[field]
     ) {
+      if (field === 'bankName') return selectedEvent.affiliatePartner[field] || 'Test Bank';
+      if (field === 'accountNumber') return selectedEvent.affiliatePartner[field] || '123456789';
       return selectedEvent.affiliatePartner[field];
     }
+    if (field === 'bankName') return 'Test Bank';
+    if (field === 'accountNumber') return '123456789';
     return 'N/A';
+  };
+
+  // Helper to get affiliate email for Bill To
+  const getAffiliateEmail = () => {
+    if (
+      affiliate &&
+      (affiliate._id === selectedEvent?.affiliatePartner ||
+        affiliate._id === selectedEvent?.affiliatePartner?._id)
+    ) {
+      return affiliate.businessEmail || affiliate.email || 'affiliate@email.com';
+    }
+    if (
+      selectedEvent &&
+      typeof selectedEvent.affiliatePartner === 'object' &&
+      (selectedEvent.affiliatePartner.businessEmail || selectedEvent.affiliatePartner.email)
+    ) {
+      return selectedEvent.affiliatePartner.businessEmail || selectedEvent.affiliatePartner.email;
+    }
+    return 'affiliate@email.com';
   };
 
   return (
@@ -1120,7 +1148,7 @@ const PastEventsTab = () => {
                   <p className="text-xs text-gray-500">#RCP-{selectedEvent._id?.slice(-12).toUpperCase() || 'N/A'}</p>
                   <div className="mt-2 text-xs text-gray-700">
                     <span className="font-semibold">Bill To:</span> <span className="font-bold text-[#900C3F]">{getAffiliateName()}</span><br/>
-                    <span>{(typeof selectedEvent.affiliatePartner === 'object' && selectedEvent.affiliatePartner.businessEmail) ? selectedEvent.affiliatePartner.businessEmail : (affiliate?.businessEmail || 'affiliate@email.com')}</span><br/>
+                    <span>{getAffiliateEmail()}</span><br/>
                     <span>{formatDate(new Date())}, {formatTime(new Date())}</span>
                   </div>
                   <div className="mt-2">
@@ -1169,8 +1197,9 @@ const PastEventsTab = () => {
               </div>
               <div className="mt-8 text-center text-gray-600 text-sm">
                 <p className="mb-1 font-semibold">Thank you for your purchase!</p>
-                <p>For support or inquiries, contact us at <a href="mailto:support@hevsuite.com" className="text-[#900C3F] underline">support@hevsuite.com</a></p>
+                <p>For support or inquiries, contact us at <a href={`mailto:${company.email || 'support@hevsuite.com'}`} className="text-[#900C3F] underline">{company.email || 'support@hevsuite.com'}</a></p>
                 <p className="italic mt-2 text-xs">HevSuite Club - Building Communities Through Events</p>
+                <p className="italic mt-2 text-xs">Hazor Group Ltd</p>
               </div>
             </div>
           ) : (
