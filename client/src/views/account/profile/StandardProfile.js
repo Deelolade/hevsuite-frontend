@@ -29,6 +29,7 @@ import {
   selectPricingFees,
   selectPricingFeesLoading,
 } from "../../../features/pricingFeesSlice";
+import ClubCardPaymentModal from "../../../components/ClubCardPaymentModal";
 const StandardProfile = () => {
   const [openSections, setOpenSections] = useState({
     personalInfo: true,
@@ -45,6 +46,9 @@ const StandardProfile = () => {
   const [showRequestView, setShowRequestView] = useState(false);
   const [isEditingFullName, setIsEditingFullName] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showClubCardPaymentModal, setShowClubCardPaymentModal] =
+    useState(false);
+  const [paymentData, setPaymentData] = useState(null);
   const [countryId, setCountryId] = useState("");
   const [personalInfo, setPersonalInfo] = useState({
     title: user?.title || "",
@@ -297,6 +301,43 @@ const StandardProfile = () => {
 
   const [showRequestConfirmModal, setShowRequestConfirmModal] = useState(false);
 
+  console.log(clubCard);
+
+  const generateTransactionReference = () => {
+    return "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+  };
+
+  const createClubCardPaymentData = () => {
+    const clubCardFee = pricingFees?.find(
+      (fee) => fee.name === "New Club Card Fee"
+    );
+    const amount = getClubCardFeeAmount();
+
+    return {
+      clubCardId: clubCard.cardId,
+      paymentProvider: null,
+      trxRef: generateTransactionReference(),
+      type: "Club Card Fee",
+      amount: amount,
+      reason: `New Club Card Fee Payment - ${
+        user?.role === "vip" ? "VIP" : "Standard"
+      } Member`,
+      clubCardFeeId: clubCardFee?.id,
+      userId: user?.id,
+    };
+  };
+
+  const getClubCardFeeAmount = () => {
+    const newClubCardFee = pricingFees?.find(
+      (fee) => fee.name === "New Club Card Fee"
+    );
+    if (newClubCardFee) {
+      return user?.role === "vip"
+        ? newClubCardFee.vipPrice
+        : newClubCardFee.standardPrice;
+    }
+  };
+
   const handleRequestCard = async () => {
     try {
       const userId = user?.id;
@@ -306,7 +347,7 @@ const StandardProfile = () => {
         return;
       }
 
-      // Show confirmation modal
+      // Show confirmation modal first (before payment)
       setShowRequestConfirmModal(true);
     } catch (error) {
       console.error("Error in handleRequestCard:", error);
@@ -316,43 +357,69 @@ const StandardProfile = () => {
     }
   };
 
+  // const handleClubCardPaymentSuccess = async (paymentResult) => {
+  //   try {
+  //     const userId = user?.id;
+  //     const isReplacement = cardRequest.disableCurrent === "Deactivate";
+  //     const cardId = clubCard.cardId;
+
+  //     console.log(
+  //       "Club card payment successful, now requesting card for user:",
+  //       userId
+  //     );
+  //     console.log("Is replacement:", isReplacement);
+  //     console.log("Payment result:", paymentResult);
+
+  //     // Close payment modal
+  //     setShowClubCardPaymentModal(false);
+
+  //     // Process the card request after successful payment
+  //     const result = await dispatch(activateCard({ cardId, userId })).unwrap();
+
+  //     if (result.success) {
+  //       toast.success(
+  //         "Your club card request has been submitted successfully and payment has been processed."
+  //       );
+
+  //       // Clear form
+  //       setCardRequest({
+  //         fullName: user?.forename + " " + user?.surname,
+  //         cardType: clubCard?.cardType,
+  //         disableCurrent: "No",
+  //       });
+
+  //       // Refresh card data
+  //       await dispatch(getCardByUserId(user.id));
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing card request after payment:", error);
+  //     const errorMessage =
+  //       error?.message ||
+  //       error ||
+  //       "Failed to process club card request after payment";
+  //     toast.error(errorMessage);
+
+  //     showModal({
+  //       title: "Error",
+  //       text: errorMessage,
+  //       confirmText: "Try Again",
+  //     });
+  //   }
+  // };
+
   const confirmCardRequest = async () => {
     try {
-      const userId = user?.id;
-      const isReplacement = cardRequest.disableCurrent === "Deactivate";
-      const cardId = clubCard.cardId;
-
-      console.log("Requesting club card for user:", userId);
-      console.log("Is replacement:", isReplacement);
-
-      const result = await dispatch(activateCard({ cardId, userId })).unwrap();
-
-      if (result.success) {
-        toast.success("Your club card request has been submitted.");
-
-        // Optionally clear form or update UI
-        setCardRequest({
-          fullName: "",
-          cardType: "Standard",
-          disableCurrent: "Activate",
-        });
-        setIsEditingFullName(false);
-      }
-
       setShowRequestConfirmModal(false);
+
+      const paymentData = createClubCardPaymentData();
+      setPaymentData(paymentData);
+      setShowClubCardPaymentModal(true);
     } catch (error) {
-      console.error("Error requesting card:", error);
+      console.error("Error initiating payment:", error);
       const errorMessage =
-        error?.message || error || "Failed to request club card";
+        error?.message || error || "Failed to initiate payment";
       toast.error(errorMessage);
-
       setShowRequestConfirmModal(false);
-
-      showModal({
-        title: "Error",
-        text: errorMessage,
-        confirmText: "Try Again",
-      });
     }
   };
 
@@ -571,6 +638,14 @@ const StandardProfile = () => {
         <>
           {showPaymentModal && (
             <PaymentMethodModal onClose={() => setShowPaymentModal(false)} />
+          )}
+          {showClubCardPaymentModal && (
+            <ClubCardPaymentModal
+              isOpen={showClubCardPaymentModal}
+              onClose={() => setShowClubCardPaymentModal(false)}
+              paymentData={paymentData}
+              // onPaymentSuccess={handleClubCardPaymentSuccess}
+            />
           )}
           {show2FAModal && <TwoFAModal />}
           <div className="flex items-start gap-4 mb-6">
@@ -1352,8 +1427,6 @@ const StandardProfile = () => {
                       </p>
                     </div>
                   )}
-
-                  {/* <p className="font-semibold">Total cost: £15</p> */}
                 </div>
 
                 <div className="flex justify-end gap-3">
@@ -1367,7 +1440,7 @@ const StandardProfile = () => {
                     onClick={confirmCardRequest}
                     className="px-4 py-2 bg-[#540A26] text-white rounded-lg hover:bg-opacity-90 transition-opacity"
                   >
-                    Yes, Request Card
+                    Pay £{getClubCardFeeAmount()}
                   </button>
                 </div>
               </div>
@@ -1401,12 +1474,6 @@ const StandardProfile = () => {
                 <div className="md:col-span-1 md:row-span-3 md:justify-self-end md:mt-0">
                   <div className="p-4 rounded-lg">
                     <h4 className="font-medium mb-2">Payment Summary:</h4>
-                    {/* Debug logging */}
-                    {console.log(
-                      "Pricing Fees in Payment Summary:",
-                      pricingFees
-                    )}
-                    {console.log("User Role in Payment Summary:", user?.role)}
                     <div className="space-y-2">
                       {pricingFeesLoading ? (
                         <div className="text-center py-4">
@@ -1532,7 +1599,13 @@ const StandardProfile = () => {
                           disabled={
                             activating || deactivating || !clubCard.cardId
                           }
-                          onClick={handleSaveCardStatus}
+                          onClick={() => {
+                            if (cardRequest.disableCurrent === "Deactivate") {
+                              handleSaveCardStatus();
+                            } else {
+                              handleRequestCard();
+                            }
+                          }}
                         >
                           {activating || deactivating ? (
                             <span className="flex items-center gap-2">

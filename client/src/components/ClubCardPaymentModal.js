@@ -23,10 +23,8 @@ import {
   selectPaymentMethodsLoading,
 } from "../features/paymentMethodSlice";
 
-// Utility function for class names
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
-// Generate transaction reference
 const generateTransactionReference = () => {
   return "TRX-" + Math.random().toString(36).substr(2, 9).toUpperCase();
 };
@@ -244,6 +242,7 @@ const StripePaymentForm = ({
       const response = await axios.get(
         `${apiUrl}/api/payments/getpaymentMethods`,
         {
+          withCredentials: true,
           headers: { Authorization: authState.apiKey },
         }
       );
@@ -261,7 +260,7 @@ const StripePaymentForm = ({
   const sendReceipt = async (paymentResult, paymentData) => {
     try {
       const response = await axios.post(
-        `${apiUrl}/api/payments/process-successful-payment`,
+        `${apiUrl}/api/payments/process-card-fee-payment`,
         {
           paymentResult,
           paymentData,
@@ -347,6 +346,8 @@ const StripePaymentForm = ({
         const receiptToast = toast.loading("Processing payment...");
 
         try {
+          console.log("Sending receipt with payment result:", paymentResult);
+          console.log("Payment data:", paymentData);
           await sendReceipt(paymentResult, paymentData);
           toast.dismiss(receiptToast);
           // toast.success("Payment completed successfully");
@@ -575,14 +576,14 @@ const PaymentConfirmation = ({ onClose }) => {
           onClick={onClose}
           className="flex-1 gradient-primary text-white py-3 px-6 rounded-xl font-semibold hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
-          Continue to Events
+          Close
         </button>
       </div>
     </div>
   );
 };
 
-const PaymentModal = ({
+const ClubCardPaymentModal = ({
   isOpen,
   onClose,
   paymentData: propPaymentData,
@@ -600,21 +601,19 @@ const PaymentModal = ({
   const [paymentResult, setPaymentResult] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const authState = JSON.parse(localStorage.getItem("authState") || "{}");
+  const isMountedRef = useRef(true);
   const paymentMethods = useSelector(selectAllPaymentMethods);
   const paymentMethodsLoading = useSelector(selectPaymentMethodsLoading);
-  const isMountedRef = useRef(true);
 
   const dispatch = useDispatch();
 
   const paymentData = useMemo(
     () => ({
-      eventId: propPaymentData?.eventId,
       paymentProvider: propPaymentData?.paymentProvider,
       trxRef: propPaymentData?.trxRef || generateTransactionReference(),
       type: propPaymentData?.type,
-      ticketCount: propPaymentData?.ticketCount,
       amount: propPaymentData?.amount,
-      reason: propPaymentData?.reason,
+      cardId: propPaymentData?.clubCardId,
     }),
     [propPaymentData]
   );
@@ -739,9 +738,12 @@ const PaymentModal = ({
         paymentMethod: "paypal",
         created: new Date().toISOString(),
       };
+      console.log("PayPal payment result:", result);
+      console.log("Payment data:", paymentData);
+
       try {
         await axios.post(
-          `${apiUrl}/api/payments/process-successful-payment`,
+          `${apiUrl}/api/payments/process-card-fee-payment`,
           {
             paymentResult: result,
             paymentData: paymentData,
@@ -984,4 +986,4 @@ const PaymentModal = ({
   );
 };
 
-export default PaymentModal;
+export default ClubCardPaymentModal;
