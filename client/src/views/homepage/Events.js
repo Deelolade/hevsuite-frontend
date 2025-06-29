@@ -677,7 +677,7 @@ const Events = () => {
                     <option value="members" className="text-black">
                       For Members
                     </option>
-                    <option value="public" className="text-black">
+                    <option value="all" className="text-black">
                       Public Event
                     </option>
                     <option value="vip" className="text-black">
@@ -782,7 +782,7 @@ const Events = () => {
                   <option value="members" className="text-black">
                     For Members
                   </option>
-                  <option value="public" className="text-black">
+                  <option value="all" className="text-black">
                     Public Event
                   </option>
                   <option value="vip" className="text-black">
