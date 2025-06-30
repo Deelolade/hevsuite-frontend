@@ -140,22 +140,23 @@ const Footer = () => {
             <div className="flex sm:gap-4 gap-8 space-x-8 font-bold lg:top-1 relative ">
               {footerData?.data?.map((section) => (
                 <div key={section._id}>
-                  {section.visibility && 
+                  {section.visibility && (
                     <>
-
-                    {section.title?.toLowerCase().includes("policies") ? 
-                    <Link
-                        to="/terms"
-                        className="hover:text-black transition-colors text-sm block mb-2"
-                      >
-                        {section.title}
-                      </Link>
-                      :
-                      <span className="mb-3 inline-block" > {section.title} </span>
-                    }
-
+                      {section.title?.toLowerCase().includes("policies") ? (
+                        <Link
+                          to="/terms"
+                          className="hover:text-black transition-colors text-sm block mb-2"
+                        >
+                          {section.title}
+                        </Link>
+                      ) : (
+                        <span className="mb-3 inline-block">
+                          {" "}
+                          {section.title}{" "}
+                        </span>
+                      )}
                     </>
-                }   
+                  )}
 
                   {/* <div className="flex flex-col gap-0" >
                     {section.items.map((item) => (
