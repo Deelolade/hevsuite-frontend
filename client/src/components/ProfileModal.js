@@ -253,17 +253,28 @@ const ProfileModal = ({ onClose, forNotification, moveToEvents }) => {
         description="Sigining out your account..."
       />
 
-      <div className="p-4 md:p-6 border-b border-transparent relative">
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="px-4 pb-4 md:px-6 border-b border-transparent relative">
+        <div className="relative flex items-center gap-2 justify-end">
+          <div
+            onClick={onClose}
+            className="absolute inset-0"
+            aria-label="Close modal by clicking outside"
+          ></div>
           <button
             onClick={handleLogout}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+            className="px-3 py-1.5 z-20 sm:px-4 sm:py-2 bg-primary text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
           >
             Logout
           </button>
           <button
             onClick={onClose}
-            className="text-4xl sm:text-2xl font-light text-white hover:text-gray-500 transition-colors"
+            className="text-4xl sm:text-2xl z-20 font-light text-white hover:text-gray-500 transition-colors px-4 py-1.5 text-right min-w-[48px]"
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
+            aria-label="Close modal"
           >
             ×
           </button>
@@ -272,7 +283,7 @@ const ProfileModal = ({ onClose, forNotification, moveToEvents }) => {
         {/* Tabs - Scrollable on Mobile with hidden scrollbar */}
         <div
           ref={containerRef}
-          className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-12 no-scrollbar cursor-grab"
+          className="w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 pt-6 no-scrollbar cursor-grab"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
