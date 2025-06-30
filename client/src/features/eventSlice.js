@@ -334,17 +334,15 @@ export const selectSavedEvents = (state) => state.savedEvents || [];
 export const selectIsEventSaved = (eventId) => (state) => {
   const savedEvents = state.events.savedEvents;
 
-  // Ensure it's an array
   if (!Array.isArray(savedEvents)) {
     return false;
   }
-
-  // Check the structure of saved events
-  if (savedEvents.length > 0) {
-  }
-
-  const isFound = savedEvents.some((event) => {
-    return event.event?._id === eventId;
+  const isFound = savedEvents.some((savedEvent) => {
+    return (
+      savedEvent.event?._id === eventId ||
+      savedEvent.event === eventId ||
+      savedEvent._id === eventId
+    );
   });
 
   return isFound;
