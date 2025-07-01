@@ -62,6 +62,19 @@ export const deleteNews = createAsyncThunk(
   }
 );
 
+// Restore news
+export const restoreNews = createAsyncThunk(
+  "news/restore",
+  async (id, thunkAPI) => {
+    try {
+      return await newsService.restoreNews(id);
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Post news via email
 export const postNewsViaEmail = createAsyncThunk(
   "news/postViaEmail",
@@ -147,6 +160,24 @@ const newsSlice = createSlice({
         toast.success("News deleted successfully");
       })
       .addCase(deleteNews.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+      // Restore news
+      .addCase(restoreNews.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(restoreNews.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.news = state.news.map((news) =>
+          news._id === action.payload._id ? action.payload : news
+        );
+        toast.success("News restored successfully");
+      })
+      .addCase(restoreNews.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;

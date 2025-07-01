@@ -376,109 +376,191 @@ const PastEventsTab = () => {
       })
   }, [events])
 
-  const downloadInvoicePDF = (event) => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
-    const margin = 40
-    let y = margin
+//   import jsPDF from "jspdf"
+// import { formatCompanyAddress, formatDate, formatTime, getAffiliateField } from "./utils" // Assuming these functions are imported from a utils file
+// import { company, affiliate } from "./data" // Assuming company and affiliate are imported from a data file
 
-    // --- Header Section ---
-    // Left: Logo + Company Info
-    const logoSize = 48;
-    doc.addImage('/logo_white.png', 'PNG', margin, y, logoSize, logoSize)
-    doc.setFontSize(16)
-    doc.setTextColor('#900C3F')
-    doc.text(company.name || 'HEVSUITE', margin + logoSize + 12, y + 18)
-    doc.setFontSize(10)
-    doc.setTextColor('#666')
-    doc.text(company.email || 'info@hevsuite.com', margin + logoSize + 12, y + 34)
-    doc.setTextColor('#888')
-    doc.text(formatCompanyAddress(company) || '123 Main Street, City, Country', margin + logoSize + 12, y + 48)
+const downloadInvoicePDF = (event) => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
+  const margin = 40
+  let y = margin
 
-    // Right: Receipt Info (top-aligned with logo)
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const rightX = pageWidth - margin;
-    let rightY = y;
-    doc.setFontSize(22)
-    doc.setTextColor('#900C3F')
-    doc.text('Receipt', rightX, rightY + 10, { align: 'right' })
-    doc.setFontSize(10)
-    doc.setTextColor('#666')
-    doc.text(`#RCP-${event._id?.slice(-12).toUpperCase() || 'N/A'}`, rightX, rightY + 28, { align: 'right' })
-    doc.setTextColor('#222')
-    doc.text(`Bill To: ${(typeof event.affiliatePartner === 'object' ? event.affiliatePartner.businessName || event.affiliatePartner.name : affiliate?.businessName || affiliate?.name) || 'Affiliate'}`, rightX, rightY + 43, { align: 'right' })
-    doc.setTextColor('#666')
-    doc.text((typeof event.affiliatePartner === 'object' && event.affiliatePartner.businessEmail) ? event.affiliatePartner.businessEmail : (affiliate?.businessEmail || 'affiliate@email.com'), rightX, rightY + 56, { align: 'right' })
-    doc.text(`${formatDate(new Date())}, ${formatTime(new Date())}`, rightX, rightY + 69, { align: 'right' })
-    // Status badge
-    doc.setFillColor(event.balance === 0 ? 46 : 200, event.balance === 0 ? 125 : 160, event.balance === 0 ? 50 : 0)
-    doc.roundedRect(rightX - 60, rightY + 75, 60, 20, 6, 6, 'F')
-    doc.setFontSize(10)
-    doc.setTextColor('#fff')
-    doc.text(event.balance === 0 ? 'PAID' : 'UNPAID', rightX - 30, rightY + 90, { align: 'center' })
+  // --- Header Section - Single Column Layout ---
+  const logoSize = 38
+  const spacing = 20 // Space between elements
 
-    // Set y to the lower of left or right section
-    y = Math.max(y + logoSize + 20, rightY + 100)
-    doc.setDrawColor('#eee')
-    doc.line(margin, y, rightX, y)
-    y += 20
+  // Draw logo (centered or left-aligned)
+  doc.addImage("/logo_white.png", "PNG", margin, y, logoSize, logoSize)
+  y += logoSize + spacing // Move Y position below the logo
 
-    // --- Purchase Details ---
-    doc.setFontSize(13)
-    doc.setTextColor('#900C3F')
-    doc.text('Purchase Details', margin, y)
-    y += 18
-    doc.setFontSize(10)
-    doc.setTextColor('#222')
-    const ticketsSold = event.invitedUsers?.length || 0;
-    const price = event.price || 0;
-    const total = ticketsSold * price;
-    const commission = total * 0.1;
-    const details = [
-      ['Tickets Sold', ticketsSold.toString()],
-      ['Price per Ticket', `£${price}`],
-      ['Total', `£${total.toFixed(2)}`],
-      ['Commission (10%)', `£${commission.toFixed(2)}`],
-      ['Amount Paid', `£${commission.toFixed(2)}`],
-      ['Bank Name', getAffiliateField('bankName')],
-      ['Account Number', getAffiliateField('accountNumber')],
-    ];
-    const labelX = margin;
-    const valueX = rightX; // perfectly right-aligned
-    details.forEach(([label, value]) => {
-      doc.text(label, labelX, y)
-      doc.text(value, valueX, y, { align: 'right' })
-      y += 18
-    })
-    y += 10
+  // Draw company name
+  doc.setFontSize(16)
+  doc.setTextColor("#900C3F")
+  doc.text(company.name || "HEVSUITE", margin, y)
+  y += 20 // Move Y position for next element
 
-    // --- Total Amount Paid ---
-    doc.setFillColor(245, 245, 245)
-    doc.roundedRect(margin, y, pageWidth - margin * 2, 40, 8, 8, 'F')
-    doc.setFontSize(14)
-    doc.setTextColor('#900C3F')
-    doc.text('Total Amount Paid', margin + 10, y + 25)
-    doc.setFontSize(20)
-    doc.setTextColor('#218838')
-    doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 27, { align: 'right' })
-    y += 60
+  // Draw email
+  doc.setFontSize(10)
+  doc.setTextColor("#666")
+  doc.text(company.email || "info@hevsuite.com", margin, y)
+  y += 16 // Move Y position for next element
 
-    // --- Footer (centered) ---
-    doc.setFontSize(10)
-    doc.setTextColor('#222')
-    doc.text('Thank you for your purchase!', pageWidth / 2, y, { align: 'center' })
-    y += 15
-    doc.setTextColor('#666')
-    doc.text(`For support or inquiries, contact us at ${company.email || 'support@hevsuite.com'}`, pageWidth / 2, y, { align: 'center' })
-    y += 15
-    doc.setTextColor('#666')
-    doc.text('Hazor Group Ltd', pageWidth / 2, y, { align: 'center' })
-    y += 15
-    doc.setFontSize(9)
-    doc.setTextColor('#888')
-    doc.text('HevSuite Club - Building Communities Through Events', pageWidth / 2, y, { align: 'center' })
+  // Draw address
+  doc.setTextColor("#888")
+  doc.text(formatCompanyAddress(company) || "123 Main Street, City, Country", margin, y)
+  y += 20 // Add some space after address
 
-    doc.save(`receipt_${event._id?.slice(-12).toUpperCase() || 'N/A'}.pdf`)
+  // --- Event Info (like modal) ---
+  doc.setFontSize(13)
+  doc.setTextColor("#900C3F")
+  doc.setFont(undefined, "bold")
+  doc.text(event.name || "N/A", margin, y)
+  y += 18
+  doc.setFontSize(11)
+  doc.setTextColor("#666")
+  doc.setFont(undefined, "normal")
+  doc.text(`${formatDate(event.time)} - ${formatDate(event.endTime)}`, margin, y)
+  y += 2
+
+  // Right: Receipt Info (positioned independently)
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const rightX = pageWidth - margin
+  const rightY = margin // Start from top margin
+
+  doc.setFontSize(22)
+  doc.setTextColor("#900C3F")
+  doc.text("Receipt", rightX, rightY + 10, { align: "right" })
+
+  doc.setFontSize(10)
+  doc.setTextColor("#666")
+  doc.text(`#RCP-${event._id?.slice(-12).toUpperCase() || "N/A"}`, rightX, rightY + 28, { align: "right" })
+
+  doc.setTextColor("#222")
+  doc.text(
+    `Bill To: ${(typeof event.affiliatePartner === "object" ? event.affiliatePartner.businessName || event.affiliatePartner.name : affiliate?.businessName || affiliate?.name) || "Affiliate"}`,
+    rightX,
+    rightY + 43,
+    { align: "right" },
+  )
+
+  doc.setTextColor("#666")
+  doc.text(
+    typeof event.affiliatePartner === "object" && event.affiliatePartner.businessEmail
+      ? event.affiliatePartner.businessEmail
+      : affiliate?.businessEmail || "affiliate@email.com",
+    rightX,
+    rightY + 56,
+    { align: "right" },
+  )
+
+  doc.text(`${formatDate(new Date())}, ${formatTime(new Date())}`, rightX, rightY + 69, { align: "right" })
+
+  // Status badge
+  doc.setFillColor(46, 125, 50) // Always green for PAID
+  doc.roundedRect(rightX - 60, rightY + 75, 60, 20, 6, 6, "F")
+  doc.setFontSize(10)
+  doc.setTextColor("#fff")
+  doc.text("PAID", rightX - 30, rightY + 90, { align: "center" })
+  // Additional status: Full Payment or Partial Payment
+  doc.setFontSize(9)
+  doc.setTextColor("#218838")
+  if (event.balance === 0) {
+    doc.text("Full Payment", rightX - 30, rightY + 105, { align: "center" })
+  } else {
+    doc.text("Full Payment", rightX - 30, rightY + 105, { align: "center" })
   }
+
+  // Set y to the lower of left or right section
+  y = Math.max(y + 10, rightY + 110) // Ensure enough space after both sections
+
+  doc.setDrawColor("#eee")
+  doc.line(margin, y, rightX, y)
+  y += 20
+
+  // --- Purchase Details ---
+  doc.setFontSize(13)
+  doc.setTextColor("#900C3F")
+  doc.text("Purchase Details", margin, y)
+  y += 1
+
+  y = Math.max(y + 10, rightY + 110) // Ensure enough space after both sections
+
+  doc.setDrawColor("#eee")
+  doc.line(margin, y, rightX, y)
+  y += 20
+
+  doc.setFontSize(10)
+  doc.setTextColor("#222")
+
+  const ticketsSold = event.invitedUsers?.length || 0
+  const price = event.price || 0
+  const total = ticketsSold * price
+  const commission = total * 0.1
+
+  const details = [
+    ["Tickets Sold", ticketsSold.toString()],
+    ["Price per Ticket", `£${price}`],
+    ["Total", `£${total.toFixed(2)}`],
+    ["Commission (10%)", `£${commission.toFixed(2)}`],
+    ["Amount Paid", `£${commission.toFixed(2)}`],
+    ["Bank Name", getAffiliateField("bankName")],
+    ["Account Number", getAffiliateField("accountNumber")],
+    ["Transaction ID", event.transactionId || "3B8175TAT2517600"],
+  ]
+
+  const labelX = margin
+  const valueX = rightX // perfectly right-aligned
+
+  details.forEach(([label, value]) => {
+    doc.text(label, labelX, y)
+    if (label === "Transaction ID") {
+      doc.setFont("courier", "normal")
+      doc.text(value, valueX, y, { align: "right" })
+      doc.setFont("helvetica", "normal") // Switch back to default
+    } else {
+      doc.text(value, valueX, y, { align: "right" })
+    }
+    y += 18
+  })
+
+  y += 10
+
+  // --- Total Amount Paid ---
+  doc.setFillColor(245, 245, 245)
+  doc.roundedRect(margin, y, pageWidth - margin * 2, 40, 8, 8, "F")
+
+  doc.setFontSize(14)
+  doc.setTextColor("#900C3F")
+  doc.text("Total Amount Paid", margin + 10, y + 25)
+
+  doc.setFontSize(20)
+  doc.setTextColor("#218838")
+  doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 27, { align: "right" })
+
+  y += 60
+
+  // --- Footer (centered) ---
+  doc.setFontSize(10)
+  doc.setTextColor("#222")
+  doc.text("Thank you for your purchase!", pageWidth / 2, y, { align: "center" })
+  y += 15
+
+  doc.setTextColor("#666")
+  doc.text(`For support or inquiries, contact us at ${company.email || "support@hevsuite.com"}`, pageWidth / 2, y, {
+    align: "center",
+  })
+  y += 15
+
+  doc.setTextColor("#666")
+  doc.text("Hazor Group Ltd", pageWidth / 2, y, { align: "center" })
+  y += 15
+
+  doc.setFontSize(9)
+  doc.setTextColor("#888")
+  doc.text("HevSuite Club - Building Communities Through Events", pageWidth / 2, y, { align: "center" })
+
+  doc.save(`receipt_${event._id?.slice(-12).toUpperCase() || "N/A"}.pdf`)
+}
 
   // Helper to format company address
   const formatCompanyAddress = (company) => {
@@ -1157,9 +1239,14 @@ const PastEventsTab = () => {
                 </div>
               </div>
               <hr className="my-6 border-gray-200" />
-              {/* Purchase Details */}
+              {/* Event Info - styled like the provided image */}
               <div className="mb-6">
-                <h3 className="text-lg font-bold mb-4 text-[#900C3F]">Purchase Details</h3>
+                <div className="font-bold text-[#900C3F] text-base mb-0">{selectedEvent.name || 'N/A'}</div>
+                <div className="text-gray-600 text-sm mt-0.5">{formatDate(selectedEvent.time)} - {formatDate(selectedEvent.endTime)}</div>
+              </div>
+              {/* Purchase Details */}
+              <div className="mb-5">
+                <h3 className="text-lg font-bold mb-2 text-[#900C3F]">Purchase Details</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tickets Sold</span>
@@ -1188,6 +1275,10 @@ const PastEventsTab = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Account Number</span>
                     <span className="text-gray-900 font-medium">{getAffiliateField('accountNumber')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Transaction ID</span>
+                    <span className="text-gray-900 font-medium">{selectedEvent?.transactionId || '3B8175TAT2517600'}</span>
                   </div>
                 </div>
               </div>
