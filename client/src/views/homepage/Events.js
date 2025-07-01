@@ -5,14 +5,12 @@ import { BsCalendar } from "react-icons/bs";
 import { MdPerson, MdLocationOn } from "react-icons/md";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { FaArrowLeft } from "react-icons/fa";
 import { fetchNonExpiredNews } from "../../features/newsSlice";
 import { fetchEvents, fetchAllEventTypes } from "../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
 import toast from "react-hot-toast";
-import { fetchProfile } from "../../features/auth/authSlice";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -379,74 +377,22 @@ const Events = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("scroll");
-  const { user } = useSelector((state) => state.auth);
 
   // Payment and attend modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
     dispatch(fetchAllEventTypes());
-    dispatch(fetchProfile());
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
-
-  // Extract unique countries from event locations (last part of location string)
-  const getUniqueCountries = () => {
-    if (!events) return [];
-
-    const approvedEvents = events.filter(
-      (event) => event.status.toLowerCase() === "approved"
-    );
-    const countries = approvedEvents
-      .map((event) => {
-        if (event.location && typeof event.location === "string") {
-          // Split by comma and get the last part (country), then trim whitespace
-          const parts = event.location.split(",");
-          return parts[parts.length - 1].trim();
-        }
-        return null;
-      })
-      .filter(Boolean); // Remove null/empty values
-
-    return [...new Set(countries)].sort(); // Remove duplicates and sort
-  };
-
-  // Extract unique cities from event locations (search backwards for text without digits)
-  const getUniqueCities = () => {
-    if (!events) return [];
-
-    const approvedEvents = events.filter(
-      (event) => event.status.toLowerCase() === "approved"
-    );
-    const cities = approvedEvents
-      .map((event) => {
-        if (event.location && typeof event.location === "string") {
-          // Split by comma and search backwards for a part without digits
-          const parts = event.location.split(",");
-          for (let i = parts.length - 2; i >= 0; i--) {
-            const part = parts[i].trim();
-            // Check if the part doesn't contain any digits
-            if (part && !/\d/.test(part)) {
-              return part;
-            }
-          }
-        }
-        return null;
-      })
-      .filter(Boolean);
-
-    return [...new Set(cities)].sort();
-  };
-
-  const countries = getUniqueCountries();
-  const cities = getUniqueCities();
 
   // Reset page when filters change
   useEffect(() => {
@@ -459,11 +405,6 @@ const Events = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (user.isRestricted) {
-      toast.error("You are restricted from attending events");
-      return;
-    }
     if (event.audienceType !== "all") {
       if (isUserAttending(event._id)) {
         toast.info("You are already registered for this event");
@@ -512,8 +453,19 @@ const Events = () => {
         // Only show approved events
         if (event.status.toLowerCase() !== "approved") return false;
 
-        if (selectedAudience && event.audienceType !== selectedAudience)
-          return false;
+        // Audience filter: "members" should include both "members" and "vip"
+        if (selectedAudience) {
+          if (selectedAudience === "members") {
+            if (
+              event.audienceType !== "members" &&
+              event.audienceType !== "vip"
+            ) {
+              return false;
+            }
+          } else if (event.audienceType !== selectedAudience) {
+            return false;
+          }
+        }
 
         if (selectedCountry) {
           const eventCountry =
@@ -539,17 +491,14 @@ const Events = () => {
           if (eventCity !== selectedCity) return false;
         }
 
-        if (selectedDate === "newest") {
-          return true;
-        } else if (selectedDate === "oldest") {
-          return true;
-        } else if (selectedDate === "a-to-z") {
-          return true;
-        } else if (selectedDate === "z-to-a") {
-          return true;
-        } else if (selectedDate === "city-a-to-z") {
-          return true;
-        } else if (selectedDate === "city-z-to-a") {
+        if (
+          selectedDate === "newest" ||
+          selectedDate === "oldest" ||
+          selectedDate === "a-to-z" ||
+          selectedDate === "z-to-a" ||
+          selectedDate === "city-a-to-z" ||
+          selectedDate === "city-z-to-a"
+        ) {
           return true;
         }
 
@@ -605,7 +554,53 @@ const Events = () => {
       });
   };
 
-  // Get filtered events
+  const getUniqueCountries = () => {
+    if (!events) return [];
+
+    const approvedEvents = events.filter(
+      (event) => event.status.toLowerCase() === "approved"
+    );
+    const countries = approvedEvents
+      .map((event) => {
+        if (event.location && typeof event.location === "string") {
+          // Split by comma and get the last part (country), then trim whitespace
+          const parts = event.location.split(",");
+          return parts[parts.length - 1].trim();
+        }
+        return null;
+      })
+      .filter(Boolean); // Remove null/empty values
+
+    return [...new Set(countries)].sort(); // Remove duplicates and sort
+  };
+
+  const getUniqueCities = () => {
+    if (!events) return [];
+
+    const approvedEvents = events.filter(
+      (event) => event.status.toLowerCase() === "approved"
+    );
+    const cities = approvedEvents
+      .map((event) => {
+        if (event.location && typeof event.location === "string") {
+          const parts = event.location.split(",");
+          for (let i = parts.length - 2; i >= 0; i--) {
+            const part = parts[i].trim();
+            if (part && !/\d/.test(part)) {
+              return part;
+            }
+          }
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return [...new Set(cities)].sort();
+  };
+
+  const countries = getUniqueCountries();
+  const cities = getUniqueCities();
+
   const filteredEvents = filterEvents();
 
   const eventsPerPage = 12;
@@ -622,24 +617,8 @@ const Events = () => {
 
   return (
     <div className="min-h-screen">
-      {showPaymentModal && (
-        <PaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          paymentData={paymentData}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
-      )}
-
-      {showTicketModal && selectedEvent && (
-        <TicketSelectionModal
-          event={selectedEvent}
-          onClose={handleTicketModalClose}
-          setPaymentData={setPaymentData}
-          setShowOneTimePaymentModal={setShowPaymentModal}
-        />
-      )}
-      <div className="relative text-white min-h-screen">
+      {/* Header */}
+      <div className={`relative text-white`}>
         <div className="absolute inset-0 z-0">
           <img
             src={headerBg}
@@ -648,218 +627,267 @@ const Events = () => {
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
-        <div className="relative z-10">
+
+        <div className="relative z-10 pb-20">
           <Header />
-
-          <div className="relative px-6 py-4">
-            <div className="md:hidden space-y-4">
-              <div className="w-full pt-20">
-                <Link
-                  to="/homepage"
-                  className="text-white flex gap-4 items-center border p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm w-fit"
+          <div className="max-w-[1400px] mx-auto px-4">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row items-center gap-4 justify-center">
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-start gap-2 md:gap-4 mt-28">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="md:hidden w-auto bg-[#540A26] text-white py-4 px-2 rounded-lg mb-2 shadow-lg flex flex-col items-center justify-center self-start"
+                  style={{
+                    writingMode: "vertical-lr",
+                    textOrientation: "mixed",
+                    minHeight: "96px",
+                    minWidth: "40px",
+                    transform: "rotate(180deg)",
+                  }}
                 >
-                  <FaArrowLeft />
-                  <span>Go to home</span>
-                </Link>
-              </div>
+                  {showFilters ? "Hide Filters" : "Show Filters"}
+                </button>
 
-              <div className="flex flex-col space-y-3">
-                <div className="relative w-full">
-                  <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                    value={selectedAudience}
-                    onChange={(e) => setSelectedAudience(e.target.value)}
+                {/* Mobile Modal */}
+                {showFilters && (
+                  <div
+                    className="md:hidden fixed w-[290px] max-w-full top-0 left-0 bg-black bg-opacity-50 flex items-start justify-start z-50"
+                    style={{ animation: "slideInFromLeft 0.3s ease-out" }}
                   >
-                    <option value="" className="text-black">
-                      Audience
-                    </option>
-                    <option value="members" className="text-black">
-                      For Members
-                    </option>
-                    <option value="all" className="text-black">
-                      Public Event
-                    </option>
-                    <option value="vip" className="text-black">
-                      Vip Members
-                    </option>
-                  </select>
-                </div>
-
-                <div className="relative w-full">
-                  <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                  >
-                    <option value="" className="text-black">
-                      All Countries
-                    </option>
-                    {countries.map((country) => (
-                      <option
-                        key={country}
-                        value={country}
-                        className="text-black"
-                      >
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="relative w-full">
-                  <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                  >
-                    <option value="" className="text-black">
-                      All Cities
-                    </option>
-                    {cities.map((city) => (
-                      <option key={city} value={city} className="text-black">
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="relative w-full">
-                  <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                  >
-                    <option value="" className="text-black">
-                      Sort By
-                    </option>
-                    <option value="newest" className="text-black">
-                      Newest to Oldest
-                    </option>
-                    <option value="oldest" className="text-black">
-                      Oldest to Newest
-                    </option>
-                    <option value="a-to-z" className="text-black">
-                      Name: A to Z
-                    </option>
-                    <option value="z-to-a" className="text-black">
-                      Name: Z to A
-                    </option>
-                    <option value="city-a-to-z" className="text-black">
-                      City: A to Z
-                    </option>
-                    <option value="city-z-to-a" className="text-black">
-                      City: Z to A
-                    </option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="hidden md:flex md:flex-row items-center justify-center md:space-x-4">
-              <div className="absolute bottom-4 left-6 w-full md:w-auto md:mt-24">
-                <Link
-                  to="/homepage"
-                  className="text-white flex gap-4 items-center border mt-4 p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  <FaArrowLeft />
-                  <span>Go to home</span>
-                </Link>
-              </div>
-
-              <div className="relative w-full md:w-auto mt-24">
-                <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                  value={selectedAudience}
-                  onChange={(e) => setSelectedAudience(e.target.value)}
-                >
-                  <option value="" className="text-black">
-                    Audience
-                  </option>
-                  <option value="members" className="text-black">
-                    For Members
-                  </option>
-                  <option value="all" className="text-black">
-                    Public Event
-                  </option>
-                  <option value="vip" className="text-black">
-                    Vip Members
-                  </option>
-                </select>
-              </div>
-
-              <div className="relative w-full md:w-auto mt-2 md:mt-24">
-                <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                >
-                  <option value="" className="text-black">
-                    All Countries
-                  </option>
-                  {countries.map((country) => (
-                    <option
-                      key={country}
-                      value={country}
-                      className="text-black"
+                    <div
+                      className="bg-white rounded-lg p-6 m-4 w-full max-w-[95vw] max-h-[90vh] overflow-y-auto"
+                      style={{
+                        position: "absolute",
+                        left: "50px",
+                        top: "50px",
+                      }}
                     >
-                      {country}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-black">
+                          Filters
+                        </h3>
+                        <button
+                          onClick={() => setShowFilters(false)}
+                          className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                          ×
+                        </button>
+                      </div>
 
-              <div className="relative w-full md:w-auto mt-2 md:mt-24">
-                <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                >
-                  <option value="" className="text-black">
-                    All Cities
-                  </option>
-                  {cities.map((city) => (
-                    <option key={city} value={city} className="text-black">
-                      {city}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                      <div className="flex flex-col gap-4">
+                        <div className="relative w-full">
+                          <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <select
+                            className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none text-gray-700"
+                            value={selectedAudience}
+                            onChange={(e) =>
+                              setSelectedAudience(e.target.value)
+                            }
+                          >
+                            <option value="" className="text-black">
+                              Audience
+                            </option>
+                            <option value="vip" className="text-black">
+                              Vip Members
+                            </option>
+                            <option value="members" className="text-black">
+                              All Members
+                            </option>
+                            <option value="all" className="text-black">
+                              Public
+                            </option>
+                          </select>
+                        </div>
 
-              <div className="relative w-full md:w-auto mt-2 md:mt-24">
-                <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  className="w-full md:w-auto bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                >
-                  <option value="" className="text-black">
-                    Sort By
-                  </option>
-                  <option value="newest" className="text-black">
-                    Newest to Oldest
-                  </option>
-                  <option value="oldest" className="text-black">
-                    Oldest to Newest
-                  </option>
-                  <option value="a-to-z" className="text-black">
-                    Name: A to Z
-                  </option>
-                  <option value="z-to-a" className="text-black">
-                    Name: Z to A
-                  </option>
-                  <option value="city-a-to-z" className="text-black">
-                    City: A to Z
-                  </option>
-                  <option value="city-z-to-a" className="text-black">
-                    City: Z to A
-                  </option>
-                </select>
+                        <div className="relative w-full">
+                          <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <select
+                            className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none text-gray-700"
+                            value={selectedCountry}
+                            onChange={(e) => setSelectedCountry(e.target.value)}
+                          >
+                            <option value="" className="text-black">
+                              All Countries
+                            </option>
+                            {countries.map((country) => (
+                              <option
+                                key={country}
+                                value={country}
+                                className="text-black"
+                              >
+                                {country}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="relative w-full">
+                          <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <select
+                            className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none text-gray-700"
+                            value={selectedCity}
+                            onChange={(e) => setSelectedCity(e.target.value)}
+                          >
+                            <option value="" className="text-black">
+                              All Cities
+                            </option>
+                            {cities.map((city) => (
+                              <option
+                                key={city}
+                                value={city}
+                                className="text-black"
+                              >
+                                {city}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="relative w-full">
+                          <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <select
+                            className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none text-gray-700"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                          >
+                            <option value="" className="text-black">
+                              Sort By
+                            </option>
+                            <option value="newest" className="text-black">
+                              Newest to Oldest
+                            </option>
+                            <option value="oldest" className="text-black">
+                              Oldest to Newest
+                            </option>
+                            <option value="a-to-z" className="text-black">
+                              Name: A to Z
+                            </option>
+                            <option value="z-to-a" className="text-black">
+                              Name: Z to A
+                            </option>
+                            <option value="city-a-to-z" className="text-black">
+                              City: A to Z
+                            </option>
+                            <option value="city-z-to-a" className="text-black">
+                              City: Z to A
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-6">
+                        <button
+                          onClick={() => setShowFilters(false)}
+                          className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => setShowFilters(false)}
+                          className="flex-1 bg-[#540A26] text-white py-2 px-4 rounded-lg"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Desktop Filters */}
+                <div className="hidden md:flex items-center gap-2 md:gap-4 w-full">
+                  <div className="relative w-full">
+                    <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      value={selectedAudience}
+                      onChange={(e) => setSelectedAudience(e.target.value)}
+                    >
+                      <option value="" className="text-black">
+                        Audience
+                      </option>
+                      <option value="vip" className="text-black">
+                        Vip Members
+                      </option>
+                      <option value="members" className="text-black">
+                        All Members
+                      </option>
+                      <option value="all" className="text-black">
+                        Public
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="relative w-full">
+                    <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                    >
+                      <option value="" className="text-black">
+                        All Countries
+                      </option>
+                      {countries.map((country) => (
+                        <option
+                          key={country}
+                          value={country}
+                          className="text-black"
+                        >
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="relative w-full">
+                    <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                    >
+                      <option value="" className="text-black">
+                        All Cities
+                      </option>
+                      {cities.map((city) => (
+                        <option key={city} value={city} className="text-black">
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="relative w-full">
+                    <BsCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select
+                      className="w-full bg-transparent border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-sm appearance-none"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                    >
+                      <option value="" className="text-black">
+                        Sort By
+                      </option>
+                      <option value="newest" className="text-black">
+                        Newest to Oldest
+                      </option>
+                      <option value="oldest" className="text-black">
+                        Oldest to Newest
+                      </option>
+                      <option value="a-to-z" className="text-black">
+                        Name: A to Z
+                      </option>
+                      <option value="z-to-a" className="text-black">
+                        Name: Z to A
+                      </option>
+                      <option value="city-a-to-z" className="text-black">
+                        City: A to Z
+                      </option>
+                      <option value="city-z-to-a" className="text-black">
+                        City: Z to A
+                      </option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
