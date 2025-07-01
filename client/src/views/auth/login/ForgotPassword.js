@@ -12,15 +12,19 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!emailOrPhone.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await authService.forgotPassword(emailOrPhone);
 
-      // Store the email/phone in session for the reset page
-      sessionStorage.setItem('resetIdentifier', emailOrPhone);
-      // toast.success(response.message);
       toast.success(response.message || 'Password reset link sent to your email');
-      // navigate("/reset-password");
+      // Clear the form after successful submission
+      setEmailOrPhone("");
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -82,20 +86,25 @@ const ForgotPassword = () => {
               <h2 className="text-2xl md:text-3xl font-medium mb-1 font-primary text-[#333333]">
                 Reset Password
               </h2>
+              <p className="text-gray-600 text-sm mt-2">
+                Enter your email address and we'll send you a secure link to reset your password.
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               <div>
                 <label className="block mb-2 text-gray-800">
-                  Email/Membership ID
+                  Email Address
                 </label>
                 <div className="relative">
                   <input
-                    type="text"
-                    placeholder="Enter email address"
+                    type="email"
+                    placeholder="Enter your email address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-12"
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
+                    disabled={isLoading}
+                    required
                   />
                   <span className="absolute left-4 top-1/2 -translate-y-1/2">
                     <svg
@@ -114,19 +123,28 @@ const ForgotPassword = () => {
                   </span>
                 </div>
                 <p className="text-gray-500 text-xs mt-2">
-                  Receive link to reset password via email
+                  We'll send you a secure reset link that expires in 10 minutes
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${isLoading ? 'opacity-50' : ''
+                className={`w-full py-3 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-3xl font-secondary text-lg font-medium ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
               >
-                Reset Password
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
             </form>
+
+            <div className="mt-6 text-center">
+              <Link
+                to="/login"
+                className="text-[#540A26] hover:text-[#0A5440] font-medium"
+              >
+                Back to Login
+              </Link>
+            </div>
           </div>
 
           {/* Mobile-only bottom section */}
