@@ -494,7 +494,7 @@ const Events = () => {
           if (event.location && typeof event.location === "string") {
             // Search backwards for a part without digits
             const parts = event.location.split(",");
-            for (let i = parts.length - 2; i >= 0; i--) {
+            for (let i = parts.length - 4; i >= 0; i--) {
               const part = parts[i].trim();
               if (part && !/\d/.test(part)) {
                 eventCity = part;
@@ -535,7 +535,7 @@ const Events = () => {
           const getCityFromLocation = (location) => {
             if (location && typeof location === "string") {
               const parts = location.split(",");
-              for (let i = parts.length - 2; i >= 0; i--) {
+              for (let i = parts.length - 4; i >= 0; i--) {
                 const part = parts[i].trim();
                 if (part && !/\d/.test(part)) {
                   return part;
@@ -551,7 +551,7 @@ const Events = () => {
           const getCityFromLocation = (location) => {
             if (location && typeof location === "string") {
               const parts = location.split(",");
-              for (let i = parts.length - 2; i >= 0; i--) {
+              for (let i = parts.length - 4; i >= 0; i--) {
                 const part = parts[i].trim();
                 if (part && !/\d/.test(part)) {
                   return part;
@@ -598,7 +598,7 @@ const Events = () => {
       .map((event) => {
         if (event.location && typeof event.location === "string") {
           const parts = event.location.split(",");
-          for (let i = parts.length - 2; i >= 0; i--) {
+          for (let i = parts.length - 4; i >= 0; i--) {
             const part = parts[i].trim();
             if (part && !/\d/.test(part)) {
               return part;
