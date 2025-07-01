@@ -4,6 +4,7 @@ import {
   Navigate,
   useLocation,
   useSearchParams,
+  useNavigate,
 } from "react-router-dom";
 
 import Landing from "./views/landing/Landing";
@@ -37,7 +38,7 @@ import axios from "axios";
 import MakeSubscriptionPayment from "./views/account/settings/components/paymentChannels.js/subscriptionPayments";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "./features/auth/authSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import MaintenancePage from "./components/MaintainanceMode";
 import { fetchGeneralSettings } from "./features/generalSettingSlice";
 // import NotFound from "./views/NotFound";
@@ -48,6 +49,7 @@ import PageWrapper from "./components/PageWrapper";
 import UserVerifyEmail from "./views/auth/login/userVerifyEmail";
 import UpcomingEvents from "./views/account/events/UpcomingEvents";
 import SelectedEvent from "./views/homepage/SelectedEvent";
+import PenaltyModal from "./components/PenaltyModal";
 
 axios.defaults.withCredentials = true;
 
@@ -79,9 +81,6 @@ const ProtectedRoute = ({ children }) => {
   if (!isAuthenticated && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  if (user.isPenalized) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
 
   // Check membership status if user exists
   // if (user && user.membershipStatus !== "accepted") {
@@ -95,6 +94,42 @@ const ProtectedRoute = ({ children }) => {
   // }
 
   return children;
+};
+
+const PenaltyHandler = ({ children }) => {
+  const { user } = useSelector((state) => state.auth);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && user.isPenalized) {
+      // If user is penalized and not on homepage, redirect
+      if (location.pathname !== "/homepage") {
+        navigate("/homepage", { replace: true });
+      }
+      // Always show modal for penalized users
+      setShowPenaltyModal(true);
+    } else {
+      setShowPenaltyModal(false);
+    }
+  }, [user?.isPenalized, location.pathname, navigate]);
+
+  const handlePenaltyModalClose = () => {
+    setShowPenaltyModal(false);
+  };
+
+  return (
+    <>
+      {children}
+      {showPenaltyModal && (
+        <PenaltyModal
+          isOpen={showPenaltyModal}
+          onClose={handlePenaltyModalClose}
+        />
+      )}
+    </>
+  );
 };
 // Add this new component
 const LoginRedirect = ({ children }) => {
@@ -355,7 +390,9 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <ProtectedRoute>
-        <AuthLayout />
+        <PenaltyHandler>
+          <AuthLayout />
+        </PenaltyHandler>
       </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
