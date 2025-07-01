@@ -299,6 +299,13 @@ const Homepage = () => {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 
+  useEffect(() => {
+    const firstNavButton = document.querySelector(".custom-prev");
+    if (firstNavButton) {
+      firstNavButton.click();
+    }
+  }, []);
+
   if (userIdentificationApproved === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
