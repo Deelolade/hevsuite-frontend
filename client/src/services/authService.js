@@ -99,7 +99,7 @@ const forgotPassword = async (emailOrPhone) => {
     // Determine if input is email or phone
     const isEmail = emailOrPhone.includes("@");
     const payload = isEmail ? { email: emailOrPhone } : { phone: emailOrPhone };
-    const response = await axios.post(`${API_URL}forgot-password`, payload);
+    const response = await axios.post(`${API_URL}user-forgot-password`, payload);
     return response.data;
   } catch (error) {
     throw new Error(
@@ -109,15 +109,15 @@ const forgotPassword = async (emailOrPhone) => {
   }
 };
 
-// Reset Password - Confirm with code and new password
-const resetPassword = async (code, newPassword, userId) => {
+// Reset Password - Confirm with token and new password
+const resetPassword = async (token, newPassword, userId) => {
   try {
     const payload = {
-      code,
+      token,
       newPassword,
       userId,
     };
-    const response = await axios.post(`${API_URL}reset-password`, payload);
+    const response = await axios.post(`${API_URL}reset-user-password`, payload);
     return response.data;
   } catch (error) {
     throw new Error(

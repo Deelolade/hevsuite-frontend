@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import authService from "../../../services/authService";
@@ -7,6 +6,7 @@ import logo from '../../../assets/logo_white.png';
 import image from '../../../assets/image.jpg';
 import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
+
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,16 +19,19 @@ const ResetPasswordPage = () => {
     confirm: false
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [countdown, setCountdown] = useState(30);
 
-  // Get email from location state or session storage
-  const emailOrPhone = sessionStorage.getItem('resetIdentifier');
+  // Get token and userId from URL parameters
   const searchParams = new URLSearchParams(location.search);
-  const code = searchParams.get('code');
+  const token = searchParams.get('token');
   const userId = searchParams.get('userId');
 
-
+  // Check if we have the required parameters
+  React.useEffect(() => {
+    if (!token || !userId) {
+      toast.error('Invalid reset link. Please request a new password reset.');
+      navigate('/forgot-password');
+    }
+  }, [token, userId, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,12 +40,12 @@ const ResetPasswordPage = () => {
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{7,}$/;
       return passwordRegex.test(pass);
     };
+    
     // Validate passwords
     if (!validatePassword(passwordData.newPassword)) {
       toast.error('One uppercase, lowercase and a minimum of 7 characters)');
       return;
     }
-
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("Passwords don't match");
@@ -58,13 +61,12 @@ const ResetPasswordPage = () => {
 
     try {
       await authService.resetPassword(
-        code,
+        token,
         passwordData.newPassword,
         userId
       );
 
       toast.success('Password reset successfully!');
-      sessionStorage.removeItem('resetEmail');
       navigate("/reset-success");
     } catch (error) {
       toast.error(error.message);
@@ -73,13 +75,10 @@ const ResetPasswordPage = () => {
     }
   };
 
-  // Countdown timer for resend
-  React.useEffect(() => {
-    const timer = countdown > 0 && setInterval(() => {
-      setCountdown(countdown - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
+  // If no token or userId, don't render the form
+  if (!token || !userId) {
+    return null;
+  }
 
   return (
     <div className='min-h-screen md:grid md:grid-cols-2 relative'>
@@ -125,6 +124,7 @@ const ResetPasswordPage = () => {
           <div className='bg-white max-w-md p-8 rounded-xl'>
             <div className='mb-6 md:mb-8 text-center'>
               <h2 className='text-2xl md:text-3xl font-medium mb-2'>Reset Password</h2>
+              <p className='text-gray-600 text-sm'>Enter your new password below</p>
             </div>
 
             <form onSubmit={handleSubmit} className='space-y-6'>
