@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { getAllNews, createNews, updateNews, deleteNews, reset, postNewsViaEmail } from "../../store/news/newsSlice"
+import { getAllNews, createNews, updateNews, deleteNews, restoreNews, reset, postNewsViaEmail } from "../../store/news/newsSlice"
 import eventImage from "../../assets/event.png"
 import Profile from "../../components/Profile"
 import { BiSearch } from "react-icons/bi"
@@ -40,6 +40,7 @@ const News = () => {
   const [isEditNewsOpen, setIsEditNewsOpen] = useState(false)
   const [selectedNews, setSelectedNews] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [isViewNewsOpen, setIsViewNewsOpen] = useState(false)
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
 
@@ -396,6 +397,29 @@ const News = () => {
     })
   }
 
+  // Handle restore news
+  const handleRestoreNews = () => {
+    if (!selectedNews) return
+
+    dispatch(restoreNews(selectedNews._id)).then((response) => {
+      if (response.meta.requestStatus === "fulfilled") {
+        setIsRestoreModalOpen(false)
+        setSelectedNews(null)
+
+        // Refresh news list
+        dispatch(
+          getAllNews({
+            page: currentPage,
+            limit: itemsPerPage,
+            search: searchQuery,
+            filter: filterType,
+            sort: sortType,
+          }),
+        )
+      }
+    })
+  }
+
   // Handle post news
   const handlePostNews = async () => {
     if (!receiverEmail || !password) {
@@ -584,6 +608,9 @@ const News = () => {
             {showFilterDropdown && (
               <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('all')}>All</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('active')}>Active</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('expired')}>Expired</button>
+                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('deleted')}>Deleted</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('spotlight')}>Spotlight News</button>
                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange('landing')}>Landing Page News</button>
               </div>
@@ -639,36 +666,68 @@ const News = () => {
                 }}
               >
                 <div className="absolute top-4 flex justify-between w-full gap-2 z-10">
-                  <button
-                    className="p-2 relative text-white left-4 rounded-lg transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedNews(newsItem)
-                      setIsDeleteModalOpen(true)
-                    }}
-                  >
-                    <FiTrash2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    className="p-2 relative right-4 text-white rounded-lg transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedNews(newsItem)
-                      setEditNewsImages(newsItem.images || [])
-                      setIsEditNewsOpen(true)
-                    }}
-                  >
-                    <img src={edit_icon || "/placeholder.svg"} alt="edit icon" />
-                  </button>
+                  {newsItem.isDeleted ? (
+                    <button
+                      className="p-2 relative text-white left-4 rounded-lg transition-colors bg-green-500 hover:bg-green-600"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedNews(newsItem)
+                        setIsRestoreModalOpen(true)
+                      }}
+                      title="Restore"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      className="p-2 relative text-white left-4 rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedNews(newsItem)
+                        setIsDeleteModalOpen(true)
+                      }}
+                    >
+                      <FiTrash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                  {!newsItem.isDeleted && (
+                    <button
+                      className="p-2 relative right-4 text-white rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedNews(newsItem)
+                        setEditNewsImages(newsItem.images || [])
+                        setIsEditNewsOpen(true)
+                      }}
+                    >
+                      <img src={edit_icon || "/placeholder.svg"} alt="edit icon" />
+                    </button>
+                  )}
                 </div>
                 <div
-                  className="relative h-80 rounded-2xl overflow-hidden bg-center bg-cover"
+                  className={`relative h-80 rounded-2xl overflow-hidden bg-center bg-cover ${
+                    newsItem.isDeleted ? 'opacity-60' : ''
+                  }`}
                   style={{
                     backgroundImage: `url(${
                       newsItem.images && newsItem.images.length > 0 ? newsItem.images[0] : eventImage
                     })`,
                   }}
                 >
+                  {/* Status Badge */}
+                  {newsItem.isDeleted && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      Deleted
+                    </div>
+                  )}
+                  {!newsItem.isDeleted && new Date(newsItem.expireDate) < new Date() && (
+                    <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      Expired
+                    </div>
+                  )}
+                  
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
@@ -693,17 +752,19 @@ const News = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-white/80 cursor-pointer mt-12">
-                        <button
-                          className="border-2 rounded-3xl px-2.5 pb-0.5 border-white flex gap-2"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedNews(newsItem)
-                            setIsPostModalOpen(true)
-                          }}
-                        >
-                          <img src={send_icon || "/placeholder.svg"} alt="send icon" className="w-5 h-5 mt-1" />
-                          post
-                        </button>
+                        {!newsItem.isDeleted && (
+                          <button
+                            className="border-2 rounded-3xl px-2.5 pb-0.5 border-white flex gap-2"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedNews(newsItem)
+                              setIsPostModalOpen(true)
+                            }}
+                          >
+                            <img src={send_icon || "/placeholder.svg"} alt="send icon" className="w-5 h-5 mt-1" />
+                            post
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1302,6 +1363,53 @@ const News = () => {
               </div>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Restore News Modal */}
+      <Modal
+        isOpen={isRestoreModalOpen}
+        onRequestClose={() => setIsRestoreModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Restore News</h2>
+            <button onClick={() => setIsRestoreModalOpen(false)} className="text-gray-400">
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to restore this news article? It will become active again and visible to users.
+            </p>
+
+            {selectedNews && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-800 mb-2">{selectedNews.title}</h3>
+                <p className="text-sm text-gray-600">{selectedNews.description.substring(0, 100)}...</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button onClick={() => setIsRestoreModalOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
+                Cancel
+              </button>
+              <button
+                onClick={handleRestoreNews}
+                className="px-6 py-2 bg-green-500 text-white rounded-lg text-sm"
+                disabled={isLoading}
+              >
+                {isLoading ? "Restoring..." : "Restore"}
+              </button>
+            </div>
+          </div>
         </div>
       </Modal>
 
