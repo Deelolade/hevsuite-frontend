@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import Header from "../../components/Header";
 import headerBg from "../../assets/header-bg.jpg";
-import event from "../../assets/event.png";
-import party from "../../assets/party2.jpg";
 import Footer from "../../components/Footer";
 import { BsCalendar } from "react-icons/bs";
 import { MdAccessTime, MdLocationOn, MdPerson } from "react-icons/md";
-import { IoLocationOutline } from "react-icons/io5";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
+import { Navigation, Pagination } from "swiper/modules";
 import "./forced.css";
-import EventDetailsModal from "../account/events/EventDetails";
 import { fetchNonExpiredNews, setSelectedNews } from "../../features/newsSlice";
 import { fetchAllEventTypes, fetchEvents } from "../../features/eventSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,6 +18,8 @@ import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import useUserMembership from "../../hooks/useUserMembership";
 import toast from "react-hot-toast";
 import PaymentModal from "../../components/PaymentModal";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
@@ -34,18 +32,18 @@ const Homepage = () => {
   const [paymentData, setPaymentData] = useState(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
   const swiperRef = useRef(null);
+  const location = useLocation();
 
   const dispatch = useDispatch();
 
   const { user } = useSelector((s) => s.auth);
-  const { Settings } = useSelector((s) => s.generalSettings);
 
   useUserMembership();
 
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
-  }, [dispatch]);
+  }, [dispatch, location.pathname]);
 
   const { newsItems, loading, error } = useSelector((state) => state.news);
   const {
@@ -58,10 +56,19 @@ const Homepage = () => {
 
   const isUserAttending = (eventId) =>
     attendingEvents.some((event) => event._id === eventId);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
+
+  const { userIdentificationApproved } = useUserIdentificationApproved();
 
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
 
     if (user.isRestricted) {
       toast.error("You are restricted from attending events");
@@ -292,9 +299,23 @@ const Homepage = () => {
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
 
+  if (userIdentificationApproved === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen h-full">
       {/* Header */}
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
+      />
       {showPaymentModal && (
         <PaymentModal
           isOpen={showPaymentModal}

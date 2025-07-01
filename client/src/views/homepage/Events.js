@@ -11,6 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
 import toast from "react-hot-toast";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
+import { PaymentMethodModal } from "../account/events/EventDetails";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -384,6 +387,7 @@ const Events = () => {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -393,6 +397,7 @@ const Events = () => {
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
+  const { userIdentificationApproved } = useUserIdentificationApproved();
 
   // Reset page when filters change
   useEffect(() => {
@@ -405,6 +410,15 @@ const Events = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    console.log("Event clicked:", event);
+    console.log("is user attending:", isUserAttending(event._id));
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
     if (event.audienceType !== "all") {
       if (isUserAttending(event._id)) {
         toast.info("You are already registered for this event");
@@ -615,9 +629,40 @@ const Events = () => {
     currentPage * eventsPerPage
   );
 
+  if (userIdentificationApproved === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
+      />
+      {showPaymentModal && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          paymentData={paymentData}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {showTicketModal && selectedEvent && (
+        <TicketSelectionModal
+          event={selectedEvent}
+          onClose={handleTicketModalClose}
+          setPaymentData={setPaymentData}
+          setShowOneTimePaymentModal={setShowPaymentModal}
+        />
+      )}
       <div className={`relative text-white`}>
         <div className="absolute inset-0 z-0">
           <img
@@ -894,19 +939,10 @@ const Events = () => {
 
           <div className="px-6 py-2 mt-16">
             {viewMode === "scroll" ? (
-              <div className="w-full">
-                {/* <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Upcoming Events</h2>
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className="text-white underline hover:text-gray-300 transition-colors"
-                  >
-                    View All Events
-                  </button>
-                </div> */}
+              <div className="w-full flex justify-center">
                 <div className="overflow-x-auto scrollbar-hide">
                   <div
-                    className="flex space-x-6 pb-4"
+                    className="flex justify-center space-x-6 pb-4"
                     style={{ width: "max-content" }}
                   >
                     {filteredEvents.slice(0, 8).map((event, index) => (
@@ -951,7 +987,7 @@ const Events = () => {
                             ) : (
                               <button
                                 onClick={(e) => handleAttendEvent(event, e)}
-                                className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                                className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 "
                               >
                                 Attend
                               </button>
