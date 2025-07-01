@@ -24,6 +24,7 @@ import toast from "react-hot-toast";
 import useUserMembership from "../../hooks/useUserMembership";
 import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 import AuthModal from "../../components/AuthModal";
+import { fetchProfile } from "../../features/auth/authSlice";
 
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +54,7 @@ const Ask = () => {
   // Fetch asks on component mount
   useEffect(() => {
     dispatch(fetchUserAsks());
+    dispatch(fetchProfile());
     return () => {
       dispatch(reset());
     };
@@ -280,9 +282,7 @@ const Ask = () => {
       const askToClaim = asks.find((ask) => ask._id === askId);
 
       // Check if current user is the creator of the ask
-      if (
-        currentUser?.id?.toString() === askToClaim?.createdBy?._id?.toString()
-      ) {
+      if (currentUser.id.toString() === askToClaim.createdBy.toString()) {
         toast.error("You cannot claim your own ask");
         return;
       }
