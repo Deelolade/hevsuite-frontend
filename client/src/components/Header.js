@@ -358,10 +358,10 @@ const Header = () => {
                       alt={user?.name || "profile"}
                       className="w-16 h-16 rounded-full mx-auto my-6"
                     />
-                    <div className="text-gray-700 mb-3">
+                    <div className="text-white mb-3">
                       {user.forename} {user.surname}
                     </div>
-                    <div className="text-gray-600 text-sm mb-6">
+                    <div className="text-white text-sm mb-6">
                       {user.primaryEmail}
                     </div>
                     <button
@@ -415,7 +415,7 @@ const Header = () => {
               <div className="border-t border-gray-700 pt-4">
                 {socialMedia?.length > 0 && (
                   <div className="flex justify-center items-center gap-4 mb-4">
-                    <span className="text-gray-700 text-sm font-semibold">
+                    <span className="text-white text-sm font-semibold">
                       Follow us
                     </span>
                     <div className="flex gap-3">
@@ -447,14 +447,14 @@ const Header = () => {
                           {section.title?.toLowerCase().includes("policies") ? (
                             <Link
                               to="/terms"
-                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
+                              className="text-sm text-white hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
                           ) : (
                             <Link
                               to={section.link || "/club"}
-                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
+                              className="text-sm text-white hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
@@ -464,7 +464,7 @@ const Header = () => {
                   )}
                 </div>
 
-                <div className="text-center text-xs text-gray-700 mt-2">
+                <div className="text-center text-xs text-white mt-2">
                   &copy; {new Date().getFullYear()} Hazor Group (Trading as HH
                   Club)
                 </div>
