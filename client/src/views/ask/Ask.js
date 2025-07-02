@@ -25,6 +25,8 @@ import useUserMembership from "../../hooks/useUserMembership";
 import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 import AuthModal from "../../components/AuthModal";
 import { fetchProfile } from "../../features/auth/authSlice";
+import EmojiPicker from "emoji-picker-react";
+import { BsEmojiSmile } from "react-icons/bs"; // Add this import at the top
 
 const Ask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +39,7 @@ const Ask = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState({});
   const [newMessage, setNewMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const dispatch = useDispatch();
   const { asks, currentAsk, loading } = useSelector((state) => state.ask);
@@ -90,6 +93,19 @@ const Ask = () => {
       }
     }
   }, [selectedRequest, asks, currentAsk, currentUser]);
+
+  useEffect(() => {
+    if (selectedRequest) {
+      // Mark all messages as read when the chat is opened
+      setMessages((prev) => ({
+        ...prev,
+        [selectedRequest.id]: (prev[selectedRequest.id] || []).map((msg) => ({
+          ...msg,
+          isRead: true, // Mark as read
+        })),
+      }));
+    }
+  }, [selectedRequest]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRequest || !currentUser) return;
@@ -282,7 +298,7 @@ const Ask = () => {
       const askToClaim = asks.find((ask) => ask._id === askId);
 
       // Check if current user is the creator of the ask
-      if (currentUser.id.toString() === askToClaim.createdBy.toString()) {
+      if (currentUser.id.toString() === askToClaim.createdBy._id.toString()) {
         toast.error("You cannot claim your own ask");
         return;
       }
@@ -317,7 +333,6 @@ const Ask = () => {
       });
       dispatch(setCurrentAsk(null));
       dispatch(fetchUserAsks());
-      toast.success("Ask abandoned successfully");
     } catch (error) {
       toast.error(error.messages || "Failed to abandon ask:");
       console.error("Failed to abandon ask:", error);
@@ -363,6 +378,24 @@ const Ask = () => {
 
       return (isUserCreator || isUserClaimer) && isClaimed;
     }) || [];
+
+  const onEmojiClick = (emojiObject) => {
+    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEmojiPicker && !event.target.closest(".emoji-picker-container")) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   return (
     <div className="min-h-screen bg-white z-0">
@@ -755,7 +788,7 @@ const Ask = () => {
             <div className="rounded-t-2xl bg-gradient-to-r from-[#540A26] to-[#0A5440] p-4">
               <div className="flex items-center gap-3">
                 <img
-                  src={avatar}
+                  src={selectedRequest?.createdBy?.profilePhoto}
                   alt={selectedRequest?.createdByName || "User"}
                   className="w-10 h-10 rounded-full object-cover"
                 />
@@ -796,18 +829,43 @@ const Ask = () => {
                     message.isUser ? "justify-end" : "justify-start"
                   } mb-4`}
                 >
+                  {!message.isUser && (
+                    <img
+                      src={selectedRequest?.createdBy?.profilePhoto || avatar}
+                      alt={selectedRequest?.createdByName || "User"}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 mr-1"
+                    />
+                  )}
+
                   <div
-                    className={`max-w-[80%] p-3 rounded-2xl ${
+                    className={`max-w-[70%] p-3 rounded-2xl ${
                       message.isUser
                         ? "bg-gray-100 text-black"
                         : "bg-[#0A5440] text-white"
                     }`}
                   >
                     <p>{message.text}</p>
-                    <span className="text-xs mt-1 block text-right">
-                      {message.time}
-                    </span>
+                    <div className="text-xs mt-1 flex gap-1 justify-between items-center opacity-70">
+                      <span>{message.time}</span>
+                      {message.isUser && (
+                        <span>
+                          {message.isRead ? (
+                            <span className="text-green-500">✔✔</span> // Double tick for read
+                          ) : (
+                            <span className="text-gray-500">✔</span> // Single tick for sent
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {message.isUser && (
+                    <img
+                      src={currentUser?.profilePhoto || avatar}
+                      alt={currentUser?.name || "You"}
+                      className="w-8 h-8 ml-1 rounded-full object-cover flex-shrink-0"
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -821,26 +879,66 @@ const Ask = () => {
                   Abandon Ask
                 </button>
                 <div className="flex-1 relative">
-                  <input
-                    type="text"
+                  <textarea
                     placeholder="Type your message here..."
-                    className="w-full pr-12 pl-4 py-3 bg-gray-100 rounded-full"
+                    className="w-full pr-20 pl-4 py-3 bg-gray-100 rounded-2xl resize-none overflow-hidden placeholder:text-ellipsis placeholder:whitespace-nowrap placeholder:overflow-hidden"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    // onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                     disabled={loading}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                      // Allow Shift+Enter for new lines
+                    }}
+                    rows={1}
+                    style={{
+                      minHeight: "48px",
+                      maxHeight: "120px",
+                    }}
+                    onInput={(e) => {
+                      // Auto-resize textarea based on content
+                      e.target.style.height = "auto";
+                      e.target.style.height =
+                        Math.min(e.target.scrollHeight, 120) + "px";
+                    }}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-12 top-1/2 -translate-y-1/2 text-[#540A26] hover:text-[#740E36] transition-colors"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    disabled={loading}
+                  >
+                    <BsEmojiSmile size={20} />
+                  </button>
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]"
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || loading}
                   >
                     {loading ? (
-                      <FaSpinner size={20} />
+                      <FaSpinner size={20} className="animate-spin" />
                     ) : (
                       <AiOutlineSend size={24} />
                     )}
                   </button>
+                  {showEmojiPicker && (
+                    <div className="absolute bottom-full right-0 mb-2 z-50 emoji-picker-container">
+                      <EmojiPicker
+                        onEmojiClick={onEmojiClick}
+                        width={300}
+                        height={400}
+                        theme="light"
+                        searchDisabled={false}
+                        skinTonesDisabled={false}
+                        previewConfig={{
+                          showPreview: false,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
