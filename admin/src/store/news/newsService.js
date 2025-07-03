@@ -56,6 +56,16 @@ const deleteNews = async (id) => {
   return { id }; // Return the ID of the deleted news
 };
 
+// Restore news
+const restoreNews = async (id) => {
+  const response = await axios.put(`${base_url}/api/newsroom/${id}/restore`, {}, {
+    headers: {
+      Authorization: `Bearer ${getAuthToken()}`,
+    },
+  });
+  return response.data;
+};
+
 // Post news via email
 const postNewsViaEmail = async (data) => {
   const response = await axios.post(`${base_url}/api/newsroom/post-email`, data, {
@@ -71,6 +81,7 @@ const newsService = {
   createNews,
   updateNews,
   deleteNews,
+  restoreNews,
   postNewsViaEmail,
 };
 

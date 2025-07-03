@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 const PromoteAsk = ({ setIsPromoteModalOpen, selectedUser }) => {
   const dispatch = useDispatch();
-  const [memberStatus, setMemberStatus] = useState(selectedUser?.membershipType || "Standard Member");
+  const [memberStatus, setMemberStatus] = useState("VIP Member");
 
   const handlePromote = async () => {
     try {

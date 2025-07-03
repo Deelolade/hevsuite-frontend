@@ -38,7 +38,7 @@ const AffiliatePartners = () => {
       </div>
       <h1 className="text-2xl font-bold mb-4 px-2 md:px-0">Affiliate Partners</h1>
       <div className="mb-6 border-b border-gray-200 px-2 md:px-0">
-        <nav className="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-8 overflow-x-auto" aria-label="Tabs">
+        <nav className="flex flex-row space-x-2 md:space-x-8 overflow-x-auto overflow-y-hidden scrollbar-hide" aria-label="Tabs">
           {TAB_LIST.map((tab) => (
             <button
               key={tab.key}
