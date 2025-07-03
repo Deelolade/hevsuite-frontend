@@ -116,7 +116,7 @@ const eventService = {
         { eventId },
         { withCredentials: true }
       );
-      return response.data;
+      return { eventId, ...response.data };
     } catch (error) {
       throw error.response?.data || { message: "Failed to save event" };
     }
@@ -130,7 +130,7 @@ const eventService = {
         { eventId },
         { withCredentials: true }
       );
-      return response.data;
+      return { eventId, ...response.data };
     } catch (error) {
       throw error.response?.data?.message || "Failed to remove saved event";
     }

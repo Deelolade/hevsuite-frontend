@@ -79,7 +79,7 @@ const Terms = () => {
             <img
               src={bg_image}
               alt="background"
-              className="w-full h-[200px] object-cover brightness-50"
+              className="w-full h-[220px] object-cover brightness-50"
             />
           </div>
           <div className="relative z-10">
@@ -90,7 +90,7 @@ const Terms = () => {
               </h1>
 
               {/* Search Bar */}
-              <div className="relative max-w-md mb-2">
+              <div className="relative max-w-md">
                 <input
                   type="text"
                   placeholder="Search article here"
@@ -112,7 +112,7 @@ const Terms = () => {
                 <button
                   key={item._id}
                   onClick={() => handleTabClick(item)}
-                  className={`px-2 md:px-3 py-0.5 md:py-1 rounded-3xl text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                  className={`px-3 py-2 rounded-3xl text-sm md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                     activeTab?._id === item._id
                       ? "bg-[#540A26] text-white"
                       : "border border-[#540A26] text-[#540A26]"

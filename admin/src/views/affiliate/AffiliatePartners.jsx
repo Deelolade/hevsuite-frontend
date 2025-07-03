@@ -43,7 +43,7 @@ const AffiliatePartners = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 whitespace-nowrap ${activeTab === tab.key
+              className={`px-3 md:px-4 py-2 -mb-px border-b-2 font-medium text-xs md:text-sm focus:outline-none transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === tab.key
                   ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-primary'
                 }`}

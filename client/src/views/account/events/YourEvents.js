@@ -119,12 +119,13 @@ const YourEvents = () => {
       );
     }
 
-    if (!cardIsActive && cardId) {
+    if (!cardId || !cardIsActive) {
       return (
-        <div className="text-center py-8 text-lg">Club Card is not active</div>
+        <div className="text-center py-8 text-lg">
+          Activate your club card to view events
+        </div>
       );
     }
-    console.log("Saved Events:", savedEvents);
 
     switch (activeTab) {
       case "Attending Events":

@@ -113,6 +113,32 @@ const Header = () => {
 
   return (
     <header className="absolute bg-gradient-to-b from-black to-transparent top-0 left-0 right-0 z-40">
+      <div className="fixed top-0 left-0 right-0 z-[10001] bg-gradient-to-b from-black to-transparent flex items-center justify-between px-4 sm:px-8 h-16 md:hidden">
+        <Link
+          to={user ? "/homepage" : "/"}
+          className="text-white text-3xl font-bold flex items-center"
+        >
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="Logo" className="h-8" />
+            <span
+              className={`text-white text-xl ${
+                isMenuOpen ? "block" : "hidden"
+              }`}
+            >
+              Hevsuite Club
+            </span>
+          </div>{" "}
+        </Link>
+        <div className="md:hidden mr-6">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-white text-2xl focus:outline-none"
+          >
+            {isMenuOpen ? "×" : "☰"}
+          </button>
+        </div>
+      </div>
+      <div className="h-16 block md:hidden"></div>
       <AuthModal
         open={showDocumentReviewModal}
         onClose={onCloseDocumentReviewModal}
@@ -128,7 +154,7 @@ const Header = () => {
 
       <nav className="container mx-auto px-4 sm:px-8 py-6 flex justify-between items-center">
         {/* Logo - Fixed on left */}
-        <div className="md:fixed left-4 sm:left-8 md:left-12 md:z-50 top-6">
+        <div className="md:fixed md:block hidden left-4 sm:left-8 md:left-12 md:z-50 top-6">
           <Link
             to={user ? "/homepage" : "/"}
             className="text-white text-3xl font-bold"
@@ -138,7 +164,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Menu Toggle - Fixed on right */}
-        <div className="md:hidden ">
+        <div className="hidden">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="text-white text-2xl focus:outline-none"
@@ -229,20 +255,20 @@ const Header = () => {
         >
           <div className="p-6 h-full flex flex-col overflow-auto">
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <img src={logo} alt="Logo" className="h-8" />
                 <span className="text-white text-xl">Hevsuite Club</span>
-              </div>
-              <button
+              </div> */}
+              {/* <button
                 onClick={() => setIsMenuOpen(false)}
                 className="text-2xl text-white"
               >
                 ×
-              </button>
+              </button> */}
             </div>
 
             {/* Menu Items */}
-            <div className="flex-grow">
+            <div className="flex-grow pt-6">
               <div className="space-y-2">
                 <Link
                   to="/"
@@ -332,10 +358,10 @@ const Header = () => {
                       alt={user?.name || "profile"}
                       className="w-16 h-16 rounded-full mx-auto my-6"
                     />
-                    <div className="text-white mb-3">
+                    <div className="text-gray-700 mb-3">
                       {user.forename} {user.surname}
                     </div>
-                    <div className="text-gray-200 text-sm mb-6">
+                    <div className="text-gray-600 text-sm mb-6">
                       {user.primaryEmail}
                     </div>
                     <button
@@ -389,7 +415,7 @@ const Header = () => {
               <div className="border-t border-gray-700 pt-4">
                 {socialMedia?.length > 0 && (
                   <div className="flex justify-center items-center gap-4 mb-4">
-                    <span className="text-white text-sm font-semibold">
+                    <span className="text-gray-700 text-sm font-semibold">
                       Follow us
                     </span>
                     <div className="flex gap-3">
@@ -421,14 +447,14 @@ const Header = () => {
                           {section.title?.toLowerCase().includes("policies") ? (
                             <Link
                               to="/terms"
-                              className="text-white text-sm hover:text-gray-300 transition-colors"
+                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
                           ) : (
                             <Link
                               to={section.link || "/club"}
-                              className="text-white text-sm hover:text-gray-300 transition-colors"
+                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
@@ -438,7 +464,7 @@ const Header = () => {
                   )}
                 </div>
 
-                <div className="text-center text-xs text-gray-300 mt-2">
+                <div className="text-center text-xs text-gray-700 mt-2">
                   &copy; {new Date().getFullYear()} Hazor Group (Trading as HH
                   Club)
                 </div>
