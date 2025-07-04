@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Modal from "react-modal";
 import { IoChatboxEllipsesOutline, IoClose } from "react-icons/io5";
 import Header from "../../components/Header";
@@ -26,9 +26,22 @@ import useUserIdentificationApproved from "../../hooks/useIdentificationApproved
 import AuthModal from "../../components/AuthModal";
 import { fetchProfile } from "../../features/auth/authSlice";
 import EmojiPicker from "emoji-picker-react";
-import { BsEmojiSmile } from "react-icons/bs"; // Add this import at the top
+import { BsEmojiSmile } from "react-icons/bs";
+import { useSocket } from "../../store/socket-context";
 
 const Ask = () => {
+  // Helper function to construct profile photo URL
+  const getProfilePhotoUrl = (profilePhoto) => {
+    if (!profilePhoto) return avatar;
+    if (profilePhoto.startsWith("http")) return profilePhoto;
+    return `${process.env.REACT_APP_API_BASE_URL}/${profilePhoto}`;
+  };
+
+  // Auto-scroll to bottom (only when user sends message)
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -40,10 +53,36 @@ const Ask = () => {
   const [messages, setMessages] = useState({});
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const messagesEndRef = useRef(null);
+  const { user: currentUser } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
-  const { asks, currentAsk, loading } = useSelector((state) => state.ask);
-  const { user: currentUser } = useSelector((state) => state.auth);
+
+  const { socket, isConnected, joinAskRoom, leaveAskRoom, sendMessage } =
+    useSocket();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    deadline: "",
+    agreeToGuidelines: false,
+  });
+
+  // Removed auto-scroll functionality as requested
+
+  // READ RECEIPT SYSTEM IMPLEMENTATION
+  // This system tracks when messages are read using:
+  // 1. Reply-based logic: messages are marked as read when recipient replies
+  // 2. Visual indicators (red dot for unread, checkmarks for sent/read)
+  // 3. Real-time updates when new messages arrive
+  // 4. Messages are NOT marked as read by default - only when recipient replies
+
+  // Mark message as read locally (no longer used with reply-based system)
+  const markMessageAsRead = (messageId, senderId) => {
+    console.log("📖 Message marked as read via reply:", messageId);
+  };
+
+  const { asks, currentAsk, chatLoading } = useSelector((state) => state.ask);
 
   const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
 
@@ -63,12 +102,22 @@ const Ask = () => {
     };
   }, [dispatch]);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    deadline: "",
-    agreeToGuidelines: false,
-  });
+  // Helper function to check if a message is read based on recipient replies
+  const isMessageReadByReply = (messageIndex, allMessages, currentUserId) => {
+    const message = allMessages[messageIndex];
+    if (!message || message.senderId === currentUserId) {
+      return true; // Own messages are always "read"
+    }
+
+    // Check if there's a reply from the recipient after this message
+    for (let i = messageIndex + 1; i < allMessages.length; i++) {
+      const laterMessage = allMessages[i];
+      if (laterMessage.senderId === currentUserId) {
+        return true; // Recipient replied, so message is read
+      }
+    }
+    return false; // No reply from recipient, message is unread
+  };
 
   // Transform Redux ask data to message format
   useEffect(() => {
@@ -76,112 +125,127 @@ const Ask = () => {
       const askFromRedux =
         asks.find((a) => a._id === selectedRequest._id) || currentAsk;
       if (askFromRedux?.chat) {
-        // In your message transformation effect
-        setMessages((prev) => ({
-          ...prev,
-          [selectedRequest.id]: askFromRedux.chat.map((msg) => ({
+        const transformedMessages = askFromRedux.chat.map((msg, index) => {
+          // msg.sender is just an ID, get user info from available data
+          const senderId = msg.sender;
+          const isCurrentUser = currentUser && senderId === currentUser._id;
+
+          // Get sender info from available data
+          let senderInfo = {};
+          if (isCurrentUser) {
+            senderInfo = currentUser;
+          } else {
+            // If sender is the ask creator, use createdBy data
+            if (senderId === selectedRequest.createdBy?._id) {
+              senderInfo = selectedRequest.createdBy;
+            } else if (senderId === selectedRequest.claimedBy?._id) {
+              senderInfo = selectedRequest.claimedBy;
+            }
+          }
+
+          return {
             text: msg.message,
             time: new Date(msg.sentAt).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            isUser:
-              currentUser &&
-              msg.sender?.toString() === currentUser.id?.toString(),
-          })),
+            isUser: isCurrentUser,
+            senderProfilePhoto: getProfilePhotoUrl(senderInfo.profilePhoto),
+            senderName: `${senderInfo.forename || senderInfo.name || "User"} ${
+              senderInfo.surname || ""
+            }`.trim(),
+            senderId: senderId,
+            messageId: msg._id,
+            sentAt: msg.sentAt,
+            isRead: isCurrentUser, // Will be updated below
+          };
+        });
+
+        // Update read status based on replies
+        const messagesWithReadStatus = transformedMessages.map(
+          (msg, index) => ({
+            ...msg,
+            isRead: isMessageReadByReply(
+              index,
+              transformedMessages,
+              currentUser._id
+            ),
+          })
+        );
+
+        setMessages((prev) => ({
+          ...prev,
+          [selectedRequest.id]: messagesWithReadStatus,
         }));
       }
     }
   }, [selectedRequest, asks, currentAsk, currentUser]);
 
-  useEffect(() => {
-    if (selectedRequest) {
-      // Mark all messages as read when the chat is opened
-      setMessages((prev) => ({
-        ...prev,
-        [selectedRequest.id]: (prev[selectedRequest.id] || []).map((msg) => ({
-          ...msg,
-          isRead: true, // Mark as read
-        })),
-      }));
-    }
-  }, [selectedRequest]);
-
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRequest || !currentUser) return;
 
+    const messageText = newMessage.trim();
+    const tempMessageId = `temp-${Date.now()}-${Math.random()}`;
+
+    // Clear input immediately for better UX
+    setNewMessage("");
+
+    // Create optimistic message with unique ID
+    const optimisticMessage = {
+      text: messageText,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isUser: true,
+      isOptimistic: true,
+      tempId: tempMessageId,
+      senderProfilePhoto: getProfilePhotoUrl(currentUser.profilePhoto),
+      senderName: `${currentUser.forename || currentUser.name || "You"} ${
+        currentUser.surname || ""
+      }`.trim(),
+      senderId: currentUser._id || currentUser.id,
+      sentAt: new Date().toISOString(),
+      isRead: false, // Will be updated when confirmed
+    };
+
+    // Add optimistic message immediately
+    setMessages((prev) => ({
+      ...prev,
+      [selectedRequest.id]: [
+        ...(prev[selectedRequest.id] || []),
+        optimisticMessage,
+      ],
+    }));
+
+    // Scroll to bottom when user sends a message
+    setTimeout(() => scrollToBottom(), 100);
+
+    // Send message via socket immediately (no retry delay for UX)
     try {
-      // Create a temporary optimistic message
-      const tempMessage = {
-        sender: currentUser._id,
-        message: newMessage,
-        sentAt: new Date().toISOString(),
-        isOptimistic: true,
-      };
-
-      // Update local state immediately for instant feedback
-      setMessages((prev) => ({
-        ...prev,
-        [selectedRequest.id]: [
-          ...(prev[selectedRequest.id] || []),
-          {
-            text: newMessage,
-            time: new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            isUser: true,
-            isOptimistic: true,
-          },
-        ],
-      }));
-
-      // Dispatch the chat action and wait for it to complete
-      const resultAction = await dispatch(
-        chat({
-          askId: selectedRequest._id,
-          message: newMessage,
-        })
-      );
-
-      if (chat.fulfilled.match(resultAction)) {
-        // Success - clear the input field
-        setNewMessage("");
-
-        // Update the messages with the actual server response
-        const newServerMessage = resultAction.payload;
-        setMessages((prev) => ({
-          ...prev,
-          [selectedRequest._id]: [
-            ...(prev[selectedRequest._id] || []).filter(
-              (msg) => !msg.isOptimistic
-            ),
-            {
-              text: newServerMessage.message,
-              time: new Date(newServerMessage.sentAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              isUser:
-                currentUser._id?.toString() ===
-                newServerMessage.sender?.toString(),
-            },
-          ],
-        }));
+      if (socket && socket.connected) {
+        sendMessage(selectedRequest._id, messageText);
       } else {
-        // If the action was rejected, throw to catch block
-        throw new Error(resultAction.payload || "Failed to send message");
+        console.warn(
+          "⚠️ Socket not connected, message will be sent when reconnected"
+        );
+        // Store message to send when reconnected
+        setTimeout(() => {
+          if (socket && socket.connected) {
+            sendMessage(selectedRequest._id, messageText);
+          }
+        }, 1000);
       }
     } catch (error) {
-      // Rollback optimistic update on error
+      console.error("Failed to send message:", error);
+      // Remove optimistic message on error
       setMessages((prev) => ({
         ...prev,
-        [selectedRequest._id]: (prev[selectedRequest._id] || []).filter(
-          (msg) => !msg.isOptimistic
-        ),
+        [selectedRequest.id]:
+          prev[selectedRequest.id]?.filter(
+            (msg) => msg.tempId !== tempMessageId
+          ) || [],
       }));
-      console.error("Failed to send message:", error);
-      toast.error(error.message || "Failed to send message");
     }
   };
   const modalStyles = {
@@ -354,18 +418,40 @@ const Ask = () => {
   const hasUnreadMessages = (ask) => {
     if (!ask.chat || !currentUser) return false;
 
-    // If current user is the ask creator and there are messages from others
-    const isCreator =
-      ask.createdBy === currentUser.id || ask.createdBy === currentUser._id;
-    if (!isCreator) return false;
+    // Check if there are any unread messages based on reply logic
+    const transformedMessages = ask.chat.map((msg) => ({
+      senderId: msg.sender,
+      messageId: msg._id,
+    }));
 
-    // Check if there are messages from the claimer that are newer than creator's last read
-    const lastMessage = ask.chat[ask.chat.length - 1];
-    return (
-      lastMessage &&
-      lastMessage.sender !== currentUser._id &&
-      lastMessage.sender !== currentUser.id
-    );
+    // Check each message to see if it's unread (no reply from current user after it)
+    for (let i = 0; i < transformedMessages.length; i++) {
+      const message = transformedMessages[i];
+      const isFromCurrentUser =
+        message.senderId === currentUser._id ||
+        message.senderId === currentUser.id;
+
+      if (!isFromCurrentUser) {
+        // Check if current user replied after this message
+        let hasReply = false;
+        for (let j = i + 1; j < transformedMessages.length; j++) {
+          const laterMessage = transformedMessages[j];
+          if (
+            laterMessage.senderId === currentUser._id ||
+            laterMessage.senderId === currentUser.id
+          ) {
+            hasReply = true;
+            break;
+          }
+        }
+
+        if (!hasReply) {
+          return true; // Found an unread message
+        }
+      }
+    }
+
+    return false; // No unread messages found
   };
 
   const userOwnAsks =
@@ -396,6 +482,149 @@ const Ask = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showEmojiPicker]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("receive-message", (data) => {
+        const { askId, message } = data;
+
+        setMessages((prev) => {
+          const existingMessages = prev[askId] || [];
+          const isCurrentUser = message.sender._id === currentUser._id;
+
+          let updatedMessages;
+
+          // If it's from current user, replace optimistic message
+          if (isCurrentUser) {
+            // Remove any optimistic messages for this user
+            const filteredMessages = existingMessages.filter(
+              (msg) => !msg.isOptimistic || msg.senderId !== currentUser._id
+            );
+
+            updatedMessages = [
+              ...filteredMessages,
+              {
+                text: message.message,
+                time: new Date(message.sentAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                isUser: true,
+                senderProfilePhoto: getProfilePhotoUrl(
+                  message.sender.profilePhoto
+                ),
+                senderName: `${
+                  message.sender.forename || message.sender.name || "You"
+                } ${message.sender.surname || ""}`.trim(),
+                senderId: message.sender._id,
+                messageId: message._id,
+                sentAt: message.sentAt,
+                isRead: true, // Own messages are always "read"
+              },
+            ];
+          } else {
+            // For other users, just add the message
+            updatedMessages = [
+              ...existingMessages,
+              {
+                text: message.message,
+                time: new Date(message.sentAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                isUser: false,
+                senderProfilePhoto: getProfilePhotoUrl(
+                  message.sender.profilePhoto
+                ),
+                senderName: `${
+                  message.sender.forename || message.sender.name || "User"
+                } ${message.sender.surname || ""}`.trim(),
+                senderId: message.sender._id,
+                messageId: message._id,
+                sentAt: message.sentAt,
+                isRead: false, // Will be recalculated below
+              },
+            ];
+          }
+
+          // Recalculate read status for all messages based on replies
+          const messagesWithUpdatedReadStatus = updatedMessages.map(
+            (msg, index) => ({
+              ...msg,
+              isRead: isMessageReadByReply(
+                index,
+                updatedMessages,
+                currentUser._id
+              ),
+            })
+          );
+
+          // Scroll to bottom if it's current user's message (confirmed)
+          if (isCurrentUser) {
+            setTimeout(() => scrollToBottom(), 100);
+          }
+
+          return {
+            ...prev,
+            [askId]: messagesWithUpdatedReadStatus,
+          };
+        });
+      });
+
+      // Remove the read receipt handler since we're using reply-based logic
+      return () => {
+        socket.off("receive-message");
+      };
+    }
+  }, [socket, currentUser, getProfilePhotoUrl, scrollToBottom]);
+
+  useEffect(() => {
+    if (selectedRequest && socket) {
+      let retryCount = 0;
+      const maxRetries = 10;
+
+      // Wait for socket to be ready and join room
+      const joinRoom = () => {
+        if (socket && socket.connected) {
+          console.log("🏠 Joining ask room:", selectedRequest._id);
+          joinAskRoom(selectedRequest._id);
+        } else if (retryCount < maxRetries) {
+          retryCount++;
+          console.warn(
+            `⚠️ Socket not connected, retrying ${retryCount}/${maxRetries} in 500ms...`
+          );
+          setTimeout(joinRoom, 500);
+        } else {
+          console.error("❌ Failed to join room after maximum retries");
+        }
+      };
+
+      joinRoom();
+
+      return () => {
+        if (socket && socket.connected) {
+          console.log("🚪 Leaving ask room:", selectedRequest._id);
+          leaveAskRoom(selectedRequest._id);
+        }
+      };
+    }
+  }, [selectedRequest, socket, isConnected, joinAskRoom, leaveAskRoom]);
+
+  // Re-join room when socket reconnects
+  useEffect(() => {
+    if (selectedRequest && socket && isConnected && socket.connected) {
+      console.log(
+        "🔄 Socket reconnected, re-joining room:",
+        selectedRequest._id
+      );
+      joinAskRoom(selectedRequest._id);
+    }
+  }, [isConnected, selectedRequest, socket, joinAskRoom]);
+
+  useEffect(() => {
+    console.log("🔍 Socket object:", socket);
+    console.log("🔍 Current user:", currentUser);
+  }, [socket, currentUser]);
 
   return (
     <div className="min-h-screen bg-white z-0">
@@ -603,9 +832,9 @@ const Ask = () => {
                     >
                       <IoChatboxEllipsesOutline className="w-4 h-4" />
                       Chat
-                      {hasUnreadMessages(ask) && (
+                      {/* {hasUnreadMessages(ask) && (
                         <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                      )}
+                      )} */}
                     </button>
                   </div>
                 </div>
@@ -788,13 +1017,19 @@ const Ask = () => {
             <div className="rounded-t-2xl bg-gradient-to-r from-[#540A26] to-[#0A5440] p-4">
               <div className="flex items-center gap-3">
                 <img
-                  src={selectedRequest?.createdBy?.profilePhoto}
+                  src={
+                    selectedRequest?.createdBy?.profilePhoto ||
+                    selectedRequest?.createdbyImage ||
+                    avatar
+                  }
                   alt={selectedRequest?.createdByName || "User"}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div className="text-white">
                   <h3 className="font-medium">
-                    {selectedRequest?.createdByName || "User"}
+                    {selectedRequest?.createdByName ||
+                      selectedRequest?.createdBy?.forename ||
+                      "User"}
                   </h3>
                   <span className="text-sm flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-400 rounded-full"></span>
@@ -824,50 +1059,93 @@ const Ask = () => {
 
               {(messages[selectedRequest?.id] || []).map((message, index) => (
                 <div
-                  key={index}
+                  key={message.tempId || message.messageId || index}
                   className={`flex ${
                     message.isUser ? "justify-end" : "justify-start"
-                  } mb-4`}
+                  } mb-4 ${
+                    message.isOptimistic ? "opacity-70" : "opacity-100"
+                  } transition-opacity duration-200`}
                 >
                   {!message.isUser && (
-                    <img
-                      src={selectedRequest?.createdBy?.profilePhoto || avatar}
-                      alt={selectedRequest?.createdByName || "User"}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 mr-1"
-                    />
+                    <div className="flex flex-col items-center mr-2">
+                      <img
+                        src={message.senderProfilePhoto || avatar}
+                        alt={message.senderName || "User"}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-gray-200"
+                      />
+                    </div>
                   )}
 
-                  <div
-                    className={`max-w-[70%] p-3 rounded-2xl ${
-                      message.isUser
-                        ? "bg-gray-100 text-black"
-                        : "bg-[#0A5440] text-white"
-                    }`}
-                  >
-                    <p>{message.text}</p>
-                    <div className="text-xs mt-1 flex gap-1 justify-between items-center opacity-70">
-                      <span>{message.time}</span>
-                      {message.isUser && (
-                        <span>
-                          {message.isRead ? (
-                            <span className="text-green-500">✔✔</span> // Double tick for read
-                          ) : (
-                            <span className="text-gray-500">✔</span> // Single tick for sent
-                          )}
-                        </span>
+                  <div className="flex flex-col max-w-[70%]">
+                    <div
+                      className={`p-3 rounded-2xl relative ${
+                        message.isUser
+                          ? "bg-gray-100 text-black rounded-br-md"
+                          : "bg-[#0A5440] text-white rounded-bl-md"
+                      }`}
+                    >
+                      {/* Red indicator for truly unread messages from others */}
+                      {!message.isUser && !message.isRead && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
                       )}
+
+                      <p className="break-words">{message.text}</p>
+                      <div className="text-xs mt-1 flex gap-1 justify-between items-center opacity-70">
+                        <span>{message.time}</span>
+                        {message.isUser && (
+                          <span className="flex items-center gap-1">
+                            {message.isOptimistic ? (
+                              <span className="text-gray-400 animate-pulse">
+                                ○
+                              </span> // Sending
+                            ) : message.isRead ? (
+                              <span className="text-green-500" title="Read">
+                                ✔✔
+                              </span> // Double tick for read
+                            ) : (
+                              <span className="text-gray-500" title="Sent">
+                                ✔
+                              </span> // Single tick for sent
+                            )}
+                            {message.readAt && (
+                              <span className="text-xs text-gray-400 ml-1">
+                                {new Date(message.readAt).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {message.isUser && (
-                    <img
-                      src={currentUser?.profilePhoto || avatar}
-                      alt={currentUser?.name || "You"}
-                      className="w-8 h-8 ml-1 rounded-full object-cover flex-shrink-0"
-                    />
+                    <div className="flex flex-col items-center ml-2">
+                      <img
+                        src={
+                          currentUser?.profilePhoto
+                            ? currentUser.profilePhoto.startsWith("http")
+                              ? currentUser.profilePhoto
+                              : `${process.env.REACT_APP_API_BASE_URL}/${currentUser.profilePhoto}`
+                            : avatar
+                        }
+                        alt={
+                          currentUser?.forename || currentUser?.name || "You"
+                        }
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border-2 border-gray-200"
+                      />
+                    </div>
                   )}
                 </div>
               ))}
+
+              {/* Scroll anchor */}
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="p-4 border-t">
@@ -885,7 +1163,7 @@ const Ask = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     // onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    disabled={loading}
+                    disabled={chatLoading}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
@@ -909,16 +1187,16 @@ const Ask = () => {
                     type="button"
                     className="absolute right-12 top-1/2 -translate-y-1/2 text-[#540A26] hover:text-[#740E36] transition-colors"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    disabled={loading}
+                    disabled={chatLoading}
                   >
                     <BsEmojiSmile size={20} />
                   </button>
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-[#540A26]"
                     onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || loading}
+                    disabled={!newMessage.trim() || chatLoading}
                   >
-                    {loading ? (
+                    {chatLoading ? (
                       <FaSpinner size={20} className="animate-spin" />
                     ) : (
                       <AiOutlineSend size={24} />

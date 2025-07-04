@@ -50,6 +50,7 @@ import UserVerifyEmail from "./views/auth/login/userVerifyEmail";
 import UpcomingEvents from "./views/account/events/UpcomingEvents";
 import SelectedEvent from "./views/homepage/SelectedEvent";
 import PenaltyModal from "./components/PenaltyModal";
+import { SocketProvider } from "./store/socket-context";
 
 axios.defaults.withCredentials = true;
 
@@ -93,7 +94,7 @@ const ProtectedRoute = ({ children }) => {
   //   return <Navigate to="/register-6" state={{ from: location }} replace />;
   // }
 
-  return children;
+  return <SocketProvider>{children}</SocketProvider>;
 };
 
 const PenaltyHandler = ({ children }) => {

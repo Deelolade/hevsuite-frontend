@@ -8,6 +8,7 @@ const initialState = {
   acceptedAsks: [], // For archived asks
   currentAsk: null,
   loading: false,
+  chatLoading: false,
   error: null,
   message: null,
 };
@@ -266,11 +267,11 @@ const askSlice = createSlice({
 
       // Chat
       .addCase(chat.pending, (state) => {
-        state.loading = true;
+        state.chatLoading = true;
         state.error = null;
       })
       .addCase(chat.fulfilled, (state, action) => {
-        state.loading = false;
+        state.chatLoading = false;
         const { askId, ...message } = action.payload;
 
         // Update the specific ask's chat messages
@@ -288,6 +289,9 @@ const askSlice = createSlice({
         if (state.currentAsk?._id === askId) {
           state.currentAsk.chat = [...(state.currentAsk.chat || []), message];
         }
+      })
+      .addCase(chat.rejected, (state, action) => {
+        state.chatLoading = false;
       })
       // Fetch Current User Asks
       .addCase(fetchCurrentUserAsks.pending, (state) => {

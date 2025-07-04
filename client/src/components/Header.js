@@ -22,6 +22,7 @@ import AuthModal from "./AuthModal";
 import useUserIdentificationApproved from "../hooks/useIdentificationApproved";
 import toast from "react-hot-toast";
 import { fetchFooterData } from "../features/footerSlice";
+import { fetchUserAsks } from "../features/askSlice";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -36,12 +37,68 @@ const Header = () => {
   const { user, isLoading } = useSelector((state) => state.auth);
   const { menus, loading: menusLoading } = useSelector((state) => state.menus);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
+  const { asks } = useSelector((state) => state.ask);
   const isLoggedIn = !!user;
   const { footerData, socialMedia } = useSelector((state) => state.footer);
 
   const { userIdentificationApproved } = useUserIdentificationApproved();
+  const [unreadAskCount, setUnreadAskCount] = useState(0);
 
   const notRef = React.useRef(false);
+  const calculateUnreadAskCount = (asks, currentUserId) => {
+    let unreadCount = 0;
+
+    asks.forEach((ask) => {
+      const isUserCreator = ask.createdBy?._id === currentUserId;
+      const isUserClaimer = ask.claimedBy?._id === currentUserId;
+      const isUserInvolved =
+        (isUserCreator || isUserClaimer) && ask.status === "claimed";
+
+      if (isUserInvolved && ask.chat && ask.chat.length > 0) {
+        const hasUnreadMessages = checkForUnreadMessages(
+          ask.chat,
+          currentUserId
+        );
+        if (hasUnreadMessages) {
+          unreadCount++;
+        }
+      }
+    });
+
+    setUnreadAskCount(unreadCount);
+  };
+
+  const checkForUnreadMessages = (chatMessages, currentUserId) => {
+    if (!chatMessages || chatMessages.length === 0) return false;
+
+    const transformedMessages = chatMessages.map((msg) => ({
+      senderId: msg.sender?._id || msg.sender,
+      messageId: msg._id,
+    }));
+
+    for (let i = 0; i < transformedMessages.length; i++) {
+      const message = transformedMessages[i];
+      const isFromCurrentUser = message.senderId === currentUserId;
+
+      if (!isFromCurrentUser) {
+        let hasReply = false;
+        for (let j = i + 1; j < transformedMessages.length; j++) {
+          const laterMessage = transformedMessages[j];
+          if (laterMessage.senderId === currentUserId) {
+            hasReply = true;
+            break;
+          }
+        }
+
+        if (!hasReply) {
+          return true; // Found an unread message
+        }
+      }
+    }
+
+    return false; // No unread messages found
+  };
+
   useEffect(() => {
     if (isMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -53,8 +110,10 @@ const Header = () => {
     dispatch(fetchMenusData());
     if (user?._id) {
       dispatch(fetchNotifications(user._id));
+      dispatch(fetchUserAsks());
+      calculateUnreadAskCount(asks, user._id);
     }
-  }, [dispatch, user, isLoggedIn]);
+  }, [dispatch, user, isLoggedIn, asks]);
 
   useEffect(() => {
     dispatch(fetchProfile());
@@ -101,13 +160,27 @@ const Header = () => {
     ) : isMobile ? (
       <button
         onClick={() => setShowDocumentReviewModal(true)}
-        className="flex w-full text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+        className="flex w-full text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] relative"
       >
         <BsChatFill className="text-xl mr-2" />
         <span>Ask</span>
+        {unreadAskCount > 0 && (
+          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+            {unreadAskCount > 9 ? "9+" : unreadAskCount}
+          </span>
+        )}
       </button>
     ) : (
-      <button onClick={() => setShowDocumentReviewModal(true)}> Ask </button>
+      <button onClick={() => setShowDocumentReviewModal(true)}>
+        <div className="relative">
+          Ask
+          {unreadAskCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+              {unreadAskCount > 9 ? "9+" : unreadAskCount}
+            </span>
+          )}
+        </div>
+      </button>
     )
   );
 
@@ -179,7 +252,14 @@ const Header = () => {
           <Link to="/topics">Help centre</Link>
           <AskButton>
             {" "}
-            <Link to="/ask">Ask</Link>{" "}
+            <div className="relative">
+              <Link to="/ask">Ask</Link>{" "}
+              {unreadAskCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+                  {unreadAskCount > 9 ? "9+" : unreadAskCount}
+                </span>
+              )}
+            </div>
           </AskButton>
           {!menusLoading &&
             menus?.data
@@ -288,10 +368,15 @@ const Header = () => {
                   <AskButton isMobile>
                     <Link
                       to="/ask"
-                      className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] relative"
                     >
                       <BsChatFill className="text-xl mr-2" />
                       <span>Ask</span>
+                      {unreadAskCount > 0 && (
+                        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {unreadAskCount > 9 ? "9+" : unreadAskCount}
+                        </span>
+                      )}
                     </Link>
                   </AskButton>
                 )}
