@@ -172,9 +172,7 @@ const newsSlice = createSlice({
       .addCase(restoreNews.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.news = state.news.map((news) =>
-          news._id === action.payload._id ? action.payload : news
-        );
+        state.news.push(action.payload);
         toast.success("News restored successfully");
       })
       .addCase(restoreNews.rejected, (state, action) => {

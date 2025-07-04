@@ -104,6 +104,7 @@ const Profile = () => {
               title: `New request assigned to you: ${request.type}`,
               message: `Request from ${request.user?.forename} ${request.user?.surname}`,
               time: new Date(request.updatedAt).toLocaleString(),
+              timestamp: new Date(request.updatedAt).getTime(),
               isRead: false,
               type: 'assignment',
               requestId: request._id
@@ -121,6 +122,7 @@ const Profile = () => {
               title: `New support request: ${request.type}`,
               message: `Request from ${request.user?.forename} ${request.user?.surname}`,
               time: new Date(request.createdAt).toLocaleString(),
+              timestamp: new Date(request.createdAt).getTime(),
               isRead: false,
               type: 'new_request',
               requestId: request._id
@@ -128,8 +130,8 @@ const Profile = () => {
           }
         });
 
-        // Sort notifications by time (newest first)
-        newNotifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+        // Sort notifications by timestamp (newest first)
+        newNotifications.sort((a, b) => b.timestamp - a.timestamp);
 
         setNotifications(newNotifications);
         setUnreadCount(newNotifications.filter(n => !n.isRead).length);

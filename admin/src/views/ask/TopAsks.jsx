@@ -71,12 +71,14 @@ const TopAsks = () => {
                     <td className="py-4 px-6 text-gray-600">{asker.asksDelivered || 0}</td>
                     <td className="py-4 px-6 text-gray-600">{asker.membershipType || "Standard Member"}</td>
                     <td className="py-4 px-6">
-                      <button
-                        className="px-4 py-2 bg-primary text-white rounded-lg"
-                        onClick={() => handlePromote(asker)}
-                      >
-                        Promote
-                      </button>
+                      {asker.membershipType !== "VIP Member" && (
+                        <button
+                          className="px-4 py-2 bg-primary text-white rounded-lg"
+                          onClick={() => handlePromote(asker)}
+                        >
+                          Promote
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

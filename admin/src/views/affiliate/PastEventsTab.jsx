@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi"
 import { BiSearch } from "react-icons/bi"
@@ -16,7 +16,6 @@ import "../layout/forced.css"
 import Modal from "react-modal"
 import ExportButton from "../ExportButton"
 import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import { getCompanyInfo } from "../../store/setting/companySlice"
 import { getAffiliateById, getAffiliates } from "../../store/affiliate/affiliateSlice"
 
@@ -145,6 +144,7 @@ const PastEventsTab = () => {
       let eventEndTime = new Date()
       if (selectedEvent.time) eventTime = new Date(selectedEvent.time)
       if (selectedEvent.endTime) eventEndTime = new Date(selectedEvent.endTime)
+
       setEventFormData({
         name: selectedEvent.name || "",
         location: selectedEvent.location || "",
@@ -157,11 +157,13 @@ const PastEventsTab = () => {
         type: selectedEvent.type || "social",
         status: selectedEvent.status || "upcoming",
       })
+
       if (selectedEvent.images && selectedEvent.images.length > 0) {
         setEventImages(selectedEvent.images)
       } else {
         setEventImages([])
       }
+
       if (selectedEvent.invitedUsers && selectedEvent.invitedUsers.length > 0 && users) {
         const invitedUserIds = selectedEvent.invitedUsers.map((invited) =>
           typeof invited.user === "object" ? invited.user._id : invited.user,
@@ -231,6 +233,7 @@ const PastEventsTab = () => {
   // Handle update event submission
   const handleUpdateEvent = () => {
     if (!validateForm() || !selectedEvent) return
+
     const formData = new FormData()
     formData.append("name", eventFormData.name)
     formData.append("location", eventFormData.location)
@@ -242,16 +245,22 @@ const PastEventsTab = () => {
     formData.append("numberOfTicket", eventFormData.numberOfTicket)
     formData.append("type", eventFormData.type)
     formData.append("status", eventFormData.status)
+
     if (selectedUsers.length > 0) {
       const invitedUsers = selectedUsers.map((user) => ({ user: user._id, status: "pending" }))
       formData.append("invitedUsers", JSON.stringify(invitedUsers))
     }
+
     if (imageFiles.length > 0) {
-      imageFiles.forEach((file) => { formData.append("images", file) })
+      imageFiles.forEach((file) => {
+        formData.append("images", file)
+      })
     }
+
     if (selectedEvent.visible !== undefined) {
       formData.append("visible", selectedEvent.visible)
     }
+
     dispatch(updateExistingEvent({ id: selectedEvent._id, eventData: formData })).then((response) => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsEditEventOpen(false)
@@ -265,6 +274,7 @@ const PastEventsTab = () => {
   // Handle delete event
   const handleDeleteEvent = () => {
     if (!selectedEvent) return
+
     dispatch(deleteExistingEvent(selectedEvent._id)).then((response) => {
       if (response.meta.requestStatus === "fulfilled") {
         setIsDeleteModalOpen(false)
@@ -296,40 +306,61 @@ const PastEventsTab = () => {
     const maxVisibleButtons = 5
     let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2))
     const endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1)
+
     if (endPage - startPage + 1 < maxVisibleButtons) {
       startPage = Math.max(1, endPage - maxVisibleButtons + 1)
     }
+
     if (startPage > 1) {
       buttons.push(
-        <button key={1} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === 1 ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`} onClick={() => setCurrentPage(1)}>
+        <button
+          key={1}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === 1 ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`}
+          onClick={() => setCurrentPage(1)}
+        >
           1
         </button>,
       )
       if (startPage > 2) {
         buttons.push(
-          <span key="ellipsis1" className="w-8 h-8 flex items-center justify-center">...</span>,
+          <span key="ellipsis1" className="w-8 h-8 flex items-center justify-center">
+            ...
+          </span>,
         )
       }
     }
+
     for (let i = startPage; i <= endPage; i++) {
       buttons.push(
-        <button key={i} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === i ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`} onClick={() => setCurrentPage(i)}>
+        <button
+          key={i}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === i ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`}
+          onClick={() => setCurrentPage(i)}
+        >
           {i}
         </button>,
       )
     }
+
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
         buttons.push(
-          <span key="ellipsis2" className="w-8 h-8 flex items-center justify-center">...</span>,
+          <span key="ellipsis2" className="w-8 h-8 flex items-center justify-center">
+            ...
+          </span>,
         )
       }
       buttons.push(
-        <button key={totalPages} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === totalPages ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`} onClick={() => setCurrentPage(totalPages)}>
+        <button
+          key={totalPages}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${currentPage === totalPages ? "bg-primary text-white" : "text-[#323C47] hover:bg-gray-100"}`}
+          onClick={() => setCurrentPage(totalPages)}
+        >
           {totalPages}
         </button>,
       )
     }
+
     return buttons
   }
 
@@ -341,6 +372,7 @@ const PastEventsTab = () => {
         setShowSortDropdown(false)
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
@@ -352,16 +384,19 @@ const PastEventsTab = () => {
     if (!events || events.length === 0) {
       return []
     }
+
     // Add date and time of export
-    const now = new Date();
-    const dateExported = now.toLocaleDateString();
-    const timeExported = now.toLocaleTimeString();
+    const now = new Date()
+    const dateExported = now.toLocaleDateString()
+    const timeExported = now.toLocaleTimeString()
+
     return events
       .filter((event) => getEventStatus(event) === "completed")
       .map((event) => {
         const ticketsSold = event.invitedUsers?.length || 0
         const price = event.price || 0
         const totalRevenue = ticketsSold * price
+
         return {
           "Event Name": event.name,
           "Start Date": formatDate(event.time),
@@ -376,195 +411,231 @@ const PastEventsTab = () => {
       })
   }, [events])
 
-//   import jsPDF from "jspdf"
-// import { formatCompanyAddress, formatDate, formatTime, getAffiliateField } from "./utils" // Assuming these functions are imported from a utils file
-// import { company, affiliate } from "./data" // Assuming company and affiliate are imported from a data file
+  const downloadInvoicePDF = (event) => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
+    const margin = 40
+    let y = margin
 
-const downloadInvoicePDF = (event) => {
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
-  const margin = 40
-  let y = margin
+    // --- Header Section - Single Column Layout ---
+    const logoSize = 38
+    const spacing = 20 // Space between elements
 
-  // --- Header Section - Single Column Layout ---
-  const logoSize = 38
-  const spacing = 20 // Space between elements
+    // Draw logo (centered or left-aligned)
+    doc.addImage("/logo_white.png", "PNG", margin, y, logoSize, logoSize)
+    y += logoSize + spacing // Move Y position below the logo
 
-  // Draw logo (centered or left-aligned)
-  doc.addImage("/logo_white.png", "PNG", margin, y, logoSize, logoSize)
-  y += logoSize + spacing // Move Y position below the logo
+    // Draw company name
+    doc.setFontSize(16)
+    doc.setTextColor("#900C3F")
+    doc.text(company.name || "HEVSUITE", margin, y)
+    y += 20 // Move Y position for next element
 
-  // Draw company name
-  doc.setFontSize(16)
-  doc.setTextColor("#900C3F")
-  doc.text(company.name || "HEVSUITE", margin, y)
-  y += 20 // Move Y position for next element
+    // Draw email
+    doc.setFontSize(10)
+    doc.setTextColor("#666")
+    doc.text(company.email || "info@hevsuite.com", margin, y)
+    y += 16 // Move Y position for next element
 
-  // Draw email
-  doc.setFontSize(10)
-  doc.setTextColor("#666")
-  doc.text(company.email || "info@hevsuite.com", margin, y)
-  y += 16 // Move Y position for next element
+    // Draw address
+    doc.setTextColor("#888")
+    doc.text(formatCompanyAddress(company) || "123 Main Street, City, Country", margin, y)
+    y += 50 // Add some space after address
 
-  // Draw address
-  doc.setTextColor("#888")
-  doc.text(formatCompanyAddress(company) || "123 Main Street, City, Country", margin, y)
-  y += 20 // Add some space after address
+    doc.setFontSize(13)
+    doc.setTextColor("#900C3F")
+    doc.text(event.name, margin, y)
+    y += 14
 
-  // --- Event Info (like modal) ---
-  doc.setFontSize(13)
-  doc.setTextColor("#900C3F")
-  doc.setFont(undefined, "bold")
-  doc.text(event.name || "N/A", margin, y)
-  y += 18
-  doc.setFontSize(11)
-  doc.setTextColor("#666")
-  doc.setFont(undefined, "normal")
-  doc.text(`${formatDate(event.time)} - ${formatDate(event.endTime)}`, margin, y)
-  y += 2
+    doc.setTextColor("#666")
+    doc.setFontSize(10)
+    doc.text(`${formatDate(event.time)} - ${formatDate(event.endTime)}`, margin, y)
+    y += 5
 
-  // Right: Receipt Info (positioned independently)
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const rightX = pageWidth - margin
-  const rightY = margin // Start from top margin
+    // Right: Receipt Info (positioned independently)
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const rightX = pageWidth - margin
+    const rightY = margin // Start from top margin
 
-  doc.setFontSize(22)
-  doc.setTextColor("#900C3F")
-  doc.text("Receipt", rightX, rightY + 10, { align: "right" })
+    doc.setFontSize(22)
+    doc.setTextColor("#900C3F")
+    doc.text("Receipt", rightX, rightY + 10, { align: "right" })
 
-  doc.setFontSize(10)
-  doc.setTextColor("#666")
-  doc.text(`#RCP-${event._id?.slice(-12).toUpperCase() || "N/A"}`, rightX, rightY + 28, { align: "right" })
+    doc.setFontSize(10)
+    doc.setTextColor("#666")
+    doc.text(`#RCP-${event._id?.slice(-12).toUpperCase() || "N/A"}`, rightX, rightY + 28, { align: "right" })
 
-  doc.setTextColor("#222")
-  doc.text(
-    `Bill To: ${(typeof event.affiliatePartner === "object" ? event.affiliatePartner.businessName || event.affiliatePartner.name : affiliate?.businessName || affiliate?.name) || "Affiliate"}`,
-    rightX,
-    rightY + 43,
-    { align: "right" },
-  )
+    doc.setTextColor("#222")
+    doc.text(
+      `Bill To: ${(typeof event.affiliatePartner === "object" ? event.affiliatePartner.businessName || event.affiliatePartner.name : affiliate?.businessName || affiliate?.name) || "Affiliate"}`,
+      rightX,
+      rightY + 43,
+      { align: "right" },
+    )
 
-  doc.setTextColor("#666")
-  doc.text(
-    typeof event.affiliatePartner === "object" && event.affiliatePartner.businessEmail
-      ? event.affiliatePartner.businessEmail
-      : affiliate?.businessEmail || "affiliate@email.com",
-    rightX,
-    rightY + 56,
-    { align: "right" },
-  )
+    doc.setTextColor("#666")
+    doc.text(
+      typeof event.affiliatePartner === "object" && event.affiliatePartner.businessEmail
+        ? event.affiliatePartner.businessEmail
+        : affiliate?.businessEmail || "affiliate@email.com",
+      rightX,
+      rightY + 56,
+      { align: "right" },
+    )
 
-  doc.text(`${formatDate(new Date())}, ${formatTime(new Date())}`, rightX, rightY + 69, { align: "right" })
+    doc.text(`${formatDate(new Date())}, ${formatTime(new Date())}`, rightX, rightY + 69, { align: "right" })
 
-  // Status badge
-  doc.setFillColor(46, 125, 50) // Always green for PAID
-  doc.roundedRect(rightX - 60, rightY + 75, 60, 20, 6, 6, "F")
-  doc.setFontSize(10)
-  doc.setTextColor("#fff")
-  doc.text("PAID", rightX - 30, rightY + 90, { align: "center" })
-  // Additional status: Full Payment or Partial Payment
-  doc.setFontSize(9)
-  doc.setTextColor("#218838")
-  if (event.balance === 0) {
-    doc.text("Full Payment", rightX - 30, rightY + 105, { align: "center" })
-  } else {
-    doc.text("Full Payment", rightX - 30, rightY + 105, { align: "center" })
+    // Bank Details Box (moved to header area)
+    // doc.setFillColor(245, 245, 245) // Light gray background
+    // doc.roundedRect(rightX - 120, rightY + 75, 120, 35, 4, 4, "F")
+    doc.setFontSize(9)
+    doc.setTextColor("#333")
+    doc.text("Bank Details:", rightX, rightY + 82, { align: "right" })
+    doc.setFontSize(8)
+    doc.setTextColor("#666")
+    doc.text(`Bank: ${getAffiliateField("bankName")}, Account: ${getAffiliateField("accountNumber")}`, rightX, rightY + 95, { align: "right" })
+    // doc.text(`Account: ${getAffiliateField("accountNumber")}`, rightX - 115, rightY + 110, { align: "left" })
+
+    // Status badge (moved down to accommodate bank details)
+    doc.setFillColor(46, 125, 50) // Always green for PAID
+    doc.roundedRect(rightX - 40, rightY + 105, 40, 20, 4, 4, "F")
+    doc.setFontSize(10)
+    doc.setTextColor("#fff")
+    doc.text("PAID", rightX - 20, rightY + 120, { align: "center" })
+
+    // Set y to the lower of left or right section
+    y = Math.max(y + 10, rightY + 155) // Ensure enough space after both sections
+
+    doc.setDrawColor("#eee")
+    doc.line(margin, y, rightX, y)
+    y += 26
+
+    // --- Purchase Details ---
+    doc.setFontSize(13)
+    doc.setTextColor("#900C3F")
+    doc.text("Purchase Details", margin, y)
+    y += 16
+
+    doc.setDrawColor("#eee")
+    doc.line(margin, y, rightX, y)
+    y += 20
+
+    const ticketsSold = event.invitedUsers?.length || 0
+    const price = event.price || 0
+    const total = ticketsSold * price
+    const commission = total * 0.1
+
+    // Define consistent spacing between sections
+    const sectionSpacing = 15
+
+    // Cost Breakdown Section with light blue background
+    doc.setFillColor(240, 248, 255) // Light blue background
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 50, 6, 6, "F")
+
+    doc.setFontSize(10)
+    doc.setTextColor("#222")
+
+    const costBreakdownY = y + 15
+    // Tickets Sold with "x" notation
+    doc.text("Tickets Sold", margin + 10, costBreakdownY)
+    doc.text(`x${ticketsSold}`, rightX - 10, costBreakdownY, { align: "right" })
+
+    // Price per Ticket
+    doc.text("Price per Ticket", margin + 10, costBreakdownY + 18)
+    doc.text(`£${price}`, rightX - 10, costBreakdownY + 18, { align: "right" })
+
+    y += 50 + sectionSpacing
+
+    // Pre Commission Balance with faint background
+    doc.setFillColor(248, 248, 248) // Very light gray background
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 25, 4, 4, "F")
+    doc.setFontSize(10)
+    doc.setTextColor("#333")
+    doc.text("Pre Commission Balance", margin + 10, y + 16)
+    doc.setFont("helvetica", "bold")
+    doc.text(`£${total.toFixed(2)}`, rightX - 10, y + 16, { align: "right" })
+    doc.setFont("helvetica", "normal")
+
+    y += 25 + sectionSpacing
+
+    // Commission
+    doc.setFontSize(10)
+    doc.setTextColor("#666")
+    doc.text("Commission (10%)", margin, y)
+    doc.text(`£${commission.toFixed(2)}`, rightX, y, { align: "right" })
+
+    y += sectionSpacing
+
+    // Post Commission Balance with highlighted background
+    doc.setFillColor(240, 255, 240) // Light green background
+    doc.setDrawColor(34, 197, 94) // Green border
+    doc.setLineWidth(2)
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 30, 6, 6, "FD")
+    doc.setLineWidth(1) // Reset line width
+
+    doc.setFontSize(11)
+    // doc.setTextColor("#166534") // Dark green text
+    doc.setFont("helvetica", "bold")
+    doc.text("Post Commission Balance", margin + 10, y + 20)
+    doc.setFontSize(12)
+    doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 20, { align: "right" })
+    doc.setFont("helvetica", "normal")
+
+    y += 30 + sectionSpacing
+
+    // Transaction ID
+    doc.setFontSize(10)
+    doc.setTextColor("#666")
+    doc.text("Transaction ID", margin, y)
+    doc.setFont("courier", "normal") // Monospace for Transaction ID
+    doc.setTextColor("#333")
+    doc.text(event.transactionId || "3B8175TAT2517600", rightX, y, { align: "right" })
+    doc.setFont("helvetica", "normal") // Reset font
+
+    y += sectionSpacing
+
+    // --- Total Amount Paid ---
+    doc.setFillColor(245, 245, 245)
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 40, 8, 8, "F")
+
+    doc.setFontSize(14)
+    doc.setTextColor("#900C3F")
+    doc.text("Total Amount Paid", margin + 10, y + 25)
+
+    doc.setFontSize(20)
+    doc.setTextColor("#218838")
+    doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 27, { align: "right" })
+
+    y += 60
+
+    // --- Footer (centered) ---
+    doc.setFontSize(10)
+    doc.setTextColor("#222")
+    doc.text("Thank you for your purchase!", pageWidth / 2, y, { align: "center" })
+
+    y += 15
+
+    doc.setTextColor("#666")
+    doc.text(`For support or inquiries, contact us at ${company.email || "support@hevsuite.com"}`, pageWidth / 2, y, {
+      align: "center",
+    })
+
+    y += 15
+
+    doc.setTextColor("#666")
+    doc.text("Hazor Group Ltd", pageWidth / 2, y, { align: "center" })
+
+    y += 15
+
+    doc.setFontSize(9)
+    doc.setTextColor("#888")
+    doc.text("HevSuite Club - Building Communities Through Events", pageWidth / 2, y, { align: "center" })
+
+    doc.save(`receipt_${event._id?.slice(-12).toUpperCase() || "N/A"}.pdf`)
   }
-
-  // Set y to the lower of left or right section
-  y = Math.max(y + 10, rightY + 110) // Ensure enough space after both sections
-
-  doc.setDrawColor("#eee")
-  doc.line(margin, y, rightX, y)
-  y += 20
-
-  // --- Purchase Details ---
-  doc.setFontSize(13)
-  doc.setTextColor("#900C3F")
-  doc.text("Purchase Details", margin, y)
-  y += 1
-
-  y = Math.max(y + 10, rightY + 110) // Ensure enough space after both sections
-
-  doc.setDrawColor("#eee")
-  doc.line(margin, y, rightX, y)
-  y += 20
-
-  doc.setFontSize(10)
-  doc.setTextColor("#222")
-
-  const ticketsSold = event.invitedUsers?.length || 0
-  const price = event.price || 0
-  const total = ticketsSold * price
-  const commission = total * 0.1
-
-  const details = [
-    ["Tickets Sold", ticketsSold.toString()],
-    ["Price per Ticket", `£${price}`],
-    ["Total", `£${total.toFixed(2)}`],
-    ["Commission (10%)", `£${commission.toFixed(2)}`],
-    ["Amount Paid", `£${commission.toFixed(2)}`],
-    ["Bank Name", getAffiliateField("bankName")],
-    ["Account Number", getAffiliateField("accountNumber")],
-    ["Transaction ID", event.transactionId || "3B8175TAT2517600"],
-  ]
-
-  const labelX = margin
-  const valueX = rightX // perfectly right-aligned
-
-  details.forEach(([label, value]) => {
-    doc.text(label, labelX, y)
-    if (label === "Transaction ID") {
-      doc.setFont("courier", "normal")
-      doc.text(value, valueX, y, { align: "right" })
-      doc.setFont("helvetica", "normal") // Switch back to default
-    } else {
-      doc.text(value, valueX, y, { align: "right" })
-    }
-    y += 18
-  })
-
-  y += 10
-
-  // --- Total Amount Paid ---
-  doc.setFillColor(245, 245, 245)
-  doc.roundedRect(margin, y, pageWidth - margin * 2, 40, 8, 8, "F")
-
-  doc.setFontSize(14)
-  doc.setTextColor("#900C3F")
-  doc.text("Total Amount Paid", margin + 10, y + 25)
-
-  doc.setFontSize(20)
-  doc.setTextColor("#218838")
-  doc.text(`£${commission.toFixed(2)}`, rightX - 10, y + 27, { align: "right" })
-
-  y += 60
-
-  // --- Footer (centered) ---
-  doc.setFontSize(10)
-  doc.setTextColor("#222")
-  doc.text("Thank you for your purchase!", pageWidth / 2, y, { align: "center" })
-  y += 15
-
-  doc.setTextColor("#666")
-  doc.text(`For support or inquiries, contact us at ${company.email || "support@hevsuite.com"}`, pageWidth / 2, y, {
-    align: "center",
-  })
-  y += 15
-
-  doc.setTextColor("#666")
-  doc.text("Hazor Group Ltd", pageWidth / 2, y, { align: "center" })
-  y += 15
-
-  doc.setFontSize(9)
-  doc.setTextColor("#888")
-  doc.text("HevSuite Club - Building Communities Through Events", pageWidth / 2, y, { align: "center" })
-
-  doc.save(`receipt_${event._id?.slice(-12).toUpperCase() || "N/A"}.pdf`)
-}
 
   // Helper to format company address
   const formatCompanyAddress = (company) => {
-    let parts = []
+    const parts = []
     // if (company.addressLine1) parts.push(company.addressLine1)
     if (company.city) parts.push(company.city)
     if (company.state) parts.push(company.state)
@@ -590,26 +661,19 @@ const downloadInvoicePDF = (event) => {
         "Event Organizer"
       )
     }
+
     if (affiliate && affiliate._id === selectedEvent?.affiliatePartner) {
-      return (
-        affiliate.businessName ||
-        affiliate.name ||
-        affiliate.email ||
-        "Event Organizer"
-      )
+      return affiliate.businessName || affiliate.name || affiliate.email || "Event Organizer"
     }
+
     // Try to find in affiliates array
     if (affiliates && Array.isArray(affiliates)) {
-      const found = affiliates.find(a => a._id === selectedEvent?.affiliatePartner)
+      const found = affiliates.find((a) => a._id === selectedEvent?.affiliatePartner)
       if (found) {
-        return (
-          found.businessName ||
-          found.name ||
-          found.email ||
-          "Event Organizer"
-        )
+        return found.businessName || found.name || found.email || "Event Organizer"
       }
     }
+
     return "Event Organizer"
   }
 
@@ -617,50 +681,47 @@ const downloadInvoicePDF = (event) => {
   const getAffiliateField = (field) => {
     if (
       affiliate &&
-      (affiliate._id === selectedEvent?.affiliatePartner ||
-        affiliate._id === selectedEvent?.affiliatePartner?._id)
+      (affiliate._id === selectedEvent?.affiliatePartner || affiliate._id === selectedEvent?.affiliatePartner?._id)
     ) {
-      if (field === 'bankName') return affiliate[field] || 'Test Bank';
-      if (field === 'accountNumber') return affiliate[field] || '123456789';
-      return affiliate[field] || 'N/A';
+      if (field === "bankName") return affiliate[field] || "Test Bank"
+      if (field === "accountNumber") return affiliate[field] || "123456789"
+      return affiliate[field] || "N/A"
     }
-    if (
-      selectedEvent &&
-      typeof selectedEvent.affiliatePartner === 'object' &&
-      selectedEvent.affiliatePartner[field]
-    ) {
-      if (field === 'bankName') return selectedEvent.affiliatePartner[field] || 'Test Bank';
-      if (field === 'accountNumber') return selectedEvent.affiliatePartner[field] || '123456789';
-      return selectedEvent.affiliatePartner[field];
+
+    if (selectedEvent && typeof selectedEvent.affiliatePartner === "object" && selectedEvent.affiliatePartner[field]) {
+      if (field === "bankName") return selectedEvent.affiliatePartner[field] || "Test Bank"
+      if (field === "accountNumber") return selectedEvent.affiliatePartner[field] || "123456789"
+      return selectedEvent.affiliatePartner[field]
     }
-    if (field === 'bankName') return 'Test Bank';
-    if (field === 'accountNumber') return '123456789';
-    return 'N/A';
-  };
+
+    if (field === "bankName") return "Test Bank"
+    if (field === "accountNumber") return "123456789"
+    return "N/A"
+  }
 
   // Helper to get affiliate email for Bill To
   const getAffiliateEmail = () => {
     if (
       affiliate &&
-      (affiliate._id === selectedEvent?.affiliatePartner ||
-        affiliate._id === selectedEvent?.affiliatePartner?._id)
+      (affiliate._id === selectedEvent?.affiliatePartner || affiliate._id === selectedEvent?.affiliatePartner?._id)
     ) {
-      return affiliate.businessEmail || affiliate.email || 'affiliate@email.com';
+      return affiliate.businessEmail || affiliate.email || "affiliate@email.com"
     }
+
     if (
       selectedEvent &&
-      typeof selectedEvent.affiliatePartner === 'object' &&
+      typeof selectedEvent.affiliatePartner === "object" &&
       (selectedEvent.affiliatePartner.businessEmail || selectedEvent.affiliatePartner.email)
     ) {
-      return selectedEvent.affiliatePartner.businessEmail || selectedEvent.affiliatePartner.email;
+      return selectedEvent.affiliatePartner.businessEmail || selectedEvent.affiliatePartner.email
     }
-    return 'affiliate@email.com';
-  };
+
+    return "affiliate@email.com"
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end flex-col md:flex-row gap-2 items-center">
-        
         <div className="flex gap-4 relative">
           {/* Audience Type Filter Button */}
           <div className="relative">
@@ -671,17 +732,38 @@ const downloadInvoicePDF = (event) => {
             >
               Audience Type
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17v-3.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17v-3.586a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z"
+                />
               </svg>
             </button>
+
             {showFilterDropdown && (
               <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange("all")}>All</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange("members")}>Members Only</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleFilterChange("vip")}>VIP Members</button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleFilterChange("all")}
+                >
+                  All
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleFilterChange("members")}
+                >
+                  Members Only
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleFilterChange("vip")}
+                >
+                  VIP Members
+                </button>
               </div>
             )}
           </div>
+
           {/* Sort By Button */}
           <div className="relative">
             <button
@@ -695,29 +777,49 @@ const downloadInvoicePDF = (event) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 10l3 3 3-3" />
               </svg>
             </button>
+
             {showSortDropdown && (
               <div className="absolute z-[100] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange("all")}>All</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange("latest")}>Latest</button>
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => handleSortChange("oldest")}>Oldest</button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleSortChange("all")}
+                >
+                  All
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleSortChange("latest")}
+                >
+                  Latest
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleSortChange("oldest")}
+                >
+                  Oldest
+                </button>
               </div>
             )}
           </div>
         </div>
+
         <ExportButton data={preparedExportData} fileName="past_events" />
       </div>
+
       {/* Loading State */}
       {eventsLoading && (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       )}
+
       {/* Error State */}
       {eventsError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           <p>Error loading events: {eventsMessage}</p>
         </div>
       )}
+
       {/* Event Grid */}
       {!eventsLoading && !eventsError && (
         <div className="grid md:grid-cols-4 gap-6 relative">
@@ -736,6 +838,7 @@ const downloadInvoicePDF = (event) => {
                   >
                     <img src={edit_icon || "/placeholder.svg"} alt="edit icon" />
                   </button>
+
                   <button
                     className="p-2 relative right-4 text-white rounded-lg transition-colors"
                     onClick={(e) => {
@@ -747,6 +850,7 @@ const downloadInvoicePDF = (event) => {
                     <FiTrash2 className="w-5 h-5" />
                   </button>
                 </div>
+
                 <div
                   className="relative h-80 rounded-2xl overflow-hidden bg-center bg-cover"
                   style={{
@@ -758,10 +862,12 @@ const downloadInvoicePDF = (event) => {
                 >
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-xl font-medium text-white mb-2 overflow-hidden text-ellipsis whitespace-nowrap">
                       {event.name}
                     </h3>
+
                     <div className="flex justify-between gap-4">
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2 text-white/80">
@@ -770,6 +876,7 @@ const downloadInvoicePDF = (event) => {
                             {formatDate(event.time)} - {formatDate(event.endTime)}
                           </span>
                         </div>
+
                         <div className="flex items-center gap-2 text-white/80">
                           <MdAccessTime className="w-4 h-4" />
                           <span className="text-[12px]">
@@ -777,19 +884,29 @@ const downloadInvoicePDF = (event) => {
                           </span>
                         </div>
                       </div>
+
                       <div className="flex items-center gap-2 text-white/80 cursor-pointer">
-                        {event.visible ? <FiEye className="w-7 h-7 text-white" /> : <FiEyeOff className="w-7 h-7 text-white/80" />}
+                        {event.visible ? (
+                          <FiEye className="w-7 h-7 text-white" />
+                        ) : (
+                          <FiEyeOff className="w-7 h-7 text-white/80" />
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 gap-2 mt-2">
-                  <button className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm w-full" onClick={() => {
-                    setSelectedEvent(event);
-                    setIsInvoiceModalOpen(true);
-                  }}>
+                  <button
+                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm w-full"
+                    onClick={() => {
+                      setSelectedEvent(event)
+                      setIsInvoiceModalOpen(true)
+                    }}
+                  >
                     View Invoice
                   </button>
+
                   <button
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm w-full"
                     onClick={() => {
@@ -804,6 +921,7 @@ const downloadInvoicePDF = (event) => {
             ))}
         </div>
       )}
+
       {/* Pagination */}
       {!eventsLoading && !eventsError && events?.length > 0 && (
         <div className="flex w-full overflow-auto items-center justify-between">
@@ -822,6 +940,7 @@ const downloadInvoicePDF = (event) => {
               <option value={24}>24</option>
             </select>
           </div>
+
           <div className="flex items-center gap-2">
             <button
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
@@ -832,7 +951,9 @@ const downloadInvoicePDF = (event) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
+
             {renderPaginationButtons()}
+
             <button
               className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
@@ -845,6 +966,7 @@ const downloadInvoicePDF = (event) => {
           </div>
         </div>
       )}
+
       <Modal
         isOpen={isBreakdownModalOpen}
         onRequestClose={() => setIsBreakdownModalOpen(false)}
@@ -862,36 +984,43 @@ const downloadInvoicePDF = (event) => {
               ✕
             </button>
           </div>
+
           {selectedEvent && (
             <div>
               <h3 className="text-lg font-medium mb-4">{selectedEvent.name}</h3>
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Available Tickets</p>
                   <p className="font-semibold text-lg">{selectedEvent.numberOfTicket || "N/A"}</p>
                 </div>
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Tickets Sold</p>
                   <p className="font-semibold text-lg">{selectedEvent.invitedUsers?.length || 0}</p>
                 </div>
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Price Per Ticket</p>
                   <p className="font-semibold text-lg">£{selectedEvent.price || 0}</p>
                 </div>
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Total Balance</p>
                   <p className="font-semibold text-lg">
                     £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}
                   </p>
                 </div>
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Commission</p>
                   <p className="font-semibold text-lg">10%</p>
                 </div>
+
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-500">Your Balance</p>
                   <p className="font-semibold text-lg">
-                    £{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}
+                    £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0) * 0.1).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -951,6 +1080,7 @@ const downloadInvoicePDF = (event) => {
                   />
                   {formErrors.location && <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>}
                 </div>
+
                 <div>
                   <label className="block mb-1">Start Date & Time</label>
                   <div className="relative">
@@ -964,6 +1094,7 @@ const downloadInvoicePDF = (event) => {
                     {formErrors.time && <p className="text-red-500 text-xs mt-1">{formErrors.time}</p>}
                   </div>
                 </div>
+
                 <div>
                   <label className="block mb-1">End Date & Time</label>
                   <div className="relative">
@@ -1012,6 +1143,7 @@ const downloadInvoicePDF = (event) => {
                     <option value="vip">VIP Members</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="block mb-1">Price</label>
                   <div className="relative">
@@ -1068,6 +1200,7 @@ const downloadInvoicePDF = (event) => {
                     Invite Users
                   </button>
                 </div>
+
                 <div className="mt-2 border rounded-lg p-4">
                   {/* Attending Members List */}
                   <div className="flex flex-wrap gap-2">
@@ -1088,6 +1221,7 @@ const downloadInvoicePDF = (event) => {
                     ))}
                   </div>
                 </div>
+
                 <div id="edit-user-list" className="border rounded-lg h-[120px] overflow-y-auto mt-2">
                   {usersLoading ? (
                     <div className="flex justify-center items-center h-full">
@@ -1129,6 +1263,7 @@ const downloadInvoicePDF = (event) => {
                     <span className="text-2xl text-gray-400">+</span>
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
                   </label>
+
                   {eventImages.map((image, index) => (
                     <div key={index} className="w-24 h-24 rounded-lg overflow-hidden relative group">
                       <img src={image || "/placeholder.svg"} alt="" className="w-full h-full object-cover" />
@@ -1185,8 +1320,10 @@ const downloadInvoicePDF = (event) => {
               ✕
             </button>
           </div>
+
           <div className="space-y-6">
             <p className="text-gray-600">Are you sure you want to remove this event? This action cannot be undone.</p>
+
             <div className="flex justify-end gap-3">
               <button onClick={() => setIsDeleteModalOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
                 Cancel
@@ -1217,91 +1354,156 @@ const downloadInvoicePDF = (event) => {
         <div className="p-8 flex flex-col items-center justify-center text-center">
           {selectedEvent ? (
             <div className="w-full text-left">
-              {/* Header */}
+              {/* Header Grid */}
               <div className="flex justify-between items-start mb-6">
-                <div className="flex flex-col items-start gap-2">
-                  <img src="/logo_white.png" alt="Brand Logo" className="h-12 w-12 object-contain bg-gray-100 rounded-full border mb-2" onError={e => e.target.style.display='none'} />
-                  <span className="text-lg font-bold text-gray-800">{company.name || 'HEVSUITE'}</span>
-                  <span className="text-sm text-gray-500">{company.email || 'info@hevsuite.com'}</span>
-                  <span className="text-xs text-gray-400">{formatCompanyAddress(company) || '123 Main Street, City, Country'}</span>
+                {/* Left: Logo + Company Info + Event Name/Date */}
+                <div className="flex flex-col items-start gap-1 min-w-[220px]">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center bg-[#900C3F] mb-2">
+                    <img
+                      src="/logo_white.png"
+                      alt="Brand Logo"
+                      className="h-8 w-8 object-contain"
+                      onError={(e) => (e.target.style.display = "none")}
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-[#900C3F]">{company.name || "HEVSUITE"}</span>
+                  <span className="text-sm text-gray-500">{company.email || "info@hevsuite.com"}</span>
+                  <span className="text-xs text-gray-400">
+                    {formatCompanyAddress(company) || "123 Main Street, City, Country"}
+                  </span>
+                  <span className="text-base font-bold text-[#900C3F] mt-2">{selectedEvent.name}</span>
+                  <span className="text-xs text-gray-500">
+                    {formatDate(selectedEvent.time)} - {formatDate(selectedEvent.endTime)}
+                  </span>
                 </div>
-                <div className="text-right">
+
+                {/* Right: Receipt Info + Bank Details */}
+                <div className="text-right min-w-[180px]">
                   <h2 className="text-2xl font-bold mb-1 text-[#900C3F]">Receipt</h2>
-                  <p className="text-xs text-gray-500">#RCP-{selectedEvent._id?.slice(-12).toUpperCase() || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">#RCP-{selectedEvent._id?.slice(-12).toUpperCase() || "N/A"}</p>
+
                   <div className="mt-2 text-xs text-gray-700">
-                    <span className="font-semibold">Bill To:</span> <span className="font-bold text-[#900C3F]">{getAffiliateName()}</span><br/>
-                    <span>{getAffiliateEmail()}</span><br/>
-                    <span>{formatDate(new Date())}, {formatTime(new Date())}</span>
+                    <span className="font-semibold">Bill To:</span>{" "}
+                    <span className="font-bold text-[#900C3F]">{getAffiliateName()}</span>
+                    <br />
+                    <span>{getAffiliateEmail()}</span>
+                    <br />
+                    <span>
+                      {formatDate(new Date())}, {formatTime(new Date())}
+                    </span>
                   </div>
-                  <div className="mt-2">
-                    <span className="inline-block px-4 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">{selectedEvent.balance === 0 ? 'PAID' : 'UNPAID'}</span>
+
+                  {/* Bank Details moved here */}
+                  <div className="mt-3 text-xs text-gray-700 bg-gray-50 p-2 rounded">
+                    <div className="font-semibold text-gray-800 mb-1">Bank Details:</div>
+                    <div>Bank: {getAffiliateField("bankName")}</div>
+                    <div>Account: {getAffiliateField("accountNumber")}</div>
+                  </div>
+
+                  <div className="mt-2 flex flex-col items-end">
+                    <span className="inline-block px-4 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">
+                      PAID
+                    </span>
                   </div>
                 </div>
               </div>
+
               <hr className="my-6 border-gray-200" />
-              {/* Event Info - styled like the provided image */}
+
+              {/* Purchase Details Section Title */}
+              <h3 className="text-lg font-bold mb-2 text-[#900C3F]">Purchase Details</h3>
+              <hr className="mb-4 border-gray-200" />
+
+              {/* Details Table with colored sections */}
               <div className="mb-6">
-                <div className="font-bold text-[#900C3F] text-base mb-0">{selectedEvent.name || 'N/A'}</div>
-                <div className="text-gray-600 text-sm mt-0.5">{formatDate(selectedEvent.time)} - {formatDate(selectedEvent.endTime)}</div>
-              </div>
-              {/* Purchase Details */}
-              <div className="mb-5">
-                <h3 className="text-lg font-bold mb-2 text-[#900C3F]">Purchase Details</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tickets Sold</span>
-                    <span className="text-gray-900 font-medium">{selectedEvent.invitedUsers?.length || 0}</span>
+                {/* Cost Breakdown Section */}
+                <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                  <div className="space-y-2">
+                    {[
+                      ["Tickets Sold", `x${selectedEvent.invitedUsers?.length || 0}`],
+                      ["Price per Ticket", `£${selectedEvent.price || 0}`],
+                    ].map(([label, value], idx) => (
+                      <div key={label} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{label}</span>
+                        <span className="text-gray-900 font-medium text-right">{value}</span>
+                      </div>
+                    ))}
                   </div>
+                </div>
+
+                {/* Pre Commission Balance with fainted background */}
+                <div className="bg-gray-100 p-3 rounded-lg mb-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Price per Ticket</span>
-                    <span className="text-gray-900 font-medium">£{selectedEvent.price || 0}</span>
+                    <span className="text-gray-600 font-medium">Pre Commission Balance</span>
+                    <span className="text-gray-900 font-semibold text-right">
+                      £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total</span>
-                    <span className="text-gray-900 font-medium">£{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)).toFixed(2)}</span>
-                  </div>
+                </div>
+
+                {/* Commission */}
+                <div className="mb-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Commission (10%)</span>
-                    <span className="text-gray-900 font-medium">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium text-right">
+                      £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0) * 0.1).toFixed(2)}
+                    </span>
                   </div>
+                </div>
+
+                {/* Post Commission Balance with highlight */}
+                <div className="bg-green-100 border-l-4 border-green-500 p-3 rounded-lg mb-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Amount Paid</span>
-                    <span className="text-gray-900 font-medium">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
+                    <span className="text-green-800 font-semibold">Post Commission Balance</span>
+                    <span className="text-green-900 font-bold text-right">
+                      £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0) * 0.1).toFixed(2)}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Bank Name</span>
-                    <span className="text-gray-900 font-medium">{getAffiliateField('bankName')}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Account Number</span>
-                    <span className="text-gray-900 font-medium">{getAffiliateField('accountNumber')}</span>
-                  </div>
+                </div>
+
+                {/* Transaction ID */}
+                <div className="mb-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Transaction ID</span>
-                    <span className="text-gray-900 font-medium">{selectedEvent?.transactionId || '3B8175TAT2517600'}</span>
+                    <span className="text-gray-900 font-medium text-right" style={{ fontFamily: "monospace" }}>
+                      {selectedEvent?.transactionId || "3B8175TAT2517600"}
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* Total Amount Paid Box */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 flex justify-between items-center">
                 <span className="text-lg font-bold text-[#900C3F]">Total Amount Paid</span>
-                <span className="text-2xl font-bold text-green-700">£{(((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0)) * 0.1).toFixed(2)}</span>
+                <span className="text-2xl font-bold text-green-700">
+                  £{((selectedEvent.invitedUsers?.length || 0) * (selectedEvent.price || 0) * 0.1).toFixed(2)}
+                </span>
               </div>
+
+              {/* Footer */}
               <div className="mt-8 text-center text-gray-600 text-sm">
                 <p className="mb-1 font-semibold">Thank you for your purchase!</p>
-                <p>For support or inquiries, contact us at <a href={`mailto:${company.email || 'support@hevsuite.com'}`} className="text-[#900C3F] underline">{company.email || 'support@hevsuite.com'}</a></p>
-                <p className="italic mt-2 text-xs">HevSuite Club - Building Communities Through Events</p>
+                <p>
+                  For support or inquiries, contact us at{" "}
+                  <a href={`mailto:${company.email || "support@hevsuite.com"}`} className="text-[#900C3F] underline">
+                    {company.email || "support@hevsuite.com"}
+                  </a>
+                </p>
                 <p className="italic mt-2 text-xs">Hazor Group Ltd</p>
+                <p className="italic mt-2 text-xs">HevSuite Club - Building Communities Through Events</p>
               </div>
             </div>
           ) : (
             <p>No event selected.</p>
           )}
+
           <button
             onClick={() => downloadInvoicePDF(selectedEvent)}
             className="px-6 py-2 bg-green-600 text-white rounded-lg mt-4 mr-2"
           >
             Download Receipt as PDF
           </button>
+
           <button
             onClick={() => setIsInvoiceModalOpen(false)}
             className="px-6 py-2 bg-primary text-white rounded-lg mt-4"

@@ -1242,6 +1242,147 @@ const News = () => {
         </div>
       </Modal>
 
+      {/* Restore Confirmation Modal */}
+      <Modal
+        isOpen={isRestoreModalOpen}
+        onRequestClose={() => setIsRestoreModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-[450px]"
+        overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Restore News</h2>
+            <button onClick={() => setIsRestoreModalOpen(false)} className="text-gray-400">
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to restore this news article? It will become active again and visible to users.
+            </p>
+
+            {selectedNews && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-800 mb-2">{selectedNews.title}</h3>
+                <p className="text-sm text-gray-600">{selectedNews.description.substring(0, 100)}...</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button onClick={() => setIsRestoreModalOpen(false)} className="px-6 py-2 border rounded-lg text-sm">
+                Cancel
+              </button>
+              <button
+                onClick={handleRestoreNews}
+                className="px-6 py-2 bg-green-500 text-white rounded-lg text-sm"
+                disabled={isLoading}
+              >
+                {isLoading ? "Restoring..." : "Restore"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Post News Modal */}
+      <Modal
+        isOpen={isPostModalOpen}
+        onRequestClose={() => setIsPostModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg md:w-[600px] w-[96vw] max-h-[90vh] overflow-y-auto"
+        overlayClassName="fixed inset-0 bg-black/50"
+        style={{
+          overlay: { zIndex: 1000 },
+          content: { zIndex: 1001 },
+        }}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Post News</h2>
+            <button onClick={() => setIsPostModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <IoCloseOutline size={24} />
+            </button>
+          </div>
+
+          {selectedNews && (
+            <div className="space-y-4">
+              {/* News Title */}
+              <div>
+                <label className="block mb-1">News Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={selectedNews.title}
+                  readOnly
+                  className="w-full px-4 py-2 border rounded-lg text-gray-600"
+                />
+              </div>
+
+              {/* News Description */}
+              <div>
+                <label className="block mb-1">News Description</label>
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2 border-b p-2 bg-white">
+                    {/* ... existing toolbar buttons ... */}
+                  </div>
+                  <textarea
+                    name="description"
+                    value={selectedNews.description}
+                    readOnly
+                    className="w-full p-4 min-h-[200px] resize-none focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* News Images */}
+              <div>
+                <label className="block mb-1">News Images</label>
+                <div className="flex gap-4 flex-wrap">
+                  {selectedNews.images.map((image, index) => (
+                    <div key={index} className="w-24 h-24 rounded-lg overflow-hidden relative group">
+                      <img src={image || "/placeholder.svg"} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* News Videos */}
+              <div>
+                <label className="block mb-1">News Videos</label>
+                <div className="flex gap-4 flex-wrap">
+                  {selectedNews.videos.map((video, index) => (
+                    <div key={index} className="w-24 h-24 rounded-lg overflow-hidden relative group">
+                      <video src={video} controls className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setIsPostModalOpen(false)}
+                  className="px-6 py-2 border rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-6 py-2 bg-gradient-to-r from-[#540A26] to-[#0A5440] text-white rounded-lg"
+                  onClick={handlePostNews}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Posting..." : "Post"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
       {/* View News Modal */}
       <Modal
         isOpen={isViewNewsOpen}

@@ -29,7 +29,7 @@ const phoneVerify = async (data) => {
 };
 
 const codeVerify = async (data) => {
-  const response = await axios.post(`${base_url}/api/user/verify-2fa`, data);
+  const response = await axios.post(`${base_url}/api/user/verify-2fa`, data, { withCredentials: true });
   if (response.data) {
     localStorage.setItem('admin', JSON.stringify(response.data));
     console.log(response.data)

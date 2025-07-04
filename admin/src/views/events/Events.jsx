@@ -115,20 +115,22 @@ export default function Events() {
           <Profile />
         </div>
       </div>
-      <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 mb-6 border-b overflow-x-auto">
-        {filteredTabs.map((tab) => (
-          <button
-            key={tab.key}
-            className={`px-4 py-2 md:px-6 md:py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab.key
-                ? "border-primary text-primary"
-                : "border-transparent text-gray-500 hover:text-primary"
-            }`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-6 border-b border-gray-200 px-2 md:px-0">
+        <nav className="flex flex-row space-x-2 md:space-x-8 overflow-x-auto overflow-y-hidden scrollbar-hide" aria-label="Tabs">
+          {filteredTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-primary'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
       <div className="px-0 md:px-0">
         {activeTab === "all" && <Event />}
