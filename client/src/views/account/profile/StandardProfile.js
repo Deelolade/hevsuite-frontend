@@ -1251,7 +1251,7 @@ const StandardProfile = () => {
               Enable/disable Two Factor authentication
             </h3>
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1285,7 +1285,7 @@ const StandardProfile = () => {
                     : "2FA Not enabled"}
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1318,7 +1318,7 @@ const StandardProfile = () => {
                     : "Not enabled"}
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1541,10 +1541,10 @@ const StandardProfile = () => {
 
                 <div className="md:col-span-2">
                   <label className="block mb-2">Club Card Status</label>
-                  <div className="flex flex-col sm:flex-row items-center">
-                    <div className="relative flex-1 ">
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-full sm:flex-1">
                       <select
-                        className="w-full px-4 py-3  bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200 appearance-none"
+                        className="w-full px-4 py-3 bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200 appearance-none"
                         value={cardRequest.disableCurrent}
                         onChange={(e) =>
                           setCardRequest({
@@ -1573,7 +1573,7 @@ const StandardProfile = () => {
                         </svg>
                       </div>
                     </div>
-                    <div className="md:col-span-2 mt-6 flex-1">
+                    <div className="w-full sm:flex-1">
                       <div className="flex justify-end gap-3">
                         <button
                           className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
