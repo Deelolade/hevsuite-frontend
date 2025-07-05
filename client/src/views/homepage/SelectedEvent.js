@@ -24,6 +24,7 @@ import Event3 from "../../assets/event-3.jpg";
 import Event4 from "../../assets/event-4.jpg";
 import toast from "react-hot-toast";
 import { fetchProfile } from "../../features/auth/authSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
 import AuthModal from "../../components/AuthModal";
 import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 
@@ -40,12 +41,14 @@ const SelectedEvent = () => {
   });
   const { user } = useSelector((state) => state.auth);
   const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
-  const { userIdentificationApproved } = useUserIdentificationApproved();
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
 
   useEffect(() => {
-    // Fetch saved events when component mounts
+    // Fetch saved events and support requests when component mounts
     dispatch(getSavedEvents());
     dispatch(fetchProfile());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   useEffect(() => {
@@ -177,6 +180,12 @@ const SelectedEvent = () => {
     setShowPaymentModal(true);
   };
   const handleAttendEvent = () => {
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
+
     if (!userIdentificationApproved) {
       console.log("Approved? ", userIdentificationApproved);
       setShowDocumentReviewModal(true);
@@ -217,7 +226,7 @@ const SelectedEvent = () => {
     setSelectedImageIndex(index);
   };
 
-  if (isLoading || !selectedEvent || userIdentificationApproved === undefined) {
+  if (isLoading || !selectedEvent) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-2xl font-medium">Loading...</div>
@@ -244,7 +253,7 @@ const SelectedEvent = () => {
           />
         )}
         {showPaymentModal && (
-          <PaymentMethodModal
+          <PaymentModal
             event={selectedEvent}
             ticketCount={selectedTicketCount}
             onClose={() => setShowPaymentModal(false)}
@@ -361,9 +370,14 @@ const SelectedEvent = () => {
                   ) : (
                     <button
                       onClick={handleAttendEvent}
-                      className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium hover:opacity-90 transition-opacity"
+                      disabled={identificationLoading}
+                      className={`w-full py-1 px-8 ${
+                        identificationLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                      } text-white rounded-xl text-lg font-medium transition-opacity`}
                     >
-                      Attend
+                      {identificationLoading ? "Checking ID..." : "Attend"}
                     </button>
                   )}
                 </div>

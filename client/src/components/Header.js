@@ -23,6 +23,7 @@ import useUserIdentificationApproved from "../hooks/useIdentificationApproved";
 import toast from "react-hot-toast";
 import { fetchFooterData } from "../features/footerSlice";
 import { fetchUserAsks } from "../features/askSlice";
+import { getSupportRequests } from "../features/supportRequestSlice";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -117,6 +118,7 @@ const Header = () => {
 
   useEffect(() => {
     dispatch(fetchProfile());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   useEffect(() => {

@@ -1,32 +1,50 @@
 import { useEffect, useState } from "react";
-import supportRequestService from "../services/supportRequestService";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { getSupportRequests } from "../features/supportRequestSlice";
 import constants from "../constants";
 
 const useUserIdentificationApproved = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((s) => s.auth);
+  const { requests, isLoading, error } = useSelector((s) => s.supportRequest);
   const [userIdentificationApproved, setUserIdentificationApproved] =
     useState(false);
-  const { user } = useSelector((s) => s.auth);
 
+  // Fetch support requests when user changes
   useEffect(() => {
-    const checkIdentificationApproved = async () => {
-      try {
-        const requests = await supportRequestService.getSupportRequests();
-        // check if one of the requests is approved
-        const isIdentificationApproved = requests.data.some(
-          (r) => r.status === constants.supportRequestStatus.approved
-        );
+    if (user?.id) {
+      dispatch(getSupportRequests());
+    }
+  }, [dispatch, user?.id]);
 
-        setUserIdentificationApproved(isIdentificationApproved);
-      } catch (ex) {
-        console.error("[Support Request]: ", ex);
-      }
-    };
+  // Update identification status when requests change
+  useEffect(() => {
+    // Handle both direct array and nested data structure
+    const requestsArray = Array.isArray(requests) ? requests : requests?.data;
 
-    checkIdentificationApproved();
-  }, [user]);
+    if (requestsArray && Array.isArray(requestsArray)) {
+      const isIdentificationApproved = requestsArray.some(
+        (r) =>
+          r.type === "Document Review" &&
+          r.status === constants.supportRequestStatus.approved
+      );
 
-  return { userIdentificationApproved };
+      console.log("Support requests:", requestsArray);
+      console.log(
+        "User identification approved status:",
+        isIdentificationApproved
+      );
+      setUserIdentificationApproved(isIdentificationApproved);
+    } else {
+      setUserIdentificationApproved(false);
+    }
+  }, [requests]);
+
+  return {
+    userIdentificationApproved,
+    loading: isLoading,
+    error,
+  };
 };
 
 export default useUserIdentificationApproved;

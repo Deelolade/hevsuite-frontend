@@ -17,11 +17,14 @@ import "./forced.css";
 import EventDetailsModal from "../account/events/EventDetails";
 import { fetchNonExpiredNews, setSelectedNews } from "../../features/newsSlice";
 import { fetchAllEventTypes, fetchEvents } from "../../features/eventSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import useUserMembership from "../../hooks/useUserMembership";
 import toast from "react-hot-toast";
 import PaymentModal from "../../components/PaymentModal";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
@@ -34,6 +37,7 @@ const Homepage = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
   const swiperRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -43,9 +47,13 @@ const Homepage = () => {
 
   useUserMembership();
 
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
+
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   const { newsItems, loading, error } = useSelector((state) => state.news);
@@ -63,6 +71,18 @@ const Homepage = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
 
     if (user.isRestricted) {
       toast.error("You are restricted from attending events");
@@ -304,6 +324,13 @@ const Homepage = () => {
   return (
     <div className="min-h-screen h-full">
       {/* Header */}
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
+      />
+
       {showPaymentModal && (
         <PaymentModal
           isOpen={showPaymentModal}
@@ -769,13 +796,20 @@ const Homepage = () => {
                                       onClick={(e) =>
                                         handleAttendEvent(event, e)
                                       }
-                                      className={`w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-all duration-300 ${
+                                      disabled={identificationLoading}
+                                      className={`w-full ${
+                                        identificationLoading
+                                          ? "bg-gray-400 cursor-not-allowed"
+                                          : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                                      } text-white rounded-lg font-medium transition-all duration-300 ${
                                         isCenter
                                           ? "py-2 text-base shadow-lg"
                                           : "py-1 text-sm"
                                       }`}
                                     >
-                                      Attend
+                                      {identificationLoading
+                                        ? "Checking ID..."
+                                        : "Attend"}
                                     </button>
                                   )}
                                 </div>

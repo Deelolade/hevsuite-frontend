@@ -7,6 +7,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { fetchNonExpiredNews } from "../../features/newsSlice";
 import { fetchEvents, fetchAllEventTypes } from "../../features/eventSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
@@ -397,10 +398,12 @@ const Events = () => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
     dispatch(fetchAllEventTypes());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
-  const { userIdentificationApproved } = useUserIdentificationApproved();
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
 
   // Reset page when filters change
   useEffect(() => {
@@ -416,6 +419,12 @@ const Events = () => {
 
     console.log("Event clicked:", event);
     console.log("is user attending:", isUserAttending(event._id));
+
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
 
     if (!userIdentificationApproved) {
       console.log("Approved? ", userIdentificationApproved);
@@ -1014,9 +1023,16 @@ const Events = () => {
                             ) : (
                               <button
                                 onClick={(e) => handleAttendEvent(event, e)}
-                                className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 "
+                                disabled={identificationLoading}
+                                className={`w-full py-2 ${
+                                  identificationLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                                } text-white rounded-lg font-medium transition-opacity`}
                               >
-                                Attend
+                                {identificationLoading
+                                  ? "Checking ID..."
+                                  : "Attend"}
                               </button>
                             )}
                           </div>
@@ -1075,9 +1091,14 @@ const Events = () => {
                           ) : (
                             <button
                               onClick={(e) => handleAttendEvent(event, e)}
-                              className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                              disabled={identificationLoading}
+                              className={`w-full py-2 ${
+                                identificationLoading
+                                  ? "bg-gray-400 cursor-not-allowed"
+                                  : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                              } text-white rounded-lg font-medium transition-opacity`}
                             >
-                              Attend
+                              {identificationLoading ? "Checking..." : "Attend"}
                             </button>
                           )}
                         </div>
