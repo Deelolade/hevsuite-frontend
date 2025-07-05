@@ -13,6 +13,7 @@ import {
   saveEvent,
   selectIsEventSaved,
   fetchAllEventTypes,
+  removeSavedEvent,
 } from "../../features/eventSlice";
 import { PaymentMethodModal } from "../account/events/EventDetails";
 import PaymentModal from "../../components/PaymentModal";
@@ -23,6 +24,9 @@ import Event3 from "../../assets/event-3.jpg";
 import Event4 from "../../assets/event-4.jpg";
 import toast from "react-hot-toast";
 import { fetchProfile } from "../../features/auth/authSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 
 const SelectedEvent = () => {
   const { id } = useParams();
@@ -36,11 +40,15 @@ const SelectedEvent = () => {
     return attendingEvents.some((event) => event._id === selectedEvent._id);
   });
   const { user } = useSelector((state) => state.auth);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
 
   useEffect(() => {
-    // Fetch saved events when component mounts
+    // Fetch saved events and support requests when component mounts
     dispatch(getSavedEvents());
     dispatch(fetchProfile());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   useEffect(() => {
@@ -143,11 +151,24 @@ const SelectedEvent = () => {
   const handleSaveEvent = (eventId) => {
     setSavingEvent(true);
     try {
-      dispatch(saveEvent(eventId));
+      dispatch(saveEvent(eventId)).unwrap();
       toast.success("Event saved successfully");
     } catch (error) {
       console.error("Failed to save event:", error);
       toast.error("Failed to save event");
+    } finally {
+      setSavingEvent(false);
+    }
+  };
+
+  const handleUnsaveEvent = async (eventId) => {
+    setSavingEvent(true);
+    try {
+      await dispatch(removeSavedEvent(eventId)).unwrap();
+      toast.success("Event removed from saved list");
+    } catch (error) {
+      console.error("Failed to unsave event:", error);
+      toast.error("Failed to unsave event");
     } finally {
       setSavingEvent(false);
     }
@@ -159,6 +180,17 @@ const SelectedEvent = () => {
     setShowPaymentModal(true);
   };
   const handleAttendEvent = () => {
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
     if (user.isRestricted) {
       toast.error("You are restricted from attending events");
       return;
@@ -185,10 +217,19 @@ const SelectedEvent = () => {
     }
   };
 
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const hasMultipleImages =
+    selectedEvent?.images && selectedEvent?.images.length > 1;
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+  };
+
   if (isLoading || !selectedEvent) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-2xl font-bold">Loading...</div>
+        <div className="text-2xl font-medium">Loading...</div>
       </div>
     );
   }
@@ -196,6 +237,12 @@ const SelectedEvent = () => {
     <div className="min-h-screen">
       <div className="relative">
         <Header />{" "}
+        <AuthModal
+          open={showDocumentReviewModal}
+          title="Document Verification Process "
+          description="Verification is ongoing before you can start using this feature"
+          onClose={() => setShowDocumentReviewModal(false)}
+        />
         {showTicketModal && (
           <TicketSelectionModal
             event={selectedEvent}
@@ -206,7 +253,7 @@ const SelectedEvent = () => {
           />
         )}
         {showPaymentModal && (
-          <PaymentMethodModal
+          <PaymentModal
             event={selectedEvent}
             ticketCount={selectedTicketCount}
             onClose={() => setShowPaymentModal(false)}
@@ -229,214 +276,247 @@ const SelectedEvent = () => {
             }}
           />
         )}
-        <div className="pt-24 relative lg:bg-[rgba(255,255,255,0.85)] bg-white min-h-screen ">
-          <div className=" mx-auto px-4">
+        <div className="relative lg:bg-[rgba(255,255,255,0.85)] bg-white min-h-screen ">
+          <div className="">
             <div className="bg-black  flex lg:flex-row flex-col">
-              <div className="lg:w-3/4 ">
+              <div className={`${hasMultipleImages ? "lg:w-3/4" : "w-full"}`}>
                 <img
-                  src={EventBg}
+                  src={selectedEvent.images[selectedImageIndex]}
                   alt="Event"
                   className="w-full h-[350px] object-cover"
                 />
               </div>
-              <div className="w-full lg:w-1/4">
-                {/* Desktop: 4x4 grid of 16 images */}
-                <div className="hidden lg:grid lg:grid-cols-4 lg:grid-rows-4 h-[350px] gap-4">
-                  {randomEventImages.map((image, index) => (
-                    <div key={index} className="w-full h-full">
-                      <img
-                        src={image}
-                        alt={`Event ${index + 1}`}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Mobile: Single row of 4 images */}
-            </div>
-            <div className="flex flex-row items-center justify-center gap-4 lg:hidden mt-4">
-              {eventImages.map((image, index) => (
-                <div key={index} className="aspect-square">
-                  <img
-                    src={image}
-                    alt={`Event ${index + 1}`}
-                    className="w-[40px] h-[40px] object-cover rounded-xl cursor-pointer"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="lg:mt-11 mt-8 flex lg:flex-row flex-col lg:items-start items-center gap-4 lg:justify-between justify-center">
-              <div className="flex flex-row flex-wrap items-start gap-4">
-                <div className="flex flex-col lg:items-start items-center gap-3.5">
-                  <div className="flex flex-row items-start gap-4 flex-wrap">
-                    <h2 className="lg:text-4xl text-xl font-bold text-[#374151] lg:max-w-xl line-clamp-2">
-                      {selectedEvent.name} at {selectedEvent.location}
-                    </h2>
-                    <div className="mt-1 inline-block px-8 py-1 rounded-full border-2 border-gradient_r text-black font-semibold">
-                      {selectedEvent.audienceType === "members"
-                        ? "Members Only"
-                        : selectedEvent.audienceType === "vip"
-                        ? "VIP Only"
-                        : "Open to All"}
-                    </div>
-                  </div>
-                  <p className="text-sm font-semibold text-[#6B7280] uppercase">
-                    <p className="text-sm font-semibold text-[#6B7280] uppercase">
-                      {formatEventDateTime(
-                        selectedEvent.time,
-                        selectedEvent.endTime
-                      )}
-                    </p>
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-4">
-                <h4 className="text-3xl font-semibold text-black">
-                  £{selectedEvent.price}
-                </h4>
-                {isUserAttending && selectedEvent.audienceType !== "all" ? (
-                  <button
-                    disabled
-                    className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
-                  >
-                    Registered
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleAttendEvent}
-                    className="w-full py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium hover:opacity-90 transition-opacity"
-                  >
-                    Attend
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="lg:bg-white drop-shadow-[0px_10px_50px_rgba(0,0,0,0.18)] my-11 rounded-3xl w-full overflow-hidden">
-              <div className="flex flex-col md:flex-row md:h-full">
-                {/* Left side - Image */}
-                <div className="w-full md:w-5/12 relative bg-black">
-                  <div className="relative h-full overflow-y-auto">
-                    <img
-                      src={selectedEvent.images[0]}
-                      alt={selectedEvent.name}
-                      className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
-                    />
 
-                    <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
-                      <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
+              {hasMultipleImages && (
+                <div className="w-full lg:w-1/4 flex items-center justify-center">
+                  <div className="hidden lg:flex flex-row justify-center items-center gap-1 p-2">
+                    {selectedEvent.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className={`w-full h-full cursor-pointer transition-all duration-200 hover:opacity-80 ${
+                          selectedImageIndex === index
+                            ? "ring-2 ring-white"
+                            : ""
+                        }`}
+                        onClick={() => handleImageClick(index)}
+                      >
+                        <img
+                          src={image}
+                          alt={`Event ${index + 1}`}
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {hasMultipleImages && (
+              <div className="flex flex-row items-center justify-center gap-4 lg:hidden mt-4">
+                {selectedEvent.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`aspect-square cursor-pointer transition-all duration-200 hover:opacity-80 ${
+                      selectedImageIndex === index ? "ring-2 ring-blue-500" : ""
+                    }`}
+                    onClick={() => handleImageClick(index)}
+                  >
+                    <img
+                      src={image}
+                      alt={`Event ${index + 1}`}
+                      className="w-[40px] h-[40px] object-cover rounded-xl"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mx-auto px-4">
+              <div className="lg:mt-11 mt-8 flex lg:flex-row flex-col lg:items-start items-center gap-4 lg:justify-between justify-center">
+                <div className="flex flex-row flex-wrap items-start gap-4">
+                  <div className="flex flex-col lg:items-start items-center gap-3.5">
+                    <div className="flex flex-row items-start gap-4 w-[80%]">
+                      <h2 className="lg:text-4xl text-xl font-bold text-[#374151] whitespace-nowrap">
+                        {selectedEvent.name}
+                      </h2>
+                      <div className="mt-1 inline-block px-8 py-1 rounded-full border-2 border-gradient_r text-black font-semibold whitespace-nowrap">
                         {selectedEvent.audienceType === "members"
                           ? "Members Only"
                           : selectedEvent.audienceType === "vip"
                           ? "VIP Only"
                           : "Open to All"}
                       </div>
-                      <div className="flex items-center gap-6 text-white mb-4">
-                        <div className="flex items-center gap-2">
-                          <BsCalendar />
-                          <span>
-                            {formatDateWithSuffix(selectedEvent.time)}
-                          </span>
+                    </div>
+                    <p className="text-sm font-semibold text-[#6B7280] uppercase">
+                      <p className="text-sm font-semibold text-[#6B7280] uppercase">
+                        {formatEventDateTime(
+                          selectedEvent.time,
+                          selectedEvent.endTime
+                        )}
+                      </p>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-4">
+                  <h4 className="text-3xl font-semibold text-black">
+                    £{selectedEvent.price}
+                  </h4>
+                  {isUserAttending && selectedEvent.audienceType !== "all" ? (
+                    <button
+                      disabled
+                      className="w-full py-1 px-8 bg-gray-400 text-white rounded-xl text-lg font-medium cursor-not-allowed"
+                    >
+                      Registered
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAttendEvent}
+                      disabled={identificationLoading}
+                      className={`w-full py-1 px-8 ${
+                        identificationLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                      } text-white rounded-xl text-lg font-medium transition-opacity`}
+                    >
+                      {identificationLoading ? "Checking ID..." : "Attend"}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="lg:bg-white drop-shadow-[0px_10px_50px_rgba(0,0,0,0.18)] my-11 rounded-3xl w-full overflow-hidden">
+                <div className="flex flex-col md:flex-row md:h-full">
+                  {/* Left side - Image */}
+                  <div className="w-full md:w-5/12 relative bg-black">
+                    <div className="relative h-full overflow-y-auto">
+                      <img
+                        src={selectedEvent.images[0]}
+                        alt={selectedEvent.name}
+                        className="w-full md:h-full h-[25rem] object-center bg-center bg-current opacity-90"
+                      />
+
+                      <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
+                        <div className="inline-block px-4 py-1.5 rounded-full border-2 border-gradient_r text-white mb-6">
+                          {selectedEvent.audienceType === "members"
+                            ? "Members Only"
+                            : selectedEvent.audienceType === "vip"
+                            ? "VIP Only"
+                            : "Open to All"}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <MdAccessTime />
-                          <span>{formatTime(selectedEvent.time)}</span>
+                        <div className="flex items-center gap-6 text-white mb-4">
+                          <div className="flex items-center gap-2">
+                            <BsCalendar />
+                            <span>
+                              {formatDateWithSuffix(selectedEvent.time)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MdAccessTime />
+                            <span>{formatTime(selectedEvent.time)}</span>
+                          </div>
+                        </div>
+                        <p className="text-white/70 text-sm mb-6">
+                          {selectedEvent.numberOfTicket === 1
+                            ? "Note: You can only buy one ticket"
+                            : `Note: You can buy up to ${selectedEvent.numberOfTicket} tickets`}
+                        </p>
+
+                        <div className="mt-12 flex flex-row items-center justify-between gap-4">
+                          <button
+                            onClick={() =>
+                              isEventSaved
+                                ? handleUnsaveEvent(selectedEvent._id)
+                                : handleSaveEvent(selectedEvent._id)
+                            }
+                            aria-label={
+                              isEventSaved ? "Unsave event" : "Save event"
+                            }
+                            className="focus:outline-none"
+                            type="button"
+                          >
+                            <FaHeart
+                              size={24}
+                              className={`${
+                                isEventSaved
+                                  ? "text-[#540A26]"
+                                  : "text-[#9C9494]"
+                              } text-xl transition-all duration-300 active:text-[#540A26]`}
+                            />
+                          </button>
+                          <button
+                            onClick={() =>
+                              isEventSaved
+                                ? handleUnsaveEvent(selectedEvent._id)
+                                : handleSaveEvent(selectedEvent._id)
+                            }
+                            className="w-[327px] py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                            type="button"
+                            disabled={savingEvent}
+                          >
+                            {isEventSaved
+                              ? savingEvent
+                                ? "Unsaving..."
+                                : "Unsave Event"
+                              : savingEvent
+                              ? "Saving..."
+                              : "Save for later"}
+                          </button>
                         </div>
                       </div>
-                      <p className="text-white/70 text-sm mb-6">
-                        {selectedEvent.numberOfTicket === 1
-                          ? "Note: You can only buy one ticket"
-                          : `Note: You can buy up to ${selectedEvent.numberOfTicket} tickets`}
-                      </p>
-                      <button
-                        onClick={
-                          isUserAttending
-                            ? undefined
-                            : () => setShowPaymentModal(true)
-                        }
-                        disabled={isUserAttending}
-                        className={`w-full opacity-0 py-4 rounded-xl text-lg font-medium ${
-                          isUserAttending
-                            ? "bg-gray-400 text-white cursor-not-allowed"
-                            : "bg-gradient-to-r from-gradient_r to-gradient_g text-white"
-                        }`}
-                      >
-                        {isUserAttending ? "Already Registered" : "Attend"}
-                      </button>
-                      <div className="flex flex-row items-center justify-between gap-4">
-                        <FaHeart
-                          className={`${
-                            isEventSaved ? "text-[#540A26]" : "text-[#9C9494]"
-                          }  text-xl transition-all duration-300 active:text-[#540A26]`}
-                        />
+                    </div>
+                  </div>
+
+                  {/* Right side - Details */}
+                  <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh] lg:mt-0 mt-14">
+                    <div className="lg:border-b">
+                      <div className="flex flex-row items-center lg:gap-0 gap-4">
                         <button
-                          onClick={() => handleSaveEvent(selectedEvent._id)}
-                          className="w-[327px] py-1 px-8 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-xl text-lg font-medium"
+                          className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
+                            activeTab === "description"
+                              ? "bg-[#540A26] text-white"
+                              : "lg:bg-white bg-[#F3F2F3] text-black"
+                          }`}
+                          onClick={() => setActiveTab("description")}
                         >
-                          {isEventSaved
-                            ? "Event Saved"
-                            : savingEvent
-                            ? "Saving..."
-                            : "Save for later"}
+                          Event Description
+                        </button>
+                        <button
+                          className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
+                            activeTab === "location"
+                              ? "bg-[#540A26] text-white"
+                              : "lg:bg-white bg-[#F3F2F3] text-black lg:border-x border-[#C4C4C4]"
+                          }`}
+                          onClick={() => setActiveTab("location")}
+                        >
+                          Location
+                        </button>
+                        <button
+                          className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
+                            activeTab === "members"
+                              ? "bg-[#540A26] text-white"
+                              : "lg:bg-white bg-[#F3F2F3] text-black"
+                          }`}
+                          onClick={() => setActiveTab("members")}
+                        >
+                          Attending Members
                         </button>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Right side - Details */}
-                <div className="w-full md:w-7/12 overflow-y-auto max-h-[80vh] lg:mt-0 mt-14">
-                  <div className="lg:border-b">
-                    <div className="flex flex-row items-center lg:gap-0 gap-4">
-                      <button
-                        className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
-                          activeTab === "description"
-                            ? "bg-[#540A26] text-white"
-                            : "lg:bg-white bg-[#F3F2F3] text-black"
-                        }`}
-                        onClick={() => setActiveTab("description")}
-                      >
-                        Event Description
-                      </button>
-                      <button
-                        className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
-                          activeTab === "location"
-                            ? "bg-[#540A26] text-white"
-                            : "lg:bg-white bg-[#F3F2F3] text-black lg:border-x border-[#C4C4C4]"
-                        }`}
-                        onClick={() => setActiveTab("location")}
-                      >
-                        Location
-                      </button>
-                      <button
-                        className={`lg:px-8 lg:py-4 py-1.5 px-2.5 rounded-[4px] lg:rounded-none lg:text-lg text-xs ${
-                          activeTab === "members"
-                            ? "bg-[#540A26] text-white"
-                            : "lg:bg-white bg-[#F3F2F3] text-black"
-                        }`}
-                        onClick={() => setActiveTab("members")}
-                      >
-                        Attending Members
-                      </button>
-                    </div>
-                  </div>
+                    <div className="lg:p-8 pt-4">
+                      {activeTab === "description" && (
+                        <div>
+                          <h2 className="lg:text-[40px] text-2xl lg:font-bold font-semibold mb-4 text-black font-primary">
+                            {selectedEvent.name}
+                          </h2>
 
-                  <div className="lg:p-8 pt-4">
-                    {activeTab === "description" && (
-                      <div>
-                        <h2 className="lg:text-[40px] text-2xl lg:font-bold font-semibold mb-4 text-black font-primary">
-                          {selectedEvent.name}
-                        </h2>
+                          <p className="text-gray-600 mb-6">
+                            {selectedEvent.description}
+                          </p>
+                        </div>
+                      )}
 
-                        <p className="text-gray-600 mb-6">
-                          {selectedEvent.description}
-                        </p>
-                      </div>
-                    )}
-
-                    {activeTab === "location" && (
-                      <div className="h-[500px]">
-                        {/* <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+                      {activeTab === "location" && (
+                        <div className="h-[500px]">
+                          {/* <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
                       <GoogleMap
                         mapContainerStyle={{ width: '100%', height: '100%' }}
                         center={mapCenter}
@@ -448,48 +528,52 @@ const SelectedEvent = () => {
                     <p className="mt-4 text-gray-600">
                       No. 12, Kudirat Abiola Avenue, Ikeja, NG.
                     </p> */}
-                        {/* <h1>hello</h1> */}
-                        <div>
-                          <div id="google-maps-canvas" className="h-full">
-                            {/* <iframe
+                          {/* <h1>hello</h1> */}
+                          <div>
+                            <div id="google-maps-canvas" className="h-full">
+                              {/* <iframe
                         className="md:h-[500px] w-full"
                         frameborder="0"
                         src="https://www.google.com/maps/embed/v1/place?q=uk+london,+brixton+brockwell+park&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
                       /> */}{" "}
-                            <iframe
-                              className="md:h-[500px] w-full"
-                              frameBorder="0"
-                              src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${selectedEvent.location?.coordinates?.lat},${selectedEvent.location?.coordinates?.lng}&zoom=15`}
-                              loading="lazy"
-                              referrerPolicy="no-referrer-when-downgrade"
-                              title={`Map showing location of ${selectedEvent.name}`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeTab === "members" && (
-                      <div className="space-y-4">
-                        {attendees.map((attendee, index) => (
-                          <div key={index} className="flex items-center gap-4">
-                            <img
-                              src={attendee.profilePhoto}
-                              alt={`${attendee.forename} ${attendee.lastname}`}
-                              className="w-12 h-12 rounded-full"
-                            />
-                            <div>
-                              <h3 className="font-semibold text-black">
-                                {`${attendee.forename} ${attendee.surname}`}
-                              </h3>
-                              <p className="text-gray-600">
-                                {formatDateWithSuffix(attendee.createdAt)}
-                              </p>
+                              <iframe
+                                className="md:h-[500px] w-full"
+                                frameBorder="0"
+                                src={`https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&center=${selectedEvent.location?.coordinates?.lat},${selectedEvent.location?.coordinates?.lng}&zoom=15`}
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title={`Map showing location of ${selectedEvent.name}`}
+                              />
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </div>
+                      )}
+
+                      {activeTab === "members" && (
+                        <div className="space-y-4">
+                          {attendees.map((attendee, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-4"
+                            >
+                              <img
+                                src={attendee.profilePhoto}
+                                alt={`${attendee.forename} ${attendee.lastname}`}
+                                className="w-12 h-12 rounded-full"
+                              />
+                              <div>
+                                <h3 className="font-semibold text-black">
+                                  {`${attendee.forename} ${attendee.surname}`}
+                                </h3>
+                                <p className="text-gray-600">
+                                  {formatDateWithSuffix(attendee.createdAt)}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

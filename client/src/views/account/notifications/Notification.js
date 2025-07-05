@@ -15,15 +15,31 @@ import {
 Modal.setAppElement("#root");
 
 const NotificationItem = ({ notification, onRemove }) => {
+  const dispatch = useDispatch();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const handleRemove = () => {
-    setShowConfirmModal(true);
+  // const handleRemove = () => {
+  //   setShowConfirmModal(true);
+  // };
+
+  const handleRemoveNotification = (id) => {
+    dispatch(deleteNotification(id));
+  };
+
+  const handleNotificationClick = () => {
+    if (!notification.read) {
+      dispatch(markAsRead(notification._id));
+    }
   };
 
   return (
     <>
-      <div className="flex items-start sm:items-center justify-between bg-white rounded-lg p-3 sm:p-4 shadow-md sm:shadow-lg">
+      <div
+        className={`flex items-start sm:items-center justify-between rounded-lg p-3 sm:p-4 shadow-md sm:shadow-lg ${
+          notification.read === false ? "bg-blue-50" : "bg-white"
+        }`}
+        onClick={handleNotificationClick}
+      >
         <div className="flex-1 pr-2">
           <p className="font-medium text-black text-sm sm:text-base line-clamp-2 sm:line-clamp-1">
             {notification.message}
@@ -33,7 +49,7 @@ const NotificationItem = ({ notification, onRemove }) => {
           </p>
         </div>
         <button
-          onClick={handleRemove}
+          onClick={() => handleRemoveNotification(notification._id)}
           className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 flex-shrink-0"
         >
           <IoClose size={16} className="sm:w-5 sm:h-5" />

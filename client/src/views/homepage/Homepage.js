@@ -17,11 +17,14 @@ import "./forced.css";
 import EventDetailsModal from "../account/events/EventDetails";
 import { fetchNonExpiredNews, setSelectedNews } from "../../features/newsSlice";
 import { fetchAllEventTypes, fetchEvents } from "../../features/eventSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import useUserMembership from "../../hooks/useUserMembership";
 import toast from "react-hot-toast";
 import PaymentModal from "../../components/PaymentModal";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
 
 const Homepage = () => {
   const [selectedAudience, setSelectedAudience] = useState("");
@@ -29,10 +32,12 @@ const Homepage = () => {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [hideFilters, setHideFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
   const swiperRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -42,9 +47,13 @@ const Homepage = () => {
 
   useUserMembership();
 
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
+
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   const { newsItems, loading, error } = useSelector((state) => state.news);
@@ -62,6 +71,18 @@ const Homepage = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
 
     if (user.isRestricted) {
       toast.error("You are restricted from attending events");
@@ -276,6 +297,14 @@ const Homepage = () => {
     }
   };
 
+  const handleHideFilters = () => {
+    setHideFilters(true);
+    setTimeout(() => {
+      setShowFilters(false);
+      setHideFilters(false);
+    }, 400);
+  };
+
   // Add CSS for the slide-in animation
   const styles = `
   @keyframes slideInFromLeft {
@@ -295,6 +324,13 @@ const Homepage = () => {
   return (
     <div className="min-h-screen h-full">
       {/* Header */}
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
+      />
+
       {showPaymentModal && (
         <PaymentModal
           isOpen={showPaymentModal}
@@ -312,31 +348,32 @@ const Homepage = () => {
           setShowOneTimePaymentModal={setShowPaymentModal}
         />
       )}
-      <div className={`relative text-white`}>
+      <header className="relative text-white min-h-screen">
         <div className="absolute inset-0 z-0">
           <img
             src={headerBg}
             alt="background"
-            className={`w-full h-full object-cover`}
+            className={`w-full ${
+              showFilters ? "h-[120vh]" : "h-[110vh]"
+            } object-cover`}
           />
-          <div className={`absolute inset-0 bg-black/50 h-full`} />
+          <div
+            className={`absolute inset-0 bg-black/50 ${
+              showFilters ? "h-[120vh]" : "h-[110vh]"
+            }`}
+          />
         </div>
-        <div className="relative z-10 pb-20">
+        <div className="relative z-10">
           <Header />
           <div className="max-w-[1400px] mx-auto px-4">
             {/* Filters */}
             <div className=" flex flex-col md:flex-row items-center gap-4 justify-center">
-              <div className="w-full md:w-auto flex flex-col md:flex-row items-start gap-2 md:gap-4 mt-28">
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-28 relative">
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden w-auto bg-[#540A26] text-white py-4 px-2 rounded-lg mb-2 shadow-lg flex flex-col items-center justify-center self-start"
-                  style={{
-                    writingMode: "vertical-lr",
-                    textOrientation: "mixed",
-                    minHeight: "96px",
-                    minWidth: "40px",
-                    transform: "rotate(180deg)",
-                  }}
+                  onClick={() =>
+                    showFilters ? handleHideFilters() : setShowFilters(true)
+                  }
+                  className="md:hidden w-auto bg-transparent border border-gray-400 text-white py-2 px-4 rounded-lg mb-2 flex flex-col items-center justify-center"
                 >
                   {showFilters ? "Hide Filters" : "Show Filters"}
                 </button>
@@ -344,30 +381,51 @@ const Homepage = () => {
                 {/* Mobile Modal */}
                 {showFilters && (
                   <div
-                    className="md:hidden fixed w-[290px] max-w-full top-0 left-0 bg-black bg-opacity-50 flex items-start justify-start z-50"
-                    style={{ animation: "slideInFromLeft 0.3s ease-out" }}
+                    className="md:hidden absolute top-full left-1/2 transform -translate-x-1/2 w-[270px] max-w-[90vw] bg-white rounded-lg p-3 shadow-lg z-50 mt-2"
+                    style={{
+                      animation: hideFilters
+                        ? "slideOutToTop 0.6s ease-in"
+                        : "slideInFromTop 0.6s ease-out",
+                      animationFillMode: "both",
+                    }}
                   >
-                    <div
-                      className="bg-white rounded-lg p-6 m-4 w-full max-w-[95vw] max-h-[90vh] overflow-y-auto"
-                      style={{
-                        position: "absolute",
-                        left: "50px",
-                        top: "50px",
-                      }}
-                    >
-                      <div className="flex justify-between items-center mb-4">
+                    <style jsx>{`
+                      @keyframes slideInFromTop {
+                        from {
+                          opacity: 0;
+                          transform: translateX(-50%) translateY(-100vh);
+                        }
+                        to {
+                          opacity: 1;
+                          transform: translateX(-50%) translateY(0);
+                        }
+                      }
+
+                      @keyframes slideOutToTop {
+                        from {
+                          opacity: 1;
+                          transform: translateX(-50%) translateY(0);
+                        }
+                        to {
+                          opacity: 0;
+                          transform: translateX(-50%) translateY(-100vh);
+                        }
+                      }
+                    `}</style>
+                    <div className="w-full max-h-[70vh] overflow-y-auto">
+                      <div className="flex justify-between items-center mb-2">
                         <h3 className="text-lg font-semibold text-black">
                           Filters
                         </h3>
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="text-gray-500 hover:text-gray-700 text-xl"
                         >
                           ×
                         </button>
                       </div>
 
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
                         <div className="relative w-full">
                           <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                           <select
@@ -468,15 +526,15 @@ const Homepage = () => {
                         </div>
                       </div>
 
-                      <div className="flex gap-2 mt-6">
+                      <div className="flex gap-2 mt-4">
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg"
                         >
                           Cancel
                         </button>
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="flex-1 bg-[#540A26] text-white py-2 px-4 rounded-lg"
                         >
                           Apply
@@ -738,13 +796,20 @@ const Homepage = () => {
                                       onClick={(e) =>
                                         handleAttendEvent(event, e)
                                       }
-                                      className={`w-full bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-all duration-300 ${
+                                      disabled={identificationLoading}
+                                      className={`w-full ${
+                                        identificationLoading
+                                          ? "bg-gray-400 cursor-not-allowed"
+                                          : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                                      } text-white rounded-lg font-medium transition-all duration-300 ${
                                         isCenter
                                           ? "py-2 text-base shadow-lg"
                                           : "py-1 text-sm"
                                       }`}
                                     >
-                                      Attend
+                                      {identificationLoading
+                                        ? "Checking ID..."
+                                        : "Attend"}
                                     </button>
                                   )}
                                 </div>
@@ -781,7 +846,7 @@ const Homepage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Newsroom */}
       {newsItems.length > 0 && (

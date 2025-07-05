@@ -17,6 +17,7 @@ import authService from "../../../services/authService";
 import { register } from "../../../features/auth/authSlice";
 import ProgressSteps from "./ProgressSteps";
 import AuthModal from "../../../components/AuthModal";
+import { createSupportRequest } from "../../../features/supportRequestSlice";
 
 const RegisterStep5 = () => {
   React.useEffect(() => {
@@ -64,7 +65,6 @@ const RegisterStep5 = () => {
     // Validate required image fields
 
     const newErrors = {};
-
 
     const checkAndDisplayErrors = () => {
       if (Object.keys(newErrors).length > 0) {
@@ -167,7 +167,10 @@ const RegisterStep5 = () => {
     for (const key in finalData) {
       if (Array.isArray(finalData[key]))
         for (let value of finalData[key])
-          formDataToSend.append(`${key === "interests"?"userInterests":key}[]`, value.toLowerCase());
+          formDataToSend.append(
+            `${key === "interests" ? "userInterests" : key}[]`,
+            value.toLowerCase()
+          );
       else formDataToSend.append(key, finalData[key]);
     }
 
@@ -185,7 +188,14 @@ const RegisterStep5 = () => {
       setAuthModal({ open: true, status: "processing" });
 
       await dispatch(register(formDataToSend)).unwrap();
-    
+
+      const supportRequestData = {
+        type: "Document Review",
+        requestData: formData,
+      };
+
+      await dispatch(createSupportRequest(supportRequestData));
+
       // await authService.register(formDataToSend);
       setTimeout(
         () => setAuthModal((prev) => ({ ...prev, status: "completed" })),
@@ -204,7 +214,7 @@ const RegisterStep5 = () => {
       };
 
       // if both referrals & membershipFee are off
-      if (Settings.requiredReferralNumber  <= 0 && !Settings.membershipFee) {
+      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) {
         goTo("/homepage");
         return;
       }
@@ -231,7 +241,6 @@ const RegisterStep5 = () => {
       }, 2000);
     }
   };
-
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -424,7 +433,9 @@ const RegisterStep5 = () => {
                   )}
                 </button>
                 {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">{errors.password} </p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.password}{" "}
+                  </p>
                 )}
               </div>
             </div>
@@ -458,7 +469,9 @@ const RegisterStep5 = () => {
                   )}
                 </button>
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1">{errors.confirmPassword} </p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.confirmPassword}{" "}
+                  </p>
                 )}
               </div>
             </div>

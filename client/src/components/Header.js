@@ -22,6 +22,8 @@ import AuthModal from "./AuthModal";
 import useUserIdentificationApproved from "../hooks/useIdentificationApproved";
 import toast from "react-hot-toast";
 import { fetchFooterData } from "../features/footerSlice";
+import { fetchUserAsks } from "../features/askSlice";
+import { getSupportRequests } from "../features/supportRequestSlice";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -36,12 +38,68 @@ const Header = () => {
   const { user, isLoading } = useSelector((state) => state.auth);
   const { menus, loading: menusLoading } = useSelector((state) => state.menus);
   const unreadCount = useSelector((state) => state.notifications.unreadCount);
+  const { asks } = useSelector((state) => state.ask);
   const isLoggedIn = !!user;
   const { footerData, socialMedia } = useSelector((state) => state.footer);
 
   const { userIdentificationApproved } = useUserIdentificationApproved();
+  const [unreadAskCount, setUnreadAskCount] = useState(0);
 
   const notRef = React.useRef(false);
+  const calculateUnreadAskCount = (asks, currentUserId) => {
+    let unreadCount = 0;
+
+    asks.forEach((ask) => {
+      const isUserCreator = ask.createdBy?._id === currentUserId;
+      const isUserClaimer = ask.claimedBy?._id === currentUserId;
+      const isUserInvolved =
+        (isUserCreator || isUserClaimer) && ask.status === "claimed";
+
+      if (isUserInvolved && ask.chat && ask.chat.length > 0) {
+        const hasUnreadMessages = checkForUnreadMessages(
+          ask.chat,
+          currentUserId
+        );
+        if (hasUnreadMessages) {
+          unreadCount++;
+        }
+      }
+    });
+
+    setUnreadAskCount(unreadCount);
+  };
+
+  const checkForUnreadMessages = (chatMessages, currentUserId) => {
+    if (!chatMessages || chatMessages.length === 0) return false;
+
+    const transformedMessages = chatMessages.map((msg) => ({
+      senderId: msg.sender?._id || msg.sender,
+      messageId: msg._id,
+    }));
+
+    for (let i = 0; i < transformedMessages.length; i++) {
+      const message = transformedMessages[i];
+      const isFromCurrentUser = message.senderId === currentUserId;
+
+      if (!isFromCurrentUser) {
+        let hasReply = false;
+        for (let j = i + 1; j < transformedMessages.length; j++) {
+          const laterMessage = transformedMessages[j];
+          if (laterMessage.senderId === currentUserId) {
+            hasReply = true;
+            break;
+          }
+        }
+
+        if (!hasReply) {
+          return true; // Found an unread message
+        }
+      }
+    }
+
+    return false; // No unread messages found
+  };
+
   useEffect(() => {
     if (isMenuOpen) {
       document.body.classList.add("overflow-hidden");
@@ -53,11 +111,14 @@ const Header = () => {
     dispatch(fetchMenusData());
     if (user?._id) {
       dispatch(fetchNotifications(user._id));
+      dispatch(fetchUserAsks());
+      calculateUnreadAskCount(asks, user._id);
     }
-  }, [dispatch, user, isLoggedIn]);
+  }, [dispatch, user, isLoggedIn, asks]);
 
   useEffect(() => {
     dispatch(fetchProfile());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   useEffect(() => {
@@ -101,13 +162,27 @@ const Header = () => {
     ) : isMobile ? (
       <button
         onClick={() => setShowDocumentReviewModal(true)}
-        className="flex w-full text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+        className="flex w-full text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] relative"
       >
         <BsChatFill className="text-xl mr-2" />
         <span>Ask</span>
+        {unreadAskCount > 0 && (
+          <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+            {unreadAskCount > 9 ? "9+" : unreadAskCount}
+          </span>
+        )}
       </button>
     ) : (
-      <button onClick={() => setShowDocumentReviewModal(true)}> Ask </button>
+      <button onClick={() => setShowDocumentReviewModal(true)}>
+        <div className="relative">
+          Ask
+          {unreadAskCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+              {unreadAskCount > 9 ? "9+" : unreadAskCount}
+            </span>
+          )}
+        </div>
+      </button>
     )
   );
 
@@ -179,7 +254,14 @@ const Header = () => {
           <Link to="/topics">Help centre</Link>
           <AskButton>
             {" "}
-            <Link to="/ask">Ask</Link>{" "}
+            <div className="relative">
+              <Link to="/ask">Ask</Link>{" "}
+              {unreadAskCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-xs flex items-center justify-center px-1">
+                  {unreadAskCount > 9 ? "9+" : unreadAskCount}
+                </span>
+              )}
+            </div>
           </AskButton>
           {!menusLoading &&
             menus?.data
@@ -288,10 +370,15 @@ const Header = () => {
                   <AskButton isMobile>
                     <Link
                       to="/ask"
-                      className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0]"
+                      className="flex text-white text-sm py-2 px-4 rounded-3xl hover:bg-gray-700 border-2 border-[#8E8EA0] relative"
                     >
                       <BsChatFill className="text-xl mr-2" />
                       <span>Ask</span>
+                      {unreadAskCount > 0 && (
+                        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {unreadAskCount > 9 ? "9+" : unreadAskCount}
+                        </span>
+                      )}
                     </Link>
                   </AskButton>
                 )}
@@ -358,10 +445,10 @@ const Header = () => {
                       alt={user?.name || "profile"}
                       className="w-16 h-16 rounded-full mx-auto my-6"
                     />
-                    <div className="text-gray-700 mb-3">
+                    <div className="text-white mb-3">
                       {user.forename} {user.surname}
                     </div>
-                    <div className="text-gray-600 text-sm mb-6">
+                    <div className="text-white text-sm mb-6">
                       {user.primaryEmail}
                     </div>
                     <button
@@ -415,7 +502,7 @@ const Header = () => {
               <div className="border-t border-gray-700 pt-4">
                 {socialMedia?.length > 0 && (
                   <div className="flex justify-center items-center gap-4 mb-4">
-                    <span className="text-gray-700 text-sm font-semibold">
+                    <span className="text-white text-sm font-semibold">
                       Follow us
                     </span>
                     <div className="flex gap-3">
@@ -447,14 +534,14 @@ const Header = () => {
                           {section.title?.toLowerCase().includes("policies") ? (
                             <Link
                               to="/terms"
-                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
+                              className="text-sm text-white hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
                           ) : (
                             <Link
                               to={section.link || "/club"}
-                              className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
+                              className="text-sm text-white hover:text-gray-500 transition-colors"
                             >
                               {section.title}
                             </Link>
@@ -464,7 +551,7 @@ const Header = () => {
                   )}
                 </div>
 
-                <div className="text-center text-xs text-gray-700 mt-2">
+                <div className="text-center text-xs text-white mt-2">
                   &copy; {new Date().getFullYear()} Hazor Group (Trading as HH
                   Club)
                 </div>

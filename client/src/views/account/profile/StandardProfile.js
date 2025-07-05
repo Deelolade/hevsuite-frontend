@@ -5,7 +5,6 @@ import mastercard from "../../../assets/Mastercard.png";
 
 import SupportRequestsView from "./SupportRequestsView";
 import Swal from "sweetalert2";
-import { showModal } from "../../../components/FireModal";
 import { useDispatch, useSelector } from "react-redux";
 import referralService from "../../../services/referralService";
 import toast from "react-hot-toast";
@@ -13,7 +12,6 @@ import {
   disable2FA,
   fetchProfile,
   setup2FA,
-  updateProfile,
 } from "../../../features/auth/authSlice";
 import { CountrySelect, StateSelect } from "react-country-state-city";
 import {
@@ -559,8 +557,6 @@ const StandardProfile = () => {
     "Politics",
     "Sport",
   ];
-
-  console.log(user);
 
   const TwoFAModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1255,7 +1251,7 @@ const StandardProfile = () => {
               Enable/disable Two Factor authentication
             </h3>
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1289,7 +1285,7 @@ const StandardProfile = () => {
                     : "2FA Not enabled"}
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1322,7 +1318,7 @@ const StandardProfile = () => {
                     : "Not enabled"}
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -1406,27 +1402,12 @@ const StandardProfile = () => {
                     Are you sure you want to request a new club card?
                   </p>
 
-                  {/* Show current card status information */}
-                  {clubCard.isActive && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                      <p className="text-blue-800 text-sm">
-                        <strong>Note:</strong> You currently have an active
-                        card.
-                        {cardRequest.disableCurrent === "Deactivate"
-                          ? " This request will disable your current card and issue a replacement."
-                          : " You will have both cards active until you choose to disable one."}
-                      </p>
-                    </div>
-                  )}
-
-                  {!clubCard.isActive && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                      <p className="text-green-800 text-sm">
-                        <strong>Note:</strong> Your current card is inactive.
-                        This new card will become your active card.
-                      </p>
-                    </div>
-                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                    <p className="text-blue-800 text-sm">
+                      This request will disable your current card and issue a
+                      replacement.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3">
@@ -1560,10 +1541,10 @@ const StandardProfile = () => {
 
                 <div className="md:col-span-2">
                   <label className="block mb-2">Club Card Status</label>
-                  <div className="flex flex-col sm:flex-row items-center">
-                    <div className="relative flex-1 ">
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-full sm:flex-1">
                       <select
-                        className="w-full px-4 py-3  bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200 appearance-none"
+                        className="w-full px-4 py-3 bg-[#f9f9f9] text-gray-500 rounded-lg border border-gray-200 appearance-none"
                         value={cardRequest.disableCurrent}
                         onChange={(e) =>
                           setCardRequest({
@@ -1592,20 +1573,14 @@ const StandardProfile = () => {
                         </svg>
                       </div>
                     </div>
-                    <div className="md:col-span-2 mt-6 flex-1">
+                    <div className="w-full sm:flex-1">
                       <div className="flex justify-end gap-3">
                         <button
                           className="text-sm sm:text-base px-2 sm:px-6 py-1 border border-gradient_r text-[#444444] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={
                             activating || deactivating || !clubCard.cardId
                           }
-                          onClick={() => {
-                            if (cardRequest.disableCurrent === "Deactivate") {
-                              handleSaveCardStatus();
-                            } else {
-                              handleRequestCard();
-                            }
-                          }}
+                          onClick={handleSaveCardStatus}
                         >
                           {activating || deactivating ? (
                             <span className="flex items-center gap-2">

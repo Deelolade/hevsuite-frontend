@@ -10,7 +10,7 @@ import NonEngagementPaymentModal from "./NonEngagementPaymentModal";
 import toast from "react-hot-toast";
 import Logo from "../assets/logo_white.png";
 
-const PenaltyModal = () => {
+const PenaltyModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -40,6 +40,7 @@ const PenaltyModal = () => {
 
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
+    onClose();
     // Refresh user profile to update penalty status
     dispatch(fetchProfile());
   };

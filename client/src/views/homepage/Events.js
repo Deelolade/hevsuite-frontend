@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 import headerBg from "../../assets/header-bg.jpg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BsCalendar } from "react-icons/bs";
 import { MdPerson, MdLocationOn } from "react-icons/md";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { fetchNonExpiredNews } from "../../features/newsSlice";
 import { fetchEvents, fetchAllEventTypes } from "../../features/eventSlice";
+import { getSupportRequests } from "../../features/supportRequestSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDateWithSuffix, formatTime } from "../../utils/formatDate";
 import PaymentModal from "../../components/PaymentModal";
 import toast from "react-hot-toast";
+import AuthModal from "../../components/AuthModal";
+import useUserIdentificationApproved from "../../hooks/useIdentificationApproved";
+import { PaymentMethodModal } from "../account/events/EventDetails";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 // const EventDetailsModal = ({ event, onClose, eventType, events }) => {
 //   const dispatch = useDispatch();
@@ -384,15 +389,21 @@ const Events = () => {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [hideFilters, setHideFilters] = useState(false);
+  const [showDocumentReviewModal, setShowDocumentReviewModal] = useState(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchNonExpiredNews());
     dispatch(fetchEvents());
     dispatch(fetchAllEventTypes());
+    dispatch(getSupportRequests());
   }, [dispatch]);
 
   const { events, attendingEvents } = useSelector((state) => state.events);
+  const { userIdentificationApproved, loading: identificationLoading } =
+    useUserIdentificationApproved();
 
   // Reset page when filters change
   useEffect(() => {
@@ -405,6 +416,21 @@ const Events = () => {
   const handleAttendEvent = (event, e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    console.log("Event clicked:", event);
+    console.log("is user attending:", isUserAttending(event._id));
+
+    // Check if identification is still loading
+    if (identificationLoading) {
+      toast.info("Checking identification status...");
+      return;
+    }
+
+    if (!userIdentificationApproved) {
+      console.log("Approved? ", userIdentificationApproved);
+      setShowDocumentReviewModal(true);
+      return;
+    }
     if (event.audienceType !== "all") {
       if (isUserAttending(event._id)) {
         toast.info("You are already registered for this event");
@@ -480,7 +506,7 @@ const Events = () => {
           if (event.location && typeof event.location === "string") {
             // Search backwards for a part without digits
             const parts = event.location.split(",");
-            for (let i = parts.length - 2; i >= 0; i--) {
+            for (let i = parts.length - 4; i >= 0; i--) {
               const part = parts[i].trim();
               if (part && !/\d/.test(part)) {
                 eventCity = part;
@@ -521,7 +547,7 @@ const Events = () => {
           const getCityFromLocation = (location) => {
             if (location && typeof location === "string") {
               const parts = location.split(",");
-              for (let i = parts.length - 2; i >= 0; i--) {
+              for (let i = parts.length - 4; i >= 0; i--) {
                 const part = parts[i].trim();
                 if (part && !/\d/.test(part)) {
                   return part;
@@ -537,7 +563,7 @@ const Events = () => {
           const getCityFromLocation = (location) => {
             if (location && typeof location === "string") {
               const parts = location.split(",");
-              for (let i = parts.length - 2; i >= 0; i--) {
+              for (let i = parts.length - 4; i >= 0; i--) {
                 const part = parts[i].trim();
                 if (part && !/\d/.test(part)) {
                   return part;
@@ -584,7 +610,7 @@ const Events = () => {
       .map((event) => {
         if (event.location && typeof event.location === "string") {
           const parts = event.location.split(",");
-          for (let i = parts.length - 2; i >= 0; i--) {
+          for (let i = parts.length - 4; i >= 0; i--) {
             const part = parts[i].trim();
             if (part && !/\d/.test(part)) {
               return part;
@@ -615,17 +641,56 @@ const Events = () => {
     currentPage * eventsPerPage
   );
 
+  const handleHideFilters = () => {
+    setHideFilters(true);
+    setTimeout(() => {
+      setShowFilters(false);
+      setHideFilters(false);
+    }, 400);
+  };
+
+  if (userIdentificationApproved === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
+      <AuthModal
+        open={showDocumentReviewModal}
+        title="Document Verification Process "
+        description="Verification is ongoing before you can start using this feature"
+        onClose={() => setShowDocumentReviewModal(false)}
+      />
+      {showPaymentModal && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          paymentData={paymentData}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {showTicketModal && selectedEvent && (
+        <TicketSelectionModal
+          event={selectedEvent}
+          onClose={handleTicketModalClose}
+          setPaymentData={setPaymentData}
+          setShowOneTimePaymentModal={setShowPaymentModal}
+        />
+      )}
       <div className={`relative text-white`}>
         <div className="absolute inset-0 z-0">
           <img
             src={headerBg}
             alt="background"
-            className="w-full h-full object-cover"
+            className="w-full h-full md:min-h-full min-h-screen object-cover"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/50 md:min-h-full min-h-screen" />
         </div>
 
         <div className="relative z-10 pb-20">
@@ -633,17 +698,12 @@ const Events = () => {
           <div className="max-w-[1400px] mx-auto px-4">
             {/* Filters */}
             <div className="flex flex-col md:flex-row items-center gap-4 justify-center">
-              <div className="w-full md:w-auto flex flex-col md:flex-row items-start gap-2 md:gap-4 mt-28">
+              <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-2 md:gap-4 mt-28 relative">
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden w-auto bg-[#540A26] text-white py-4 px-2 rounded-lg mb-2 shadow-lg flex flex-col items-center justify-center self-start"
-                  style={{
-                    writingMode: "vertical-lr",
-                    textOrientation: "mixed",
-                    minHeight: "96px",
-                    minWidth: "40px",
-                    transform: "rotate(180deg)",
-                  }}
+                  onClick={() =>
+                    showFilters ? handleHideFilters() : setShowFilters(true)
+                  }
+                  className="md:hidden w-auto bg-transparent border border-gray-400 text-white py-2 px-4 rounded-lg mb-2 flex flex-col items-center justify-center"
                 >
                   {showFilters ? "Hide Filters" : "Show Filters"}
                 </button>
@@ -651,30 +711,51 @@ const Events = () => {
                 {/* Mobile Modal */}
                 {showFilters && (
                   <div
-                    className="md:hidden fixed w-[290px] max-w-full top-0 left-0 bg-black bg-opacity-50 flex items-start justify-start z-50"
-                    style={{ animation: "slideInFromLeft 0.3s ease-out" }}
+                    className="md:hidden absolute top-full left-1/2 transform -translate-x-1/2 w-[270px] max-w-[90vw] bg-white rounded-lg p-3 shadow-lg z-50 mt-2"
+                    style={{
+                      animation: hideFilters
+                        ? "slideOutToTop 0.6s ease-in"
+                        : "slideInFromTop 0.6s ease-out",
+                      animationFillMode: "both",
+                    }}
                   >
-                    <div
-                      className="bg-white rounded-lg p-6 m-4 w-full max-w-[95vw] max-h-[90vh] overflow-y-auto"
-                      style={{
-                        position: "absolute",
-                        left: "50px",
-                        top: "50px",
-                      }}
-                    >
-                      <div className="flex justify-between items-center mb-4">
+                    <style jsx>{`
+                      @keyframes slideInFromTop {
+                        from {
+                          opacity: 0;
+                          transform: translateX(-50%) translateY(-100vh);
+                        }
+                        to {
+                          opacity: 1;
+                          transform: translateX(-50%) translateY(0);
+                        }
+                      }
+
+                      @keyframes slideOutToTop {
+                        from {
+                          opacity: 1;
+                          transform: translateX(-50%) translateY(0);
+                        }
+                        to {
+                          opacity: 0;
+                          transform: translateX(-50%) translateY(-100vh);
+                        }
+                      }
+                    `}</style>
+                    <div className="w-full max-h-[70vh] overflow-y-auto">
+                      <div className="flex justify-between items-center mb-2">
                         <h3 className="text-lg font-semibold text-black">
                           Filters
                         </h3>
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="text-gray-500 hover:text-gray-700 text-xl"
                         >
                           ×
                         </button>
                       </div>
 
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
                         <div className="relative w-full">
                           <MdPerson className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                           <select
@@ -775,15 +856,15 @@ const Events = () => {
                         </div>
                       </div>
 
-                      <div className="flex gap-2 mt-6">
+                      <div className="flex gap-2 mt-4">
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg"
                         >
                           Cancel
                         </button>
                         <button
-                          onClick={() => setShowFilters(false)}
+                          onClick={handleHideFilters}
                           className="flex-1 bg-[#540A26] text-white py-2 px-4 rounded-lg"
                         >
                           Apply
@@ -892,21 +973,12 @@ const Events = () => {
             </div>
           </div>
 
-          <div className="px-6 py-2 mt-16">
+          <div className="px-6 py-2 mt-8">
             {viewMode === "scroll" ? (
-              <div className="w-full">
-                {/* <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Upcoming Events</h2>
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className="text-white underline hover:text-gray-300 transition-colors"
-                  >
-                    View All Events
-                  </button>
-                </div> */}
+              <div className="w-full flex justify-center">
                 <div className="overflow-x-auto scrollbar-hide">
                   <div
-                    className="flex space-x-6 pb-4"
+                    className="flex justify-center space-x-6 pb-4"
                     style={{ width: "max-content" }}
                   >
                     {filteredEvents.slice(0, 8).map((event, index) => (
@@ -951,9 +1023,16 @@ const Events = () => {
                             ) : (
                               <button
                                 onClick={(e) => handleAttendEvent(event, e)}
-                                className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                                disabled={identificationLoading}
+                                className={`w-full py-2 ${
+                                  identificationLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                                } text-white rounded-lg font-medium transition-opacity`}
                               >
-                                Attend
+                                {identificationLoading
+                                  ? "Checking ID..."
+                                  : "Attend"}
                               </button>
                             )}
                           </div>
@@ -1012,9 +1091,14 @@ const Events = () => {
                           ) : (
                             <button
                               onClick={(e) => handleAttendEvent(event, e)}
-                              className="w-full py-2 bg-gradient-to-r from-gradient_r to-gradient_g text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                              disabled={identificationLoading}
+                              className={`w-full py-2 ${
+                                identificationLoading
+                                  ? "bg-gray-400 cursor-not-allowed"
+                                  : "bg-gradient-to-r from-gradient_r to-gradient_g hover:opacity-90"
+                              } text-white rounded-lg font-medium transition-opacity`}
                             >
-                              Attend
+                              {identificationLoading ? "Checking..." : "Attend"}
                             </button>
                           )}
                         </div>
@@ -1040,10 +1124,34 @@ const Events = () => {
                     ))}
                   </div>
                 </div>
+
+                <div className="w-full flex justify-center items-center">
+                  <div className="flex justify-center ml-10 items-center space-x-2 mt-8">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <button
+                        key={index}
+                        className={`w-3 h-3 rounded-full ${
+                          currentPage === index + 1
+                            ? "bg-[#540A26]"
+                            : "bg-gray-400"
+                        } flex items-center justify-center`}
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {/* {index + 1} */}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </>
             )}
 
-            <div className="my-12 flex justify-end">
+            <div className="my-12 flex md:justify-end justify-between items-center gap-4">
+              <button
+                onClick={() => navigate("/homepage")}
+                className="text-white md:hidden flex gap-2 items-center border p-2 px-3 rounded-lg border-gray-400 hover:text-white transition-colors text-sm"
+              >
+                Go Back
+              </button>
               <button
                 onClick={() =>
                   setViewMode(viewMode === "scroll" ? "grid" : "scroll")
