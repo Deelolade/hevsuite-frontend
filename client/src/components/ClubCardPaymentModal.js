@@ -841,7 +841,7 @@ const ClubCardPaymentModal = ({
 
             <div className="my-6 px-4 md:px-12 text-black">
               {paymentMethod === null ? (
-                <div className="mb-6 flex flex-col gap-4 md:flex-row justify-center">
+                <div className="mb-6 flex flex-row gap-3 justify-center">
                   {paymentMethodsLoading ? (
                     <div className="py-4 text-center">
                       Loading payment methods...
@@ -857,12 +857,12 @@ const ClubCardPaymentModal = ({
                           <button
                             key={stripeMethod.provider}
                             onClick={() => setPaymentMethod("stripe")}
-                            className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600 w-40 h-20 flex justify-center items-center"
+                            className="cursor-pointer rounded-lg border border-gray-200 p-4 text-center transition-colors text-blue-600 hover:border-blue-600 w-32 h-16 sm:w-40 sm:h-20 flex justify-center items-center flex-shrink-0"
                           >
                             <img
                               src={stripeMethod.logo}
                               alt={stripeMethod.provider}
-                              className="h-10 w-10"
+                              className="h-10 w-8 sm:h-10 sm:w-10"
                             />
                           </button>
                         ))}
@@ -875,12 +875,12 @@ const ClubCardPaymentModal = ({
                           <button
                             key={paypalMethod.provider}
                             onClick={() => setPaymentMethod("paypal")}
-                            className="cursor-pointer rounded-lg border border-gray-200 p-6 text-center transition-colors text-blue-600 hover:border-blue-600 w-40 h-20 flex justify-center items-center"
+                            className="cursor-pointer rounded-lg border border-gray-200 p-4 text-center transition-colors text-blue-600 hover:border-blue-600 w-32 h-16 sm:w-40 sm:h-20 flex justify-center items-center flex-shrink-0"
                           >
                             <img
                               src={paypalMethod.logo}
                               alt={paypalMethod.provider}
-                              className="h-10 w-10"
+                              className="h-10 w-8 sm:h-10 sm:w-10"
                             />
                           </button>
                         ))}
