@@ -725,7 +725,7 @@ const Homepage = () => {
                                 }
                               `}
                             >
-                              <Link to={`/events/${event._id}`}>
+                              <Link to={`/events/${event._id}`} target="_blank">
                                 <img
                                   src={event.images[0]}
                                   alt={event.name}

@@ -25,7 +25,7 @@ const useUserIdentificationApproved = () => {
     if (requestsArray && Array.isArray(requestsArray)) {
       const isIdentificationApproved = requestsArray.some(
         (r) =>
-          r.type === "Document Review" &&
+          (r.type === "Document Review" || r.type === "Evidence Review") &&
           r.status === constants.supportRequestStatus.approved
       );
 

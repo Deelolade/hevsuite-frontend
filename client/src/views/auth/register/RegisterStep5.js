@@ -18,6 +18,10 @@ import { register } from "../../../features/auth/authSlice";
 import ProgressSteps from "./ProgressSteps";
 import AuthModal from "../../../components/AuthModal";
 import { createSupportRequest } from "../../../features/supportRequestSlice";
+import {
+  selectPricingFees,
+  fetchPricingFees,
+} from "../../../features/pricingFeesSlice";
 
 const RegisterStep5 = () => {
   React.useEffect(() => {
@@ -25,6 +29,7 @@ const RegisterStep5 = () => {
   }, []);
   const navigate = useNavigate();
   const { Settings } = useSelector((s) => s.generalSettings);
+  const pricingFees = useSelector(selectPricingFees);
   const [errors, setErrors] = useState({});
   const [registeringLoading, setRegisteringLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -55,6 +60,19 @@ const RegisterStep5 = () => {
     password: "",
     confirmPassword: "",
   });
+
+  // Helper function to check if membership fee exists in pricing fees
+  const hasMembershipFee = () => {
+    if (!pricingFees || pricingFees.length === 0) return false;
+    const membershipFee = pricingFees.find(
+      (fee) => fee.name === "Membership Fee"
+    );
+    return (
+      membershipFee &&
+      membershipFee.isEnabled &&
+      (membershipFee.standardPrice > 0 || membershipFee.vipPrice > 0)
+    );
+  };
 
   const handleFileUpload = (type, file) => {
     setFormData({ ...formData, [type]: file });
@@ -214,13 +232,13 @@ const RegisterStep5 = () => {
       };
 
       // if both referrals & membershipFee are off
-      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee) {
+      if (Settings.requiredReferralNumber <= 0 && !hasMembershipFee()) {
         goTo("/homepage");
         return;
       }
 
       // if referrals are off & membershipFee are on
-      if (Settings.requiredReferralNumber <= 0 && Settings.membershipFee) {
+      if (Settings.requiredReferralNumber <= 0 && hasMembershipFee()) {
         goTo("/register-7");
         return;
       }
@@ -241,6 +259,10 @@ const RegisterStep5 = () => {
       }, 2000);
     }
   };
+
+  React.useEffect(() => {
+    dispatch(fetchPricingFees());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen flex flex-col">

@@ -51,6 +51,8 @@ import UpcomingEvents from "./views/account/events/UpcomingEvents";
 import SelectedEvent from "./views/homepage/SelectedEvent";
 import PenaltyModal from "./components/PenaltyModal";
 import { SocketProvider } from "./store/socket-context";
+import { selectPricingFees } from "./features/pricingFeesSlice";
+import { fetchPricingFees } from "./features/pricingFeesSlice";
 
 axios.defaults.withCredentials = true;
 
@@ -137,13 +139,28 @@ const LoginRedirect = ({ children }) => {
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { Settings } = useSelector((state) => state.generalSettings);
+  const pricingFees = useSelector(selectPricingFees);
   const location = useLocation();
 
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     dispatch(fetchGeneralSettings());
+    dispatch(fetchPricingFees());
   }, [dispatch]);
+
+  // Helper function to check if membership fee exists in pricing fees
+  const hasMembershipFee = () => {
+    if (!pricingFees || pricingFees.length === 0) return false;
+    const membershipFee = pricingFees.find(
+      (fee) => fee.name === "Membership Fee"
+    );
+    return (
+      membershipFee &&
+      membershipFee.isEnabled &&
+      (membershipFee.standardPrice > 0 || membershipFee.vipPrice > 0)
+    );
+  };
 
   const hasToken = searchParams.get("token");
   if (hasToken) {
@@ -169,11 +186,11 @@ const LoginRedirect = ({ children }) => {
     if (
       user.membershipStatus === constants.membershipStatus.accepted &&
       user.joinFeeStatus === constants.joinFeeStatus.pending &&
-      Settings?.membershipFee
+      hasMembershipFee()
     )
       return <Navigate to="/register-7" state={{ from: location }} replace />;
 
-    if (Settings?.requiredReferralNumber <= 0 && !Settings?.membershipFee)
+    if (Settings?.requiredReferralNumber <= 0 && !hasMembershipFee())
       return <Navigate to="/homepage" state={{ from: location }} replace />;
 
     const allReferredByApproved = user.referredBy.every(
