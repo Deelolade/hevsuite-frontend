@@ -6,6 +6,10 @@ import { fetchProfile } from "../../../features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import constants from "../../../constants";
 import { fetchGeneralSettings } from "../../../features/generalSettingSlice";
+import {
+  selectPricingFees,
+  fetchPricingFees,
+} from "../../../features/pricingFeesSlice";
 
 const TwoFactorAuth = () => {
   const navigate = useNavigate();
@@ -13,6 +17,21 @@ const TwoFactorAuth = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { Settings } = useSelector((state) => state.generalSettings);
+  const pricingFees = useSelector(selectPricingFees);
+
+  // Helper function to check if membership fee exists in pricing fees
+  const hasMembershipFee = () => {
+    if (!pricingFees || pricingFees.length === 0) return false;
+    const membershipFee = pricingFees.find(
+      (fee) => fee.name === "Membership Fee"
+    );
+    return (
+      membershipFee &&
+      membershipFee.isEnabled &&
+      (membershipFee.standardPrice > 0 || membershipFee.vipPrice > 0)
+    );
+  };
+
   const handleMethodSelection = async () => {
     // Redirect to the appropriate verification page
     navigate(`/${input}-verification`);
@@ -25,6 +44,7 @@ const TwoFactorAuth = () => {
         console.log("user in useEffect", response);
       });
     dispatch(fetchGeneralSettings());
+    dispatch(fetchPricingFees());
   }, [dispatch]);
 
   const handleSkipForNow = async () => {
@@ -52,16 +72,13 @@ const TwoFactorAuth = () => {
     } else if (
       user.membershipStatus === constants.membershipStatus.accepted &&
       user.joinFeeStatus === constants.joinFeeStatus.pending &&
-      Settings.membershipFee
+      hasMembershipFee()
     ) {
       navigate("/register-7", { replace: true });
     } else {
-      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipStatus)
+      if (Settings.requiredReferralNumber <= 0 && !hasMembershipFee())
         return navigate("/homepage", { replace: true });
-      else if (
-        Settings.requiredReferralNumber <= 0 &&
-        Settings.membershipStatus
-      )
+      else if (Settings.requiredReferralNumber <= 0 && hasMembershipFee())
         return navigate("/register-7");
 
       const allReferredByApproved = user.referredBy.every(

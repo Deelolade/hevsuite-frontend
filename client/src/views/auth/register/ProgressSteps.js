@@ -1,18 +1,41 @@
 import { useEffect, useState } from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  selectPricingFees,
+  fetchPricingFees,
+} from "../../../features/pricingFeesSlice";
 
 const ProgressSteps = ({ currentStep = 2 }) => {
   const [steps, setSteps] = useState(6);
   const { Settings } = useSelector((s) => s.generalSettings);
+  const pricingFees = useSelector(selectPricingFees);
+  const dispatch = useDispatch();
+
+  // Helper function to check if membership fee exists in pricing fees
+  const hasMembershipFee = () => {
+    if (!pricingFees || pricingFees.length === 0) return false;
+    const membershipFee = pricingFees.find(
+      (fee) => fee.name === "Membership Fee"
+    );
+    return (
+      membershipFee &&
+      membershipFee.isEnabled &&
+      (membershipFee.standardPrice > 0 || membershipFee.vipPrice > 0)
+    );
+  };
+
+  useEffect(() => {
+    dispatch(fetchPricingFees());
+  }, [dispatch]);
 
   useEffect(() => {
     if (Settings) {
-      // both aree off
-      if (Settings.requiredReferralNumber <= 0 && !Settings.membershipFee)
+      // both are off
+      if (Settings.requiredReferralNumber <= 0 && !hasMembershipFee())
         setSteps(5);
     }
-  }, [Settings]);
+  }, [Settings, pricingFees]);
 
   return (
     <>

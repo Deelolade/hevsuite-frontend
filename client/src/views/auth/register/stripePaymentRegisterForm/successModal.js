@@ -19,18 +19,17 @@ import { ReceiptPDF } from "../components/receiptPDF";
  * @param {SuccessPaymentModalProps} props
  */
 const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
-
   const fullName = `${user.surname} ${user.forename}`;
 
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const { currency, amount, created, id, payment_method_types } =  paymentDetails;
+  const { currency, amount, created, id, payment_method_types } =
+    paymentDetails;
 
   const formattedAmount = new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: (currency || "GBP").toUpperCase(),
   }).format(amount / 100); // convert cents to euros
-
 
   const receiptDate = new Date(created);
   const formattedReceiptDate = receiptDate.toLocaleString("en-GB", {
@@ -41,7 +40,7 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-});
+  });
 
   const receiptData = {
     receiptNumber: "#RCP-1750696461238",
@@ -67,9 +66,9 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
   };
 
   const handleOnClose = () => {
-    setTimeout(() => {  onClose(); }, 1_000);
+    // setTimeout(() => {  onClose(); }, 1_000);
     navigate("/homepage");
-  }
+  };
 
   const handleCopy = async (refId) => {
     try {
@@ -114,7 +113,6 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
       backgroundColor: "rgba(0, 0, 0, 0.75)",
     },
   };
-
 
   // 2. Format date
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
@@ -166,11 +164,16 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-gray-50 p-4 rounded-lg ">
               <p className="text-gray-500 text-sm mb-1">Ref Number</p>
-              <p className="font-medium text-sm text-ellipsis overflow-hidden text-center" title={id} >{id}</p>
+              <p
+                className="font-medium text-sm text-ellipsis overflow-hidden text-center"
+                title={id}
+              >
+                {id}
+              </p>
               {/* <p className="font-medium break-words text-[0.95rem]">00008575257 </p> */}
-              
+
               <button
-                onClick={()=> handleCopy(id)}
+                onClick={() => handleCopy(id)}
                 className="flex w-full justify-center mt-2 items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition"
                 title={copied ? "Copied!" : "Copy"}
               >
@@ -190,27 +193,36 @@ const SuccessPaymentModal = ({ paymentDetails, isOpen, onClose, user }) => {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-500 text-sm mb-1">Sender Name</p>
-              <p className="font-medium text-ellipsis overflow-hidden text-center">{fullName}{" "}</p>
+              <p className="font-medium text-ellipsis overflow-hidden text-center">
+                {fullName}{" "}
+              </p>
               {/* <p className="font-medium">Antonio Roberto</p> */}
             </div>
           </div>
 
-              {typeof window !== "undefined" && (
-                    <PDFDownloadLink
-                      document={<ReceiptPDF data={receiptData} />}
-                      fileName={`Hevsuite_membership_receipt-${receiptData.receiptNumber.replace("#","" )}.pdf`}
-                      className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
-                      // className="inline-block w-full bg-red-900 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
-                    >
-                      {({ blob, url, loading, error }) =>
-                        loading ? "Generating PDF..." : <div className="flex items-center justify-center gap-2 w-full" > 
-                              <FiDownload className="w-5 h-5" />
-                             Get PDF Receipt
-                        </div>
-                      }
-                    </PDFDownloadLink>
-              )}
-         
+          {typeof window !== "undefined" && (
+            <PDFDownloadLink
+              document={<ReceiptPDF data={receiptData} />}
+              fileName={`Hevsuite_membership_receipt-${receiptData.receiptNumber.replace(
+                "#",
+                ""
+              )}.pdf`}
+              className="flex items-center justify-center gap-2 text-gray-600 mx-auto mb-6 hover:text-gray-800"
+              // className="inline-block w-full bg-red-900 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              {({ blob, url, loading, error }) =>
+                loading ? (
+                  "Generating PDF..."
+                ) : (
+                  <div className="flex items-center justify-center gap-2 w-full">
+                    <FiDownload className="w-5 h-5" />
+                    Get PDF Receipt
+                  </div>
+                )
+              }
+            </PDFDownloadLink>
+          )}
+
           <button
             onClick={handleOnClose}
             className="w-full py-1   text-[#540A26] border-2 border-gradient_r rounded-3xl"

@@ -46,6 +46,7 @@ const SelectedEvent = () => {
 
   useEffect(() => {
     // Fetch saved events and support requests when component mounts
+    dispatch(fetchAllEventTypes());
     dispatch(getSavedEvents());
     dispatch(fetchProfile());
     dispatch(getSupportRequests());

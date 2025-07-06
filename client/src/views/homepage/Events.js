@@ -986,7 +986,7 @@ const Events = () => {
                         key={index}
                         className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer flex-shrink-0 w-[300px] h-[427px]"
                       >
-                        <Link to={`/events/${event._id}`}>
+                        <Link to={`/events/${event._id}`} target="_blank">
                           <img
                             src={event.images[0]}
                             alt={event.name}
@@ -1051,7 +1051,11 @@ const Events = () => {
                         key={index}
                         className="rounded-2xl overflow-hidden bg-black relative group cursor-pointer w-full min-w-[300px] max-w-[350px] h-[427px]"
                       >
-                        <Link to={`/events/${event._id}`}>
+                        <Link
+                          to={`/events/${event._id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <img
                             src={event.images[0]}
                             alt={event.name}
@@ -1059,7 +1063,11 @@ const Events = () => {
                           />
                         </Link>
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                          <Link to={`/events/${event._id}`}>
+                          <Link
+                            to={`/events/${event._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <h3 className="text-xl font-semibold mb-2">
                               {event.name}
                             </h3>

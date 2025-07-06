@@ -5,13 +5,15 @@ import { useEffect, useState } from "react";
 import StripePaymentForm from "./form";
 import SuccessPaymentModal from "./successModal";
 import { fetchProfile } from "../../../../features/auth/authSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPricingFees } from "../../../../features/pricingFeesSlice";
+import { selectPricingFees } from "../../../../features/pricingFeesSlice";
 
 const StripePaymentRegisterForm = () => {
-
-  const { user } = useSelector(s => s.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector((s) => s.auth);
   const { Settings } = useSelector((state) => state.generalSettings);
-  
+  const pricingFees = useSelector(selectPricingFees);
 
   const [stripePromise, setStripePromise] = useState(null);
   const [paymentConfig, setpaymentConfig] = useState({
@@ -48,23 +50,41 @@ const StripePaymentRegisterForm = () => {
     fetchPublishableKey();
   }, []);
 
-
   useEffect(() => {
-    // getting client secret.
     const fetchClientSecret = () => {
+      const membershipFee = pricingFees.find(
+        (fee) => fee.name === "Membership Fee"
+      );
 
-      const amount = Settings.membershipStandardPrice;
+      if (!membershipFee) {
+        console.error("Membership Fee not found in pricing fees");
+        return;
+      }
+
+      const amount =
+        user.role === "vip"
+          ? membershipFee.vipPrice
+          : membershipFee.standardPrice;
 
       paymentService
-        .createMembershipPayment({ amount, provider: "stripe" }) // amount 120, you need to get
+        .createMembershipPayment({
+          amount,
+          provider: "stripe",
+          userId: user.id,
+        })
         .then((res) => {
           setpaymentConfig(res);
         })
         .catch((ex) => console.error(ex));
     };
 
-    if(Settings && user ) fetchClientSecret();
-  }, [Settings, user]);
+    if (pricingFees && user) fetchClientSecret();
+  }, [pricingFees, user]);
+
+  useEffect(() => {
+    dispatch(fetchPricingFees());
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
   return (
     <div>
