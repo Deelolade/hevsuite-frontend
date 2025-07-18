@@ -5,7 +5,7 @@ export default defineConfig((mode) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     build: {
-      outDir: 'build',
+      outDir: 'dist',
     },
     plugins: [react()],
     define: {
